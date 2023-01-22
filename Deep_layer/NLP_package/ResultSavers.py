@@ -1,16 +1,16 @@
-from Deep_layer import NLP_package
+from abc import ABC, abstractmethod
+import matplotlib.pyplot as plt
 
+class ISaver(ABC):
 
-class ISaver(NLP_package.ABC):
-
-    @NLP_package.abstractmethod
+    @abstractmethod
     def saveRes(cls, history, path):
         pass
 
 class ResultSaver(ISaver):
     @classmethod
     def saveRes(cls, history, path, accuracy):
-        s, (at, al) = NLP_package.plt.subplots(2, 1)
+        s, (at, al) = plt.subplots(2, 1)
         at.plot(history.history[accuracy], c='b')
         at.plot(history.history['val_' + accuracy], c='r')
         at.set_title('model accuracy')

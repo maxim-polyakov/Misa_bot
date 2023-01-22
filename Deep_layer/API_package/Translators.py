@@ -1,16 +1,19 @@
-from Deep_layer import API_package
+from googletrans import Translator
+import pandas as pd
+from Deep_layer.DB_package import DB_Bridge
+from multipledispatch import dispatch
+from abc import ABC, abstractmethod
 
+class ITranslator(ABC):
 
-class ITranslator(API_package.ABC):
-
-    @API_package.abstractmethod
+    @abstractmethod
     def translate(self):
         pass
 
 class GoogleTranslator(ITranslator):
 
 
-    _translator = API_package.Translator()
+    _translator = Translator()
 
     lang = 'ru'
     def __init__(self, lang,):
@@ -22,24 +25,24 @@ class GoogleTranslator(ITranslator):
         return tranlated.text
 
     @classmethod
-    @API_package.dispatch(object, object, object)
+    @dispatch(object, object, object)
     def translate(cls, dataselect, insertdtname):
         try:
-            train = API_package.DB_Bridge.DB_Communication.get_data(dataselect)
+            train = DB_Bridge.DB_Communication.get_data(dataselect)
             train.text = train.text.astype(str)
 
-            df = API_package.pd.concat([train])
-            df = API_package.pd.DataFrame(df['text'])
+            df = pd.concat([train])
+            df = pd.DataFrame(df['text'])
             df['text'] = df['text'].apply(cls._translate)
 
-            API_package.DB_Bridge.DB_Communication.insert_to(df, 'translated')
+            DB_Bridge.DB_Communication.insert_to(df, 'translated')
 
             return 'Готово'
         except:
             print('The exception is in GoogleTranslator.translate')
 
     @classmethod
-    @API_package.dispatch(object, object)
+    @dispatch(object, object)
     def translate(cls, inptmes):
         try:
             tranlated = cls._translate(inptmes)

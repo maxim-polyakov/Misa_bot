@@ -1,7 +1,6 @@
 from Front_layer import discord_bot
 from Core_layer.Bot_package import TokenAdder
 
-
 @discord_bot.bot.command()
 async def token(ctx, arg):
     if ctx.author != discord_bot.bot.user:

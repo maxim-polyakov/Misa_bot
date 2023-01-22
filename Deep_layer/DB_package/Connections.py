@@ -1,7 +1,9 @@
-import Deep_layer.DB_package as db
+import psycopg2
+from sqlalchemy import create_engine
+
 class PostgresConnection:
 
-    engine = db.create_engine(
+    engine = create_engine(
         'postgresql+psycopg2://postgres:postgres@localhost:5432/MisaMemory')
-    conn = db.psycopg2.connect(
+    conn = psycopg2.connect(
         'dbname=MisaMemory user=postgres password=postgres')

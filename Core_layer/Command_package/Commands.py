@@ -1,15 +1,16 @@
-from Core_layer import Command_package
-
+from Deep_layer.NLP_package import TextPreprocessers
+from Deep_layer.DB_package import DB_Bridge
 
 class CommandAnalyzer:
 
     command_flag = 0
-    __pred = Command_package.TextPreprocessers.Preprocessing()
-    __pr = Command_package.TextPreprocessers.CommonPreprocessing()
-    __cpr = Command_package.TextPreprocessers.CommandPreprocessing()
+    __pred = TextPreprocessers.Preprocessing()
+    __pr = TextPreprocessers.CommonPreprocessing()
+    __cpr = TextPreprocessers.CommandPreprocessing()
     __nothingflg = 0
     __cash = ''
     __mesentype = 'telegram'
+
     def __init__(self, boto, message, mesentype):
         self.boto = boto
         self.message = message
@@ -17,7 +18,7 @@ class CommandAnalyzer:
 
     def __checkcash(self, ac, PreprocessedInsidestringarr, Insidestringarr, idx):
         if (self.__nothingflg == 0):
-            if (Command_package.DB_Bridge.DB_Communication.checkcommands(Insidestringarr[idx])):
+            if (DB_Bridge.DB_Communication.checkcommands(Insidestringarr[idx])):
                 if(self.__mesentype == 'telegram'):
                     return 'Команда'
                 else:

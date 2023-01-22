@@ -1,27 +1,30 @@
 from Deep_layer import API_package
+from sympy import *
+from Deep_layer.NLP_package import TextPreprocessers as tp
 
+from abc import ABC, abstractmethod
 
-class ICalculator(API_package.ABC):
+class ICalculator(ABC):
 
-    @API_package.abstractmethod
+    @abstractmethod
     def deravative(cls, boto, message, inptmes, dx):
         pass
 
-    @API_package.abstractmethod
+    @abstractmethod
     def integrate(cls, boto, message, inptmes, dx):
         pass
     
 class SympyCalculator(ICalculator):
 
-    __pr = API_package.tp.QuestionPreprocessing()
+    __pr = tp.QuestionPreprocessing()
 
     @classmethod
     def deravative(cls,  inptmes, dx):
 
         try:
             inp = cls.__pr.preprocess_text(dx)
-            x = API_package.Symbol(inp[0])
-            y = API_package.sympify(str(inptmes))
+            x = Symbol(inp[0])
+            y = sympify(str(inptmes))
             yprime = y.diff(x)
             output = str(yprime).replace('**','^')
             return output

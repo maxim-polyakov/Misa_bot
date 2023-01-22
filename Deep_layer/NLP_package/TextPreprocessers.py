@@ -1,12 +1,16 @@
-from Deep_layer import NLP_package
+from nltk.corpus import stopwords
+from string import punctuation
+from pymystem3 import Mystem
+import spacy
+import re
+from abc import ABC, abstractmethod
 
+class IPreprocessing(ABC):
 
-class IPreprocessing(NLP_package.ABC):
-
-    @NLP_package.abstractmethod
+    @abstractmethod
     def preprocess_text(self, text):
         pass
-    @NLP_package.abstractmethod
+    @abstractmethod
     def reversepreprocess_text(self,text):
         pass
 
@@ -17,9 +21,9 @@ class Preprocessing(IPreprocessing):
         try:
             tokens = str(text)
             tokens = text.lower().split(' ')
-            tokens = [token for token in tokens if token not in NLP_package.stopwords.words('russian')
+            tokens = [token for token in tokens if token not in stopwords.words('russian')
                       and token != ' '
-                      and token.strip() not in NLP_package.punctuation]
+                      and token.strip() not in punctuation]
 
             text = " ".join(tokens).rstrip('\n')
             text = text.replace('  ', ' ')
@@ -38,19 +42,19 @@ class CommonPreprocessing(Preprocessing):
     def preprocess_text(self, text):
         try:
             tokens = str(text)
-            tokens = NLP_package.Mystem().lemmatize(text.lower())
-            tokens = [token for token in tokens if token not in NLP_package.stopwords.words('russian')
+            tokens = Mystem().lemmatize(text.lower())
+            tokens = [token for token in tokens if token not in stopwords.words('russian')
                       and token != ' '
-                      and token.strip() not in NLP_package.punctuation]
+                      and token.strip() not in punctuation]
             tokens = [
-                token for token in tokens if token not in NLP_package.stopwords.words('english')]
+                token for token in tokens if token not in stopwords.words('english')]
 
             text = ' '.join(tokens).rstrip('\n')
             pattern3 = r'[\d]'
             pattern2 = '[.]'
-            text = NLP_package.re.sub(pattern3, '', text)
-            text = NLP_package.re.sub(pattern2, '', text)
-            text = NLP_package.re.sub('  ', ' ', text)
+            text = re.sub(pattern3, '', text)
+            text = re.sub(pattern2, '', text)
+            text = re.sub('  ', ' ', text)
             return text
         except:
             return 'The exception is in CommonPreprocessing.preprocess_text'
@@ -66,12 +70,12 @@ class QuestionPreprocessing(Preprocessing):
     def preprocess_text(self, text):
         try:
             tokens = str(text).split(' ')
-            tokens = NLP_package.Mystem().lemmatize(text.lower())
+            tokens = Mystem().lemmatize(text.lower())
             tokens = [token for token in tokens if token != " "]
 
             text = " ".join(tokens).rstrip('\n')
-            text = NLP_package.re.sub('[!@#$-><%^&*()_=+/\|:;~,.]', '', text)
-            text = NLP_package.re.sub('  ', ' ', text)
+            text = re.sub('[!@#$-><%^&*()_=+/\|:;~,.]', '', text)
+            text = re.sub('  ', ' ', text)
             text = text.replace(' ? ', '?')
 
             return text
@@ -82,11 +86,11 @@ class QuestionPreprocessing(Preprocessing):
     def reversepreprocess_text(self, text):
         try:
             tokens = str(text)
-            tokens = NLP_package.Mystem().lemmatize(text.lower())
-            tokens = [token for token in tokens if token in NLP_package.stopwords.words('russian')
+            tokens = Mystem().lemmatize(text.lower())
+            tokens = [token for token in tokens if token in stopwords.words('russian')
                       and (token != ' ' or token == '?')]
             text = ' '.join(tokens).rstrip('\n')
-            text = NLP_package.re.sub('  ', ' ', text)
+            text = re.sub('  ', ' ', text)
             return text
         except:
             return 'The exception is in QuestionPreprocessing.reversepreprocess_text'
@@ -98,9 +102,9 @@ class CommandPreprocessing(Preprocessing):
         try:
             tokens = str(text)
             tokens = text.lower().split(' ')
-            tokens = [token for token in tokens if token not in NLP_package.stopwords.words('russian')
+            tokens = [token for token in tokens if token not in stopwords.words('russian')
                       and token != ' '
-                      and token.strip() not in NLP_package.punctuation]
+                      and token.strip() not in punctuation]
             text = ' '.join(tokens).rstrip('\n')
             return text
         except:
@@ -109,7 +113,7 @@ class CommandPreprocessing(Preprocessing):
     @classmethod
     def reversepreprocess_text(self, text):
         try:
-            document = NLP_package.spacy.load('ru_core_news_md')
+            document = spacy.load('ru_core_news_md')
 
             tokens = [token.lemma_ for token in document if token.pos_ == 'VERB']
 

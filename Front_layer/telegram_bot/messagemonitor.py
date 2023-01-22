@@ -1,7 +1,6 @@
 from Front_layer import telegram_bot
 from Core_layer.Bot_package import Monitors
 
-
 @telegram_bot.dp.message_handler(content_types=['text'])
 async def get_user_text(message):
     mon = Monitors.MessageMonitorTelegram(message)

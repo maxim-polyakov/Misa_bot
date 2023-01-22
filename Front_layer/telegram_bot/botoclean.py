@@ -1,7 +1,5 @@
 from Front_layer import telegram_bot
-#import pyTelegramBotAPI
 from Core_layer.Bot_package import DataCleaners
-
 
 @telegram_bot.dp.message_handler(commands=['clean'])
 async def get_user_text(message):

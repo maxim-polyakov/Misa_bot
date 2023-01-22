@@ -1,9 +1,8 @@
-from Deep_layer.NLP_package import p
-from Deep_layer.NLP_package import ABC
-from Deep_layer.NLP_package import abstractmethod
+import pickle as p
+from tensorflow.keras.models import load_model
+import numpy as np
+from abc import ABC, abstractmethod
 from Deep_layer.NLP_package import TextPreprocessers
-from Deep_layer.NLP_package import load_model
-from Deep_layer.NLP_package import np
 
 class IPredictor(ABC):
 

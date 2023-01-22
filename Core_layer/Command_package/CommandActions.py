@@ -1,33 +1,33 @@
-from Core_layer import Command_package as cp
+from Deep_layer.NLP_package import TextPreprocessers
+from Deep_layer.API_package import Calculators
+from Deep_layer.API_package import Finders
+from Deep_layer.API_package import Translators
+from abc import ABC, abstractmethod
 
+class IAction(ABC):
 
-class IAction(cp.ABC):
-
-    @cp.abstractmethod
+    @abstractmethod
     def fas(cls):
         pass
-    @cp.abstractmethod
+    @abstractmethod
     def calculate(cls):
         pass
-    @cp.abstractmethod
+    @abstractmethod
     def find(cls):
         pass
-    @cp.abstractmethod
+    @abstractmethod
     def translate(cls):
         pass
-    @cp.abstractmethod
+    @abstractmethod
     def show(cls):
         pass
 
 class CommandActionTelegram(IAction):
-
     boto = None
     message = None
     Inputstr = None
-
-    __pred = cp.TextPreprocessers.Preprocessing()
-    __pr = cp.TextPreprocessers.CommonPreprocessing()
-
+    __pred = TextPreprocessers.Preprocessing()
+    __pr = TextPreprocessers.CommonPreprocessing()
 
     def __init__(self, boto, message, Inputstr):
         CommandActionTelegram.Inputstr = Inputstr
@@ -46,7 +46,7 @@ class CommandActionTelegram(IAction):
     @classmethod
     def calculate(cls, Inputstr):
         Inputarr = Inputstr.split(' ')
-        c = cp.Calculators.SympyCalculator()
+        c = Calculators.SympyCalculator()
         if cls.__pr.preprocess_text(Inputarr[0]) == 'производная':
             output = c.deravative(Inputarr[1], Inputarr[2])
             return output
@@ -68,7 +68,7 @@ class CommandActionTelegram(IAction):
             cls.command_flag = 1
             return Inputstr
         else:
-            apif = cp.Finders.WikiFinder()
+            apif = Finders.WikiFinder()
             finded_list = apif.find(tmp)
             try:
                 return str(finded_list)
@@ -79,12 +79,12 @@ class CommandActionTelegram(IAction):
     def translate(cls):
         tmp = cls.Inputstr.count('переведи данные')
         Inputstr = cls.Inputstr.strip(' ').replace('переведи ', '')
-        tr = cp.Translators.GoogleTranslator("ru")
+        tr = Translators.GoogleTranslator("ru")
         if (tmp > 0):
             Inputstr = Inputstr.split(' ')
             dataselect = 'SELECT * FROM ' + Inputstr[1]
             insertdtname = 'translated'
-            return cp.Translators.GoogleTranslator.translate(dataselect, insertdtname)
+            return Translators.GoogleTranslator.translate(dataselect, insertdtname)
         else:
             translated = tr.translate(Inputstr)
             return translated
