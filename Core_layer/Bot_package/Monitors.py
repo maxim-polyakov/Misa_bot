@@ -15,18 +15,14 @@ class IMonitor(ABC):
         pass
 
 class MessageMonitor(IMonitor):
+
     _bpred = Predictors.BinaryLSTM()
     _nnpred = Predictors.NaiveBayes()
     _rfpred = Predictors.RandomForest()
     _mpred = Predictors.MultyLSTM()
     _xgpred = Predictors.Xgboost()
-
     _pr = TextPreprocessers.CommonPreprocessing()
-
     _dbc = DB_Bridge.DB_Communication()
-
-    _be = Botoevaluaters.Binaryevaluate()
-    _me = Botoevaluaters.Multyevaluate()
     _mapa = Mapas.Mapa()
 
     @classmethod

@@ -21,9 +21,6 @@ class TestMonitor(ITestMonitor):
     _pr = TextPreprocessers.CommonPreprocessing()
 
     _dbc = DB_Bridge.DB_Communication()
-
-    _be = Botoevaluaters.Binaryevaluate()
-    _me = Botoevaluaters.Multyevaluate()
     _mapa = Mapas.Mapa()
 
     def __init__(self):
