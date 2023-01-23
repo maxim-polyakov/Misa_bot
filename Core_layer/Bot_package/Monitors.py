@@ -1,26 +1,34 @@
-from Core_layer import Bot_package
+from pathlib import Path
+from Deep_layer.NLP_package import Predictors
+from Core_layer.Answer_package import Answers
+from Deep_layer.NLP_package import Mapas
+from Deep_layer.NLP_package import TextPreprocessers
+import Front_layer.telegram_bot as telegram_bot
+from Core_layer.Command_package import Commands
+from abc import ABC, abstractmethod
+from Deep_layer.DB_package import DB_Bridge
+from Core_layer.Bot_package import Botoevaluaters
 
+class IMonitor(ABC):
 
-class IMonitor(Bot_package.ABC):
-
-    @Bot_package.abstractmethod
+    @abstractmethod
     def monitor(self):
         pass
 
 class MessageMonitor(IMonitor):
-    _bpred = Bot_package.Predictors.BinaryLSTM()
-    _nnpred = Bot_package.Predictors.NaiveBayes()
-    _rfpred = Bot_package.Predictors.RandomForest()
-    _mpred = Bot_package.Predictors.MultyLSTM()
-    _xgpred = Bot_package.Predictors.Xgboost()
+    _bpred = Predictors.BinaryLSTM()
+    _nnpred = Predictors.NaiveBayes()
+    _rfpred = Predictors.RandomForest()
+    _mpred = Predictors.MultyLSTM()
+    _xgpred = Predictors.Xgboost()
 
-    _pr = Bot_package.TextPreprocessers.CommonPreprocessing()
+    _pr = TextPreprocessers.CommonPreprocessing()
 
-    _dbc = Bot_package.DB_Bridge.DB_Communication()
+    _dbc = DB_Bridge.DB_Communication()
 
-    _be = Bot_package.Botoevaluaters.Binaryevaluate()
-    _me = Bot_package.Botoevaluaters.Multyevaluate()
-    _mapa = Bot_package.Mapas.Mapa()
+    _be = Botoevaluaters.Binaryevaluate()
+    _me = Botoevaluaters.Multyevaluate()
+    _mapa = Mapas.Mapa()
 
     @classmethod
     def __classify_question(cls, chosen_item):
@@ -32,7 +40,7 @@ class MessageMonitor(IMonitor):
 
     @classmethod
     def __classify(cls, chosen_item):
-        ra = Bot_package.Answers.RandomAnswer()
+        ra = Answers.RandomAnswer()
         info_dict = {
             'Приветствие': str(ra.answer()[0]),
             'Благодарность': 'Не за что. ',
@@ -87,8 +95,8 @@ class MessageMonitor(IMonitor):
 
     @classmethod
     def _emotionsrecognition(cls, text):
-        modelpath = next(Bot_package.Path().rglob('emotionsmodel.h5'))
-        tokenizerpath = next(Bot_package.Path().rglob('emotionstokenizer.pickle'))
+        modelpath = next(Path().rglob('emotionsmodel.h5'))
+        tokenizerpath = next(Path().rglob('emotionstokenizer.pickle'))
 
         emotion = cls._mpred.predict(text, cls._mapa.EMOTIONSMAPA,
                                      modelpath,
@@ -98,17 +106,17 @@ class MessageMonitor(IMonitor):
     @classmethod
     def _neurodesc(cls, text, text_message, command):
 
-        modelpaths = [next(Bot_package.Path().rglob('businessmodel.h5')),
-                      next(Bot_package.Path().rglob('weathermodel.h5')),
-                      next(Bot_package.Path().rglob('himodel.h5')),
-                      next(Bot_package.Path().rglob('thmodel.h5')),
-                      next(Bot_package.Path().rglob('trashmodel.h5'))]
+        modelpaths = [next(Path().rglob('businessmodel.h5')),
+                      next(Path().rglob('weathermodel.h5')),
+                      next(Path().rglob('himodel.h5')),
+                      next(Path().rglob('thmodel.h5')),
+                      next(Path().rglob('trashmodel.h5'))]
 
-        tokenizerpaths = [next(Bot_package.Path().rglob('businesstokenizer.pickle')),
-                          next(Bot_package.Path().rglob('weathertokenizer.pickle')),
-                          next(Bot_package.Path().rglob('hitokenizer.pickle')),
-                          next(Bot_package.Path().rglob('thtokenizer.pickle')),
-                          next(Bot_package.Path().rglob('trashtokenizer.pickle'))]
+        tokenizerpaths = [next(Path().rglob('businesstokenizer.pickle')),
+                          next(Path().rglob('weathertokenizer.pickle')),
+                          next(Path().rglob('hitokenizer.pickle')),
+                          next(Path().rglob('thtokenizer.pickle')),
+                          next(Path().rglob('trashtokenizer.pickle'))]
 
 
         emotion = cls._emotionsrecognition(text)
@@ -153,7 +161,7 @@ class MessageMonitor(IMonitor):
         else:
             lowertext = message.text.lower()
 
-        Bot_package.DB_Bridge.DB_Communication.insert_to(lowertext)
+        DB_Bridge.DB_Communication.insert_to(lowertext)
         outstr = ''
 
         if (lowertext.count('миса') > 0 or lowertext.lower().count('misa') > 0):
@@ -170,8 +178,8 @@ class MessageMonitor(IMonitor):
 class MessageMonitorTelegram(MessageMonitor):
 
     def __init__(self, message):
-        MessageMonitorTelegram.__command = Bot_package.Commands.CommandAnalyzer(
-            Bot_package.telegram_bot.boto, message, 'telegram')
+        MessageMonitorTelegram.__command = Commands.CommandAnalyzer(
+            telegram_bot.boto, message, 'telegram')
         MessageMonitorTelegram.__message = message
 
     @classmethod
@@ -181,8 +189,8 @@ class MessageMonitorTelegram(MessageMonitor):
 class MessageMonitorDiscord(MessageMonitor):
 
     def __init__(self, message):
-        MessageMonitorDiscord.__command = Bot_package.Commands.CommandAnalyzer(
-            Bot_package.telegram_bot.boto, message, 'discord')
+        MessageMonitorDiscord.__command = Commands.CommandAnalyzer(
+            telegram_bot.boto, message, 'discord')
         MessageMonitorDiscord.__message = message
 
     @classmethod

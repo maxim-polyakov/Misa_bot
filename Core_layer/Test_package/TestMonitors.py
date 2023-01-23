@@ -1,26 +1,31 @@
-from Core_layer import Test_package
+from Deep_layer.NLP_package import Predictors
+from Deep_layer.NLP_package import Mapas
+from Deep_layer.NLP_package import TextPreprocessers
+from Deep_layer.DB_package import DB_Bridge
+from abc import ABC, abstractmethod
+from Core_layer.Bot_package import Botoevaluaters
 
 
-class ITestMonitor(Test_package.ABC):
+class ITestMonitor(ABC):
 
-    @Test_package.abstractmethod
+    @abstractmethod
     def monitor(self):
         pass
 
 class TestMonitor(ITestMonitor):
-    _bpred = Test_package.Predictors.BinaryLSTM()
-    _nnpred = Test_package.Predictors.NaiveBayes()
-    _rfpred = Test_package.Predictors.RandomForest()
-    _mpred = Test_package.Predictors.MultyLSTM()
-    _xgpred = Test_package.Predictors.Xgboost()
+    _bpred = Predictors.BinaryLSTM()
+    _nnpred = Predictors.NaiveBayes()
+    _rfpred = Predictors.RandomForest()
+    _mpred = Predictors.MultyLSTM()
+    _xgpred = Predictors.Xgboost()
 
-    _pr = Test_package.TextPreprocessers.CommonPreprocessing()
+    _pr = TextPreprocessers.CommonPreprocessing()
 
-    _dbc = Test_package.DB_Bridge.DB_Communication()
+    _dbc = DB_Bridge.DB_Communication()
 
-    _be = Test_package.Botoevaluaters.Binaryevaluate()
-    _me = Test_package.Botoevaluaters.Multyevaluate()
-    _mapa = Test_package.Mapas.Mapa()
+    _be = Botoevaluaters.Binaryevaluate()
+    _me = Botoevaluaters.Multyevaluate()
+    _mapa = Mapas.Mapa()
 
     def __init__(self):
         pass
@@ -139,10 +144,10 @@ class TestMonitorLSTM(TestMonitor):
 
     @classmethod
     def monitor(cls):
-        Test_package.DB_Bridge.DB_Communication.delete_data(
+        DB_Bridge.DB_Communication.delete_data(
             'DELETE FROM validation_sets."markedvalidsetLSTM" ml')
 
-        df = Test_package.DB_Bridge.DB_Communication.get_data(
+        df = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text from validation_sets."markedvalidsetHuman" mh ORDER BY id ASC')
         i = 0
         inptext = df['text']
@@ -159,7 +164,7 @@ class TestMonitorLSTM(TestMonitor):
                 for outmes in outlist:
                     outstr += outmes
 
-            Test_package.DB_Bridge.DB_Communication.insert_to(idx, ststr, outstr, 'markedvalidsetLSTM')
+            DB_Bridge.DB_Communication.insert_to(idx, ststr, outstr, 'markedvalidsetLSTM')
             text = []
             i = i + 1
 
@@ -203,10 +208,10 @@ class TestMonitorNaiveBayes(TestMonitor):
 
     @classmethod
     def monitor(cls):
-        Test_package.DB_Bridge.DB_Communication.delete_data(
+        DB_Bridge.DB_Communication.delete_data(
             'DELETE FROM validation_sets."markedvalidsetNaiveBayes" mnb')
 
-        df = Test_package.DB_Bridge.DB_Communication.get_data(
+        df = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text from validation_sets."markedvalidsetHuman" mh ORDER BY id ASC')
         i = 0
         inptext = df['text']
@@ -223,7 +228,7 @@ class TestMonitorNaiveBayes(TestMonitor):
                 for outmes in outlist:
                     outstr += outmes
 
-            Test_package.DB_Bridge.DB_Communication.insert_to(idx, ststr, outstr, 'markedvalidsetNaiveBayes')
+            DB_Bridge.DB_Communication.insert_to(idx, ststr, outstr, 'markedvalidsetNaiveBayes')
             text = []
             i = i + 1
 
@@ -268,10 +273,10 @@ class TestMonitorRandomForest(TestMonitor):
 
     @classmethod
     def monitor(cls):
-        Test_package.DB_Bridge.DB_Communication.delete_data(
+        DB_Bridge.DB_Communication.delete_data(
             'DELETE FROM validation_sets."markedvalidsetRandomForest" mrf')
 
-        df = Test_package.DB_Bridge.DB_Communication.get_data(
+        df = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text from validation_sets."markedvalidsetHuman" mh ORDER BY id ASC')
         i = 0
         inptext = df['text']
@@ -288,7 +293,7 @@ class TestMonitorRandomForest(TestMonitor):
                 for outmes in outlist:
                     outstr += outmes
 
-            Test_package.DB_Bridge.DB_Communication.insert_to(idx, ststr, outstr, 'markedvalidsetRandomForest')
+            DB_Bridge.DB_Communication.insert_to(idx, ststr, outstr, 'markedvalidsetRandomForest')
             text = []
             i = i + 1
 
@@ -332,10 +337,10 @@ class TestMonitorXGBoost(TestMonitor):
 
     @classmethod
     def monitor(cls):
-        Test_package.DB_Bridge.DB_Communication.delete_data(
+        DB_Bridge.DB_Communication.delete_data(
             'DELETE FROM validation_sets."markedvalidsetXGBoost" mx')
 
-        df = Test_package.DB_Bridge.DB_Communication.get_data(
+        df = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text from validation_sets."markedvalidsetHuman" mh ORDER BY id ASC')
         i = 0
         inptext = df['text']
@@ -353,7 +358,7 @@ class TestMonitorXGBoost(TestMonitor):
                 for outmes in outlist:
                     outstr += outmes
 
-            Test_package.DB_Bridge.DB_Communication.insert_to(idx, ststr, outstr, 'markedvalidsetXGBoost')
+            DB_Bridge.DB_Communication.insert_to(idx, ststr, outstr, 'markedvalidsetXGBoost')
             text = []
             i = i + 1
 
@@ -371,7 +376,7 @@ class TestMonitorCombine(TestMonitor):
 
         #emotion = cls.__emotionsrecognition(text)
         emotion = ''
-        compred = Test_package.Predictors.CombineModelBinary('./models/binary/NaiveBayes/businessmodel.pickle',
+        compred = Predictors.CombineModelBinary('./models/binary/NaiveBayes/businessmodel.pickle',
                                                              './tokenizers/binary/NaiveBayes/businessvec.pickle',
                                                              './models/binary/RandomForest/businessmodel.pickle',
                                                              './tokenizers/binary/RandomForest/businessencoder.pickle',
@@ -382,7 +387,7 @@ class TestMonitorCombine(TestMonitor):
 
         b_predictor = compred.predict(text, super()._mapa.BUSINESSMAPA)
 
-        compred = Test_package.Predictors.CombineModelBinary('./models/binary/NaiveBayes/weathermodel.pickle',
+        compred = Predictors.CombineModelBinary('./models/binary/NaiveBayes/weathermodel.pickle',
                                                              './tokenizers/binary/NaiveBayes/weathervec.pickle',
                                                              './models/binary/RandomForest/weathermodel.pickle',
                                                              './tokenizers/binary/RandomForest/weatherencoder.pickle',
@@ -393,7 +398,7 @@ class TestMonitorCombine(TestMonitor):
 
         w_predictor = compred.predict(text, super()._mapa.WEATHERMAPA)
 
-        compred = Test_package.Predictors.CombineModelBinary('./models/binary/NaiveBayes/himodel.pickle',
+        compred = Predictors.CombineModelBinary('./models/binary/NaiveBayes/himodel.pickle',
                                                              './tokenizers/binary/NaiveBayes/hivec.pickle',
                                                              './models/binary/RandomForest/himodel.pickle',
                                                              './tokenizers/binary/RandomForest/hiencoder.pickle',
@@ -404,7 +409,7 @@ class TestMonitorCombine(TestMonitor):
 
         hi_predictor = compred.predict(text, super()._mapa.HIMAPA)
 
-        compred = Test_package.Predictors.CombineModelBinary('./models/binary/NaiveBayes/thmodel.pickle',
+        compred = Predictors.CombineModelBinary('./models/binary/NaiveBayes/thmodel.pickle',
                                                              './tokenizers/binary/NaiveBayes/thvec.pickle',
                                                              './models/binary/RandomForest/thmodel.pickle',
                                                              './tokenizers/binary/RandomForest/thencoder.pickle',
@@ -419,10 +424,10 @@ class TestMonitorCombine(TestMonitor):
 
     @classmethod
     def monitor(cls):
-        Test_package.DB_Bridge.DB_Communication.delete_data(
+        DB_Bridge.DB_Communication.delete_data(
             'DELETE FROM validation_sets."markedvalidsetCombine" mc ')
 
-        df = Test_package.DB_Bridge.DB_Communication.get_data(
+        df = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text from validation_sets."markedvalidsetHuman" mh ORDER BY id ASC')
         i = 0
         inptext = df['text']
@@ -440,6 +445,6 @@ class TestMonitorCombine(TestMonitor):
                 for outmes in outlist:
                     outstr += outmes
 
-            Test_package.DB_Bridge.DB_Communication.insert_to(idx, ststr, outstr, 'markedvalidsetCombine')
+            DB_Bridge.DB_Communication.insert_to(idx, ststr, outstr, 'markedvalidsetCombine')
             text = []
             i = i + 1

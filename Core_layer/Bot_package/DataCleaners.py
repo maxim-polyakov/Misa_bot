@@ -1,14 +1,17 @@
-from Core_layer import Bot_package
+from Deep_layer.NLP_package import TextPreprocessers
+from abc import ABC, abstractmethod
+from Deep_layer.DB_package import DB_Bridge
+from Deep_layer.DB_package import pd as pd
 
 
-class ICleaner(Bot_package.ABC):
+class ICleaner(ABC):
 
-    @Bot_package.abstractmethod
+    @abstractmethod
     def clean(cls):
         pass
 
 class MisaMemoryCleater(ICleaner):
-    __pr = Bot_package.TextPreprocessers.CommonPreprocessing()
+    __pr = TextPreprocessers.CommonPreprocessing()
     dbname = None
 
     def __init__(self, dbname):
@@ -16,17 +19,17 @@ class MisaMemoryCleater(ICleaner):
 
     @classmethod
     def clean(cls):
-        df = Bot_package.DB_Bridge.DB_Communication.get_data(
+        df = DB_Bridge.DB_Communication.get_data(
             'SELECT * from train_sets.' + cls.dbname)
         df['text'] = df['text'].apply(cls.__pr.preprocess_text)
 
-        Bot_package.DB_Bridge.DB_Communication.delete_data('DELETE FROM train_sets.' + cls.dbname)
+        DB_Bridge.DB_Communication.delete_data('DELETE FROM train_sets.' + cls.dbname)
 
-        Bot_package.DB_Bridge.DB_Communication.insert_to(df, cls.dbname, 'train_sets')
+        DB_Bridge.DB_Communication.insert_to(df, cls.dbname, 'train_sets')
 
 class CommonCleaner(ICleaner):
     
-    __pr = Bot_package.TextPreprocessers.CommonPreprocessing()
+    __pr = TextPreprocessers.CommonPreprocessing()
 
     _type_doc = 'xlsx'
 
@@ -37,12 +40,12 @@ class CommonCleaner(ICleaner):
     def clean(cls, filename, string):
         
         if(cls._type_doc == 'csv'):
-            train = Bot_package.pd.read_csv(filename, encoding='utf-8')
+            train = pd.read_csv(filename, encoding='utf-8')
         else:
-            train = Bot_package.pd.read_excel(filename)
+            train = pd.read_excel(filename)
         
         train.text = train.text.astype(str)
-        df = Bot_package.pd.concat([train])
+        df = pd.concat([train])
         df['text'] = df['text'].apply(cls.__pr.preprocess_text)
         train = df[~df[string].isna()]
         train[string] = train[string].astype(int)
@@ -54,7 +57,7 @@ class CommonCleaner(ICleaner):
 
 class QuestionCleaner(ICleaner):
     
-    __pr = Bot_package.TextPreprocessers.QuestionPreprocessing()
+    __pr = TextPreprocessers.QuestionPreprocessing()
 
     _type_doc = "xlsx"
 
@@ -66,12 +69,12 @@ class QuestionCleaner(ICleaner):
         
         if(cls._type_doc == 'csv'):
             
-            train = Bot_package.pd.read_csv(filename, encoding='utf-8')
+            train = pd.read_csv(filename, encoding='utf-8')
         else:
-            train = Bot_package.pd.read_excel(filename)
+            train = pd.read_excel(filename)
         
         train.text = train.text.astype(str)
-        df = Bot_package.pd.concat([train])
+        df = pd.concat([train])
         df['text'] = df['text'].apply(cls.__pr.preprocess_text)
         train = df[~df['question'].isna()]
         train['question'] = train['question'].astype(int)
@@ -82,7 +85,7 @@ class QuestionCleaner(ICleaner):
 
 class CommandCleaner(ICleaner):
     
-    __pr = Bot_package.TextPreprocessers.CommandPreprocessing()
+    __pr = TextPreprocessers.CommandPreprocessing()
 
     _type_doc = 'xlsx'
 
@@ -94,12 +97,12 @@ class CommandCleaner(ICleaner):
         
         if(cls.type_doc == 'csv'):
             
-            train = Bot_package.pd.read_csv(filename, encoding='utf-8')
+            train = pd.read_csv(filename, encoding='utf-8')
         else:
-            train = Bot_package.pd.read_excel(filename)
+            train = pd.read_excel(filename)
             
         train.text = train.text.astype(str)
-        df = Bot_package.pd.concat([train])
+        df = pd.concat([train])
         df['text'] = df['text'].apply(cls.__pr.preprocess_text)
         train = df[~df['command'].isna()]
         train['command'] = train['command'].astype(int)

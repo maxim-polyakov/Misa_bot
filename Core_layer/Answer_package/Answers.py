@@ -1,14 +1,15 @@
 from Core_layer import Answer_package
+from abc import ABC, abstractmethod
+from Deep_layer.DB_package import DB_Bridge
 
+class IAnswer(ABC):
 
-class IAnswer(Answer_package.ABC):
-
-    @Answer_package.abstractmethod
+    @abstractmethod
     def answer(self):
         pass
 
 class RandomAnswer(IAnswer):
-    __inpt = Answer_package.DB_Bridge.DB_Communication.get_data('SELECT * FROM answer_sets.hianswer')
+    __inpt = DB_Bridge.DB_Communication.get_data('SELECT * FROM answer_sets.hianswer')
     __data = __inpt
     __df = []
 
