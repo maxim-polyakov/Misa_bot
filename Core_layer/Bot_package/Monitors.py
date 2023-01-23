@@ -7,7 +7,6 @@ import Front_layer.telegram_bot as telegram_bot
 from Core_layer.Command_package import Commands
 from abc import ABC, abstractmethod
 from Deep_layer.DB_package import DB_Bridge
-from Core_layer.Bot_package import Botoevaluaters
 
 class IMonitor(ABC):
 
