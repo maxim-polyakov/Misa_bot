@@ -70,19 +70,9 @@ class CommandAction(IAction):
 
     @classmethod
     def translate(cls):
-        try:
-            message_text = cls.text_message.strip(' ').replace('перевести ', '')
-            tmp = message_text.count('данные')
-            tr = Translators.GoogleTranslator("ru")
-            if (tmp > 0):
-                message_text = message_text.split(' ')
-                dataselect = 'SELECT * FROM ' + message_text[1]
-                insertdtname = 'translated'
-                return Translators.GoogleTranslator.translate(dataselect, insertdtname)
-            else:
-                translated = tr.translate(message_text)
-                return translated
-        except:
-            print("The exception is in CommandAction.translate")
-            return ''
+        message_text = cls.message_text.strip(' ').replace('перевести ', '')
+        tr = Translators.GoogleTranslator("ru")
+        translated = tr.translate(message_text)
+        return translated
+
 
