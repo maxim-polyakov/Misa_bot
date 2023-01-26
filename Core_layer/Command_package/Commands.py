@@ -1,5 +1,7 @@
 from Deep_layer.NLP_package import TextPreprocessers
 from Deep_layer.DB_package import DB_Bridge
+from Core_layer.Command_package.CommandActions import CommandAction
+
 
 class CommandAnalyzer:
 
@@ -16,56 +18,50 @@ class CommandAnalyzer:
         self.message = message
         self.__mesentype = mesentype
 
-    def __checkcash(self, ac, PreprocessedInsidestringarr, Insidestringarr, idx):
-        if (self.__nothingflg == 0):
-            if (DB_Bridge.DB_Communication.checkcommands(Insidestringarr[idx])):
-                if(self.__mesentype == 'telegram'):
-                    return 'Команда'
-                else:
-                    return 'Команда'
-            else:
-                if (self.__cash == 'находить'):
-                    return ac.find(PreprocessedInsidestringarr)
-                elif (self.__cash == 'атаковать'):
-                    return ac.fas(PreprocessedInsidestringarr)
-                elif (self.__cash == 'перевести'):
-                    return ac.translate(PreprocessedInsidestringarr)
+    def __action_step(self, chosen_item, message_text):
+        ac = CommandAction(self.boto, self.message, message_text)
 
-    def commandanalyse(self, Inputstr):
+        try:
+            info_dict = {
+                'атаковать': ac.fas,
+                'фас': ac.fas,
+                'пиздануть': ac.fas,
+                'поссчитать': ac.find,
+                'перевести': ac.translate,
+                'находить': ac.find
+            }
+            return info_dict[chosen_item]()
+        except:
+            return ''
 
-        if(Inputstr.count('.')>0):
-            Insidestringarr = Inputstr.split('. ')
+    def __action(self, message_text):
+        outlist =[]
+
+        array_of_message_text = message_text.split(' ')
+
+        for word in array_of_message_text:
+            outlist.append((self.__action_step(self.__pr.preprocess_text(word), self.__pr.preprocess_text(message_text))))
+        outlist = list(set(outlist))
+        return outlist
+
+    def commandanalyse(self, message_text):
+        outstr = ''
+        if (message_text.count('.') > 0):
+            word_arr = message_text.split('. ')
         else:
-            Insidestringarr = Inputstr.split(', ')
+            word_arr = message_text.split(', ')
 
-        for idx in range(0,len(Insidestringarr)):
-            PreprocessedInputStr = self.__pr.preprocess_text(Insidestringarr[idx])
-            PreprocessedInsidestringarr = self.__pred.preprocess_text(Insidestringarr[idx])
+        for word in word_arr:
+            outlist = self.__action(word)
+            if (outlist != None):
+                for outmes in outlist:
+                    outstr += outmes
 
-            if (self.__mesentype == 'telegram'):
-                ac = Second_layer.Command_package.CommandActions.CommandActionTelegram(self.boto, self.message, PreprocessedInsidestringarr)
-            else:
-                ac = Second_layer.Command_package.CommandActions.CommandActionDiscord(self.boto, self.message, PreprocessedInsidestringarr)
+        return outstr
 
-            if (PreprocessedInputStr.count('атаковать') > 0 or
-                    PreprocessedInputStr.count('фас') > 0 or
-                    PreprocessedInputStr.count('пиздануть') > 0):
-                fas = ac.fas()
-                return fas
-                self.__cash = 'атаковать'
-                self.__nothingflg = 1
 
-            if (PreprocessedInputStr.count('находить') > 0) or (PreprocessedInputStr.count('поссчитать') > 0):
-                return str(ac.find())
-                self.__cash = 'находить'
-                self.__nothingflg = 2
 
-            if (PreprocessedInputStr.count('перевести') > 0):
-                return ac.translate()
-                self.__cash = 'перевести'
-                self.__nothingflg = 3
 
-            self.__checkcash(ac, PreprocessedInsidestringarr, Insidestringarr, idx)
 
 
 
