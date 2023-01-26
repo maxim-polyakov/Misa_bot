@@ -31,7 +31,6 @@ class BinaryLSTM(IPredictor):
 
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer, prep):
-        try:
             model = load_model(model)
             inn = []
             inn.append(cls._preprocessing(inpt, prep).pop())
@@ -42,8 +41,7 @@ class BinaryLSTM(IPredictor):
             outpt = max(np.round(score).astype(int))
             cls.outscore = max(score)
             return(tmap[outpt[0]])
-        except:
-            return 'The exeption is in Predict'
+
 
 class NaiveBayes(BinaryLSTM):
 
@@ -53,7 +51,7 @@ class NaiveBayes(BinaryLSTM):
 
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer, prep):
-        try:
+
             with open(model, 'rb') as handle:
                 model = p.load(handle)
             inn = []
@@ -65,8 +63,7 @@ class NaiveBayes(BinaryLSTM):
 
             cls.score = model.predict_proba(tokenized_inpt)
             return(tmap[cls.score.argmax(axis=-1)[0]])
-        except:
-            return 'The exeption in Predict'
+
 
 class RandomForest(BinaryLSTM):
 
