@@ -3,7 +3,6 @@ from Deep_layer.API_package import Calculators as calc
 from Deep_layer.API_package import Finders as find
 from Deep_layer.API_package import Translators as trans
 from Deep_layer.DB_package import DB_Bridge as bridge
-from Core_layer.Bot_package import ValidsetAnalizers
 
 class TestRun:
 
