@@ -1,7 +1,6 @@
-from Core_layer import Answer_package
 from abc import ABC, abstractmethod
 from Deep_layer.DB_package import DB_Bridge
-
+import random
 class IAnswer(ABC):
 
     @abstractmethod
@@ -19,7 +18,7 @@ class RandomAnswer(IAnswer):
             for i in range(0, len(self.__data['text'])-1):
                 if(self.__data['agenda'][i] == 'Приветствие'):
                     self.__df.append(self.__data['text'][i])
-            outmapa = {0: [self.__df[Answer_package.random.randint(0, len(self.__df))]]}
+            outmapa = {0: [self.__df[random.randint(0, len(self.__df))]]}
                 
             return (outmapa[0])
         except:
