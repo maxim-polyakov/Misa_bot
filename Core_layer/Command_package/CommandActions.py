@@ -10,33 +10,27 @@ class IAction(ABC):
     def fas(cls):
         pass
     @abstractmethod
-    def calculate(cls):
-        pass
-    @abstractmethod
     def find(cls):
         pass
     @abstractmethod
     def translate(cls):
         pass
-    @abstractmethod
-    def show(cls):
-        pass
 
-class CommandActionTelegram(IAction):
+class CommandAction(IAction):
     boto = None
     message = None
-    Inputstr = None
+    text_message = None
     __pred = TextPreprocessers.Preprocessing()
     __pr = TextPreprocessers.CommonPreprocessing()
 
-    def __init__(self, boto, message, Inputstr):
-        CommandActionTelegram.Inputstr = Inputstr
-        CommandActionTelegram.boto = boto
-        CommandActionTelegram.message = message
+    def __init__(self, boto, message, message_text):
+        CommandAction.message_text = message_text
+        CommandAction.boto = boto
+        CommandAction.message = message
 
     @classmethod
     def fas(cls):
-        Inputstr = cls.__pred.preprocess_text(cls.Inputstr)
+        Inputstr = cls.__pred.preprocess_text(cls.text_message)
         Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
         Inputarr = Inputstr.split(' ')
         cls.command_flag = 1
@@ -44,8 +38,8 @@ class CommandActionTelegram(IAction):
         return Inputstr + ' - пидор.'
 
     @classmethod
-    def calculate(cls, Inputstr):
-        Inputarr = Inputstr.split(' ')
+    def __calculate(cls, message_text):
+        Inputarr = message_text.split(' ')
         c = Calculators.SympyCalculator()
         if cls.__pr.preprocess_text(Inputarr[0]) == 'производная':
             output = c.deravative(Inputarr[1], Inputarr[2])
@@ -53,23 +47,22 @@ class CommandActionTelegram(IAction):
         elif cls.__pr.preprocess_text(Inputarr[0]) == 'интеграл':
            output = c.integrate(Inputarr[1], Inputarr[2])
            return output
-        Inputstr = cls.Inputstr.replace(Inputarr[1].rstrip(), '')
-        Inputstr = Inputstr.replace(Inputarr[2], '').replace(Inputarr[0], '')
-        Inputstr = Inputstr.strip(' ')
+        message_text = cls.text_message.replace(Inputarr[1].rstrip(), '')
+        message_text = message_text.replace(Inputarr[2], '').replace(Inputarr[0], '')
+        message_text = message_text.strip(' ')
         cls.command_flag = 1
-        return Inputstr
+        return message_text
 
     @classmethod
     def find(cls):
-        Inputstr = cls.Inputstr.strip(' ').replace('найди ', '').replace('поссчитай ', '')
-        tmp = cls.__pr.preprocess_text(Inputstr)
-        if (tmp.count('производная') > 0) or (tmp.count('интеграл') > 0):
-            Inputstr = cls.calculate(Inputstr)
+        message_text = cls.message_text.strip(' ').replace('находить ', '').replace('поссчитать ', '')
+        if (message_text.count('производная') > 0) or (message_text.count('интеграл') > 0):
+            message_text = cls.__calculate(message_text)
             cls.command_flag = 1
-            return Inputstr
+            return message_text
         else:
             apif = Finders.WikiFinder()
-            finded_list = apif.find(tmp)
+            finded_list = apif.find(message_text)
             try:
                 return str(finded_list)
             except:
@@ -77,37 +70,9 @@ class CommandActionTelegram(IAction):
 
     @classmethod
     def translate(cls):
-        tmp = cls.Inputstr.count('переведи данные')
-        Inputstr = cls.Inputstr.strip(' ').replace('переведи ', '')
+        message_text = cls.message_text.strip(' ').replace('перевести ', '')
         tr = Translators.GoogleTranslator("ru")
-        if (tmp > 0):
-            Inputstr = Inputstr.split(' ')
-            dataselect = 'SELECT * FROM ' + Inputstr[1]
-            insertdtname = 'translated'
-            return Translators.GoogleTranslator.translate(dataselect, insertdtname)
-        else:
-            translated = tr.translate(Inputstr)
-            return translated
-        cls.command_flag = 1
+        translated = tr.translate(message_text)
+        return translated
 
-class CommandActionDiscord(IAction):
 
-    def __init__(self, boto, message, Inputstr):
-        CommandActionDiscord.Inputstr = Inputstr
-        CommandActionDiscord.boto = boto
-        CommandActionDiscord.message = message
-    @classmethod
-    def fas(cls):
-        pass
-    @classmethod
-    def calculate(cls):
-        pass
-    @classmethod
-    def find(cls):
-        pass
-    @classmethod
-    def translate(cls):
-        pass
-    @classmethod
-    def show(cls):
-        pass
