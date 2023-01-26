@@ -75,6 +75,7 @@ class MessageMonitor(IMonitor):
             for predict in predicts:
                 outlist.append(cls.__classify(predict) + ' ' + emotion)
 
+
         outlist.append(' ' + emotion)
         return outlist
 
