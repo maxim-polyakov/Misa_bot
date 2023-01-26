@@ -9,7 +9,7 @@ if __name__ == "__main__":
     test = PyTest.TestRun()
     test.run_all_tests()
 
-    token = ''
+    token = 'MTAzMDkzNTg1ODI4ODc4NzQ1Ng.GwoRou.XJTp0eeZZL70371_oCPEzNu7kO1nxelRXTADn8'
     nest_asyncio.apply()
     db.bot.run(token)
 

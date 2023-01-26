@@ -55,7 +55,7 @@ class MessageMonitor(IMonitor):
             }
             return info_dict[chosen_item]
         except:
-            return ""
+            return ''
 
     @classmethod
     def __decision(cls, text_message, emotion, commands,predicts):
@@ -70,7 +70,7 @@ class MessageMonitor(IMonitor):
             outlist = []
 
             for predict in predicts:
-                outlist.append(cls.__classify(predict) + ' ' + emotion)
+                outlist.append(cls.__classify(predict))
 
         outlist.append(' ' + emotion)
         return outlist
