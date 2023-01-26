@@ -1,10 +1,7 @@
 from Deep_layer.NLP_package import TextPreprocessers
-from Deep_layer.DB_package import DB_Bridge
 from Core_layer.Command_package.CommandActions import CommandAction
 
-
 class CommandAnalyzer:
-
     command_flag = 0
     __pred = TextPreprocessers.Preprocessing()
     __pr = TextPreprocessers.CommonPreprocessing()

@@ -7,7 +7,6 @@ import Front_layer.telegram_bot as telegram_bot
 from Core_layer.Command_package import Commands
 from abc import ABC, abstractmethod
 from Deep_layer.DB_package import DB_Bridge
-from Core_layer.Bot_package import Botoevaluaters
 import os
 
 class IMonitor(ABC):
@@ -25,8 +24,6 @@ class MessageMonitor(IMonitor):
     _xgpred = Predictors.Xgboost()
     _pr = TextPreprocessers.CommonPreprocessing()
     _dbc = DB_Bridge.DB_Communication()
-    _be = Botoevaluaters.Binaryevaluate()
-    _me = Botoevaluaters.Multyevaluate()
     _mapa = Mapas.Mapa()
     _mapaslist = Mapas.ListMapas()
 

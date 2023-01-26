@@ -1,7 +1,6 @@
 from Deep_layer import API_package
 from sympy import *
 from Deep_layer.NLP_package import TextPreprocessers as tp
-
 from abc import ABC, abstractmethod
 
 class ICalculator(ABC):
