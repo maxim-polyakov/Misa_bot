@@ -30,8 +30,8 @@ class LSTMtrain(ITrain):
 
     @classmethod
     def hitrain(cls, epochs):
-        filemodel = next(Path().rglob('himodel.h5'))
-        filetokenizer = next(Path().rglob('hitokenizer.pickle'))
+        filemodel = next(Path().rglob('0_himodel.h5'))
+        filetokenizer = next(Path().rglob('0_hitokenizer.pickle'))
         datasetfile = cls.sel.SELECT_HI
         recognizeddata = 'SELECT text, hi FROM recognized_sets.recognized_all_set WHERE ' + \
                          ' (hi=0 or hi=1) ORDER BY random() LIMIT 3000'
@@ -41,8 +41,8 @@ class LSTMtrain(ITrain):
         trainer.train('hi', 'train', epochs)
     @classmethod
     def thtrain(cls, epochs):
-        filemodel = next(Path().rglob('thmodel.h5'))
-        filetokenizer = next(Path().rglob('thtokenizer.pickle'))
+        filemodel = next(Path().rglob('1_thmodel.h5'))
+        filetokenizer = next(Path().rglob('1_thtokenizer.pickle'))
         datasetfile = cls.sel.SELECT_TH
         recognizeddata = 'SELECT text, thanks FROM recognized_sets.recognized_all_set WHERE ' + \
                          ' (thanks=0 or thanks=1) ORDER BY random() LIMIT 3000'
@@ -53,8 +53,8 @@ class LSTMtrain(ITrain):
         trainer.train('thanks', 'train', epochs)
     @classmethod
     def businesstrain(cls, epochs):
-        filemodel = next(Path().rglob('businessmodel.h5'))
-        filetokenizer = next(Path().rglob('businesstokenizer.pickle'))
+        filemodel = next(Path().rglob('2_businessmodel.h5'))
+        filetokenizer = next(Path().rglob('2_businesstokenizer.pickle'))
         datasetfile = cls.sel.SELECT_BUSINESS
         recognizeddata = 'SELECT text, business FROM recognized_sets.recognized_all_set WHERE ' + \
                          ' (business=0 or business=1) ORDER BY random() LIMIT 3000'
@@ -65,8 +65,8 @@ class LSTMtrain(ITrain):
         trainer.train('business', 'train', epochs)
     @classmethod
     def weathertrain(cls, epochs):
-        filemodel = next(Path().rglob('weathermodel.h5'))
-        filetokenizer = next(Path().rglob('weathertokenizer.pickle'))
+        filemodel = next(Path().rglob('3_weathermodel.h5'))
+        filetokenizer = next(Path().rglob('3_weathertokenizer.pickle'))
         datasetfile = cls.sel.SELECT_WEATHER
         recognizeddata = 'SELECT text, weather FROM recognized_sets.recognized_all_set WHERE ' + \
                          ' (weather=0 or weather=1) ORDER BY random() LIMIT 3000'
@@ -87,8 +87,8 @@ class LSTMtrain(ITrain):
         trainer.train('emotionid', 7, 'train', epochs)
     @classmethod
     def trashtrain(cls, epochs):
-        filemodel = next(Path().rglob('trashmodel.h5'))
-        filetokenizer = next(Path().rglob('trashtokenizer.pickle'))
+        filemodel = next(Path().rglob('4_trashmodel.h5'))
+        filetokenizer = next(Path().rglob('4_trashtokenizer.pickle'))
         datasetfile = cls.sel.SELECT_TRASH
         recognizeddata = 'SELECT text, emotionid FROM recognized_sets.recognized_all_set'
 

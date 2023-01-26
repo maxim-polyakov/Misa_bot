@@ -1,7 +1,7 @@
 from Deep_layer.NLP_package import TextPreprocessers
 from abc import ABC, abstractmethod
 from Deep_layer.DB_package import DB_Bridge
-from Deep_layer.DB_package import pd as pd
+import pandas as pd
 
 
 class ICleaner(ABC):
