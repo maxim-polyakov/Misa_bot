@@ -3,6 +3,7 @@ from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package import TextPreprocessers
 from Deep_layer.DB_package import DB_Bridge
 from abc import ABC, abstractmethod
+from Core_layer.Bot_package import Botoevaluaters
 
 
 class ITestMonitor(ABC):
@@ -21,6 +22,9 @@ class TestMonitor(ITestMonitor):
     _pr = TextPreprocessers.CommonPreprocessing()
 
     _dbc = DB_Bridge.DB_Communication()
+
+    _be = Botoevaluaters.Binaryevaluate()
+    _me = Botoevaluaters.Multyevaluate()
     _mapa = Mapas.Mapa()
 
     def __init__(self):
