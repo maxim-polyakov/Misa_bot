@@ -86,7 +86,6 @@ class DB_Communication(IDB_Communication):
                 df.to_sql(table, con=Connections.PostgresConnection.engine_remote, schema=schema,
                           index=False, if_exists='append')
 
-
         lowertext = lowertext.replace('миса ', '').replace('misa ', '')
         text = []
         dfvalid = pd.read_sql('select count(text) from validation_sets.markedvalidsethuman',
@@ -110,7 +109,6 @@ class DB_Communication(IDB_Communication):
         cur.execute(delete)
         Connections.PostgresConnection.conn_remote.commit()
         cur.close()
-        #DB_package.Connections.PostgresConnection.conn.close()
 
     @classmethod
     def checkcommands(cls, input_string):
