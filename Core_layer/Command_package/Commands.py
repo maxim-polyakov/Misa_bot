@@ -2,7 +2,6 @@ from Deep_layer.NLP_package import TextPreprocessers
 from Deep_layer.DB_package import DB_Bridge
 from Core_layer.Command_package.CommandActions import CommandAction
 
-
 class CommandAnalyzer:
 
     command_flag = 0
@@ -28,14 +27,15 @@ class CommandAnalyzer:
                 'пиздануть': ac.fas,
                 'поссчитать': ac.find,
                 'перевести': ac.translate,
-                'находить': ac.find
+                'находить': ac.find,
+                'сгенерировать': ac.generate
             }
             return info_dict[chosen_item]()
         except:
             return ''
 
     def __action(self, message_text):
-        outlist =[]
+        outlist = []
 
         array_of_message_text = message_text.split(' ')
 

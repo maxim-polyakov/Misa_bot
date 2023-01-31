@@ -3,6 +3,8 @@ from Deep_layer.API_package import Calculators
 from Deep_layer.API_package import Finders
 from Deep_layer.API_package import Translators
 from abc import ABC, abstractmethod
+import re
+from Core_layer.Answer_package import Answers
 
 class IAction(ABC):
 
@@ -19,7 +21,7 @@ class IAction(ABC):
 class CommandAction(IAction):
     boto = None
     message = None
-    text_message = None
+    message_text = None
     __pred = TextPreprocessers.Preprocessing()
     __pr = TextPreprocessers.CommonPreprocessing()
 
@@ -30,7 +32,7 @@ class CommandAction(IAction):
 
     @classmethod
     def fas(cls):
-        Inputstr = cls.__pred.preprocess_text(cls.text_message)
+        Inputstr = cls.__pred.preprocess_text(cls.message_text)
         Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
         Inputarr = Inputstr.split(' ')
         cls.command_flag = 1
@@ -47,7 +49,7 @@ class CommandAction(IAction):
         elif cls.__pr.preprocess_text(Inputarr[0]) == 'интеграл':
            output = c.integrate(Inputarr[1], Inputarr[2])
            return output
-        message_text = cls.text_message.replace(Inputarr[1].rstrip(), '')
+        message_text = cls.message_text.replace(Inputarr[1].rstrip(), '')
         message_text = message_text.replace(Inputarr[2], '').replace(Inputarr[0], '')
         message_text = message_text.strip(' ')
         cls.command_flag = 1
@@ -75,4 +77,8 @@ class CommandAction(IAction):
         translated = tr.translate(message_text)
         return translated
 
+    @classmethod
+    def generate(cls):
+       ra = Answers.QuestionAnswer()
+       return ra.answer(cls.message_text)
 

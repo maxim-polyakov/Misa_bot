@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from Deep_layer.DB_package import DB_Bridge
+from Deep_layer.NLP_package import GPT
 import random
+import re
 class IAnswer(ABC):
 
     @abstractmethod
@@ -23,3 +25,11 @@ class RandomAnswer(IAnswer):
             return (outmapa[0])
         except:
             return 'The exception in RandomAnswer.answer'
+
+class QuestionAnswer(IAnswer):
+    __gpt = GPT.Gpt
+    @classmethod
+    def answer(self, text):
+        generated_text = self.__gpt.generate("Вопрос: '" + text + "\'")
+        text = re.sub('  ', ' ', generated_text.replace('Ответ', '').replace(':', '').replace('\'', '').lstrip(' '))
+        return text
