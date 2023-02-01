@@ -6,7 +6,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from tensorflow.keras.models import load_model
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+#from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential
@@ -251,109 +251,3 @@ class NaiveBayes(IModel):
         except:
             print('The exception is in NaiveBayes.train')
 
-class RandomForest(IModel):
-
-    def __init__(cls, filemodelname, tokenizerfilename, dataselect,
-                 recognizeddataselect):
-        RandomForest.__filemodelname = filemodelname
-        RandomForest.__tokenizerfilename = tokenizerfilename
-        RandomForest.__dataselect = dataselect
-        RandomForest.__recognizeddataselect = recognizeddataselect
-    @classmethod
-    def __createmodel(cls):
-        rfc = RandomForestClassifier(criterion='entropy', n_estimators=700)
-        return rfc
-
-    @classmethod
-    def train(cls, target, mode):
-        try:
-            train = DB_Bridge.DB_Communication.get_data(cls.__dataselect)
-            train.text = train.text.astype(str)
-            recognizedtrain = DB_Bridge.DB_Communication.get_data(cls.__recognizeddataselect)
-            recognizedtrain.text = recognizedtrain.text.astype(str)
-            df = pd.concat([train, recognizedtrain])
-
-            train = df[~df[target].isna()]
-            train[target] = train[target].astype(int)
-            train = train.drop_duplicates()
-
-            print(train)
-
-            X_train, X_val, Y_train, Y_val = train_test_split(train, train[target], test_size=0.3, random_state=32)
-            print('Shape of train', X_train.shape)
-            print('Shape of Validation ', X_val.shape)
-            tokenizer = Tokenizers.Tokenizer(train_texts=X_train['text'])
-            tokenizer.train_tokenize()
-            tokenized_X_train = tokenizer.vectorize_input(X_train['text'])
-            rfc = cls.__createmodel()
-            rfc.fit(tokenized_X_train, Y_train)
-            with open(cls.__tokenizerfilename, 'wb') as handle:
-                p.dump(tokenizer, handle, protocol=p.HIGHEST_PROTOCOL)
-
-            with open(cls.__filemodelname, 'wb') as handle:
-                p.dump(rfc, handle, protocol=p.HIGHEST_PROTOCOL)
-        except:
-            print('The exception is in RandomForest.train')
-
-class XGBClassifier(IModel):
-
-    def __init__(cls, filemodelname, tokenizerfilename, dataselect,
-                     recognizeddataselect):
-        XGBClassifier.__filemodelname = filemodelname
-        XGBClassifier.__tokenizerfilename = tokenizerfilename
-        XGBClassifier.__dataselect = dataselect
-        XGBClassifier.__recognizeddataselect = recognizeddataselect
-
-    @classmethod
-    def __createmodel(cls):
-        model_xgboost = xgboost.XGBClassifier(learning_rate=0.1,
-                                              max_depth=10,
-                                              n_estimators=500,
-                                              subsample=0.5,
-                                              colsample_bytree=0.5,
-                                              eval_metric='auc',
-                                              verbosity=1)
-        return model_xgboost
-
-    @classmethod
-    def train(cls, target, mode):
-
-        try:
-            train = DB_Bridge.DB_Communication.get_data(cls.__dataselect)
-            train.text = train.text.astype(str)
-            recognizedtrain = DB_Bridge.DB_Communication.get_data(cls.__recognizeddataselect)
-            recognizedtrain.text = recognizedtrain.text.astype(str)
-            df = pd.concat([train, recognizedtrain])
-
-            train = df[~df[target].isna()]
-            train[target] = train[target].astype(int)
-            train = train.drop_duplicates()
-
-            print(train)
-
-            X_train, X_val, Y_train, Y_val = train_test_split(train, train[target], test_size=0.3,
-                                                                          random_state=32)
-
-            tokenizer = Tokenizers.Tokenizer(train_texts=X_train['text'])
-
-            tokenizer.train_tokenize()
-            tokenized_X_train = tokenizer.vectorize_input(X_train['text'])
-            tokenized_X_val = tokenizer.vectorize_input(X_val['text'])
-
-            model_xgboost = cls.__createmodel()
-
-            eval_set = [(tokenized_X_val, Y_val)]
-
-            model_xgboost.fit(tokenized_X_train,
-                          Y_train,
-                          early_stopping_rounds=100,
-                          eval_set=eval_set,
-                          verbose=True)
-
-            with open(cls.__tokenizerfilename, 'wb') as handle:
-                p.dump(tokenizer, handle, protocol=p.HIGHEST_PROTOCOL)
-
-            with open(cls.__filemodelname, 'wb') as handle:
-                p.dump(model_xgboost, handle, protocol=p.HIGHEST_PROTOCOL)
-        except:
-            print('The exception is in XGBClassifier.train')

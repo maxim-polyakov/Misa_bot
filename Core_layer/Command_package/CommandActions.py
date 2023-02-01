@@ -77,8 +77,4 @@ class CommandAction(IAction):
         translated = tr.translate(message_text)
         return translated
 
-    @classmethod
-    def generate(cls):
-       ra = Answers.QuestionAnswer()
-       return ra.answer(cls.message_text)
 

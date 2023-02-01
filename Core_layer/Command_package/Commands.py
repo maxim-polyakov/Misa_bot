@@ -28,7 +28,6 @@ class CommandAnalyzer:
                 'поссчитать': ac.find,
                 'перевести': ac.translate,
                 'находить': ac.find,
-                'сгенерировать': ac.generate
             }
             return info_dict[chosen_item]()
         except:

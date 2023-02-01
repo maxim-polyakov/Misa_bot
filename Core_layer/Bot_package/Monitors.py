@@ -29,16 +29,18 @@ class MessageMonitor(IMonitor):
     _me = Botoevaluaters.Multyevaluate()
     _mapa = Mapas.Mapa()
     _mapaslist = Mapas.ListMapas()
-
+    qa = Answers.QuestionAnswer()
+    __text_message = None
     @classmethod
     def __classify_question(cls, chosen_item):
         try:
             ra = Answers.RandomAnswer()
+
             info_dict = {
                 'Приветствие': str(ra.answer()[0]) + ' ',
                 'Благодарность': 'не за что. ',
-                'Дело': 'я в порядке. ',
-                'Погода': 'погода норм. ',
+                'Дело': cls.qa.answer(cls.__text_message),
+                'Погода': cls.qa.answer(cls.__text_message),
                 'Треш': 'просьба, оставить неприличные высказывания при себе. '
                 }
             return info_dict[chosen_item]
@@ -58,7 +60,7 @@ class MessageMonitor(IMonitor):
             }
             return info_dict[chosen_item]
         except:
-            return ""
+            return ''
 
     @classmethod
     def __decision(cls, text_message, emotion, commands,predicts):
@@ -67,8 +69,8 @@ class MessageMonitor(IMonitor):
         elif (text_message.count('?') > 0):
             outlist = []
 
-            for predict in predicts:
-                outlist.append(cls.__classify_question(predict))
+            qu = cls.qa.answer(cls.__text_message)
+            outlist.append(qu.title())
         else:
             outlist = []
 
@@ -91,6 +93,7 @@ class MessageMonitor(IMonitor):
     @classmethod
     def _neurodesc(cls, text, text_message, command):
 
+        cls.__text_message = text_message
         fullPathModels = str(next(Path().rglob('models')))
         fullPathTokenizers = str(next(Path().rglob('tokenizers')))
         modelarr = os.listdir(fullPathModels + '\\binary\\LSTM\\')

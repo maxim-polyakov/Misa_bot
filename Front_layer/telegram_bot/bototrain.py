@@ -91,29 +91,3 @@ async def get_user_text(message):
         await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
-
-@telegram_bot.dp.message_handler(commands='Randomforesttrain')
-async def get_user_text(message):
-    if (message.chat.username == 'The_Baxic'):
-        mt = Bototrainers.RandomForestTrain()
-        mt.hitrain()
-        mt.thtrain()
-        mt.businesstrain()
-        mt.weathertrain()
-        mt.emotionstrain()
-        await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
-    else:
-        await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
-
-@telegram_bot.dp.message_handler(commands='XGBClassifiertrain')
-async def get_user_text(message):
-    if (message.chat.username == 'The_Baxic'):
-        mt = Bototrainers.XgboostTrain()
-        mt.hitrain()
-        mt.thtrain()
-        mt.businesstrain()
-        mt.weathertrain()
-        mt.emotionstrain()
-        await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
-    else:
-        await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
