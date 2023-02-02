@@ -1,16 +1,13 @@
 from Front_layer import telegram_bot
 from Core_layer.Bot_package import Bototrainers
+from pathlib import Path
 
 @telegram_bot.dp.message_handler(commands='emotionstrain')
 async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         lt = Bototrainers.LSTMtrain()
         bt = Bototrainers.NaiveBayesTrain()
-        rt = Bototrainers.RandomForestTrain()
-        xt = Bototrainers.XgboostTrain()
         bt.emotionstrain()
-        rt.emotionstrain()
-        xt.emotionstrain()
         lt.emotionstrain(30)
         await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
     else:
@@ -27,7 +24,7 @@ async def get_user_text(message):
         else:
             epochs = 200
         lt.emotionstrain(int(epochs))
-        resultrainingpath = next(telegram_bot.Path().rglob('resultstraining_multy.png'))
+        resultrainingpath = next(Path().rglob('resultstraining_multy.png'))
         telegram_bot.boto.send_photo(message.chat.id,
                                    photo=open(resultrainingpath, 'rb'))
         await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
@@ -37,7 +34,7 @@ async def get_user_text(message):
 @telegram_bot.dp.message_handler(commands='LSTMtrain')
 async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
-        resultrainingpath = next(telegram_bot.Path().rglob('resultstraining_binary.png'))
+        resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
         message.text = message.text.replace('/LSTMtrain ', ' ')
         lt = Bototrainers.LSTMtrain()
         message_text_array = message.text.split()
