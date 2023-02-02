@@ -148,7 +148,7 @@ class MultyLSTM(IModel):
 
     @classmethod
     def train(cls, target, n_clases, mode, epochs):
-        try:
+
             train = DB_Bridge.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
             recognizedtrain = DB_Bridge.DB_Communication.get_data(cls.__recognizeddataselect)
@@ -202,8 +202,9 @@ class MultyLSTM(IModel):
 
             ResultSavers.ResultSaver.saveRes(history, 'resultstraining_multy.png', 'accuracy')
 
-        except:
-            print('The exception is in MultyLSTM.train')
+        # try:
+        #xcept:
+         #   print('The exception is in MultyLSTM.train')
 
 class NaiveBayes(IModel):
 

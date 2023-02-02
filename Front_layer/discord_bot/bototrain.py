@@ -7,12 +7,9 @@ async def emotionstrain(ctx):
         if ctx.author.display_name == 'Seraphim' and ctx.author.discriminator == '8341':
             lt = Bototrainers.LSTMtrain()
             bt = Bototrainers.NaiveBayesTrain()
-            rt = Bototrainers.RandomForestTrain()
-            xt = Bototrainers.XgboostTrain()
+
 
             bt.emotionstrain()
-            rt.emotionstrain()
-            xt.emotionstrain()
             lt.emotionstrain(30)
         else:
             await ctx.channel.send('😊')
