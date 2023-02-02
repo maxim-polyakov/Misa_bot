@@ -139,7 +139,7 @@ class MultyLSTM(IPredictor):
 
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
-        try:
+
             model = load_model(model)
             inp = []
             pr = TextPreprocessers.CommonPreprocessing()
@@ -153,5 +153,7 @@ class MultyLSTM(IPredictor):
             scoreplu = model.predict(tokenized_inpt)
             outpt = tmap[scoreplu.argmax(axis=-1)[0]]
             return outpt
-        except:
-            return 'The exeption is in Multy.predict'
+
+   # try:
+      #  except:
+       #     return 'The exeption is in Multy.predict'
