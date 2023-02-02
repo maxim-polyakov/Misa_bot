@@ -96,17 +96,17 @@ class MessageMonitor(IMonitor):
         cls.__text_message = text_message
         fullPathModels = str(next(Path().rglob('models')))
         fullPathTokenizers = str(next(Path().rglob('tokenizers')))
-        modelarr = os.listdir(fullPathModels + '\\binary\\LSTM\\')
+        modelarr = os.listdir(fullPathModels + '/binary/LSTM/')
 
-        tokenizerarr = os.listdir(fullPathTokenizers + '\\binary\\LSTM\\')
+        tokenizerarr = os.listdir(fullPathTokenizers + '/binary/LSTM/')
         modelpaths = []
         tokenizerpaths = []
         for model in modelarr:
-            modelpaths.append(str(fullPathModels) + '\\binary\\LSTM\\' + str(model))
+            modelpaths.append(str(fullPathModels) + '/binary/LSTM/' + str(model))
 
 
         for tokenizer in tokenizerarr:
-            tokenizerpaths.append(str(fullPathTokenizers) + '\\binary\\LSTM\\' + str(tokenizer))
+            tokenizerpaths.append(str(fullPathTokenizers) + '/binary/LSTM/' + str(tokenizer))
 
 
         emotion = cls._emotionsrecognition(text)
