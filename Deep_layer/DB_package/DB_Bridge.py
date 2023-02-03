@@ -100,21 +100,31 @@ class DB_Communication(IDB_Communication):
 
     @classmethod
     def get_data(cls, select):
-        df = pd.read_sql(select, Connections.PostgresConnection.conn_remote)
-        return df
+        try:
+            df = pd.read_sql(select, Connections.PostgresConnection.conn_remote)
+            return df
+        except:
+            print("exception is in DB_Communication.get_data")
+
 
     @classmethod
     def delete_data(cls, delete):
-        cur = Connections.PostgresConnection.conn_remote.cursor()
-        cur.execute(delete)
-        Connections.PostgresConnection.conn_remote.commit()
-        cur.close()
+        try:
+            cur = Connections.PostgresConnection.conn_remote.cursor()
+            cur.execute(delete)
+            Connections.PostgresConnection.conn_remote.commit()
+            cur.close()
+        except:
+            print("exception is in DB_Communication.get_data")
 
     @classmethod
     def checkcommands(cls, input_string):
-        df = pd.read_sql('SELECT text FROM assistant_sets.commands', Connections.PostgresConnection.conn_remote)
-        Cdict = df['text'].to_dict()
-        for cdictvalue in Cdict.values():
-            if(cdictvalue in input_string):
-                return True
-        return False
+        try:
+            df = pd.read_sql('SELECT text FROM assistant_sets.commands', Connections.PostgresConnection.conn_remote)
+            Cdict = df['text'].to_dict()
+            for cdictvalue in Cdict.values():
+                if(cdictvalue in input_string):
+                    return True
+            return False
+        except:
+            print("exception is in DB_Communication.checkcommands")
