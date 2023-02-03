@@ -13,10 +13,13 @@ class IGpt(ABC):
 class Gpt(IGpt):
     @classmethod
     def generate(cls, text):
-        model_name_or_path = "sberbank-ai/rugpt3large_based_on_gpt2"
-        tokenizer = GPT2Tokenizer.from_pretrained(model_name_or_path)
-        model = GPT2LMHeadModel.from_pretrained(model_name_or_path).to(DEVICE)
-        input_ids = tokenizer.encode(text, return_tensors="pt").to(DEVICE)
-        out = model.generate(input_ids, do_sample=False)
-        generated_text = list(map(tokenizer.decode, out))[0]
-        return generated_text.replace('\xa0', ' ').replace('\n','').replace(text,'').replace('—', '')
+        try:
+            model_name_or_path = "sberbank-ai/rugpt3large_based_on_gpt2"
+            tokenizer = GPT2Tokenizer.from_pretrained(model_name_or_path)
+            model = GPT2LMHeadModel.from_pretrained(model_name_or_path).to(DEVICE)
+            input_ids = tokenizer.encode(text, return_tensors="pt").to(DEVICE)
+            out = model.generate(input_ids, do_sample=False)
+            generated_text = list(map(tokenizer.decode, out))[0]
+            return generated_text.replace('\xa0', ' ').replace('\n','').replace(text,'').replace('—', '')
+        except:
+            print('exception is in Gpt.generate')
