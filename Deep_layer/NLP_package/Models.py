@@ -56,7 +56,7 @@ class BinaryLSTM(IModel):
 
     @classmethod
     def train(cls, target, mode, epochs):
-        try:
+
             recognizedtrain = DB_Bridge.DB_Communication.get_data(cls.__recognizeddataselect)
             recognizedtrain.text = recognizedtrain.text.astype(str)
             train = DB_Bridge.DB_Communication.get_data(cls.__dataselect)
@@ -116,8 +116,9 @@ class BinaryLSTM(IModel):
                                    protocol=p.HIGHEST_PROTOCOL)
             ResultSavers.ResultSaver.saveRes(history, 'resultstraining_binary.png', 'binary_accuracy')
 
-        except:
-           print('The exception in BinaryLSTM.train')
+        #try:
+        #except:
+           #print('The exception in BinaryLSTM.train')
 
 class MultyLSTM(IModel):
 
@@ -221,7 +222,7 @@ class NaiveBayes(IModel):
 
     @classmethod
     def train(cls, target, mode):
-        try:
+
             train = DB_Bridge.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
             recognizedtrain = DB_Bridge.DB_Communication.get_data(cls.__recognizeddataselect)
@@ -249,6 +250,7 @@ class NaiveBayes(IModel):
 
             with open(cls.__filemodelname, 'wb') as handle:
                 p.dump(nb_model, handle, protocol=p.HIGHEST_PROTOCOL)
-        except:
-            print('The exception is in NaiveBayes.train')
+            #try:
+       # except:
+          #  print('The exception is in NaiveBayes.train')
 
