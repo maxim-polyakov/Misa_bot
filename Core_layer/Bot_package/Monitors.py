@@ -132,8 +132,10 @@ class MessageMonitor(IMonitor):
             lowertext = message.content.lower()
         else:
             lowertext = message.text.lower()
-
-        DB_Bridge.DB_Communication.insert_to(lowertext)
+        try:
+            DB_Bridge.DB_Communication.insert_to(lowertext)
+        except:
+            print("conn.Exception")
         outstr = ''
 
         if (lowertext.count('миса') > 0 or lowertext.lower().count('misa') > 0):
