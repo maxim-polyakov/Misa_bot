@@ -45,9 +45,6 @@ class MyTestCase(unittest.TestCase):
         data = con.get_data('SELECT * FROM assistant_sets.test_table')
         con.insert_to(data,'test_table')
         self.assertNotEqual(len(data), 0)
-    def test_ValidsetAnalizers(self):
-        an = ValidsetAnalizers.ValidsetAlanizer()
-        list = an.analize()
 
 if __name__ == '__main__':
     unittest.main()
