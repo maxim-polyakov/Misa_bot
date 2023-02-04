@@ -25,14 +25,14 @@ class CommandAnalyzer:
                 'пиздануть': ac.fas,
                 'поссчитать': ac.find,
                 'перевести': ac.translate,
-                'находить': ac.find
+                'находить': ac.find,
             }
             return info_dict[chosen_item]()
         except:
             return ''
 
     def __action(self, message_text):
-        outlist =[]
+        outlist = []
 
         array_of_message_text = message_text.split(' ')
 

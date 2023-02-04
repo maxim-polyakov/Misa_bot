@@ -1,4 +1,4 @@
-from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.text import Tokenizer as t
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from abc import ABC, abstractmethod
 
@@ -18,7 +18,7 @@ class Tokenizer(ITokenizer):
 
     def __init__(self, train_texts):
         self.train_texts = train_texts
-        self.tokenizer = Tokenizer(num_words=self.TOP_K)
+        self.tokenizer = t(num_words=self.TOP_K)
 
     def train_tokenize(self):
         max_length = len(max(self.train_texts, key=len))
