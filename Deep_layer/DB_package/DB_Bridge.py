@@ -117,11 +117,13 @@ class DB_Communication(IDB_Communication):
 
     @classmethod
     def get_data(cls, select):
-        try:
+
             df = pd.read_sql(select, Connections.PostgresConnection.conn_remote)
             return df
-        except:
-            print("exception is in DB_Communication.get_data")
+
+        #try:
+        #except:
+            #print("exception is in DB_Communication.get_data")
 
 
     @classmethod

@@ -56,7 +56,6 @@ class BinaryLSTM(IModel):
 
     @classmethod
     def train(cls, target, mode, epochs):
-
             recognizedtrain = DB_Bridge.DB_Communication.get_data(cls.__recognizeddataselect)
             recognizedtrain.text = recognizedtrain.text.astype(str)
             train = DB_Bridge.DB_Communication.get_data(cls.__dataselect)

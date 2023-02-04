@@ -75,7 +75,7 @@ class MessageMonitor(IMonitor):
             outlist = []
 
             for predict in predicts:
-                outlist.append(cls.__classify(predict) + ' ' + emotion)
+                outlist.append(cls.__classify(predict))
 
         outlist.append(' ' + emotion)
         return outlist
@@ -113,7 +113,7 @@ class MessageMonitor(IMonitor):
 
         predicts = []
         mapaslist = cls._mapaslist.getlistmapas()
-        for id in range(0,len(modelpaths)):
+        for id in range(0, len(modelpaths)):
             predicts.append(cls._bpred.predict(text, mapaslist[id],
                                          modelpaths[id],
                                          tokenizerpaths[id], ''))

@@ -31,5 +31,16 @@ class QuestionAnswer(IAnswer):
     @classmethod
     def answer(self, text):
         generated_text = self.__gpt.generate("Вопрос: '" + text + "\'")
-        text = re.sub('  ', ' ', generated_text.replace('Ответ', '').replace('Вопрос','').replace(':', '').replace('\'', '').lstrip(' '))
+        text = re.sub('  ', ' ', generated_text.replace('Ответ', '').replace('Вопрос', '').replace(text, '')
+                      .replace(':', '').replace('\'', '').lstrip(' '))
+        return text
+
+class CommonAnswer(IAnswer):
+    __gpt = GPT.Gpt
+    @classmethod
+    def answer(self, text):
+        generated_text = self.__gpt.generate("Вопрос: '" + text + "\'")
+        text = re.sub('  ', ' ',
+                      generated_text.replace('Ответ', '').replace('Вопрос', '').replace(text, '').replace(':', '')
+                      .replace('\'', '').lstrip(' '))
         return text
