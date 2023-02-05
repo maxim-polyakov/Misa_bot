@@ -21,21 +21,17 @@ class ValidsetAlanizer(IAnalizer):
         DB_Bridge.DB_Communication.delete_data('DELETE FROM assistant_sets.analyzetable')
 
         humandf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetHuman" mh ORDER BY id ASC')
+            'SELECT id, text, agenda from validation_sets.markedvalidsethuman ORDER BY id ASC')
         lstmdf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetLSTM" ml ORDER BY id ASC')
-
+            'SELECT id, text, agenda from validation_sets.markedvalidsetlstm ORDER BY id ASC')
         nbdf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetNaiveBayes" mnb ORDER BY id ASC')
-
+            'SELECT id, text, agenda from validation_sets.markedvalidsetnaivebayes ORDER BY id ASC')
         rfdf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetRandomForest" mrf ORDER BY id ASC')
-
+            'SELECT id, text, agenda from validation_sets.markedvalidsetrandomforest ORDER BY id ASC')
         xbdf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetXGBoost" mx ORDER BY id ASC')
-
+            'SELECT id, text, agenda from validation_sets.markedvalidsetxgboost ORDER BY id ASC')
         combinedf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetCombine" mc ORDER BY id ASC')
+            'SELECT id, text, agenda from validation_sets.markedvalidsetcombine ORDER BY id ASC')
 
         rdf = DB_Bridge.pd.DataFrame(
             {'id': humandf['id'], 'text': humandf['text'], 'agendaLSTM': lstmdf['agenda'], 'agendaRandomForest': rfdf['agenda'],
@@ -65,26 +61,7 @@ class ValidsetAlanizer(IAnalizer):
     @dispatch(object, object)
     def analize(cls, analyzetable):
 
-        DB_Bridge.DB_Communication.delete_data('DELETE FROM assistant_sets.analyzetable')
-
         outdict = {'LSTMACC': [], 'RandomForestAcc': [], 'NaiveBayesAcc': [], 'XGBoostAcc': [], 'CombineAcc': []}
-
-        humandf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetHuman" mh ORDER BY text ASC')
-        lstmdf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetLSTM" ml ORDER BY text ASC')
-
-        nbdf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetNaiveBayes" mnb ORDER BY text ASC')
-
-        rfdf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetRandomForest" mrf ORDER BY text ASC')
-
-        xbdf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetXGBoost" mx ORDER BY text ASC')
-
-        combinedf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets."markedvalidsetCombine" mc ORDER BY text ASC')
 
         df = DB_Bridge.DB_Communication.get_data('select distinct * '
                                                              'from assistant_sets.analyzetable '
