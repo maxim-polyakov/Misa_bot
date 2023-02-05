@@ -135,7 +135,7 @@ async def get_user_text(message):
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
 
-@telegram_bot.dp.message_handler(commands='businesstrain')
+@telegram_bot.dp.message_handler(commands='LSTMbusinesstrain')
 async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
