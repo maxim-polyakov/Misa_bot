@@ -66,7 +66,7 @@ class MessageMonitor(IMonitor):
         elif (text_message.count('?') > 0):
             outlist = []
 
-            qu = cls.qa.answer(cls.__text_message)
+            qu = cls.qa.answer(text_message)
             outlist.append(qu.title())
         else:
             outlist = []

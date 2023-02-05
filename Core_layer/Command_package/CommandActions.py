@@ -3,8 +3,6 @@ from Deep_layer.API_package import Calculators
 from Deep_layer.API_package import Finders
 from Deep_layer.API_package import Translators
 from abc import ABC, abstractmethod
-import re
-from Core_layer.Answer_package import Answers
 
 class IAction(ABC):
 
