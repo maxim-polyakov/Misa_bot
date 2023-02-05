@@ -10,7 +10,7 @@ class IFinder(ABC):
 class WikiFinder(IFinder):
 
     @classmethod
-    def find(cls,inptmes):
+    def find(cls, inptmes):
         try:
             w.set_lang('ru')
             return_list = []

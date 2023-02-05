@@ -11,9 +11,9 @@ class Select:
              'union all' +
              '(select text, thanks FROM train_sets.all_set_trash WHERE (thanks=0) ORDER BY random() LIMIT 500)')
 
-    SELECT_TRASH = str('(select text, trash FROM train_sets.all_set_trash WHERE (trash=1) ORDER BY random() LIMIT 317) ' +
+    SELECT_TRASH = str('(select text, trash FROM train_sets.all_set_trash WHERE (trash=1) ORDER BY random() LIMIT 366) ' +
              'union all'
-             '(select text, trash FROM train_sets.all_set_none WHERE (trash=0) ORDER BY random() LIMIT 100)' +
+             '(select text, trash FROM train_sets.all_set_none WHERE (trash=0) ORDER BY random() LIMIT 200)' +
              'union all' +
              '(select text, trash FROM train_sets.all_set_hi WHERE (trash=0) ORDER BY random() LIMIT 50)' +
              'union all' +

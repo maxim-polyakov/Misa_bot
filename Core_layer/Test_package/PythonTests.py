@@ -3,7 +3,6 @@ from Deep_layer.API_package import Calculators as calc
 from Deep_layer.API_package import Finders as find
 from Deep_layer.API_package import Translators as trans
 from Deep_layer.DB_package import DB_Bridge as bridge
-from Core_layer.Bot_package import ValidsetAnalizers
 
 class TestRun:
 
@@ -14,7 +13,6 @@ class TestRun:
     #case.test_founder()
     #case.test_trans()
     #case.test_bridge()
-    #case.test_ValidsetAnalizers()
     pass
 
 class MyTestCase(unittest.TestCase):
