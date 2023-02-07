@@ -16,7 +16,7 @@ class ValidsetAlanizer(IAnalizer):
     @dispatch(object)
     def analize(cls):
 
-        outdict = {'LSTMACC':[], 'RandomForestAcc': [], "NaiveBayesAcc": [], "XGBoostAcc":[], "CombineAcc": []}
+        outdict = {'LSTMACC': [], 'RandomForestAcc': [], "NaiveBayesAcc": [], "XGBoostAcc":[], "CombineAcc": []}
 
         DB_Bridge.DB_Communication.delete_data('DELETE FROM assistant_sets.analyzetable')
 

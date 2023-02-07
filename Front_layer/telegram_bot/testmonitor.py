@@ -11,10 +11,6 @@ async def get_user_text(message):
          tmonnb.monitor()
          tmonrf = TestMonitors.TestMonitorRandomForest()
          tmonrf.monitor()
-         tmonxgboost = TestMonitors.TestMonitorXGBoost()
-         tmonxgboost.monitor()
-         tmoncomb = TestMonitors.TestMonitorCombine()
-         tmoncomb.monitor()
          an = ValidsetAnalizers.ValidsetAlanizer()
          analizedict = an.analize()
          maxanalizedict = max(analizedict.values())[0]
@@ -26,9 +22,7 @@ async def get_user_text(message):
          await telegram_bot.boto.send_message(message.chat.id, 'Наибольшая точность ' + str(maxanalizedict) +
                                ', LSTM_Acc ' + LSTMACC +
                                ', RandomForestAcc ' + RandomForestAcc +
-                               ', NaiveBayesAcc ' + NaiveBayesAcc +
-                               ', XGBoostAcc ' + XGBoostAcc +
-                               ', CombineAcc ' + CombineAcc, parse_mode='html')
+                               ', NaiveBayesAcc ' + NaiveBayesAcc, parse_mode='html')
     else:
          await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
 

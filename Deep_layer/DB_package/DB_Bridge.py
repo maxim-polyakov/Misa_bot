@@ -103,15 +103,12 @@ class DB_Communication(IDB_Communication):
 
             lowertext = lowertext.replace('миса ', '').replace('misa ', '')
             text = []
-            dfvalid = pd.read_sql('select count(text) from validation_sets.markedvalidsethuman',
-                              Connections.PostgresConnection.conn_remote)
-            counth = dfvalid['count'][0]
+
             dfmesstor = pd.read_sql('select count(text) from messtorage.storage',
                                 Connections.PostgresConnection.conn_remote)
             counts = dfmesstor['count'][0]
             text.append(lowertext)
             insert('storage', counts, text, 'messtorage')
-            insert('markedvalidsethuman', counth, text, 'validation_sets')
         except:
             print("exception is in DB_Communication.get_data")
 

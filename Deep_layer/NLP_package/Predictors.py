@@ -2,7 +2,7 @@ import pickle as p
 from tensorflow.keras.models import load_model
 import numpy as np
 from abc import ABC, abstractmethod
-from Deep_layer.NLP_package import TextPreprocessers
+import Deep_layer.NLP_package.TextPreprocessers as TextPreprocessers
 
 class IPredictor(ABC):
 
@@ -139,7 +139,7 @@ class MultyLSTM(IPredictor):
 
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
-
+        try:
             model = load_model(model)
             inp = []
             pr = TextPreprocessers.CommonPreprocessing()
@@ -153,7 +153,5 @@ class MultyLSTM(IPredictor):
             scoreplu = model.predict(tokenized_inpt)
             outpt = tmap[scoreplu.argmax(axis=-1)[0]]
             return outpt
-
-   # try:
-      #  except:
-       #     return 'The exeption is in Multy.predict'
+        except:
+            return 'The exeption is in Multy.predict'

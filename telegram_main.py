@@ -4,6 +4,7 @@ from aiogram import executor
 from Front_layer.telegram_bot import assistantmonitor
 from Front_layer.telegram_bot import botoclean
 from Front_layer.telegram_bot import bototrain
+from Front_layer.telegram_bot import testmonitor
 from Front_layer.telegram_bot import messagemonitor
 
 # _______________________________________________________________________________
