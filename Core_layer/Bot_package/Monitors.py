@@ -67,7 +67,7 @@ class MessageMonitor(IMonitor):
             outlist = []
 
             qu = cls.qa.answer(text_message)
-            outlist.append(qu.title())
+            outlist.append(qu)
         else:
             outlist = []
 
@@ -137,9 +137,9 @@ class MessageMonitor(IMonitor):
             if (outlist != None):
                 for outmes in outlist:
                     outstr += outmes
-            return outstr
+            return outstr.title()
         else:
-            return outstr
+            return outstr.title()
 
 class MessageMonitorTelegram(MessageMonitor):
 
