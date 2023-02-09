@@ -122,22 +122,16 @@ class TestMonitor(ITestMonitor):
     def monitor(cls, input_df):
         #
         # text = []
-        #lowertext
         #
-        #     outstr = ''
-        #
-        #     if (lowertext.count('миса') > 0 or lowertext.lower().count('misa') > 0):
-        #         lowertext = lowertext.replace('миса ', '').replace('misa ', '')
-        #         text.append(lowertext)
-        #     outlist = cls._neurodesc(text, lowertext)
-        #     if (outlist != None):
-        #         for outmes in outlist:
-        #             outstr += outmes
-        #     return outstr
-        #
-        # else:
+        # outstr = ''
+        # lowertext = content.lower()
+        # outlist = cls._neurodesc(text, lowertext)
+        # if (outlist != None):
+        #     for outmes in outlist:
+        #         outstr += outmes
         #     return outstr
         pass
+
 
 class TestMonitorLSTM(TestMonitor):
 
@@ -165,6 +159,7 @@ class TestMonitorNaiveBayes(TestMonitor):
 
         df = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text from validation_sets.markedvalidsethuman ORDER BY id ASC')
+        super().monitor(df)
 
 
 class TestMonitorRandomForest(TestMonitor):
@@ -180,3 +175,4 @@ class TestMonitorRandomForest(TestMonitor):
         df = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text from validation_sets.markedvalidsethuman ORDER BY id ASC')
 
+        super().monitor(df)

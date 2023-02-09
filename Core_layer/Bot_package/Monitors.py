@@ -60,20 +60,17 @@ class MessageMonitor(IMonitor):
             return ''
 
     @classmethod
-    def __decision(cls, text_message, emotion, commands,predicts):
+    def __decision(cls, text_message, emotion, commands, predicts):
         if (cls._dbc.checkcommands(text_message)):
             return commands.commandanalyse(text_message)
         elif (text_message.count('?') > 0):
             outlist = []
-
-            qu = cls.qa.answer(text_message)
-            outlist.append(qu)
+            answer = cls.qa.answer(text_message)
+            outlist.append(answer)
         else:
             outlist = []
-
             for predict in predicts:
                 outlist.append(cls.__classify(predict))
-
         outlist.append(' ' + emotion)
         return outlist
 
@@ -126,7 +123,7 @@ class MessageMonitor(IMonitor):
         else:
             lowertext = message.text.lower()
 
-            DB_Bridge.DB_Communication.insert_to(lowertext)
+        DB_Bridge.DB_Communication.insert_to(lowertext)
 
         outstr = ''
 
@@ -134,12 +131,14 @@ class MessageMonitor(IMonitor):
             lowertext = lowertext.replace('миса ', '').replace('misa ', '')
             text.append(lowertext)
             outlist = cls._neurodesc(text, lowertext, command)
+            i  = 0
             if (outlist != None):
                 for outmes in outlist:
                     outstr += outmes
-            return outstr.title()
+
+            return outstr.capitalize()
         else:
-            return outstr.title()
+            return outstr.capitalize()
 
 class MessageMonitorTelegram(MessageMonitor):
 
