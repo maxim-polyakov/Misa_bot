@@ -12,7 +12,6 @@ class ITranslator(ABC):
 
 class GoogleTranslator(ITranslator):
 
-
     _translator = Translator()
 
     lang = 'ru'
