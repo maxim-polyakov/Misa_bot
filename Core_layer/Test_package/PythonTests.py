@@ -3,6 +3,7 @@ from Deep_layer.API_package import Calculators as calc
 from Deep_layer.API_package import Finders as find
 from Deep_layer.API_package import Translators as trans
 from Deep_layer.DB_package import DB_Bridge as bridge
+from Core_layer.Test_package import TestMonitors as tmon
 
 class TestRun:
 
@@ -43,6 +44,10 @@ class MyTestCase(unittest.TestCase):
         data = con.get_data('SELECT * FROM assistant_sets.test_table')
         con.insert_to(data,'test_table')
         self.assertNotEqual(len(data), 0)
+
+    def test_tmon(self):
+        testmonlstm = tmon.TestMonitorLSTM()
+        testmonlstm.monitor()
 
 if __name__ == '__main__':
     unittest.main()

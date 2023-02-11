@@ -30,13 +30,10 @@ class GoogleTranslator(ITranslator):
         try:
             train = DB_Bridge.DB_Communication.get_data(dataselect)
             train.text = train.text.astype(str)
-
             df = pd.concat([train])
             df = pd.DataFrame(df['text'])
             df['text'] = df['text'].apply(cls._translate)
-
             DB_Bridge.DB_Communication.insert_to(df, 'translated')
-
             return 'Готово'
         except:
             print('The exception is in GoogleTranslator.translate')
@@ -46,7 +43,6 @@ class GoogleTranslator(ITranslator):
     def translate(cls, inptmes):
         try:
             tranlated = cls._translate(inptmes)
-
             return tranlated
         except:
             print('The exception is in GoogleTranslatorMes.translate')

@@ -15,7 +15,6 @@ class WikiFinder(IFinder):
             w.set_lang('ru')
             return_list = []
             return_list.append(w.summary(inptmes))
-
             return return_list[0]
         except:
             return return_list[0]

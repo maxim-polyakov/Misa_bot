@@ -17,7 +17,6 @@ class CommandAnalyzer:
 
     def __action_step(self, chosen_item, message_text):
         ac = CommandAction(self.boto, self.message, message_text)
-
         try:
             info_dict = {
                 'атаковать': ac.fas,
@@ -33,9 +32,7 @@ class CommandAnalyzer:
 
     def __action(self, message_text):
         outlist = []
-
         array_of_message_text = message_text.split(' ')
-
         for word in array_of_message_text:
             outlist.append((self.__action_step(self.__pr.preprocess_text(word), self.__pr.preprocess_text(message_text))))
         outlist = list(set(outlist))
@@ -47,13 +44,11 @@ class CommandAnalyzer:
             word_arr = message_text.split('. ')
         else:
             word_arr = message_text.split(', ')
-
         for word in word_arr:
             outlist = self.__action(word)
             if (outlist != None):
                 for outmes in outlist:
                     outstr += outmes
-
         return outstr
 
 

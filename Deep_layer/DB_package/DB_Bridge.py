@@ -100,10 +100,8 @@ class DB_Communication(IDB_Communication):
                     df = df.append(new_row, ignore_index=True)
                     df.to_sql(table, con=Connections.PostgresConnection.engine_remote, schema=schema,
                             index=False, if_exists='append')
-
             lowertext = lowertext.replace('миса ', '').replace('misa ', '')
             text = []
-
             dfmesstor = pd.read_sql('select count(text) from messtorage.storage',
                                 Connections.PostgresConnection.conn_remote)
             counts = dfmesstor['count'][0]

@@ -3,8 +3,6 @@ from Deep_layer.NLP_package import Predictors
 from Core_layer.Answer_package import Answers
 from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package import TextPreprocessers
-import Front_layer.telegram_bot as telegram_bot
-from Core_layer.Command_package import Commands
 from abc import ABC, abstractmethod
 from Deep_layer.DB_package import DB_Bridge
 import os
@@ -27,7 +25,6 @@ class TestMonitor(ITestMonitor):
     _mapa = Mapas.Mapa()
     _mapaslist = Mapas.ListMapas()
     qa = Answers.QuestionAnswer()
-    __text_message = None
 
     @classmethod
     def __classify_question(cls, chosen_item):
@@ -58,100 +55,83 @@ class TestMonitor(ITestMonitor):
             return ''
 
     @classmethod
-    def __decision(cls, text_message, emotion, commands, predicts):
+    def __decision(cls, text_message, emotion, predicts):
         if (cls._dbc.checkcommands(text_message)):
             outlist = []
-            outlist.append("Команда")
+            outlist.append('Команда')
         elif (text_message.count('?') > 0):
             outlist = []
-
             for predict in predicts:
                 outlist.append(cls.__classify_question(predict))
-
             outlist.append(' ' + emotion)
         else:
             outlist = []
-
             for predict in predicts:
                 outlist.append(cls.__classify(predict))
-
-        outlist.append(' ' + emotion)
+        outlist.append(', ' + emotion)
         return outlist
 
     @classmethod
     def _emotionsrecognition(cls, text):
         modelpath = next(Path().rglob('emotionsmodel.h5'))
         tokenizerpath = next(Path().rglob('emotionstokenizer.pickle'))
-
         emotion = cls._mpred.predict(text, cls._mapa.EMOTIONSMAPA,
                                      modelpath,
                                      tokenizerpath)
         return emotion
 
     @classmethod
-    def _neurodesc(cls, text, text_message, command):
-        cls.__text_message = text_message
+    def _neurodesc(cls, text, text_message):
+        modelpaths = []
+        tokenizerpaths = []
         fullPathModels = str(next(Path().rglob('models')))
         fullPathTokenizers = str(next(Path().rglob('tokenizers')))
         modelarr = os.listdir(fullPathModels + '/binary/LSTM/')
-
         tokenizerarr = os.listdir(fullPathTokenizers + '/binary/LSTM/')
-        modelpaths = []
-        tokenizerpaths = []
+
         for model in modelarr:
             modelpaths.append(str(fullPathModels) + '/binary/LSTM/' + str(model))
-
         for tokenizer in tokenizerarr:
             tokenizerpaths.append(str(fullPathTokenizers) + '/binary/LSTM/' + str(tokenizer))
-
         emotion = ''
-
         predicts = []
         mapaslist = cls._mapaslist.getlistmapas()
         for id in range(0, len(modelpaths)):
             predicts.append(cls._bpred.predict(text, mapaslist[id],
                                                modelpaths[id],
                                                tokenizerpaths[id], ''))
-
         return cls.__decision(text_message,
                               emotion,
-                              command,
                               predicts)
 
     @classmethod
-    def monitor(cls, input_df):
-        #
-        # text = []
-        #
-        # outstr = ''
-        # lowertext = content.lower()
-        # outlist = cls._neurodesc(text, lowertext)
-        # if (outlist != None):
-        #     for outmes in outlist:
-        #         outstr += outmes
-        #     return outstr
-        pass
-
+    def monitor(cls, input_df, datatable):
+        text = input_df['text']
+        outstr = ''
+        idx = 0
+        for txt in text:
+            lowertext = txt.lower()
+            outlist = cls._neurodesc(text, lowertext)
+            if (outlist != None):
+                for outmes in outlist:
+                    outstr += outmes
+            DB_Bridge.DB_Communication.insert_to(idx, lowertext, outstr, datatable)
 
 class TestMonitorLSTM(TestMonitor):
-
     def __init__(self):
         pass
-
     @classmethod
     def monitor(cls):
         DB_Bridge.DB_Communication.delete_data(
             'DELETE FROM validation_sets.markedvalidsetlstm')
-
         df = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text from validation_sets.markedvalidsethuman ORDER BY id ASC')
-        super().monitor(df)
+        datatable = 'markedvalidsetlstm'
+        super().monitor(df, datatable)
 
 class TestMonitorNaiveBayes(TestMonitor):
-
     def __init__(self):
         pass
-
     @classmethod
     def monitor(cls):
         DB_Bridge.DB_Communication.delete_data(
@@ -159,14 +139,13 @@ class TestMonitorNaiveBayes(TestMonitor):
 
         df = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text from validation_sets.markedvalidsethuman ORDER BY id ASC')
-        super().monitor(df)
+        datatable = 'markedvalidsetnaivebayes'
+        super().monitor(df, datatable)
 
 
 class TestMonitorRandomForest(TestMonitor):
-
     def __init__(self):
         pass
-
     @classmethod
     def monitor(cls):
         DB_Bridge.DB_Communication.delete_data(
@@ -174,5 +153,5 @@ class TestMonitorRandomForest(TestMonitor):
 
         df = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text from validation_sets.markedvalidsethuman ORDER BY id ASC')
-
-        super().monitor(df)
+        datatable = 'markedvalidsetrandomforest'
+        super().monitor(df, datatable)

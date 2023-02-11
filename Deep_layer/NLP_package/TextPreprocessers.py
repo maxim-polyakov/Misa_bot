@@ -72,12 +72,10 @@ class QuestionPreprocessing(Preprocessing):
             tokens = str(text).split(' ')
             tokens = Mystem().lemmatize(text.lower())
             tokens = [token for token in tokens if token != " "]
-
             text = " ".join(tokens).rstrip('\n')
             text = re.sub('[!@#$-><%^&*()_=+/\|:;~,.]', '', text)
             text = re.sub('  ', ' ', text)
             text = text.replace(' ? ', '?')
-
             return text
         except:
             return 'The exception is in QuestionPreprocessing.preprocess_text'
@@ -114,9 +112,7 @@ class CommandPreprocessing(Preprocessing):
     def reversepreprocess_text(self, text):
         try:
             document = spacy.load('ru_core_news_md')
-
             tokens = [token.lemma_ for token in document if token.pos_ == 'VERB']
-
             text = ' '.join(tokens).rstrip('\n')
             print(text)
             return text

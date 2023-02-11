@@ -19,7 +19,6 @@ class SympyCalculator(ICalculator):
 
     @classmethod
     def deravative(cls,  inptmes, dx):
-
         try:
             inp = cls.__pr.preprocess_text(dx)
             x = Symbol(inp[0])
@@ -32,7 +31,6 @@ class SympyCalculator(ICalculator):
 
     @classmethod
     def integrate(cls, inptmes, dx):
-
         try:
             inp = cls.__pr.preprocess_text(dx)
             x = API_package.Symbol(inp[0])

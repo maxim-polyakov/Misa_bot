@@ -22,7 +22,6 @@ class CommandAction(IAction):
     message_text = None
     __pred = TextPreprocessers.Preprocessing()
     __pr = TextPreprocessers.CommonPreprocessing()
-
     def __init__(self, boto, message, message_text):
         CommandAction.message_text = message_text
         CommandAction.boto = boto
