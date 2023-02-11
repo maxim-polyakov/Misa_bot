@@ -2,14 +2,14 @@
 
 Misa_bot is a three-layer architecture python application
 
-Front layer
+#Front layer
 
   Front layer comprises discord and telegram bots to collect data from an environment platforms:
   
     1) telegram
     2) discord
     
-Core_layer
+#Core_layer
 
   Core layer comprises a few packages:
   
@@ -18,7 +18,7 @@ Core_layer
     3) Command_package
     4) Test_package
 
-Deep_layer
+#Deep_layer
 
   Deep layer comprises a few packages:
   
