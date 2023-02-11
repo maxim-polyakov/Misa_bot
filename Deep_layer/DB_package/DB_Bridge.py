@@ -2,7 +2,6 @@ import pandas as pd
 from Deep_layer.NLP_package import TextPreprocessers
 from multipledispatch import dispatch
 from abc import ABC, abstractmethod
-import numpy as np
 from Deep_layer.DB_package import Connections
 
 class IDB_Communication(ABC):
@@ -41,11 +40,11 @@ class DB_Communication(IDB_Communication):
             print("exception is in DB_Communication.insert_to")
 
     @classmethod
-    @dispatch(object, np.int64, object, object, object)
+    @dispatch(object, int, object, object, object)
     def insert_to(cls, idx, txt, insert, datatable):
         try:
             insert = insert.split(', ')
-            data = {'id':idx, 'text': txt, 'agenda': insert[0], 'emotion': insert[1]}
+            data = {'id': idx, 'text': txt, 'agenda': insert[0], 'emotion': insert[1]}
             df = pd.DataFrame()
             new_row = pd.Series(data)
             df = df.append(new_row, ignore_index=True)

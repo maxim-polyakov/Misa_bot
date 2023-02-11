@@ -7,22 +7,26 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
          tmonlstm = TestMonitors.TestMonitorLSTM()
          tmonlstm.monitor()
+
          tmonnb = TestMonitors.TestMonitorNaiveBayes()
          tmonnb.monitor()
+
          tmonrf = TestMonitors.TestMonitorRandomForest()
          tmonrf.monitor()
+
          an = ValidsetAnalizers.ValidsetAlanizer()
          analizedict = an.analize()
+         
          maxanalizedict = max(analizedict.values())[0]
          LSTMACC = analizedict['LSTMACC'][0]
          RandomForestAcc = analizedict['RandomForestAcc'][0]
          NaiveBayesAcc = analizedict['NaiveBayesAcc'][0]
-         XGBoostAcc = analizedict['XGBoostAcc'][0]
-         CombineAcc = analizedict['CombineAcc'][0]
+
          await telegram_bot.boto.send_message(message.chat.id, 'Наибольшая точность ' + str(maxanalizedict) +
                                ', LSTM_Acc ' + LSTMACC +
                                ', RandomForestAcc ' + RandomForestAcc +
-                               ', NaiveBayesAcc ' + NaiveBayesAcc, parse_mode='html')
+                               ', NaiveBayesAcc ' + NaiveBayesAcc,
+                               parse_mode='html')
     else:
          await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
 
@@ -35,14 +39,12 @@ async def get_user_text(message):
          LSTMACC = analizedict['LSTMACC'][0]
          RandomForestAcc = analizedict['RandomForestAcc'][0]
          NaiveBayesAcc = analizedict['NaiveBayesAcc'][0]
-         XGBoostAcc = analizedict['XGBoostAcc'][0]
-         CombineAcc = analizedict['CombineAcc'][0]
+
          await telegram_bot.boto.send_message(message.chat.id, 'Наибольшая точность ' + str(maxanalizedict) +
                                ', LSTM_Acc ' + LSTMACC +
                                ', RandomForestAcc ' + RandomForestAcc +
-                               ', NaiveBayesAcc ' + NaiveBayesAcc +
-                               ', XGBoostAcc ' + XGBoostAcc +
-                               ', CombineAcc ' + CombineAcc, parse_mode='html')
+                               ', NaiveBayesAcc ' + NaiveBayesAcc,
+                               parse_mode='html')
     else:
          await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
 

@@ -63,12 +63,12 @@ class TestMonitor(ITestMonitor):
             outlist = []
             for predict in predicts:
                 outlist.append(cls.__classify_question(predict))
-            outlist.append(' ' + emotion)
+            outlist.append(', ' + emotion)
         else:
             outlist = []
             for predict in predicts:
                 outlist.append(cls.__classify(predict))
-        outlist.append(', ' + emotion)
+        outlist.append(', ' + '😊')
         return outlist
 
     @classmethod
@@ -108,7 +108,7 @@ class TestMonitor(ITestMonitor):
     def monitor(cls, input_df, datatable):
         text = input_df['text']
         outstr = ''
-        idx = 0
+        idx = 1
         for txt in text:
             lowertext = txt.lower()
             outlist = cls._neurodesc(text, lowertext)
@@ -116,6 +116,7 @@ class TestMonitor(ITestMonitor):
                 for outmes in outlist:
                     outstr += outmes
             DB_Bridge.DB_Communication.insert_to(idx, lowertext, outstr, datatable)
+            idx = idx + 1
 
 class TestMonitorLSTM(TestMonitor):
     def __init__(self):

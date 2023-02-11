@@ -15,8 +15,8 @@ class ValidsetAlanizer(IAnalizer):
     @classmethod
     @dispatch(object)
     def analize(cls):
-        outdict = {'LSTMACC': [], 'RandomForestAcc': [], "NaiveBayesAcc": [], "XGBoostAcc":[], "CombineAcc": []}
-        DB_Bridge.DB_Communication.delete_data('DELETE FROM assistant_sets.analyzetable')
+        outdict = {'LSTMACC': [], 'RandomForestAcc': [], "NaiveBayesAcc": []}
+
         humandf = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text, agenda from validation_sets.markedvalidsethuman ORDER BY id ASC')
         lstmdf = DB_Bridge.DB_Communication.get_data(
@@ -25,45 +25,42 @@ class ValidsetAlanizer(IAnalizer):
             'SELECT id, text, agenda from validation_sets.markedvalidsetnaivebayes ORDER BY id ASC')
         rfdf = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text, agenda from validation_sets.markedvalidsetrandomforest ORDER BY id ASC')
-        xbdf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets.markedvalidsetxgboost ORDER BY id ASC')
-        combinedf = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text, agenda from validation_sets.markedvalidsetcombine ORDER BY id ASC')
+
         rdf = DB_Bridge.pd.DataFrame(
-            {'id': humandf['id'], 'text': humandf['text'], 'agendaLSTM': lstmdf['agenda'], 'agendaRandomForest': rfdf['agenda'],
-             'agendaNaiveBayes': nbdf['agenda'], 'agendaXGBoost': xbdf['agenda'], 'agendaCombine': combinedf['agenda'],
-             'agendaHuman': humandf['agenda']})
+            {'id': humandf['id'], 'text': humandf['text'], 'agendalstm': lstmdf['agenda'], 'agendarandomforest': rfdf['agenda'],
+             'agendanaivebayes': nbdf['agenda'], 'agendahuman': humandf['agenda']})
+
+        DB_Bridge.DB_Communication.delete_data('DELETE FROM assistant_sets.analyzetable')
+
         DB_Bridge.DB_Communication.insert_to(rdf, 'analyzetable')
-        df = DB_Bridge.DB_Communication.get_data('select distinct * '
-                                                             'from assistant_sets.analyzetable '
-                                                             'where \"agendaHuman\" not like "Команда" ' 
-                                                             'and \"agendaCombine\" is not null ' 
-                                                             'and \"agendaNaiveBayes\" is not null ' 
-                                                             'and \"agendaLSTM\" is not null ' 
-                                                             'and \"agendaRandomForest\" is not null '
-                                                             'and \"agendaXGBoost\" is not null')
-        outdict['LSTMACC'].append(str(accuracy_score(df['agendaLSTM'], df['agendaHuman'])))
-        outdict['RandomForestAcc'].append(str(accuracy_score(df['agendaRandomForest'], df['agendaHuman'])))
-        outdict['NaiveBayesAcc'].append(str(accuracy_score(df['agendaNaiveBayes'], df['agendaHuman'])))
-        outdict['XGBoostAcc'].append(str(accuracy_score(df['agendaXGBoost'], df['agendaHuman'])))
-        outdict['CombineAcc'].append(str(accuracy_score(df['agendaCombine'], df['agendaHuman'])))
+
+        select = str("select distinct * from assistant_sets.analyzetable " +
+                     "where agendahuman  not like 'Команда' " +
+                     "and agendanaivebayes is not null " +
+                     "and agendalstm is not null " +
+                     "and agendarandomforest is not null")
+
+        df = DB_Bridge.DB_Communication.get_data(select)
+
+        outdict['LSTMACC'].append(str(accuracy_score(df['agendalstm'], df['agendahuman'])))
+        outdict['RandomForestAcc'].append(str(accuracy_score(df['agendarandomforest'], df['agendahuman'])))
+        outdict['NaiveBayesAcc'].append(str(accuracy_score(df['agendanaivebayes'], df['agendahuman'])))
         return outdict
 
     @classmethod
     @dispatch(object, object)
     def analize(cls, analyzetable):
-        outdict = {'LSTMACC': [], 'RandomForestAcc': [], 'NaiveBayesAcc': [], 'XGBoostAcc': [], 'CombineAcc': []}
-        df = DB_Bridge.DB_Communication.get_data('select distinct * '
-                                                             'from assistant_sets.analyzetable '
-                                                             'where \"agendaHuman\" not like "Команда" ' 
-                                                             'and \"agendaCombine\" is not null ' 
-                                                             'and \"agendaNaiveBayes\" is not null ' 
-                                                             'and \"agendaLSTM\" is not null ' 
-                                                             'and \"agendaRandomForest\" is not null '
-                                                             'and \"agendaXGBoost\" is not null')
-        outdict['LSTMACC'].append(str(accuracy_score(df['agendaLSTM'], df['agendaHuman'])))
-        outdict['RandomForestAcc'].append(str(accuracy_score(df['agendaRandomForest'], df['agendaHuman'])))
-        outdict['NaiveBayesAcc'].append(str(accuracy_score(df['agendaNaiveBayes'], df['agendaHuman'])))
-        outdict['XGBoostAcc'].append(str(accuracy_score(df['agendaXGBoost'], df['agendaHuman'])))
-        outdict['CombineAcc'].append(str(accuracy_score(df['agendaCombine'], df['agendaHuman'])))
+        outdict = {'LSTMACC': [], 'RandomForestAcc': [], 'NaiveBayesAcc': []}
+
+        select = str("select distinct * from assistant_sets.analyzetable " +
+                     "where agendahuman  not like 'Команда' " +
+                     "and agendanaivebayes is not null " +
+                     "and agendalstm is not null " +
+                     "and agendarandomforest is not null")
+
+        df = DB_Bridge.DB_Communication.get_data(select)
+
+        outdict['LSTMACC'].append(str(accuracy_score(df['agendalstm'], df['agendahuman'])))
+        outdict['RandomForestAcc'].append(str(accuracy_score(df['agendarandomforest'], df['agendahuman'])))
+        outdict['NaiveBayesAcc'].append(str(accuracy_score(df['agendanaivebayes'], df['agendahuman'])))
         return outdict
