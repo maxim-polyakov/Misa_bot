@@ -35,7 +35,6 @@ class Preprocessing(IPreprocessing):
     def reversepreprocess_text(self,text):
         pass
 
-
 class CommonPreprocessing(Preprocessing):
 
     @classmethod
@@ -62,7 +61,6 @@ class CommonPreprocessing(Preprocessing):
     @classmethod
     def reversepreprocess_text(self, text):
         pass
-
 
 class QuestionPreprocessing(Preprocessing):
 

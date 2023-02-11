@@ -18,7 +18,7 @@ class Gpt(IGpt):
             tokenizer = GPT2Tokenizer.from_pretrained(model_name_or_path)
             model = GPT2LMHeadModel.from_pretrained(model_name_or_path).to(DEVICE)
             input_ids = tokenizer.encode(text, return_tensors="pt").to(DEVICE)
-            out = model.generate(input_ids, do_sample=False)
+            out = model.generate(input_ids, do_sample=False, max_length=30)
             tokens = text
             tokens = [token for token in tokens if token != ' '
                       and token.strip() not in punctuation]

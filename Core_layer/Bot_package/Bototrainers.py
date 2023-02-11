@@ -30,10 +30,7 @@ class LSTMtrain(ITrain):
         filemodel = next(Path().rglob('0_himodel.h5'))
         filetokenizer = next(Path().rglob('0_hitokenizer.pickle'))
         datasetfile = cls.sel.SELECT_HI
-        recognizeddata = 'SELECT text, hi FROM recognized_sets.recognized_all_set WHERE ' + \
-                         ' (hi=0 or hi=1) ORDER BY random() LIMIT 3000'
-        trainer = Models.BinaryLSTM(filemodel, filetokenizer,
-                                                datasetfile, recognizeddata)
+        trainer = Models.BinaryLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('hi', 'train', epochs)
 
     @classmethod
@@ -41,12 +38,7 @@ class LSTMtrain(ITrain):
         filemodel = next(Path().rglob('1_thmodel.h5'))
         filetokenizer = next(Path().rglob('1_thtokenizer.pickle'))
         datasetfile = cls.sel.SELECT_TH
-        recognizeddata = 'SELECT text, thanks FROM recognized_sets.recognized_all_set WHERE ' + \
-                         ' (thanks=0 or thanks=1) ORDER BY random() LIMIT 3000'
-
-        trainer = Models.BinaryLSTM(filemodel, filetokenizer,
-                                                datasetfile, recognizeddata)
-
+        trainer = Models.BinaryLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('thanks', 'train', epochs)
 
     @classmethod
@@ -54,10 +46,7 @@ class LSTMtrain(ITrain):
         filemodel = next(Path().rglob('2_businessmodel.h5'))
         filetokenizer = next(Path().rglob('2_businesstokenizer.pickle'))
         datasetfile = cls.sel.SELECT_BUSINESS
-        recognizeddata = 'SELECT text, business FROM recognized_sets.recognized_all_set WHERE ' + \
-                         ' (business=0 or business=1) ORDER BY random() LIMIT 3000'
-        trainer = Models.BinaryLSTM(filemodel, filetokenizer,
-                                                datasetfile, recognizeddata)
+        trainer = Models.BinaryLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('business', 'train', epochs)
 
     @classmethod
@@ -65,10 +54,7 @@ class LSTMtrain(ITrain):
         filemodel = next(Path().rglob('3_weathermodel.h5'))
         filetokenizer = next(Path().rglob('3_weathertokenizer.pickle'))
         datasetfile = cls.sel.SELECT_WEATHER
-        recognizeddata = 'SELECT text, weather FROM recognized_sets.recognized_all_set WHERE ' + \
-                         ' (weather=0 or weather=1) ORDER BY random() LIMIT 3000'
-        trainer = Models.BinaryLSTM(filemodel, filetokenizer,
-                                                datasetfile, recognizeddata)
+        trainer = Models.BinaryLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('weather', 'train', epochs)
 
     @classmethod
@@ -76,9 +62,7 @@ class LSTMtrain(ITrain):
         filemodel = next(Path().rglob('emotionsmodel.h5'))
         filetokenizer = next(Path().rglob('emotionstokenizer.pickle'))
         datasetfile = cls.sel.SELECT_EMOTIONS
-        recognizeddata = 'SELECT text, emotionid FROM recognized_sets.recognized_all_set'
-        trainer = Models.MultyLSTM(filemodel, filetokenizer,
-                                               datasetfile, recognizeddata)
+        trainer = Models.MultyLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('emotionid', 7, 'train', epochs)
 
     @classmethod
@@ -86,7 +70,5 @@ class LSTMtrain(ITrain):
         filemodel = next(Path().rglob('4_trashmodel.h5'))
         filetokenizer = next(Path().rglob('4_trashtokenizer.pickle'))
         datasetfile = cls.sel.SELECT_TRASH
-        recognizeddata = 'SELECT text, emotionid FROM recognized_sets.recognized_all_set'
-        trainer = Models.BinaryLSTM(filemodel, filetokenizer,
-                                                datasetfile, recognizeddata)
+        trainer = Models.BinaryLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('trash', 'train', epochs)

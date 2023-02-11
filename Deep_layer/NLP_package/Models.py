@@ -24,12 +24,10 @@ class BinaryLSTM(IModel):
 
     EMBEDDING_VECTOR_LENGTH = 33
 
-    def __init__(self, filemodelname, tokenizerfilename, dataselect,
-                 recognizeddataselect):
+    def __init__(self, filemodelname, tokenizerfilename, dataselect):
         BinaryLSTM.__filemodelname = filemodelname
         BinaryLSTM.__tokenizerfilename = tokenizerfilename
         BinaryLSTM.__dataselect = dataselect
-        BinaryLSTM.__recognizeddataselect = recognizeddataselect
 
     @classmethod
     def __createmodel(cls, tokenizer):
@@ -52,16 +50,13 @@ class BinaryLSTM(IModel):
 
     @classmethod
     def train(cls, target, mode, epochs):
-            recognizedtrain = DB_Bridge.DB_Communication.get_data(cls.__recognizeddataselect)
-            recognizedtrain.text = recognizedtrain.text.astype(str)
+        try:
             train = DB_Bridge.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
-
-            df = pd.concat([train, recognizedtrain])
+            df = pd.concat([train])
             train = df[~df[target].isna()]
             train[target] = train[target].astype(int)
             train = train.drop_duplicates()
-
             print(train)
             X_train, X_val, y_train, y_val = train_test_split(
                 train, train[target], test_size=0.3, random_state=32)
@@ -88,8 +83,7 @@ class BinaryLSTM(IModel):
                                     batch_size=51,
                                     epochs=epochs,
                                     verbose=2,
-                                    callbacks=[es]
-                                    )
+                                    callbacks=[es])
             else:
                 model = cls.__createmodel(tokenizer)
             
@@ -97,35 +91,26 @@ class BinaryLSTM(IModel):
                                     validation_data=(tokenized_X_val, y_val),
                                     batch_size=51,
                                     epochs=epochs,
-                                    verbose=2,
-                                    )
-
+                                    verbose=2)
             score = history.history['val_binary_accuracy'].pop()
-
             print(score)
-
             model.save(cls.__filemodelname)
-
             with open(cls.__tokenizerfilename, 'wb') as handle:
                 p.dump(tokenizer, handle,
                                    protocol=p.HIGHEST_PROTOCOL)
             ResultSavers.ResultSaver.saveRes(history, 'resultstraining_binary.png', 'binary_accuracy')
-
-        #try:
-        #except:
-           #print('The exception in BinaryLSTM.train')
+        except:
+           print('The exception in BinaryLSTM.train')
 
 class MultyLSTM(IModel):
 
     EMBEDDING_VECTOR_LENGTH = 33
 
-    def __init__(self, filemodelname, tokenizerfilename, dataselect,
-                 recognizeddataselect):
+    def __init__(self, filemodelname, tokenizerfilename, dataselect):
 
         MultyLSTM.__filemodelname = filemodelname
         MultyLSTM.__tokenizerfilename = tokenizerfilename
         MultyLSTM.__dataselect = dataselect
-        MultyLSTM.__recognizeddataselect = recognizeddataselect
     @classmethod
     def __createmodel(cls, tokenizer, n_clases):
         model = Sequential()
@@ -144,13 +129,11 @@ class MultyLSTM(IModel):
 
     @classmethod
     def train(cls, target, n_clases, mode, epochs):
-
+        try:
             train = DB_Bridge.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
-            recognizedtrain = DB_Bridge.DB_Communication.get_data(cls.__recognizeddataselect)
-            recognizedtrain.text = recognizedtrain.text.astype(str)
 
-            df = pd.concat([train, recognizedtrain])
+            df = pd.concat([train])
             train = df[~df[target].isna()]
             train[target] = train[target].astype(int)
             train = train.drop_duplicates()
@@ -197,8 +180,6 @@ class MultyLSTM(IModel):
                 p.dump(tokenizer, handle, protocol=p.HIGHEST_PROTOCOL)
 
             ResultSavers.ResultSaver.saveRes(history, 'resultstraining_multy.png', 'accuracy')
-
-        # try:
-        #xcept:
-         #   print('The exception is in MultyLSTM.train')
+        except:
+            print('The exception is in MultyLSTM.train')
 
