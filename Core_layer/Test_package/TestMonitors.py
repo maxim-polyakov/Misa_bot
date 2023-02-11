@@ -15,10 +15,7 @@ class ITestMonitor(ABC):
 
 class TestMonitor(ITestMonitor):
     _bpred = Predictors.BinaryLSTM()
-    _nnpred = Predictors.NaiveBayes()
-    _rfpred = Predictors.RandomForest()
     _mpred = Predictors.MultyLSTM()
-    _xgpred = Predictors.Xgboost()
     _pr = TextPreprocessers.CommonPreprocessing()
     _dbc = DB_Bridge.DB_Communication()
     _mapa = Mapas.Mapa()
