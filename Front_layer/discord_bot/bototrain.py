@@ -2,19 +2,6 @@ from Front_layer import discord_bot
 from Core_layer.Bot_package import Bototrainers
 
 @discord_bot.bot.command()
-async def emotionstrain(ctx):
-    if ctx.author != discord_bot.bot.user:
-        if ctx.author.display_name == 'Seraphim' and ctx.author.discriminator == '8341':
-            lt = Bototrainers.LSTMtrain()
-            bt = Bototrainers.NaiveBayesTrain()
-
-
-            bt.emotionstrain()
-            lt.emotionstrain(30)
-        else:
-            await ctx.channel.send('😊')
-
-@discord_bot.bot.command()
 async def LSTMemotionstrain(ctx, arg):
     try:
         if ctx.author != discord_bot.bot.user:
@@ -114,15 +101,3 @@ async def LSTMtrain(ctx, arg):
                             './models/binary/results_training/resultstraining_binary.png'))
     except:
         await ctx.channel.send('😊')
-
-@discord_bot.bot.command()
-async def NaiveBayestrain(ctx, arg):
-    pass
-
-@discord_bot.bot.command()
-async def Randomforesttrain(ctx, arg):
-    pass
-
-@discord_bot.bot.command()
-async def XGBClassifiertrain(ctx, arg):
-    pass

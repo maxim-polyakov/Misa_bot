@@ -81,18 +81,18 @@ class TestMonitor(ITestMonitor):
         return emotion
 
     @classmethod
-    def _neurodesc(cls, text, text_message):
+    def _neurodesc(cls, text, text_message, modelpath):
         modelpaths = []
         tokenizerpaths = []
         fullPathModels = str(next(Path().rglob('models')))
         fullPathTokenizers = str(next(Path().rglob('tokenizers')))
-        modelarr = os.listdir(fullPathModels + '/binary/LSTM/')
-        tokenizerarr = os.listdir(fullPathTokenizers + '/binary/LSTM/')
+        modelarr = os.listdir(fullPathModels + modelpath)
+        tokenizerarr = os.listdir(fullPathTokenizers + modelpath)
 
         for model in modelarr:
-            modelpaths.append(str(fullPathModels) + '/binary/LSTM/' + str(model))
+            modelpaths.append(str(fullPathModels) + modelpath + str(model))
         for tokenizer in tokenizerarr:
-            tokenizerpaths.append(str(fullPathTokenizers) + '/binary/LSTM/' + str(tokenizer))
+            tokenizerpaths.append(str(fullPathTokenizers) + modelpath + str(tokenizer))
         emotion = ''
         predicts = []
         mapaslist = cls._mapaslist.getlistmapas()
@@ -105,13 +105,13 @@ class TestMonitor(ITestMonitor):
                               predicts)
 
     @classmethod
-    def monitor(cls, input_df, datatable):
+    def monitor(cls, input_df, datatable, modelpath):
         text = input_df['text']
         outstr = ''
         idx = 1
         for txt in text:
             lowertext = txt.lower()
-            outlist = cls._neurodesc(text, lowertext)
+            outlist = cls._neurodesc(text, lowertext, modelpath)
             if (outlist != None):
                 for outmes in outlist:
                     outstr += outmes
@@ -128,31 +128,5 @@ class TestMonitorLSTM(TestMonitor):
         df = DB_Bridge.DB_Communication.get_data(
             'SELECT id, text from validation_sets.markedvalidsethuman ORDER BY id ASC')
         datatable = 'markedvalidsetlstm'
-        super().monitor(df, datatable)
-
-class TestMonitorNaiveBayes(TestMonitor):
-    def __init__(self):
-        pass
-    @classmethod
-    def monitor(cls):
-        DB_Bridge.DB_Communication.delete_data(
-            'DELETE FROM validation_sets.markedvalidsetnaivebayes')
-
-        df = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text from validation_sets.markedvalidsethuman ORDER BY id ASC')
-        datatable = 'markedvalidsetnaivebayes'
-        super().monitor(df, datatable)
-
-
-class TestMonitorRandomForest(TestMonitor):
-    def __init__(self):
-        pass
-    @classmethod
-    def monitor(cls):
-        DB_Bridge.DB_Communication.delete_data(
-            'DELETE FROM validation_sets.markedvalidsetrandomforest')
-
-        df = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text from validation_sets.markedvalidsethuman ORDER BY id ASC')
-        datatable = 'markedvalidsetrandomforest'
-        super().monitor(df, datatable)
+        modelpath = '/binary/LSTM/'
+        super().monitor(df, datatable, modelpath)

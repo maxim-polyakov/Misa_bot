@@ -1,6 +1,5 @@
 from pathlib import Path
 from Deep_layer.NLP_package import Models
-from Deep_layer import NLP_package
 from abc import ABC, abstractmethod
 from Core_layer.Bot_package import Selects
 
@@ -91,58 +90,3 @@ class LSTMtrain(ITrain):
         trainer = Models.BinaryLSTM(filemodel, filetokenizer,
                                                 datasetfile, recognizeddata)
         trainer.train('trash', 'train', epochs)
-
-class NaiveBayesTrain(ITrain):
-    sel = Selects.Select()
-    @classmethod
-    def hitrain(cls):
-        filemodel = './models/binary/NaiveBayes/himodel.pickle'
-        filetokenizer = './tokenizers/binary/NaiveBayes/hivec.pickle'
-        datasetfile = cls.sel.SELECT_HI
-        recognizeddata = 'SELECT text, hi FROM recognized_sets.recognized_all_set WHERE ' + \
-                         ' (hi=0 or hi=1) ORDER BY random() LIMIT 3000'
-        trainer = Models.NaiveBayes(filemodel, filetokenizer, datasetfile, recognizeddata)
-        trainer.train('hi', 'train')
-
-    @classmethod
-    def thtrain(cls):
-        filemodel = './models/binary/NaiveBayes/thmodel.pickle'
-        filetokenizer = './tokenizers/binary/NaiveBayes/thvec.pickle'
-        datasetfile = cls.sel.SELECT_TH
-        recognizeddata = 'SELECT text, thanks FROM recognized_sets.recognized_all_set WHERE ' + \
-                         ' (thanks=0 or thanks=1) ORDER BY random() LIMIT 3000'
-        trainer = Models.NaiveBayes(filemodel, filetokenizer, datasetfile, recognizeddata)
-        trainer.train('thanks', 'train')
-
-    @classmethod
-    def businesstrain(cls):
-        filemodel = './models/binary/NaiveBayes/businessmodel.pickle'
-        filetokenizer = './tokenizers/binary/NaiveBayes/businessvec.pickle'
-        datasetfile = cls.sel.SELECT_BUSINESS
-        recognizeddata = 'SELECT text, business FROM recognized_sets.recognized_all_set WHERE ' + \
-                         ' (business=0 or business=1) ORDER BY random() LIMIT 3000'
-        trainer = Models.NaiveBayes(filemodel, filetokenizer, datasetfile, recognizeddata)
-        trainer.train('business', 'train')
-
-    @classmethod
-    def weathertrain(cls):
-        filemodel = './models/binary/NaiveBayes/weathermodel.pickle'
-        filetokenizer = './tokenizers/binary/NaiveBayes/weathervec.pickle'
-        datasetfile = cls.sel.SELECT_WEATHER
-        recognizeddata = 'SELECT text, weather FROM recognized_sets.recognized_all_set WHERE ' + \
-                         ' (weather=0 or weather=1) ORDER BY random() LIMIT 3000'
-        trainer = Models.NaiveBayes(filemodel, filetokenizer, datasetfile, recognizeddata)
-        trainer.train('weather', 'train')
-
-    @classmethod
-    def emotionstrain(cls):
-        filemodel = './models/multy/NaiveBayes/emotionsmodel.pickle'
-        filetokenizer = './tokenizers/multy/NaiveBayes/emotionsvec.pickle'
-        datasetfile = cls.sel.SELECT_EMOTIONS
-        recognizeddata = 'SELECT text, emotionid FROM recognized_sets.recognized_all_set'
-        trainer = Models.NaiveBayes(filemodel, filetokenizer, datasetfile, recognizeddata)
-        trainer.train('emotionid', 'train')
-
-    @classmethod
-    def trashtrain(cls):
-        pass
