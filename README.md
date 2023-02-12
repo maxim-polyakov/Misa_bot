@@ -35,7 +35,11 @@ Misa_bot is a three-layer architecture python application
           d) IAnalyzer
         
         
-    3) Command_package - this package is created to implement the command action logic.
+    3) Command_package - this package is created to implement the command's action logic.
+    
+       Command package contains the next entityes:
+         a) IAction
+         b) ICommandAnalyzer
     
     4) Test_package - this package is created as for testing all application's entities. 
 
