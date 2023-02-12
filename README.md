@@ -38,10 +38,15 @@ Misa_bot is a three-layer architecture python application
     3) Command_package - this package is created to implement the command's action logic.
     
        Command package contains the next entityes:
+       
          a) IAction
          b) ICommandAnalyzer
     
     4) Test_package - this package is created as for testing all application's entities. 
+       
+       Test package contains the next entityes:
+         a) ITestCase
+         b) ITestMonitor
 
   ## Deep layer
 
@@ -81,3 +86,5 @@ Misa_bot is a three-layer architecture python application
           
     2) tokenizers
           a) The tokenizer for this LSTM model
+          
+  Also architecture contains a SistersMemory database which contains all samples for model's training.
