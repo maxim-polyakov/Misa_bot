@@ -1,7 +1,14 @@
 from Deep_layer.NLP_package import TextPreprocessers
 from Core_layer.Command_package.CommandActions import CommandAction
+from abc import ABC, abstractmethod
 
-class CommandAnalyzer:
+class ICommandAnalyzer(ABC):
+
+    @abstractmethod
+    def commandanalyse(self, message_text):
+        pass
+
+class CommandAnalyzer(ICommandAnalyzer):
     command_flag = 0
     __pred = TextPreprocessers.Preprocessing()
     __pr = TextPreprocessers.CommonPreprocessing()

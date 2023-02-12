@@ -5,6 +5,7 @@ from Deep_layer.API_package import Translators as trans
 from Deep_layer.DB_package import DB_Bridge as bridge
 from Core_layer.Test_package import TestMonitors as tmon
 from Core_layer.Answer_package import Answers as answ
+from abc import ABC, abstractmethod
 
 class TestRun:
 
@@ -17,7 +18,33 @@ class TestRun:
     #case.test_bridge()
     pass
 
-class MyTestCase(unittest.TestCase):
+class ITestCase(unittest.TestCase, ABC):
+
+    @abstractmethod
+    def test_calc(self):
+        pass
+
+    @abstractmethod
+    def test_founder(self):
+        pass
+
+    @abstractmethod
+    def test_trans(self):
+        pass
+
+    @abstractmethod
+    def test_bridge(self):
+        pass
+
+    @abstractmethod
+    def test_tmon(self):
+        pass
+
+    @abstractmethod
+    def test_answer(self):
+        pass
+
+class MyTestCase(ITestCase):
 
     def test_calc(self):
         math = calc.SympyCalculator()
