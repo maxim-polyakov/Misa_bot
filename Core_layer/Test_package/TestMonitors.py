@@ -102,17 +102,20 @@ class TestMonitor(ITestMonitor):
 
     @classmethod
     def monitor(cls, input_df, datatable, modelpath):
-        text = input_df['text']
-        outstr = ''
-        idx = 1
-        for txt in text:
-            lowertext = txt.lower()
-            outlist = cls._neurodesc(text, lowertext, modelpath)
-            if (outlist != None):
-                for outmes in outlist:
-                    outstr += outmes
-            DB_Bridge.DB_Communication.insert_to(idx, lowertext, outstr, datatable)
-            idx = idx + 1
+        try:
+            text = input_df['text']
+            outstr = ''
+            idx = 1
+            for txt in text:
+                lowertext = txt.lower()
+                outlist = cls._neurodesc(text, lowertext, modelpath)
+                if (outlist != None):
+                    for outmes in outlist:
+                        outstr += outmes
+                DB_Bridge.DB_Communication.insert_to(idx, lowertext, outstr, datatable)
+                idx = idx + 1
+        except:
+            print('input_df[\'text\'] == None')
 
 class TestMonitorLSTM(TestMonitor):
     def __init__(self):
