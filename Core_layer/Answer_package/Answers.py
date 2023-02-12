@@ -3,6 +3,8 @@ from Deep_layer.DB_package import DB_Bridge
 from Deep_layer.NLP_package import GPT
 import random
 import re
+from functools import reduce
+
 class IAnswer(ABC):
 
     @abstractmethod
@@ -33,7 +35,8 @@ class QuestionAnswer(IAnswer):
         text = re.sub('  ', ' ', generated_text.replace('Ответ', '').replace('Вопрос', '').replace(text, '')
                       .replace(':', '').replace('\'', '').lstrip(' '))
         tokens = text.split(' ')
-        tokens = list(set(tokens))
+        tokens = reduce(lambda s, x: s ^ {x}, tokens, set())
+        #tokens = list(set(tokens))
         text = ' '.join(tokens).rstrip('\n')
         return text
 
