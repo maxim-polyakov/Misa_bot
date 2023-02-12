@@ -32,7 +32,7 @@ Misa_bot is a three-layer architecture python application
           a) ITrain
           b) ICleaner
           c) IMonitor
-          d) IAnalizer
+          d) IAnalyzer
         
         
     3) Command_package - this package is created to implement the command action logic.
