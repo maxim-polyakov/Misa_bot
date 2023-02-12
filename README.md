@@ -1,4 +1,4 @@
-# MISA_BOT
+# Misa_bot
 
 Misa_bot is a three-layer architecture python application
 
