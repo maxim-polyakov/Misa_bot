@@ -125,7 +125,7 @@ class DB_Communication(IDB_Communication):
     @classmethod
     def get_data(cls, select):
         with Connections.PostgresConnection.conn_remote.cursor():
-            df = pd.read_sql(select, Connections.PostgresConnection.conn_remote.cursor())
+            df = pd.read_sql(select, Connections.PostgresConnection.conn_remote)
         Connections.PostgresConnection.conn_remote.close()
         return df
 
