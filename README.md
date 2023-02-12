@@ -2,7 +2,7 @@
 
 # Misa_bot
 
-Misa_bot is a three-layer architecture python application
+Misa_bot is a three-layer architecture python application.
 
   ## Front layer
 
