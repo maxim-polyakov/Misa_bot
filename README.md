@@ -87,6 +87,5 @@ Misa_bot is a three-layer architecture python application
     2) tokenizers
           a) The tokenizer for this LSTM model
           
-  Also architecture contains a SistersMemory database which contains samples for model's trainings.
-  
-  
+  Also architecture contains SistersMemory - general database which contains samples for models' trainings.
+    
