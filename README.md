@@ -1,3 +1,5 @@
+![plot](https://github.com/maxim-polyakov/Misa_bot/blob/train_dev_branch/Misa_architecture.png)
+
 # Misa_bot
 
 Misa_bot is a three-layer architecture python application
@@ -75,8 +77,3 @@ Misa_bot is a three-layer architecture python application
           
     2) tokenizers
           a) The tokenizer for this LSTM model
-          
-          
-          
-![plot](https://github.com/maxim-polyakov/Misa_bot/blob/train_dev_branch/Misa_architecture.png)
-  
