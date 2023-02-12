@@ -23,7 +23,7 @@ class MessageMonitor(IMonitor):
     _dbc = DB_Bridge.DB_Communication()
     _mapa = Mapas.Mapa()
     _mapaslist = Mapas.ListMapas()
-    qa = Answers.QuestionAnswer()
+    _qa = Answers.QuestionAnswer()
 
     @classmethod
     def __classify(cls, chosen_item):
@@ -46,7 +46,7 @@ class MessageMonitor(IMonitor):
             return commands.commandanalyse(text_message)
         elif (text_message.count('?') > 0):
             outlist = []
-            answer = cls.qa.answer(text_message)
+            answer = cls._qa.answer(text_message)
             outlist.append(answer)
         else:
             outlist = []

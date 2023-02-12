@@ -4,6 +4,7 @@ from Deep_layer.API_package import Finders as find
 from Deep_layer.API_package import Translators as trans
 from Deep_layer.DB_package import DB_Bridge as bridge
 from Core_layer.Test_package import TestMonitors as tmon
+from Core_layer.Answer_package import Answers as answ
 
 class TestRun:
 
@@ -48,6 +49,11 @@ class MyTestCase(unittest.TestCase):
     def test_tmon(self):
         testmonlstm = tmon.TestMonitorLSTM()
         testmonlstm.monitor()
+
+    def text_answer(self):
+        answer = answ.QuestionAnswer()
+        answer = answer.answer('тут?')
+        self.assertNotEqual(answer, 'Да а что? а что?')
 
 if __name__ == '__main__':
     unittest.main()

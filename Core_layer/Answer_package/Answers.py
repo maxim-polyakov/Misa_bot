@@ -33,6 +33,8 @@ class QuestionAnswer(IAnswer):
         generated_text = self.__gpt.generate("Вопрос: '" + text + "\'")
         text = re.sub('  ', ' ', generated_text.replace('Ответ', '').replace('Вопрос', '').replace(text, '')
                       .replace(':', '').replace('\'', '').lstrip(' '))
+        tokens = set(text.split(' '))
+        text = ' '.join(tokens).rstrip('\n')
         return text
 
 class CommonAnswer(IAnswer):
@@ -43,4 +45,5 @@ class CommonAnswer(IAnswer):
         text = re.sub('  ', ' ',
                       generated_text.replace('Ответ', '').replace('Вопрос', '').replace(text, '').replace(':', '')
                       .replace('\'', '').lstrip(' '))
+
         return text
