@@ -3,7 +3,7 @@ from Deep_layer.NLP_package import Models
 from abc import ABC, abstractmethod
 from Core_layer.Bot_package import Selects
 
-class ITrain(ABC):
+class ITrainer(ABC):
     @abstractmethod
     def hitrain(cls):
         pass
@@ -23,7 +23,7 @@ class ITrain(ABC):
     def trashtrain(cls):
         pass
 
-class LSTMtrain(ITrain):
+class LSTMtrain(ITrainer):
     sel = Selects.Select()
     @classmethod
     def hitrain(cls, epochs):
