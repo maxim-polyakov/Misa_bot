@@ -50,10 +50,10 @@ class MyTestCase(unittest.TestCase):
         testmonlstm = tmon.TestMonitorLSTM()
         testmonlstm.monitor()
 
-    def text_answer(self):
+    def test_answer(self):
         answer = answ.QuestionAnswer()
         answer = answer.answer('тут?')
-        self.assertNotEqual(answer, 'Да а что? а что?')
+        self.assertNotEqual(answer, 'да а что?')
 
 if __name__ == '__main__':
     unittest.main()

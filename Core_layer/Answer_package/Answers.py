@@ -13,7 +13,6 @@ class RandomAnswer(IAnswer):
     __inpt = DB_Bridge.DB_Communication.get_data('SELECT * FROM answer_sets.hianswer')
     __data = __inpt
     __df = []
-
     @classmethod
     def answer(self):
         try:
@@ -33,7 +32,8 @@ class QuestionAnswer(IAnswer):
         generated_text = self.__gpt.generate("Вопрос: '" + text + "\'")
         text = re.sub('  ', ' ', generated_text.replace('Ответ', '').replace('Вопрос', '').replace(text, '')
                       .replace(':', '').replace('\'', '').lstrip(' '))
-        tokens = set(text.split(' '))
+        tokens = text.split(' ')
+        tokens = list(set(tokens))
         text = ' '.join(tokens).rstrip('\n')
         return text
 
@@ -45,5 +45,4 @@ class CommonAnswer(IAnswer):
         text = re.sub('  ', ' ',
                       generated_text.replace('Ответ', '').replace('Вопрос', '').replace(text, '').replace(':', '')
                       .replace('\'', '').lstrip(' '))
-
         return text
