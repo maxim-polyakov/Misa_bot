@@ -34,10 +34,6 @@ class QuestionAnswer(IAnswer):
         generated_text = self.__gpt.generate("Вопрос: '" + text + "\'")
         text = re.sub('  ', ' ', generated_text.replace('Ответ', '').replace('Вопрос', '').replace(text, '')
                       .replace(':', '').replace('\'', '').lstrip(' '))
-        tokens = text.split(' ')
-        tokens = reduce(lambda s, x: s ^ {x}, tokens, set())
-        #tokens = list(set(tokens))
-        text = ' '.join(tokens).rstrip('\n')
         return text
 
 class CommonAnswer(IAnswer):
