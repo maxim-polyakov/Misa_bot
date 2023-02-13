@@ -5,9 +5,9 @@ from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package import TextPreprocessers
 from Deep_layer.DB_package import DB_Bridge
 import os
-from Core_layer.Bot_package.Monitors import Interfaces
+from Core_layer.Bot_package.Monitors import IMonitor
 
-class MessageMonitor(Interfaces.IMonitor):
+class MessageMonitor(IMonitor.IMonitor):
 
     _bpred = Predictors.BinaryLSTM()
     _mpred = Predictors.MultyLSTM()

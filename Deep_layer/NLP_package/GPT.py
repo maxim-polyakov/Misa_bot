@@ -11,6 +11,7 @@ class IGpt(ABC):
         pass
 
 class Gpt(IGpt):
+
     @classmethod
     def generate(cls, text):
         try:
