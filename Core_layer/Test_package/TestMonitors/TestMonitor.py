@@ -1,26 +1,21 @@
+import os
 from pathlib import Path
+from Core_layer.Test_package.TestMonitors import ITestMonitor
 from Deep_layer.NLP_package import Predictors
-from Core_layer.Answer_package.Answers import Classes
 from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package import TextPreprocessers
-from abc import ABC, abstractmethod
-from Deep_layer.DB_package import DB_Bridge
-import os
+from Deep_layer.DB_package.DB_Bridge import DB_Communication
 
-class ITestMonitor(ABC):
 
-    @abstractmethod
-    def monitor(self):
-        pass
+class TestMonitor(ITestMonitor.ITestMonitor):
 
-class TestMonitor(ITestMonitor):
     _bpred = Predictors.BinaryLSTM()
     _mpred = Predictors.MultyLSTM()
     _pr = TextPreprocessers.CommonPreprocessing()
-    _dbc = DB_Bridge.DB_Communication()
+    _dbc = DB_Communication.DB_Communication()
     _mapa = Mapas.Mapa()
     _mapaslist = Mapas.ListMapas()
-    qa = Classes.QuestionAnswer()
+
 
     @classmethod
     def __classify_question(cls, chosen_item):
@@ -112,21 +107,7 @@ class TestMonitor(ITestMonitor):
                 if (outlist != None):
                     for outmes in outlist:
                         outstr += outmes
-                DB_Bridge.DB_Communication.insert_to(idx, lowertext, outstr, datatable)
+                DB_Communication.DB_Communication.insert_to(idx, lowertext, outstr, datatable)
                 idx = idx + 1
         except:
             print('input_df[\'text\'] == None')
-
-
-class TestMonitorLSTM(TestMonitor):
-    def __init__(self):
-        pass
-    @classmethod
-    def monitor(cls):
-        DB_Bridge.DB_Communication.delete_data(
-            'DELETE FROM validation_sets.markedvalidsetlstm')
-        df = DB_Bridge.DB_Communication.get_data(
-            'SELECT id, text from validation_sets.markedvalidsethuman ORDER BY id ASC')
-        datatable = 'markedvalidsetlstm'
-        modelpath = '/binary/LSTM/'
-        super().monitor(df, datatable, modelpath)

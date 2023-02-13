@@ -1,5 +1,5 @@
 from Front_layer import discord_bot
-from Core_layer.Bot_package import Bototrainers
+from Core_layer.Bot_package.Bototrainers import LSTMtrain
 
 @discord_bot.bot.command()
 async def LSTMemotionstrain(ctx, arg):
@@ -10,7 +10,7 @@ async def LSTMemotionstrain(ctx, arg):
                     epochs = message_text_array.pop(0)
                     lt.emotionstrain(int(epochs))
                     return './models/binary/results_training/resultstraining_binary.png'
-                lt = Bototrainers.LSTMtrain()
+                lt = LSTMtrain.LSTMtrain()
                 if (len(arg) > 0):
                     message_text_array = arg.split()
                     await ctx.channel.send(
@@ -28,7 +28,7 @@ async def LSTMtrain(ctx, arg):
     try:
         if ctx.author != discord_bot.bot.user:
             if ctx.author.display_name == 'Seraphim' and ctx.author.discriminator == '8341':
-                lt = Bototrainers.LSTMtrain()
+                lt = LSTMtrain.LSTMtrain()
                 if (len(arg) > 0):
                     message_text_array = arg
                     epochs = message_text_array.pop(0)

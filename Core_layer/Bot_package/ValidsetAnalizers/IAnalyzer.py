@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class IAnalizer(ABC):
+class IAnalyzer(ABC):
 
     @abstractmethod
     def analyze(self):

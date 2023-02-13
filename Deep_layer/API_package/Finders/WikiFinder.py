@@ -1,13 +1,7 @@
 import wikipedia as w
-from abc import ABC, abstractmethod
+from Deep_layer.API_package.Finders import IFinder
 
-class IFinder(ABC):
-
-    @abstractmethod
-    def find(cls):
-        pass
-
-class WikiFinder(IFinder):
+class WikiFinder(IFinder.IFinder):
 
     @classmethod
     def find(cls, inptmes):

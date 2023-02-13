@@ -1,29 +1,12 @@
 import pandas as pd
 from Deep_layer.NLP_package import TextPreprocessers
 from multipledispatch import dispatch
-from abc import ABC, abstractmethod
 from Deep_layer.DB_package import Connections
+from Deep_layer.DB_package.DB_Bridge import IDB_Communication
 import psycopg2
 
-class IDB_Communication(ABC):
 
-    @abstractmethod
-    def insert_to(cls):
-        pass
-
-    @abstractmethod
-    def get_data(cls):
-        pass
-
-    @abstractmethod
-    def delete_data(cls, delete):
-        pass
-
-    @abstractmethod
-    def checkcommands(cls):
-        pass
-
-class DB_Communication(IDB_Communication):
+class DB_Communication(IDB_Communication.IDB_Communication):
 
     @classmethod
     @dispatch(object, object, object, object, object, object, object)

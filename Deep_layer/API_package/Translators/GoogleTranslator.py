@@ -2,15 +2,10 @@ from googletrans import Translator
 import pandas as pd
 from Deep_layer.DB_package import DB_Bridge
 from multipledispatch import dispatch
-from abc import ABC, abstractmethod
+from Deep_layer.API_package.Translators import ITranslator
 
-class ITranslator(ABC):
 
-    @abstractmethod
-    def translate(self):
-        pass
-
-class GoogleTranslator(ITranslator):
+class GoogleTranslator(ITranslator.ITranslator):
 
     _translator = Translator()
 

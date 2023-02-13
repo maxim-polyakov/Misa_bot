@@ -1,21 +1,28 @@
+import unittest
 from abc import ABC, abstractmethod
 
-class ITrainer(ABC):
+class ITestCase(unittest.TestCase, ABC):
+
     @abstractmethod
-    def hitrain(cls):
+    def test_calc(self):
         pass
+
     @abstractmethod
-    def thtrain(cls):
+    def test_founder(self):
         pass
+
     @abstractmethod
-    def businesstrain(cls):
+    def test_trans(self):
         pass
+
     @abstractmethod
-    def weathertrain(cls):
+    def test_bridge(self):
         pass
+
     @abstractmethod
-    def emotionstrain(cls):
+    def test_tmon(self):
         pass
+
     @abstractmethod
-    def trashtrain(cls):
+    def test_answer(self):
         pass

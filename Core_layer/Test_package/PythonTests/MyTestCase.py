@@ -1,11 +1,11 @@
 import unittest
-from Deep_layer.API_package import Calculators as calc
-from Deep_layer.API_package import Finders as find
-from Deep_layer.API_package import Translators as trans
+from Deep_layer.API_package.Calculators import SympyCalculator as calc
+from Deep_layer.API_package.Finders import WikiFinder as find
+from Deep_layer.API_package.Translators import GoogleTranslator as trans
 from Deep_layer.DB_package import DB_Bridge as bridge
-from Core_layer.Test_package import TestMonitors as tmon
-from Core_layer.Answer_package import Answers as answ
-from abc import ABC, abstractmethod
+from Core_layer.Test_package.TestMonitors import TestMonitorLSTM as tmon
+from Core_layer.Answer_package.Answers import QuestionAnswer as answ
+from Core_layer.Test_package.PythonTests import ITestCase
 
 class TestRun:
 
@@ -18,33 +18,7 @@ class TestRun:
     #case.test_bridge()
     pass
 
-class ITestCase(unittest.TestCase, ABC):
-
-    @abstractmethod
-    def test_calc(self):
-        pass
-
-    @abstractmethod
-    def test_founder(self):
-        pass
-
-    @abstractmethod
-    def test_trans(self):
-        pass
-
-    @abstractmethod
-    def test_bridge(self):
-        pass
-
-    @abstractmethod
-    def test_tmon(self):
-        pass
-
-    @abstractmethod
-    def test_answer(self):
-        pass
-
-class MyTestCase(ITestCase):
+class MyTestCase(ITestCase.ITestCase):
 
     def test_calc(self):
         math = calc.SympyCalculator()

@@ -1,10 +1,10 @@
 from Deep_layer.NLP_package import TextPreprocessers
-from Core_layer.Command_package.CommandActions import Classes
-from Core_layer.Command_package.Commands import Interfaces
+from Core_layer.Command_package.CommandActions import CommandAction
+from Core_layer.Command_package.Commands import ICommandAnalyzer
 
 
-class CommandAnalyzer(Interfaces.ICommandAnalyzer):
-    command_flag = 0
+class CommandAnalyzer(ICommandAnalyzer.ICommandAnalyzer):
+
     __pred = TextPreprocessers.Preprocessing()
     __pr = TextPreprocessers.CommonPreprocessing()
     __cpr = TextPreprocessers.CommandPreprocessing()
@@ -18,7 +18,7 @@ class CommandAnalyzer(Interfaces.ICommandAnalyzer):
         self.__mesentype = mesentype
 
     def __action_step(self, chosen_item, message_text):
-        ac = Classes.CommandAction(self.boto, self.message, message_text)
+        ac = CommandAction.CommandAction(self.boto, self.message, message_text)
         try:
             info_dict = {
                 'атаковать': ac.fas,

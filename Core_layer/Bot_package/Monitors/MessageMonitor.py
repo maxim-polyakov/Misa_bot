@@ -1,26 +1,27 @@
 from pathlib import Path
 from Deep_layer.NLP_package import Predictors
-from Core_layer.Answer_package.Answers import Classes
+from Core_layer.Answer_package.Answers import RandomAnswer
+from Core_layer.Answer_package.Answers import QuestionAnswer
 from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package import TextPreprocessers
-from Deep_layer.DB_package import DB_Bridge
-import os
+from Deep_layer.DB_package.DB_Bridge import DB_Communication
 from Core_layer.Bot_package.Monitors import IMonitor
+import os
 
 class MessageMonitor(IMonitor.IMonitor):
 
     _bpred = Predictors.BinaryLSTM()
     _mpred = Predictors.MultyLSTM()
     _pr = TextPreprocessers.CommonPreprocessing()
-    _dbc = DB_Bridge.DB_Communication()
+    _dbc = DB_Communication.DB_Communication()
     _mapa = Mapas.Mapa()
     _mapaslist = Mapas.ListMapas()
-    _qa = Classes.QuestionAnswer()
+    _qa = QuestionAnswer.QuestionAnswer()
 
     @classmethod
     def __classify(cls, chosen_item):
         try:
-            ra = Classes.RandomAnswer()
+            ra = RandomAnswer.RandomAnswer()
             info_dict = {
                 'Приветствие': str(ra.answer()[0]) + ' ',
                 'Благодарность': 'не за что. ',
@@ -87,7 +88,7 @@ class MessageMonitor(IMonitor.IMonitor):
             lowertext = message.content.lower()
         else:
             lowertext = message.text.lower()
-        DB_Bridge.DB_Communication.insert_to(lowertext)
+        DB_Communication.DB_Communication.insert_to(lowertext)
         outstr = ''
         if (lowertext.count('миса') > 0 or lowertext.lower().count('misa') > 0):
             lowertext = lowertext.replace('миса ', '').replace('misa ', '')

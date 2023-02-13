@@ -1,10 +1,10 @@
 from pathlib import Path
 from Deep_layer.NLP_package import Models
 from Core_layer.Bot_package import Selects
-from Core_layer.Bot_package.Bototrainers import Interfaces
+from Core_layer.Bot_package.Bototrainers import ITrainer
 
 
-class LSTMtrain(Interfaces.ITrainer):
+class LSTMtrain(ITrainer.ITrainer):
     sel = Selects.Select()
     @classmethod
     def hitrain(cls, epochs):
