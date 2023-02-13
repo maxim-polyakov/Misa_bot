@@ -1,6 +1,6 @@
 import nest_asyncio
 import Front_layer.discord_bot as db
-from Core_layer.Test_package.PythonTests import MyTestCase as PyTest
+from Core_layer.Test_package.PythonTests import TestRun as PyTest
 from Core_layer.Bot_package.Token import Token
 from Front_layer.discord_bot.bototrain import lstmtrain
 from Front_layer.discord_bot import messagemonitor
