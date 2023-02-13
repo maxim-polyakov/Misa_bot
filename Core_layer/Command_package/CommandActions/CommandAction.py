@@ -1,4 +1,4 @@
-from Deep_layer.NLP_package import TextPreprocessers
+from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing, Preprocessing
 from Deep_layer.API_package.Calculators import SympyCalculator
 from Deep_layer.API_package.Finders import WikiFinder
 from Deep_layer.API_package.Translators import GoogleTranslator
@@ -10,8 +10,8 @@ class CommandAction(IAction.IAction):
     message = None
     message_text = None
     
-    __pred = TextPreprocessers.Preprocessing()
-    __pr = TextPreprocessers.CommonPreprocessing()
+    __pred = Preprocessing.Preprocessing()
+    __pr = CommonPreprocessing.CommonPreprocessing()
 
     def __init__(self, boto, message, message_text):
         CommandAction.message_text = message_text

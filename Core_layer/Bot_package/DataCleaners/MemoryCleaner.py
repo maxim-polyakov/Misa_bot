@@ -1,10 +1,10 @@
-from Deep_layer.NLP_package import TextPreprocessers
+from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 from Core_layer.Bot_package.DataCleaners import ICleaner
 
 
 class MemoryCleaner(ICleaner.ICleaner):
-    __pr = TextPreprocessers.CommonPreprocessing()
+    __pr = CommonPreprocessing.CommonPreprocessing()
     dbname = None
 
     def __init__(self, dbname):

@@ -1,18 +1,18 @@
 from pathlib import Path
-from Deep_layer.NLP_package import Predictors
+from Deep_layer.NLP_package.Predictors import BinaryLSTM, MultyLSTM
 from Core_layer.Answer_package.Answers import RandomAnswer
 from Core_layer.Answer_package.Answers import QuestionAnswer
 from Deep_layer.NLP_package import Mapas
-from Deep_layer.NLP_package import TextPreprocessers
+from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 from Core_layer.Bot_package.Monitors import IMonitor
 import os
 
 class MessageMonitor(IMonitor.IMonitor):
 
-    _bpred = Predictors.BinaryLSTM()
-    _mpred = Predictors.MultyLSTM()
-    _pr = TextPreprocessers.CommonPreprocessing()
+    _bpred = BinaryLSTM.BinaryLSTM()
+    _mpred = MultyLSTM.MultyLSTM()
+    _pr = CommonPreprocessing.CommonPreprocessing()
     _dbc = DB_Communication.DB_Communication()
     _mapa = Mapas.Mapa()
     _mapaslist = Mapas.ListMapas()

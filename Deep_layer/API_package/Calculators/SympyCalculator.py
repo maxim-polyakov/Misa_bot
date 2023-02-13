@@ -1,5 +1,5 @@
 from sympy import *
-from Deep_layer.NLP_package import TextPreprocessers as tp
+from Deep_layer.NLP_package.TextPreprocessers import QuestionPreprocessing as tp
 from Deep_layer.API_package.Calculators import ICalculator
 
 class SympyCalculator(ICalculator.ICalculator):

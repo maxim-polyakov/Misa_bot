@@ -1,17 +1,17 @@
 import os
 from pathlib import Path
 from Core_layer.Test_package.TestMonitors import ITestMonitor
-from Deep_layer.NLP_package import Predictors
+from Deep_layer.NLP_package.Predictors import BinaryLSTM, MultyLSTM
 from Deep_layer.NLP_package import Mapas
-from Deep_layer.NLP_package import TextPreprocessers
+from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 
 
 class TestMonitor(ITestMonitor.ITestMonitor):
 
-    _bpred = Predictors.BinaryLSTM()
-    _mpred = Predictors.MultyLSTM()
-    _pr = TextPreprocessers.CommonPreprocessing()
+    _bpred = BinaryLSTM.BinaryLSTM()
+    _mpred = MultyLSTM.MultyLSTM()
+    _pr = CommonPreprocessing.CommonPreprocessing()
     _dbc = DB_Communication.DB_Communication()
     _mapa = Mapas.Mapa()
     _mapaslist = Mapas.ListMapas()

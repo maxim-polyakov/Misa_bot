@@ -1,13 +1,13 @@
-from Deep_layer.NLP_package import TextPreprocessers
+from Deep_layer.NLP_package.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
 from Core_layer.Command_package.CommandActions import CommandAction
 from Core_layer.Command_package.Commands import ICommandAnalyzer
 
 
 class CommandAnalyzer(ICommandAnalyzer.ICommandAnalyzer):
 
-    __pred = TextPreprocessers.Preprocessing()
-    __pr = TextPreprocessers.CommonPreprocessing()
-    __cpr = TextPreprocessers.CommandPreprocessing()
+    __pred = Preprocessing.Preprocessing()
+    __pr = CommonPreprocessing.CommonPreprocessing()
+    __cpr = CommandPreprocessing.CommandPreprocessing()
     __nothingflg = 0
     __cash = ''
     __mesentype = 'telegram'

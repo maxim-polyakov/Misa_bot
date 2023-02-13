@@ -1,9 +1,9 @@
-from Deep_layer.NLP_package import GPT
+from Deep_layer.NLP_package.GPT import Gpt
 import re
 from Core_layer.Answer_package.Answers import IAnswer
 
 class QuestionAnswer(IAnswer.IAnswer):
-    __gpt = GPT.Gpt
+    __gpt = Gpt.Gpt
 
     @classmethod
     def answer(self, text):
