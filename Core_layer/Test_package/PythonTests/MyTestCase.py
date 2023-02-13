@@ -2,7 +2,7 @@ import unittest
 from Deep_layer.API_package.Calculators import SympyCalculator as calc
 from Deep_layer.API_package.Finders import WikiFinder as find
 from Deep_layer.API_package.Translators import GoogleTranslator as trans
-from Deep_layer.DB_package import DB_Bridge as bridge
+from Deep_layer.DB_package.DB_Bridge import DB_Communication as bridge
 from Core_layer.Test_package.TestMonitors import TestMonitorLSTM as tmon
 from Core_layer.Answer_package.Answers import QuestionAnswer as answ
 from Core_layer.Test_package.PythonTests import ITestCase
@@ -44,7 +44,7 @@ class MyTestCase(ITestCase.ITestCase):
     def test_bridge(self):
         con = bridge.DB_Communication()
         data = con.get_data('SELECT * FROM assistant_sets.test_table')
-        con.insert_to(data,'test_table')
+        con.insert_to(data, 'test_table')
         self.assertNotEqual(len(data), 0)
 
     def test_tmon(self):
