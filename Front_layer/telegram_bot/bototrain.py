@@ -1,5 +1,5 @@
 from Front_layer import telegram_bot
-from Core_layer.Bot_package import Bototrainers
+from Core_layer.Bot_package.Bototrainers import Classes
 from pathlib import Path
 
 @telegram_bot.dp.message_handler(commands='LSTMtrain')
@@ -7,7 +7,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
         message.text = message.text.replace('/LSTMtrain ', ' ')
-        lt = Bototrainers.LSTMtrain()
+        lt = Classes.LSTMtrain()
         message_text_array = message.text.split()
 
         if(len(message.text) > 0):
@@ -58,7 +58,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
         message.text = message.text.replace('/LSTMweathertrain ', ' ')
-        lt = Bototrainers.LSTMtrain()
+        lt = Classes.LSTMtrain()
         message_text_array = message.text.split()
 
         if (len(message.text) > 0):
@@ -80,7 +80,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
         message.text = message.text.replace('/LSTMtrashtrain ', ' ')
-        lt = Bototrainers.LSTMtrain()
+        lt = Classes.LSTMtrain()
         message_text_array = message.text.split()
 
         if (len(message.text) > 0):
@@ -102,7 +102,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
         message.text = message.text.replace('/LSTMhitrain ', ' ')
-        lt = Bototrainers.LSTMtrain()
+        lt = Classes.LSTMtrain()
         message_text_array = message.text.split()
 
         if (len(message.text) > 0):
@@ -122,7 +122,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
         message.text = message.text.replace('/LSTMthtrain ', ' ')
-        lt = Bototrainers.LSTMtrain()
+        lt = Classes.LSTMtrain()
         message_text_array = message.text.split()
 
         if (len(message.text) > 0):
@@ -142,7 +142,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
         message.text = message.text.replace('/LSTMbusinesstrain ', ' ')
-        lt = Bototrainers.LSTMtrain()
+        lt = Classes.LSTMtrain()
         message_text_array = message.text.split()
 
         if(len(message.text) > 0):
@@ -162,7 +162,7 @@ async def get_user_text(message):
 async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         message.text = message.text.replace('/LSTMemotionstrain ', ' ')
-        lt = Bototrainers.LSTMtrain()
+        lt = Classes.LSTMtrain()
         message_text_array = message.text.split()
         if(len(message.text) > 0):
             epochs = message_text_array.pop(0)

@@ -1,13 +1,13 @@
 from Front_layer import telegram_bot
 from Core_layer.Test_package import TestMonitors
-from Core_layer.Bot_package import ValidsetAnalizers
+from Core_layer.Bot_package.ValidsetAnalizers import Classes
 
 @telegram_bot.dp.message_handler(commands=['testmonitor'])
 async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
          tmonlstm = TestMonitors.TestMonitorLSTM()
          tmonlstm.monitor()
-         an = ValidsetAnalizers.ValidsetAlanizer()
+         an = Classes.ValidsetAlanizer()
          analizedict = an.analize()
          maxanalizedict = max(analizedict.values())[0]
          LSTMACC = analizedict['LSTMACC'][0]
@@ -20,7 +20,7 @@ async def get_user_text(message):
 @telegram_bot.dp.message_handler(commands=['analyze'])
 async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
-         an = ValidsetAnalizers.ValidsetAlanizer()
+         an = Classes.ValidsetAlanizer()
          analizedict = an.analize('analyzetable')
          maxanalizedict = max(analizedict.values())[0]
          LSTMACC = analizedict['LSTMACC'][0]

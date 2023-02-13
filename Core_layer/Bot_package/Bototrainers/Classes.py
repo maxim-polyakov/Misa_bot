@@ -1,29 +1,10 @@
 from pathlib import Path
 from Deep_layer.NLP_package import Models
-from abc import ABC, abstractmethod
 from Core_layer.Bot_package import Selects
+from Core_layer.Bot_package.Bototrainers import Interfaces
 
-class ITrainer(ABC):
-    @abstractmethod
-    def hitrain(cls):
-        pass
-    @abstractmethod
-    def thtrain(cls):
-        pass
-    @abstractmethod
-    def businesstrain(cls):
-        pass
-    @abstractmethod
-    def weathertrain(cls):
-        pass
-    @abstractmethod
-    def emotionstrain(cls):
-        pass
-    @abstractmethod
-    def trashtrain(cls):
-        pass
 
-class LSTMtrain(ITrainer):
+class LSTMtrain(Interfaces.ITrainer):
     sel = Selects.Select()
     @classmethod
     def hitrain(cls, epochs):

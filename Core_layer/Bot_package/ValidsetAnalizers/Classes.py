@@ -1,16 +1,10 @@
-from abc import ABC, abstractmethod
 from Deep_layer.DB_package import DB_Bridge
 from sklearn.metrics import accuracy_score
 from multipledispatch import dispatch
+from Core_layer.Bot_package.ValidsetAnalizers import Interfaces
 
 
-class IAnalizer(ABC):
-
-    @abstractmethod
-    def analize(self):
-        pass
-
-class ValidsetAlanizer(IAnalizer):
+class ValidsetAlanizer(Interfaces.IAnalizer):
 
     @classmethod
     @dispatch(object)

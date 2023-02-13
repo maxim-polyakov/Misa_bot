@@ -3,19 +3,11 @@ from Deep_layer.NLP_package import Predictors
 from Core_layer.Answer_package import Answers
 from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package import TextPreprocessers
-import Front_layer.telegram_bot as telegram_bot
-from Core_layer.Command_package import Commands
-from abc import ABC, abstractmethod
 from Deep_layer.DB_package import DB_Bridge
 import os
+from Core_layer.Bot_package.Monitors import Interfaces
 
-class IMonitor(ABC):
-
-    @abstractmethod
-    def monitor(self):
-        pass
-
-class MessageMonitor(IMonitor):
+class MessageMonitor(Interfaces.IMonitor):
 
     _bpred = Predictors.BinaryLSTM()
     _mpred = Predictors.MultyLSTM()
@@ -107,30 +99,3 @@ class MessageMonitor(IMonitor):
             return outstr.capitalize()
         else:
             return outstr.capitalize()
-
-class MessageMonitorTelegram(MessageMonitor):
-
-    def __init__(self, message):
-        MessageMonitorTelegram.__command = Commands.CommandAnalyzer(
-            telegram_bot.boto, message, 'telegram')
-        MessageMonitorTelegram.__message = message
-
-    @classmethod
-    def monitor(cls):
-        return super().monitor(cls.__message, cls.__command, 'telegram')
-
-class MessageMonitorDiscord(MessageMonitor):
-
-    def __init__(self, message):
-        MessageMonitorDiscord.__command = Commands.CommandAnalyzer(
-            telegram_bot.boto, message, 'discord')
-        MessageMonitorDiscord.__message = message
-
-    @classmethod
-    def monitor(cls):
-        return super().monitor(cls.__message, cls.__command, 'discord')
-
-
-
-
-

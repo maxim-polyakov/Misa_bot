@@ -2,21 +2,9 @@ from Deep_layer.NLP_package import TextPreprocessers
 from Deep_layer.API_package import Calculators
 from Deep_layer.API_package import Finders
 from Deep_layer.API_package import Translators
-from abc import ABC, abstractmethod
+from Core_layer.Command_package.CommandActions import Interfaces
 
-class IAction(ABC):
-
-    @abstractmethod
-    def fas(cls):
-        pass
-    @abstractmethod
-    def find(cls):
-        pass
-    @abstractmethod
-    def translate(cls):
-        pass
-
-class CommandAction(IAction):
+class CommandAction(Interfaces.IAction):
     boto = None
     message = None
     message_text = None
@@ -73,5 +61,3 @@ class CommandAction(IAction):
         tr = Translators.GoogleTranslator("ru")
         translated = tr.translate(message_text)
         return translated
-
-
