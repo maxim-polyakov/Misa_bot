@@ -1,6 +1,8 @@
-# MISA_BOT
+![plot](https://github.com/maxim-polyakov/Misa_bot/blob/train_dev_branch/Misa_architecture.png)
 
-Misa_bot is a three-layer architecture python application
+# Misa_bot
+
+Misa_bot is a three-layer architecture python application.
 
   ## Front layer
 
@@ -30,12 +32,21 @@ Misa_bot is a three-layer architecture python application
           a) ITrain
           b) ICleaner
           c) IMonitor
-          d) IAnalizer
+          d) IAnalyzer
         
         
-    3) Command_package - this package is created to implement the command action logic.
+    3) Command_package - this package is created to implement the command's action logic.
+    
+       Command package contains the next entityes:
+       
+         a) IAction
+         b) ICommandAnalyzer
     
     4) Test_package - this package is created as for testing all application's entities. 
+       
+       Test package contains the next entityes:
+         a) ITestCase
+         b) ITestMonitor
 
   ## Deep layer
 
@@ -75,3 +86,6 @@ Misa_bot is a three-layer architecture python application
           
     2) tokenizers
           a) The tokenizer for this LSTM model
+          
+Also architecture contains SistersMemory - general database which contains samples for models' trainings for all chat_bots which hosted in       https://console.neon.tech/.
+ 
