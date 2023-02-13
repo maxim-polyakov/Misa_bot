@@ -134,7 +134,7 @@ class DB_Communication(IDB_Communication):
 
             cur = postgr_conn.conn_remote.cursor()
             cur.execute(delete)
-            cls.postgr_conn.conn_remote.commit()
+            postgr_conn.conn_remote.commit()
             cur.close()
         except psycopg2.OperationalError:
             print("exception is in DB_Communication.delete_data")

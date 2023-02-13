@@ -8,7 +8,7 @@ async def get_user_text(message):
          tmonlstm = TestMonitors.TestMonitorLSTM()
          tmonlstm.monitor()
          an = Classes.ValidsetAlanizer()
-         analizedict = an.analize()
+         analizedict = an.analyze()
          maxanalizedict = max(analizedict.values())[0]
          LSTMACC = analizedict['LSTMACC'][0]
          await telegram_bot.boto.send_message(message.chat.id, 'Наибольшая точность ' + str(maxanalizedict) +
@@ -21,7 +21,7 @@ async def get_user_text(message):
 async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
          an = Classes.ValidsetAlanizer()
-         analizedict = an.analize('analyzetable')
+         analizedict = an.analyze('analyzetable')
          maxanalizedict = max(analizedict.values())[0]
          LSTMACC = analizedict['LSTMACC'][0]
          await telegram_bot.boto.send_message(message.chat.id, 'Наибольшая точность ' + str(maxanalizedict) +
@@ -39,39 +39,4 @@ async def get_user_text(message):
     else:
          await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
 
-@telegram_bot.dp.message_handler(commands=['NaiveBayesmonitor'])
-async def get_user_text(message):
-    if (message.chat.username == 'The_Baxic'):
-         tmonnb = TestMonitors.TestMonitorNaiveBayes()
-         tmonnb.monitor()
-         await telegram_bot.boto.send_message(message.chat.id, 'ready', parse_mode='html')
-    else:
-         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
-
-@telegram_bot.dp.message_handler(commands=['RandomForestmonitor'])
-async def get_user_text(message):
-    if (message.chat.username == 'The_Baxic'):
-         tmonrf = TestMonitors.TestMonitorRandomForest()
-         tmonrf.monitor()
-         await telegram_bot.boto.send_message(message.chat.id, 'ready', parse_mode='html')
-    else:
-         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
-
-@telegram_bot.dp.message_handler(commands=['XGBoostmonitor'])
-async def get_user_text(message):
-    if (message.chat.username == 'The_Baxic'):
-         tmonxgboost = TestMonitors.TestMonitorXGBoost()
-         tmonxgboost.monitor()
-         await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
-    else:
-         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
-
-@telegram_bot.dp.message_handler(commands=['Combinemonitor'])
-async def get_user_text(message):
-    if (message.chat.username == 'The_Baxic'):
-         tmoncomb = TestMonitors.TestMonitorCombine()
-         tmoncomb.monitor()
-         await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
-    else:
-         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
 

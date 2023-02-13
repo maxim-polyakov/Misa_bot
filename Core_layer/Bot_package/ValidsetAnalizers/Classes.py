@@ -8,7 +8,7 @@ class ValidsetAlanizer(Interfaces.IAnalizer):
 
     @classmethod
     @dispatch(object)
-    def analize(cls):
+    def analyze(cls):
         outdict = {'LSTMACC': []}
 
         humandf = DB_Bridge.DB_Communication.get_data(

@@ -1,6 +1,6 @@
 from pathlib import Path
 from Deep_layer.NLP_package import Predictors
-from Core_layer.Answer_package import Answers
+from Core_layer.Answer_package.Answers import Classes
 from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package import TextPreprocessers
 from abc import ABC, abstractmethod
@@ -20,7 +20,7 @@ class TestMonitor(ITestMonitor):
     _dbc = DB_Bridge.DB_Communication()
     _mapa = Mapas.Mapa()
     _mapaslist = Mapas.ListMapas()
-    qa = Answers.QuestionAnswer()
+    qa = Classes.QuestionAnswer()
 
     @classmethod
     def __classify_question(cls, chosen_item):
@@ -69,8 +69,8 @@ class TestMonitor(ITestMonitor):
 
     @classmethod
     def _emotionsrecognition(cls, text):
-        modelpath = next(Path().rglob('emotionsmodel.h5'))
-        tokenizerpath = next(Path().rglob('emotionstokenizer.pickle'))
+        modelpath = next(Path().rglob('0_emotionsmodel.h5'))
+        tokenizerpath = next(Path().rglob('0_emotionstokenizer.pickle'))
         emotion = cls._mpred.predict(text, cls._mapa.EMOTIONSMAPA,
                                      modelpath,
                                      tokenizerpath)
@@ -116,6 +116,7 @@ class TestMonitor(ITestMonitor):
                 idx = idx + 1
         except:
             print('input_df[\'text\'] == None')
+
 
 class TestMonitorLSTM(TestMonitor):
     def __init__(self):

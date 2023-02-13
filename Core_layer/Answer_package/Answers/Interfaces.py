@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-class IAnalizer(ABC):
+class IAnswer(ABC):
 
     @abstractmethod
-    def analyze(self):
+    def answer(self):
         pass

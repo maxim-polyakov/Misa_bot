@@ -3,12 +3,12 @@ from Deep_layer.DB_package import DB_Bridge
 from Core_layer.Bot_package.DataCleaners import Interfaces
 
 
-class MisaMemoryCleater(Interfaces.ICleaner):
+class MisaMemoryCleaner(Interfaces.ICleaner):
     __pr = TextPreprocessers.CommonPreprocessing()
     dbname = None
 
     def __init__(self, dbname):
-        MisaMemoryCleater.dbname = dbname
+        MisaMemoryCleaner.dbname = dbname
 
     @classmethod
     def clean(cls):

@@ -5,7 +5,7 @@ from Core_layer.Bot_package.DataCleaners import Classes
 async def clean(ctx, arg):
     if ctx.author != discord_bot.bot.user:
         if ctx.author.display_name == 'Seraphim' and ctx.author.discriminator == '8341':
-            cl = Classes.MisaMemoryCleater(arg)
+            cl = Classes.MisaMemoryCleaner(arg)
             cl.clean()
             await ctx.channel.send('cleaned')
         else:

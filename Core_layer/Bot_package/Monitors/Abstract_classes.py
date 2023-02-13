@@ -1,6 +1,6 @@
 from pathlib import Path
 from Deep_layer.NLP_package import Predictors
-from Core_layer.Answer_package import Answers
+from Core_layer.Answer_package.Answers import Classes
 from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package import TextPreprocessers
 from Deep_layer.DB_package import DB_Bridge
@@ -15,12 +15,12 @@ class MessageMonitor(Interfaces.IMonitor):
     _dbc = DB_Bridge.DB_Communication()
     _mapa = Mapas.Mapa()
     _mapaslist = Mapas.ListMapas()
-    _qa = Answers.QuestionAnswer()
+    _qa = Classes.QuestionAnswer()
 
     @classmethod
     def __classify(cls, chosen_item):
         try:
-            ra = Answers.RandomAnswer()
+            ra = Classes.RandomAnswer()
             info_dict = {
                 'Приветствие': str(ra.answer()[0]) + ' ',
                 'Благодарность': 'не за что. ',
@@ -49,8 +49,8 @@ class MessageMonitor(Interfaces.IMonitor):
 
     @classmethod
     def _emotionsrecognition(cls, text):
-        modelpath = next(Path().rglob('emotionsmodel.h5'))
-        tokenizerpath = next(Path().rglob('emotionstokenizer.pickle'))
+        modelpath = next(Path().rglob('0_emotionsmodel.h5'))
+        tokenizerpath = next(Path().rglob('0_emotionstokenizer.pickle'))
         emotion = cls._mpred.predict(text, cls._mapa.EMOTIONSMAPA,
                                      modelpath,
                                      tokenizerpath)
