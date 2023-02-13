@@ -1,6 +1,6 @@
 from googletrans import Translator
 import pandas as pd
-from Deep_layer.DB_package import DB_Bridge
+from Deep_layer.DB_package.DB_Bridge import DB_Communication
 from multipledispatch import dispatch
 from Deep_layer.API_package.Translators import ITranslator
 
@@ -22,12 +22,12 @@ class GoogleTranslator(ITranslator.ITranslator):
     @dispatch(object, object, object)
     def translate(cls, dataselect, insertdtname):
         try:
-            train = DB_Bridge.DB_Communication.get_data(dataselect)
+            train = DB_Communication.DB_Communication.get_data(dataselect)
             train.text = train.text.astype(str)
             df = pd.concat([train])
             df = pd.DataFrame(df['text'])
             df['text'] = df['text'].apply(cls._translate)
-            DB_Bridge.DB_Communication.insert_to(df, 'translated')
+            DB_Communication.DB_Communication.insert_to(df, 'translated')
             return 'Готово'
         except:
             print('The exception is in GoogleTranslator.translate')
