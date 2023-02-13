@@ -1,5 +1,6 @@
 import pickle as p
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 from Deep_layer.NLP_package.Models import IModel
@@ -23,9 +24,8 @@ class NaiveBayes(IModel.IModel):
 
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
-            recognizedtrain = DB_Communication.DB_Communication.get_data(cls.__recognizeddataselect)
-            recognizedtrain.text = recognizedtrain.text.astype(str)
             df = pd.concat([train])
+            #df.dropna()
 
             train = df[~df[target].isna()]
             train[target] = train[target].astype(int)
@@ -38,8 +38,10 @@ class NaiveBayes(IModel.IModel):
             print('Shape of Validation ', X_val.shape)
 
             vec = CountVectorizer()
-            X_train = vec.fit_transform(X_train).toarray()
-            X_val = vec.transform(X_val).toarray()
+
+            X_train = vec.fit_transform(X_train).to_array()
+
+            X_val = vec.transform(X_val).to_array()
             nb_model = cls.__createmodel()
             nb_model.fit(X_train, Y_train)
 

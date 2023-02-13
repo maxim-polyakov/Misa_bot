@@ -42,7 +42,7 @@ class BinaryLSTM(IModel.IModel):
         return model
 
     @classmethod
-    def train(cls, target, mode, epochs):
+    def train(cls, target, epochs):
 
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
@@ -54,37 +54,20 @@ class BinaryLSTM(IModel.IModel):
             X_train, X_val, y_train, y_val = train_test_split(
                 train, train[target], test_size=0.3, random_state=32)
 
-            if (mode == 'evaluate'):
-                with open(cls.__tokenizerfilename, 'rb') as handle:
-                    tokenizer = p.load(handle)
-            else:
-
-                tokenizer = t.Tokenizer(train_texts=X_train['text'])
+            tokenizer = t.Tokenizer(train_texts=X_train['text'])
 
             tokenizer.train_tokenize()
             tokenized_X_train = tokenizer.vectorize_input(X_train['text'])
             tokenized_X_val = tokenizer.vectorize_input(X_val['text'])
 
-            if (mode == 'evaluate'):
-                model = load_model(cls.__filemodelname)
+            model = cls.__createmodel(tokenizer)
 
-                es = EarlyStopping(patience=10, monitor='binary_accuracy',
-                                   restore_best_weights=True)
-
-                history = model.fit(tokenized_X_train, y_train,
-                                    validation_data=(tokenized_X_val, y_val),
-                                    batch_size=51,
-                                    epochs=epochs,
-                                    verbose=2,
-                                    callbacks=[es])
-            else:
-                model = cls.__createmodel(tokenizer)
-
-                history = model.fit(tokenized_X_train, y_train,
+            history = model.fit(tokenized_X_train, y_train,
                                     validation_data=(tokenized_X_val, y_val),
                                     batch_size=51,
                                     epochs=epochs,
                                     verbose=2)
+
             score = history.history['val_binary_accuracy'].pop()
             print(score)
             model.save(cls.__filemodelname)

@@ -40,7 +40,7 @@ class MultyLSTM(IModel.IModel):
         return model
 
     @classmethod
-    def train(cls, target, n_clases, mode, epochs):
+    def train(cls, target, n_clases, epochs):
         try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
@@ -56,12 +56,8 @@ class MultyLSTM(IModel.IModel):
             print('Shape of train', X_train.shape)
             print('Shape of Validation ', X_val.shape)
 
-            if (mode == 'evaluate'):
-                with open(cls.__tokenizerfilename,
-                          'rb') as handle:
-                    tokenizer = p.load(handle)
-            else:
-                tokenizer = t.Tokenizer(train_texts=X_train['text'])
+
+            tokenizer = t.Tokenizer(train_texts=X_train['text'])
             tokenizer.train_tokenize()
             tokenized_X_train = tokenizer.vectorize_input(X_train['text'])
             tokenized_X_val = tokenizer.vectorize_input(X_val['text'])
@@ -70,23 +66,12 @@ class MultyLSTM(IModel.IModel):
             y_valmatrix = tensorflow.keras.utils.to_categorical(
                 y_val, n_clases)
 
-            if (mode == 'evaluate'):
-                es = EarlyStopping(patience=2, monitor='val_loss',
-                                   restore_best_weights=True)
-
-                model = load_model(cls.__filemodelname)
-
-                history = model.fit(tokenized_X_train, y_trainmatrix,
-                                    batch_size=51, epochs=epochs,
-                                    validation_data=(tokenized_X_val, y_valmatrix),
-                                    verbose=2,
-                                    callbacks=[es])
-            else:
-                model = cls.__createmodel(tokenizer, n_clases)
-                history = model.fit(tokenized_X_train, y_trainmatrix,
+            model = cls.__createmodel(tokenizer, n_clases)
+            history = model.fit(tokenized_X_train, y_trainmatrix,
                                     batch_size=51, epochs=epochs,
                                     validation_data=(tokenized_X_val, y_valmatrix),
                                     verbose=2)
+
             model.save(cls.__filemodelname)
             with open(cls.__tokenizerfilename, 'wb') as handle:
                 p.dump(tokenizer, handle, protocol=p.HIGHEST_PROTOCOL)
