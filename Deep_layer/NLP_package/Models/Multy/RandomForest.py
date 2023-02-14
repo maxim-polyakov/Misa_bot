@@ -8,12 +8,11 @@ from Deep_layer.NLP_package.Tokenizers import Tokenizer as t
 
 class RandomForest(IModel.IModel):
 
-    def __init__(cls, filemodelname, tokenizerfilename, dataselect,
-                 recognizeddataselect):
+    def __init__(cls, filemodelname, tokenizerfilename, dataselect,):
         RandomForest.__filemodelname = filemodelname
         RandomForest.__tokenizerfilename = tokenizerfilename
         RandomForest.__dataselect = dataselect
-        RandomForest.__recognizeddataselect = recognizeddataselect
+
     @classmethod
     def __createmodel(cls):
         rfc = RandomForestClassifier(criterion='entropy', n_estimators=700)
@@ -24,7 +23,6 @@ class RandomForest(IModel.IModel):
         try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
-
             df = pd.concat([train])
 
             train = df[~df[target].isna()]

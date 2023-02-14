@@ -1,6 +1,5 @@
 import pickle as p
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 from Deep_layer.NLP_package.Models import IModel

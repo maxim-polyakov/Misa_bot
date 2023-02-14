@@ -8,12 +8,11 @@ from Deep_layer.NLP_package.Tokenizers import Tokenizer as t
 
 class XGBClassifier(IModel.IModel):
 
-    def __init__(cls, filemodelname, tokenizerfilename, dataselect,
-                     recognizeddataselect):
+    def __init__(cls, filemodelname, tokenizerfilename, dataselect):
         XGBClassifier.__filemodelname = filemodelname
         XGBClassifier.__tokenizerfilename = tokenizerfilename
         XGBClassifier.__dataselect = dataselect
-        XGBClassifier.__recognizeddataselect = recognizeddataselect
+
 
     @classmethod
     def __createmodel(cls):
