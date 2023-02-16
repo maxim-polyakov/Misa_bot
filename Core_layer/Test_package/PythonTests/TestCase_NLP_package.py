@@ -1,10 +1,11 @@
 from Core_layer.Test_package.PythonTests import ITestCase
 from Deep_layer.NLP_package.Models.Multy import NaiveBayes
-#from Deep_layer.NLP_package.Models.Binary import NaiveBayes
+from Deep_layer.NLP_package.Models.Multy import RandomForest
 #from Deep_layer.NLP_package.Models.Binary import NaiveBayes
 from Core_layer.Bot_package import Selects
 import unittest
 from pathlib import Path
+import os
 
 class TestCase_NLP_package(ITestCase.ITestCase):
 
@@ -24,7 +25,13 @@ class TestCase_NLP_package(ITestCase.ITestCase):
         # datasetfile = self.sel.SELECT_HI
         # trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
         # trainer.train('hi')
-        pass
+        filemodel = Path().as_posix() + str(next(Path().rglob('-1_rfmodetest.pickle')))
+
+        filetokenizer = str(next(Path().rglob('-1_rftoktest.pickle')))
+        datasetfile = self.sel.SELECT_HI
+        trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
+        trainer.train('hi')
+
 
     def test_xgmodel_train(self):
         pass
