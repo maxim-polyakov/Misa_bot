@@ -1,16 +1,17 @@
 import pickle as p
 from tensorflow.keras.models import load_model
-import Deep_layer.NLP_package.TextPreprocessers as TextPreprocessers
+from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
+
 from Deep_layer.NLP_package.Predictors import IPredictor
 
 class MultyLSTM(IPredictor.IPredictor):
 
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
-        # try:
+        try:
             model = load_model(model)
             inp = []
-            pr = TextPreprocessers.CommonPreprocessing()
+            pr = CommonPreprocessing.CommonPreprocessing()
             for i in inpt:
                 inp.append(pr.preprocess_text(i))
                 inn = []
@@ -21,5 +22,5 @@ class MultyLSTM(IPredictor.IPredictor):
             scoreplu = model.predict(tokenized_inpt)
             outpt = tmap[scoreplu.argmax(axis=-1)[0]]
             return outpt
-        # except:
-        #     return 'The exeption is in MultyLSTM.predict'
+        except:
+            return 'The exeption is in MultyLSTM.predict'
