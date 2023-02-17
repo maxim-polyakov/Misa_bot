@@ -8,7 +8,7 @@ class CommonPreprocessing(Preprocessing.Preprocessing):
 
     @classmethod
     def preprocess_text(self, text):
-        try:
+
             tokens = str(text)
             tokens = Mystem().lemmatize(text.lower())
             tokens = [token for token in tokens if token not in stopwords.words('russian')
@@ -24,8 +24,9 @@ class CommonPreprocessing(Preprocessing.Preprocessing):
             text = re.sub(pattern2, '', text)
             text = re.sub('  ', ' ', text)
             return text
-        except:
-            return 'The exception is in CommonPreprocessing.preprocess_text'
+        #try:
+        #except:
+        #    return 'The exception is in CommonPreprocessing.preprocess_text'
 
     @classmethod
     def reversepreprocess_text(self, text):
