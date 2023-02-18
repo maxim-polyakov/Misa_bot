@@ -17,8 +17,8 @@ class TestCase_NLP_package(ITestCase.ITestCase):
     def test_lstmmodel_train(self):
         filemodelpath = str(Path().as_posix())
         filetokenizerpath = str(Path().as_posix())
-        filemodel = filemodelpath + '/Deep_layer/models/testmodels/LSTM/0_himodel.h5'
-        filetokenizer = filetokenizerpath + '/Deep_layer/testtokenizers/LSTM/0_hitokenizer.pickle'
+        filemodel = filemodelpath + '/Deep_layer/models/testmodels/RandomForest/himodel.pickle'
+        filetokenizer = filetokenizerpath + '/Deep_layer/testtokenizers/RandomForest/hiencoder.pickle'
 
         datasetfile = self.sel.SELECT_HI
         trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)

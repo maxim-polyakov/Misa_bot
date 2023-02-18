@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 from Deep_layer.NLP_package.Models import IModel
-from Deep_layer.NLP_package.Tokenizers import Tokenizer as t
+from Deep_layer.NLP_package.Tokenizers import Tokenizer
 
 class RandomForest(IModel.IModel):
 
@@ -20,7 +20,7 @@ class RandomForest(IModel.IModel):
 
     @classmethod
     def train(cls, target):
-        try:
+        # try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
             df = pd.concat([train])
@@ -34,7 +34,7 @@ class RandomForest(IModel.IModel):
             X_train, X_val, Y_train, Y_val = train_test_split(train, train[target], test_size=0.3, random_state=32)
             print('Shape of train', X_train.shape)
             print('Shape of Validation ', X_val.shape)
-            tokenizer = t.Tokenizer(train_texts=X_train['text'])
+            tokenizer = Tokenizer.Tokenizer(train_texts=X_train['text'])
             tokenizer.train_tokenize()
             tokenized_X_train = tokenizer.vectorize_input(X_train['text'])
             rfc = cls.__createmodel()
@@ -44,5 +44,5 @@ class RandomForest(IModel.IModel):
 
             with open(cls.__filemodelname, 'wb') as handle:
                 p.dump(rfc, handle, protocol=p.HIGHEST_PROTOCOL)
-        except:
-            print('The exception is in RandomForest.train')
+        # except:
+        #     print('The exception is in RandomForest.train')

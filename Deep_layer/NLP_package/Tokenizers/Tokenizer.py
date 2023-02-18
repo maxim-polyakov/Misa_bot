@@ -1,4 +1,4 @@
-from keras.preprocessing.text import Tokenizer as t
+from keras.preprocessing.text import Tokenizer as token
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from Deep_layer.NLP_package.Tokenizers import ITokenizer
 
@@ -10,7 +10,7 @@ class Tokenizer(ITokenizer.ITokenizer):
 
     def __init__(self, train_texts):
         self.train_texts = train_texts
-        self.tokenizer = t(num_words=self.TOP_K)
+        self.tokenizer = token(num_words=self.TOP_K)
 
     def train_tokenize(self):
         max_length = len(max(self.train_texts, key=len))

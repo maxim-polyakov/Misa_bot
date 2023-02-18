@@ -6,7 +6,9 @@ from Core_layer.Bot_package.Bototrainers import ITrainer
 
 
 class LSTMtrain(ITrainer.ITrainer):
+
     sel = Selects.Select()
+
     @classmethod
     def hitrain(cls, epochs):
         filemodel = next(Path().rglob('0_himodel.h5'))
@@ -41,8 +43,8 @@ class LSTMtrain(ITrainer.ITrainer):
 
     @classmethod
     def emotionstrain(cls, epochs):
-        filemodel = next(Path().rglob('0_emotionsmodel.h5'))
-        filetokenizer = next(Path().rglob('0_emotionstokenizer.pickle'))
+        filemodel = next(Path().rglob('0_rfemotionsmodel.pickle'))
+        filetokenizer = next(Path().rglob('0_rfemotionstokenizer.pickle'))
         datasetfile = cls.sel.SELECT_EMOTIONS
         trainer = MultyLSTM.MultyLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('emotionid', 7, epochs)

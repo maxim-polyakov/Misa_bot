@@ -2,7 +2,7 @@ import Front_layer.telegram_bot as tb
 from Core_layer.Test_package.PythonTests import TestRun as PyTest
 from Front_layer.telegram_bot import assistantmonitor
 from Front_layer.telegram_bot import botoclean
-from Front_layer.telegram_bot.bototrain import lstmtrain
+from Front_layer.telegram_bot.bototrain import lstmtrain,rftrain
 from Front_layer.telegram_bot import testmonitor
 from Front_layer.telegram_bot import messagemonitor
 
