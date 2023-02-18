@@ -5,7 +5,6 @@ from pathlib import Path
 @telegram_bot.dp.message_handler(commands='RFtrain')
 async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
-        message.text = message.text.replace('/LSTMtrain ', ' ')
         rt = RFTrain.RFtrain()
 
         rt.hitrain()
