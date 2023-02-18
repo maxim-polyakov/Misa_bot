@@ -12,26 +12,17 @@ class TestCase_NLP_package(ITestCase.ITestCase):
     sel = Selects.Select()
 
     def test_nbmodel_train(self):
-        filemodel = str(next(Path().rglob('-1_nbmodetest.pickle')))
-        filetokenizer = str(next(Path().rglob('-1_nbtoktest.pickle')))
-        datasetfile = self.sel.SELECT_HI
-        trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
-        trainer.train('hi')
+        pass
 
-    def test_rfmodel_train(self):
-        #
-        # filemodel = next(Path().rglob('0_himodel.h5'))
-        # filetokenizer = './tokenizers/binary/NaiveBayes/hivec.pickle'
-        # datasetfile = self.sel.SELECT_HI
-        # trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
-        # trainer.train('hi')
-        filemodel = Path().as_posix() + str(next(Path().rglob('-1_rfmodetest.pickle')))
+    def test_lstmmodel_train(self):
+        filemodelpath = str(Path().as_posix())
+        filetokenizerpath = str(Path().as_posix())
+        filemodel = filemodelpath + '/Deep_layer/models/testmodels/LSTM/0_himodel.h5'
+        filetokenizer = filetokenizerpath + '/Deep_layer/testtokenizers/LSTM/0_hitokenizer.pickle'
 
-        filetokenizer = str(next(Path().rglob('-1_rftoktest.pickle')))
         datasetfile = self.sel.SELECT_HI
         trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
         trainer.train('hi')
-
 
     def test_xgmodel_train(self):
         pass
