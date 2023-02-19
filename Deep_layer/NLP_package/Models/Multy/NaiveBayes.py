@@ -38,9 +38,9 @@ class NaiveBayes(IModel.IModel):
 
             vec = CountVectorizer()
 
-            X_train = vec.fit_transform(X_train).to_array()
+            X_train = vec.fit_transform(X_train).toarray()
 
-            X_val = vec.transform(X_val).to_array()
+            X_val = vec.transform(X_val).toarray()
             nb_model = cls.__createmodel()
             nb_model.fit(X_train, Y_train)
 
