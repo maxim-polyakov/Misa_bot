@@ -3,7 +3,7 @@ from Core_layer.Bot_package.Bototrainers import NBTrain
 from pathlib import Path
 
 
-@telegram_bot.dp.message_handler(commands='RFtrain')
+@telegram_bot.dp.message_handler(commands='NBtrain')
 async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
 
