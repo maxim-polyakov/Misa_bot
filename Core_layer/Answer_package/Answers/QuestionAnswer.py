@@ -10,4 +10,18 @@ class QuestionAnswer(IAnswer.IAnswer):
         generated_text = self.__gpt.generate("Вопрос: '" + text + "\'")
         text = re.sub('  ', ' ', generated_text.replace('Ответ', '').replace('Вопрос', '').replace(text, '')
                       .replace(':', '').replace('\'', '').lstrip(' '))
+
+        tokens = text.split(' ')
+        symbbuff = None
+        if(text.count('?') > 0):
+            tokens = text.split('?')
+            symbbuff = '?'
+        elif(text.count('.')>0):
+            tokens = text.split('.')
+            symbbuff = '.'
+        elif (text.count('!')>0):
+            tokens = text.count('!')
+            symbbuff = '!'
+
+        text = tokens[0] + symbbuff
         return text

@@ -15,6 +15,10 @@ class TestCase_API_package(ITestCase.ITestCase):
         answer = self.answer.answer('тут?')
         self.assertNotEqual(answer, 'да а что?')
 
+    def test_answer(self):
+        answer = self.answer.answer('тут?')
+
+
 
 if __name__ == '__main__':
     unittest.main()
