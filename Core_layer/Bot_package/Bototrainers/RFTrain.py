@@ -10,8 +10,8 @@ class RFtrain(ITrainer.ITrainer):
 
     @classmethod
     def hitrain(cls):
-        filemodel = next(Path().rglob('0_himodel.pickle'))
-        filetokenizer = next(Path().rglob('0_hiencoder.pickle'))
+        filemodel = next(Path().rglob('0_rfhimodel.pickle'))
+        filetokenizer = next(Path().rglob('0_rfhiencoder.pickle'))
         datasetfile = cls.sel.SELECT_HI
 
         trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
@@ -19,8 +19,8 @@ class RFtrain(ITrainer.ITrainer):
 
     @classmethod
     def thtrain(cls):
-        filemodel = next(Path().rglob('1_thmodel.pickle'))
-        filetokenizer = next(Path().rglob('1_thencoder.pickle'))
+        filemodel = next(Path().rglob('1_rfthmodel.pickle'))
+        filetokenizer = next(Path().rglob('1_rfthencoder.pickle'))
 
         datasetfile = cls.sel.SELECT_TH
 
@@ -29,8 +29,8 @@ class RFtrain(ITrainer.ITrainer):
 
     @classmethod
     def businesstrain(cls):
-        filemodel = next(Path().rglob('2_businessmodel.pickle'))
-        filetokenizer = next(Path().rglob('2_businessencoder.pickle'))
+        filemodel = next(Path().rglob('2_rfbusinessmodel.pickle'))
+        filetokenizer = next(Path().rglob('2_rfbusinessencoder.pickle'))
 
         datasetfile = cls.sel.SELECT_BUSINESS
 
@@ -39,8 +39,8 @@ class RFtrain(ITrainer.ITrainer):
 
     @classmethod
     def weathertrain(cls):
-        filemodel = next(Path().rglob('3_weathermodel.pickle'))
-        filetokenizer = next(Path().rglob('3_weatherencoder.pickle'))
+        filemodel = next(Path().rglob('3_rfweathermodel.pickle'))
+        filetokenizer = next(Path().rglob('3_rfweatherencoder.pickle'))
         datasetfile = cls.sel.SELECT_WEATHER
 
         trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
@@ -48,8 +48,8 @@ class RFtrain(ITrainer.ITrainer):
 
     @classmethod
     def trashtrain(cls):
-        filemodel = next(Path().rglob('4_trashmodel.pickle'))
-        filetokenizer = next(Path().rglob('4_trashencoder.pickle'))
+        filemodel = next(Path().rglob('4_rftrashmodel.pickle'))
+        filetokenizer = next(Path().rglob('4_rftrashencoder.pickle'))
 
         datasetfile = cls.sel.SELECT_TRASH
 
@@ -58,8 +58,8 @@ class RFtrain(ITrainer.ITrainer):
 
     @classmethod
     def emotionstrain(cls):
-        filemodel = next(Path().rglob('0_emotionsmodel.pickle'))
-        filetokenizer = next(Path().rglob('0_emotionsencoder.pickle'))
+        filemodel = next(Path().rglob('0_rfemotionsmodel.pickle'))
+        filetokenizer = next(Path().rglob('0_rfemotionsencoder.pickle'))
 
         datasetfile = cls.sel.SELECT_EMOTIONS
 
