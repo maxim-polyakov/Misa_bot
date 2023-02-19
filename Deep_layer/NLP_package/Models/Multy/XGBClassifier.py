@@ -27,7 +27,6 @@ class XGBClassifier(IModel.IModel):
 
     @classmethod
     def train(cls, target):
-
         try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)

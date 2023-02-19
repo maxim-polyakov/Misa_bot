@@ -20,7 +20,7 @@ class RandomForest(IModel.IModel):
 
     @classmethod
     def train(cls, target):
-        # try:
+        try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
             df = pd.concat([train])
@@ -44,5 +44,5 @@ class RandomForest(IModel.IModel):
 
             with open(cls.__filemodelname, 'wb') as handle:
                 p.dump(rfc, handle, protocol=p.HIGHEST_PROTOCOL)
-        # except:
-        #     print('The exception is in RandomForest.train')
+        except:
+            print('The exception is in RandomForest.train')

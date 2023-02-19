@@ -43,7 +43,7 @@ class BinaryLSTM(IModel.IModel):
 
     @classmethod
     def train(cls, target, epochs):
-
+        try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
             df = pd.concat([train])
@@ -75,10 +75,8 @@ class BinaryLSTM(IModel.IModel):
                 p.dump(tokenizer, handle,
                        protocol=p.HIGHEST_PROTOCOL)
             ResultSaver.ResultSaver.saveRes(history, 'resultstraining_binary.png', 'binary_accuracy')
-
-        #try:
-        #except:
-           # print('The exception in BinaryLSTM.train')
+        except:
+           print('The exception in BinaryLSTM.train')
 
 
 

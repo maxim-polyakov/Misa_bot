@@ -11,48 +11,50 @@ class LSTMtrain(ITrainer.ITrainer):
 
     @classmethod
     def hitrain(cls, epochs):
-        filemodel = next(Path().rglob('0_himodel.h5'))
-        filetokenizer = next(Path().rglob('0_hitokenizer.pickle'))
+        filemodel = next(Path().rglob('0_lstmhimodel.h5'))
+        filetokenizer = next(Path().rglob('0_lstmhitokenizer.pickle'))
         datasetfile = cls.sel.SELECT_HI
         trainer = BinaryLSTM.BinaryLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('hi', epochs)
 
     @classmethod
     def thtrain(cls, epochs):
-        filemodel = next(Path().rglob('1_thmodel.h5'))
-        filetokenizer = next(Path().rglob('1_thtokenizer.pickle'))
+        filemodel = next(Path().rglob('1_lstmthmodel.h5'))
+        filetokenizer = next(Path().rglob('1_lstmthtokenizer.pickle'))
         datasetfile = cls.sel.SELECT_TH
         trainer = BinaryLSTM.BinaryLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('thanks', epochs)
 
     @classmethod
     def businesstrain(cls, epochs):
-        filemodel = next(Path().rglob('2_businessmodel.h5'))
-        filetokenizer = next(Path().rglob('2_businesstokenizer.pickle'))
+        filemodel = next(Path().rglob('2_lstmbusinessmodel.h5'))
+        filetokenizer = next(Path().rglob('2_lstmbusinesstokenizer.pickle'))
         datasetfile = cls.sel.SELECT_BUSINESS
         trainer = BinaryLSTM.BinaryLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('business', epochs)
 
     @classmethod
     def weathertrain(cls, epochs):
-        filemodel = next(Path().rglob('3_weathermodel.h5'))
-        filetokenizer = next(Path().rglob('3_weathertokenizer.pickle'))
+        filemodel = next(Path().rglob('3_lstmweathermodel.h5'))
+        filetokenizer = next(Path().rglob('3_lstmweathertokenizer.pickle'))
         datasetfile = cls.sel.SELECT_WEATHER
         trainer = BinaryLSTM.BinaryLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('weather', epochs)
 
     @classmethod
+    def trashtrain(cls, epochs):
+        filemodel = next(Path().rglob('4_lstmtrashmodel.h5'))
+        filetokenizer = next(Path().rglob('4_lstmtrashtokenizer.pickle'))
+        datasetfile = cls.sel.SELECT_TRASH
+        trainer = BinaryLSTM.BinaryLSTM(filemodel, filetokenizer, datasetfile)
+        trainer.train('trash', epochs)
+
+    @classmethod
     def emotionstrain(cls, epochs):
-        filemodel = next(Path().rglob('0_rfemotionsmodel.pickle'))
-        filetokenizer = next(Path().rglob('0_rfemotionstokenizer.pickle'))
+        filemodel = next(Path().rglob('0_lstmemotionsmodel.pickle'))
+        filetokenizer = next(Path().rglob('0_lstmemotionstokenizer.pickle'))
         datasetfile = cls.sel.SELECT_EMOTIONS
         trainer = MultyLSTM.MultyLSTM(filemodel, filetokenizer, datasetfile)
         trainer.train('emotionid', 7, epochs)
 
-    @classmethod
-    def trashtrain(cls, epochs):
-        filemodel = next(Path().rglob('4_trashmodel.h5'))
-        filetokenizer = next(Path().rglob('4_trashtokenizer.pickle'))
-        datasetfile = cls.sel.SELECT_TRASH
-        trainer = BinaryLSTM.BinaryLSTM(filemodel, filetokenizer, datasetfile)
-        trainer.train('trash', epochs)
+

@@ -20,7 +20,7 @@ class NaiveBayes(IModel.IModel):
 
     @classmethod
     def train(cls, target):
-
+        try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
             df = pd.concat([train])
@@ -49,6 +49,5 @@ class NaiveBayes(IModel.IModel):
 
             with open(cls.__filemodelname, 'wb') as handle:
                 p.dump(nb_model, handle, protocol=p.HIGHEST_PROTOCOL)
-            #try:
-       # except:
-          #  print('The exception is in NaiveBayes.train')
+        except:
+           print('The exception is in NaiveBayes.train')
