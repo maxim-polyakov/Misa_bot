@@ -50,8 +50,8 @@ class MessageMonitor(IMonitor.IMonitor):
 
     @classmethod
     def _emotionsrecognition(cls, text):
-        modelpath = next(Path().rglob('0_emotionsmodel.h5'))
-        tokenizerpath = next(Path().rglob('0_emotionstokenizer.pickle'))
+        modelpath = next(Path().rglob('0_lstmemotionsmodel.h5'))
+        tokenizerpath = next(Path().rglob('0_lstmemotionstokenizer.pickle'))
         emotion = cls._mpred.predict(text, cls._mapa.EMOTIONSMAPA,
                                      modelpath,
                                      tokenizerpath)
