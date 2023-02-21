@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from Core_layer.Test_package.TestMonitors import ITestMonitor
-from Deep_layer.NLP_package.Predictors import BinaryLSTM, MultyLSTM
+from Deep_layer.NLP_package.Predictors import BinaryLSTM, MultyLSTM, RandomForest, NaiveBayes, XGBoost
 from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
@@ -11,6 +11,11 @@ class TestMonitor(ITestMonitor.ITestMonitor):
 
     _bpred = BinaryLSTM.BinaryLSTM()
     _mpred = MultyLSTM.MultyLSTM()
+    _rfpred = RandomForest.RandomForest()
+    _nbpred = NaiveBayes.NaiveBayes()
+    _xgbpred = XGBoost.Xgboost()
+
+
     _pr = CommonPreprocessing.CommonPreprocessing()
     _dbc = DB_Communication.DB_Communication()
     _mapa = Mapas.Mapa()
@@ -80,17 +85,20 @@ class TestMonitor(ITestMonitor.ITestMonitor):
         modelarr = os.listdir(fullPathModels + modelpath)
         tokenizerarr = os.listdir(fullPathTokenizers + modelpath)
 
+
         for model in modelarr:
             modelpaths.append(str(fullPathModels) + modelpath + str(model))
         for tokenizer in tokenizerarr:
             tokenizerpaths.append(str(fullPathTokenizers) + modelpath + str(tokenizer))
+
+
         emotion = ''
         predicts = []
         mapaslist = cls._mapaslist.getlistmapas()
         for id in range(0, len(modelpaths)):
             predicts.append(cls._bpred.predict(text, mapaslist[id],
                                                modelpaths[id],
-                                               tokenizerpaths[id], ''))
+                                               tokenizerpaths[id]))
         return cls.__decision(text_message,
                               emotion,
                               predicts)
@@ -110,4 +118,4 @@ class TestMonitor(ITestMonitor.ITestMonitor):
                 DB_Communication.DB_Communication.insert_to(idx, lowertext, outstr, datatable)
                 idx = idx + 1
         # except:
-        #     print('input_df[\'text\'] == None')
+        #     print('input_df[\'text\'] == None')w

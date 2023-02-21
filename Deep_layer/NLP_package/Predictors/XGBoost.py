@@ -1,14 +1,14 @@
 import pickle as p
-from tensorflow.keras.models import load_model
 from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
 from Deep_layer.NLP_package.Predictors import IPredictor
 
-class MultyLSTM(IPredictor.IPredictor):
+class Xgboost(IPredictor.IPredictor):
 
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
         try:
-            model = load_model(model)
+            with open(model, 'rb') as handle:
+                model = p.load(handle)
 
             inn = []
             pr = CommonPreprocessing.CommonPreprocessing()
@@ -18,9 +18,8 @@ class MultyLSTM(IPredictor.IPredictor):
             with open(tokenizer, 'rb') as handle:
                 tokenizer = p.load(handle)
 
-            tokenized_inpt = tokenizer.vectorize_input(inn)
-            scoreplu = model.predict(tokenized_inpt)
-            outpt = tmap[scoreplu.argmax(axis=-1)[0]]
-            return outpt
+            x_val = tokenizer.vectorize_input(inn)
+            val_pred = model.predict(x_val)
+            return (tmap[val_pred[0]])
         except:
-            return 'The exeption is in MultyLSTM.predict'
+            return 'The exeption is in Xgboost.predict'

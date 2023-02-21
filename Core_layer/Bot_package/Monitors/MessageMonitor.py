@@ -75,7 +75,7 @@ class MessageMonitor(IMonitor.IMonitor):
         for id in range(0, len(modelpaths)):
             predicts.append(cls._bpred.predict(text, mapaslist[id],
                                          modelpaths[id],
-                                         tokenizerpaths[id], ''))
+                                         tokenizerpaths[id]))
         return cls.__decision(text_message,
                               emotion,
                               command,
