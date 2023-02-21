@@ -97,7 +97,7 @@ class TestMonitor(ITestMonitor.ITestMonitor):
 
     @classmethod
     def monitor(cls, input_df, datatable, modelpath):
-        try:
+        # try:
             text = input_df['text']
             outstr = ''
             idx = 1
@@ -109,5 +109,5 @@ class TestMonitor(ITestMonitor.ITestMonitor):
                         outstr += outmes
                 DB_Communication.DB_Communication.insert_to(idx, lowertext, outstr, datatable)
                 idx = idx + 1
-        except:
-            print('input_df[\'text\'] == None')
+        # except:
+        #     print('input_df[\'text\'] == None')
