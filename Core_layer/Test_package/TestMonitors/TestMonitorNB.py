@@ -17,7 +17,5 @@ class TestMonitorNB(TestMonitor.TestMonitor):
 
         modelpath = '/binary/NaiveBayes/'
 
-        super().bpred = NaiveBayes.NaiveBayes()
-        super().mpred = MultyLSTM.MultyLSTM()
-
+        super().setvariables(NaiveBayes.NaiveBayes(), MultyLSTM.MultyLSTM())
         super().monitor(df, datatable, modelpath)

@@ -17,7 +17,5 @@ class TestMonitorRF(TestMonitor.TestMonitor):
 
         modelpath = '/binary/RandomForest/'
 
-        super().bpred = RandomForest.RandomForest()
-        super().mpred = MultyLSTM.MultyLSTM()
-
+        super().setvariables(RandomForest.RandomForest(), MultyLSTM.MultyLSTM())
         super().monitor(df, datatable, modelpath)
