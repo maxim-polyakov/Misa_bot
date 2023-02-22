@@ -1,5 +1,6 @@
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 from Core_layer.Test_package.TestMonitors import TestMonitor
+from Deep_layer.NLP_package.Predictors import BinaryLSTM, MultyLSTM, RandomForest, NaiveBayes, XGBoost
 
 class TestMonitorNB(TestMonitor.TestMonitor):
 
@@ -15,5 +16,8 @@ class TestMonitorNB(TestMonitor.TestMonitor):
         datatable = 'markedvalidsetnaivebayes'
 
         modelpath = '/binary/NaiveBayes/'
+
+        super().bpred = NaiveBayes.NaiveBayes()
+        super().mpred = MultyLSTM.MultyLSTM()
 
         super().monitor(df, datatable, modelpath)

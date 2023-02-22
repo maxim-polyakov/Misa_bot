@@ -1,5 +1,6 @@
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 from Core_layer.Test_package.TestMonitors import TestMonitor
+from Deep_layer.NLP_package.Predictors import BinaryLSTM, MultyLSTM
 
 class TestMonitorLSTM(TestMonitor.TestMonitor):
 
@@ -16,4 +17,5 @@ class TestMonitorLSTM(TestMonitor.TestMonitor):
 
         modelpath = '/binary/LSTM/'
 
+        super().setvariables(BinaryLSTM.BinaryLSTM(), MultyLSTM.MultyLSTM())
         super().monitor(df, datatable, modelpath)

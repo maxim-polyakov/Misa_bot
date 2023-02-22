@@ -9,11 +9,6 @@ from Deep_layer.DB_package.DB_Bridge import DB_Communication
 
 class TestMonitor(ITestMonitor.ITestMonitor):
 
-    _bpred = BinaryLSTM.BinaryLSTM()
-    _mpred = MultyLSTM.MultyLSTM()
-    _rfpred = RandomForest.RandomForest()
-    _nbpred = NaiveBayes.NaiveBayes()
-    _xgbpred = XGBoost.Xgboost()
 
 
     _pr = CommonPreprocessing.CommonPreprocessing()
@@ -21,6 +16,10 @@ class TestMonitor(ITestMonitor.ITestMonitor):
     _mapa = Mapas.Mapa()
     _mapaslist = Mapas.ListMapas()
 
+    @classmethod
+    def setvariables(cls, bpred, mpred):
+        cls.bpred = bpred
+        cls.mpred = mpred
 
     @classmethod
     def __classify_question(cls, chosen_item):
@@ -71,7 +70,7 @@ class TestMonitor(ITestMonitor.ITestMonitor):
     def _emotionsrecognition(cls, text):
         modelpath = next(Path().rglob('0_emotionsmodel.h5'))
         tokenizerpath = next(Path().rglob('0_emotionstokenizer.pickle'))
-        emotion = cls._mpred.predict(text, cls._mapa.EMOTIONSMAPA,
+        emotion = cls.mpred.predict(text, cls._mapa.EMOTIONSMAPA,
                                      modelpath,
                                      tokenizerpath)
         return emotion
@@ -96,7 +95,7 @@ class TestMonitor(ITestMonitor.ITestMonitor):
         predicts = []
         mapaslist = cls._mapaslist.getlistmapas()
         for id in range(0, len(modelpaths)):
-            predicts.append(cls._bpred.predict(text, mapaslist[id],
+            predicts.append(cls.bpred.predict(text, mapaslist[id],
                                                modelpaths[id],
                                                tokenizerpaths[id]))
         return cls.__decision(text_message,
