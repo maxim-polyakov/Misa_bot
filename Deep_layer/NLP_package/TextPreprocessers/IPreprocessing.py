@@ -1,3 +1,4 @@
+import nltk
 from abc import ABC, abstractmethod
 
 class IPreprocessing(ABC):

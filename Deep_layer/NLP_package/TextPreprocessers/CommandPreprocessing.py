@@ -1,10 +1,10 @@
+
 from nltk.corpus import stopwords
 from string import punctuation
 import spacy
 from Deep_layer.NLP_package.TextPreprocessers import Preprocessing
 
 class CommandPreprocessing(Preprocessing.Preprocessing):
-
     @classmethod
     def preprocess_text(self, text):
         try:
