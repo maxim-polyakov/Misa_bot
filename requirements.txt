@@ -67,7 +67,7 @@ packaging==23.0
 pandas==1.5.3
 pathy==0.10.1
 Pillow==9.4.0
-pip==21.2.3
+pip==23.0.1
 preshed==3.0.8
 protobuf==3.19.6
 psycopg2-binary==2.9.5
@@ -100,7 +100,9 @@ sympy==1.11.1
 tensorboard==2.11.2
 tensorboard-data-server==0.6.1
 tensorboard-plugin-wit==1.8.1
-tensorflow==2.11.0
+tensorflow-cpu==2.11.0
+tensorflow-estimator==2.11.0
+tensorflow-io-gcs-filesystem==0.30.0
 termcolor==2.2.0
 thinc==8.1.7
 threadpoolctl==3.1.0
