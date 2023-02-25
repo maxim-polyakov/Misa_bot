@@ -11,4 +11,4 @@ class CommonAnswer(IAnswer.IAnswer):
         text = re.sub('  ', ' ',
                       generated_text.replace('Ответ', '').replace('Вопрос', '').replace(text, '').replace(':', '')
                       .replace('\'', '').lstrip(' '))
-        return text
+        return str(text)

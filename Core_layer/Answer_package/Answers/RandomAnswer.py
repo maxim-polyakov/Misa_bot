@@ -15,6 +15,6 @@ class RandomAnswer(IAnswer.IAnswer):
                     self.__df.append(self.__data['text'][i])
             outmapa = {0: [self.__df[random.randint(0, len(self.__df))]]}
 
-            return (outmapa[0])
+            return str(outmapa[0])
         except:
             return 'The exception in RandomAnswer.answer'

@@ -23,5 +23,5 @@ class QuestionAnswer(IAnswer.IAnswer):
             tokens = text.count('!')
             symbbuff = '!'
 
-        text = tokens[0] + symbbuff
+        text = str(tokens[0]) + str(symbbuff)
         return text
