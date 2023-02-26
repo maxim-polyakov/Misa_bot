@@ -12,7 +12,7 @@ class QuestionAnswer(IAnswer.IAnswer):
                       .replace(':', '').replace('\'', '').lstrip(' '))
 
         tokens = text.split(' ')
-        symbbuff = None
+        symbbuff = ''
         if(text.count('?') > 0):
             tokens = text.split('?')
             symbbuff = '?'
