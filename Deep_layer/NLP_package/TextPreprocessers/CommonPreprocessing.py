@@ -7,7 +7,7 @@ from Deep_layer.NLP_package.TextPreprocessers import Preprocessing
 class CommonPreprocessing(Preprocessing.Preprocessing):
 
     @classmethod
-    def preprocess_text(self, text):
+    def preprocess_text(cls, text):
 
             tokens = str(text)
             tokens = Mystem().lemmatize(text.lower())
@@ -29,5 +29,5 @@ class CommonPreprocessing(Preprocessing.Preprocessing):
         #    return 'The exception is in CommonPreprocessing.preprocess_text'
 
     @classmethod
-    def reversepreprocess_text(self, text):
+    def reversepreprocess_text(cls, text):
         pass

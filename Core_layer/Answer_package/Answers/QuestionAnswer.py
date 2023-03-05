@@ -22,6 +22,8 @@ class QuestionAnswer(IAnswer.IAnswer):
         elif (text.count('!')>0):
             tokens = text.count('!')
             symbbuff = '!'
+        if( not tokens[0]):
+            tokens[0] = "Не знаю."
 
         text = str(tokens[0]) + str(symbbuff)
         return text

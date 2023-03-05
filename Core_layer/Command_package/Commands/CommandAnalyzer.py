@@ -27,6 +27,7 @@ class CommandAnalyzer(ICommandAnalyzer.ICommandAnalyzer):
                 'поссчитать': ac.find,
                 'перевести': ac.translate,
                 'находить': ac.find,
+                'показывать данные': ac.show()
             }
             return info_dict[chosen_item]()
         except:

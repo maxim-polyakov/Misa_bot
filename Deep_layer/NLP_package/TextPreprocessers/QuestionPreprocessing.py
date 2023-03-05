@@ -6,7 +6,7 @@ from Deep_layer.NLP_package.TextPreprocessers import Preprocessing
 class QuestionPreprocessing(Preprocessing.Preprocessing):
 
     @classmethod
-    def preprocess_text(self, text):
+    def preprocess_text(cls, text):
         try:
             tokens = str(text).split(' ')
             tokens = Mystem().lemmatize(text.lower())
@@ -20,7 +20,7 @@ class QuestionPreprocessing(Preprocessing.Preprocessing):
             return 'The exception is in QuestionPreprocessing.preprocess_text'
 
     @classmethod
-    def reversepreprocess_text(self, text):
+    def reversepreprocess_text(cls, text):
         try:
             tokens = str(text)
             tokens = Mystem().lemmatize(text.lower())

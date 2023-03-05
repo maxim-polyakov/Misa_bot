@@ -5,7 +5,7 @@ from Deep_layer.NLP_package.TextPreprocessers import IPreprocessing
 class Preprocessing(IPreprocessing.IPreprocessing):
 
     @classmethod
-    def preprocess_text(self, text):
+    def preprocess_text(cls, text):
         try:
             tokens = str(text)
             tokens = text.lower().split(' ')
@@ -20,5 +20,5 @@ class Preprocessing(IPreprocessing.IPreprocessing):
             return 'The exception is in Preprocessing.preprocess_text'
 
     @classmethod
-    def reversepreprocess_text(self,text):
+    def reversepreprocess_text(cls,text):
         pass

@@ -35,7 +35,7 @@ class MessageMonitor(IMonitor.IMonitor):
 
     @classmethod
     def __decision(cls, text_message, emotion, commands, predicts):
-        if (cls._dbc.checkcommands(text_message)):
+        if (cls._dbc.checkcommands(cls._pr.preprocess_text(text_message))):
             return commands.commandanalyse(text_message)
         elif (text_message.count('?') > 0):
             outlist = []
@@ -90,8 +90,8 @@ class MessageMonitor(IMonitor.IMonitor):
             lowertext = message.text.lower()
         DB_Communication.DB_Communication.insert_to(lowertext)
         outstr = ''
-        if (lowertext.count('миса') > 0 or lowertext.lower().count('misa') > 0):
-            lowertext = lowertext.replace('миса ', '').replace('misa ', '')
+        if (lowertext.count('миса') > 0 or lowertext.lower().count('misa') > 0 or lowertext.count('миса,')):
+            lowertext = lowertext.replace('миса ', '').replace('misa ', '').replace('миса,', '').replace('misa,', '')
             text.append(lowertext)
             outlist = cls._neurodesc(text, lowertext, command)
             if (outlist != None):

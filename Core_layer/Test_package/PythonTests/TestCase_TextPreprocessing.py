@@ -7,9 +7,9 @@ class TestCase_TextPreprocessing(ITestCase.ITestCase):
 
     def test_nbmodel_train(self):
         pr = CommonPreprocessing.CommonPreprocessing()
-
-        cl = MemoryCleaner.MemoryCleaner('all_set_trash')
-        cl.clean()
+        pr.preprocess_text("покажи данные")
+        # cl = MemoryCleaner.MemoryCleaner('all_set_trash')
+        # cl.clean()
 
 
 if __name__ == '__main__':

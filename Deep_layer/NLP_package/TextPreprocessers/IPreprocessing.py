@@ -5,5 +5,5 @@ class IPreprocessing(ABC):
     def preprocess_text(self, text):
         pass
     @abstractmethod
-    def reversepreprocess_text(self,text):
+    def reversepreprocess_text(self, text):
         pass

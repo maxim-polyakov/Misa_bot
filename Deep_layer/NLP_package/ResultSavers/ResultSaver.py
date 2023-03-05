@@ -21,5 +21,5 @@ class ResultSaver(ISaver.ISaver):
         al.legend(['train', 'val'], loc='upper left')
 
         fig = al.get_figure()
-        fig.savefig('resultstraining_multy.png')
+        fig.savefig('/Deep_layer/results/resultstraining_multy.png')
         fig.savefig(path)

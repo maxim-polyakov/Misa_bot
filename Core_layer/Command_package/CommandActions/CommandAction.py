@@ -2,7 +2,9 @@ from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing, Prepro
 from Deep_layer.API_package.Calculators import SympyCalculator
 from Deep_layer.API_package.Finders import WikiFinder
 from Deep_layer.API_package.Translators import GoogleTranslator
+from Deep_layer.NLP_package.DataShowers import SnsShower
 from Core_layer.Command_package.CommandActions import IAction
+from Deep_layer.DB_package.DB_Bridge import DB_Communication
 
 class CommandAction(IAction.IAction):
 
@@ -65,3 +67,18 @@ class CommandAction(IAction.IAction):
         tr = GoogleTranslator.GoogleTranslator("ru")
         translated = tr.translate(message_text)
         return translated
+
+    @classmethod
+    def show(cls):
+        dbc = DB_Communication.DB_Communication()
+        message_text = cls.message_text.split(' ')
+        target = str(message_text[2])
+        ALL_SELECT = str('SELECT text, ' + str(target) + ' FROM train_sets.all_set_none ' +
+                         'UNION ALL select text, ' + str(target) + ' FROM train_sets.all_set_thanks ' +
+                         'UNION ALL select text, ' + str(target) + ' FROM train_sets.all_set_hi ' +
+                         'UNION ALL select text, ' + str(target) + ' FROM train_sets.all_set_business ' +
+                         'UNION ALL select text, ' + str(target) + ' FROM train_sets.all_set_trash ')
+        train = dbc.get_data(ALL_SELECT)
+        shower = SnsShower.SnsShower()
+        outpath = shower.showdata(train, target)
+        return outpath
