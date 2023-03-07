@@ -73,11 +73,13 @@ class CommandAction(IAction.IAction):
         dbc = DB_Communication.DB_Communication()
         message_text = cls.message_text.split(' ')
         target = str(message_text[2])
-        ALL_SELECT = str('SELECT text, ' + str(target) + ' FROM train_sets.all_set_none ' +
-                         'UNION ALL select text, ' + str(target) + ' FROM train_sets.all_set_thanks ' +
+        ALL_SELECT = str(
+                         'SELECT text, ' + str(target) + ' FROM train_sets.all_set_none ' +
                          'UNION ALL select text, ' + str(target) + ' FROM train_sets.all_set_hi ' +
+                         'UNION ALL select text, ' + str(target) + ' FROM train_sets.all_set_thanks ' +
                          'UNION ALL select text, ' + str(target) + ' FROM train_sets.all_set_business ' +
-                         'UNION ALL select text, ' + str(target) + ' FROM train_sets.all_set_trash ')
+                         'UNION ALL select text, ' + str(target) + ' FROM train_sets.all_set_trash '
+                         )
         train = dbc.get_data(ALL_SELECT)
         shower = SnsShower.SnsShower()
         outpath = shower.showdata(train, target)
