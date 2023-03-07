@@ -11,7 +11,7 @@ class SnsShower(IDataShower.IDataShower):
     @classmethod
     def showdata(self, train, target):
 
-            path = './Deep_layer/results/Data.png'
+            path = 'Data.png'
             key_metrics = {'samples': len(train),
                         'samples_per_class': train[target].value_counts().median(),
                         'median_of_samples_lengths': np.median(train['text'].str.split().map(lambda x: len(x)))}
