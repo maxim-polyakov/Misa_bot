@@ -13,11 +13,12 @@ class SnsShower(IDataShower.IDataShower):
 
             path = 'Data.png'
             key_metrics = {'samples': len(train),
-                        'samples_per_class': train[target].value_counts().median(),
-                        'median_of_samples_lengths': np.median(train['text'].str.split().map(lambda x: len(x)))}
-            key_metrics = pd.DataFrame.from_dict(
-                key_metrics, orient='index').reset_index()
+                           'samples_per_class': train[target].value_counts().median(),
+                           'median_of_samples_lengths': np.median(train['text'].str.split().map(lambda x: len(x))),
+                           }
+            key_metrics = pd.DataFrame.from_dict(key_metrics, orient='index').reset_index()
             key_metrics.columns = ['metric', 'value']
+            print(key_metrics)
             green = '#52BE80'
             red = '#EC7063'
             sns_plot = sns.countplot(train[target], palette=[green, red])
