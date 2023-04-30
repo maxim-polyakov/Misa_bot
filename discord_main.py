@@ -1,8 +1,10 @@
-import Front_layer.discord_bot as db
-from Core_layer.Test_package import PythonTests as PyTest
-from Core_layer.Bot_package import Token
-from Front_layer.discord_bot import messagemonitor
 import nest_asyncio
+import Front_layer.discord_bot as db
+from Core_layer.Test_package.PythonTests import TestRun as PyTest
+from Core_layer.Bot_package.Token import Token
+from Front_layer.discord_bot.bototrain import lstmtrain
+from Front_layer.discord_bot import messagemonitor
+
 # ______________________________________________________________________________
 
 if __name__ == "__main__":
@@ -13,4 +15,3 @@ if __name__ == "__main__":
     token = df['token'][0]
     nest_asyncio.apply()
     db.bot.run(token)
-
