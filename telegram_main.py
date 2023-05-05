@@ -8,6 +8,8 @@ from Front_layer.telegram_bot import messagemonitor
 
 # _______________________________________________________________________________
 if __name__ == "__main__":
+
+
     test = PyTest.TestRun()
     test.run_all_tests()
     bot_process = tb.Process(target=tb.bot_start_polling)

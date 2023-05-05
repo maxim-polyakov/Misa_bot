@@ -5,6 +5,8 @@ class ResultSaver(ISaver.ISaver):
 
     @classmethod
     def saveRes(cls, history, path, accuracy):
+
+
         s, (at, al) = plt.subplots(2, 1)
         at.plot(history.history[accuracy], c='b')
         at.plot(history.history['val_' + accuracy], c='r')

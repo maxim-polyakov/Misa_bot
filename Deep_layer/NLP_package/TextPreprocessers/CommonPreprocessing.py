@@ -9,6 +9,7 @@ class CommonPreprocessing(Preprocessing.Preprocessing):
     @classmethod
     def preprocess_text(cls, text):
 
+
             tokens = str(text)
             tokens = Mystem().lemmatize(text.lower())
             tokens = [token for token in tokens if token not in stopwords.words('russian')

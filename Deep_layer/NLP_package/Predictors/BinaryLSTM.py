@@ -9,8 +9,9 @@ class BinaryLSTM(IPredictor.IPredictor):
 
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
-            model = load_model(model)
 
+
+            model = load_model(model)
             inn = []
             pr = CommonPreprocessing.CommonPreprocessing()
             for i in inpt:

@@ -6,6 +6,8 @@ class Preprocessing(IPreprocessing.IPreprocessing):
 
     @classmethod
     def preprocess_text(cls, text):
+
+
         try:
             tokens = str(text)
             tokens = text.lower().split(' ')

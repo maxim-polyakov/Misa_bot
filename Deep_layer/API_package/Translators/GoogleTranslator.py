@@ -15,12 +15,16 @@ class GoogleTranslator(ITranslator.ITranslator):
 
     @classmethod
     def _translate(cls, inputText):
+
+
         tranlated = cls._translator.translate(inputText, dest=cls.lang)
         return tranlated.text
 
     @classmethod
     @dispatch(object, object, object)
     def translate(cls, dataselect, insertdtname):
+
+
         try:
             train = DB_Communication.DB_Communication.get_data(dataselect)
             train.text = train.text.astype(str)

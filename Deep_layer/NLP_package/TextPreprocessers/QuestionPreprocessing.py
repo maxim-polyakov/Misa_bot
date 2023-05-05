@@ -7,6 +7,8 @@ class QuestionPreprocessing(Preprocessing.Preprocessing):
 
     @classmethod
     def preprocess_text(cls, text):
+
+
         try:
             tokens = str(text).split(' ')
             tokens = Mystem().lemmatize(text.lower())

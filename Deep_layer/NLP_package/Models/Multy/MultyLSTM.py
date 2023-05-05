@@ -19,14 +19,16 @@ class MultyLSTM(IModel.IModel):
 
     def __init__(self, filemodelname, tokenizerfilename, dataselect):
 
+
         MultyLSTM.__filemodelname = filemodelname
         MultyLSTM.__tokenizerfilename = tokenizerfilename
         MultyLSTM.__dataselect = dataselect
 
     @classmethod
     def __createmodel(cls, tokenizer, n_clases):
-        model = Sequential()
 
+
+        model = Sequential()
         optimzer = Adam(learning_rate=0.005)
         model.add(Embedding(len(tokenizer.tokenizer.word_index) + 1,
                             cls.EMBEDDING_VECTOR_LENGTH,
