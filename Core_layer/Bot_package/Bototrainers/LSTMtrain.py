@@ -51,7 +51,7 @@ class LSTMtrain(ITrainer.ITrainer):
 
     @classmethod
     def emotionstrain(cls, epochs):
-        filemodel = next(Path().rglob('0_lstmemotionsmodel.pickle'))
+        filemodel = next(Path().rglob('0_lstmemotionsmodel.h5'))
         filetokenizer = next(Path().rglob('0_lstmemotionstokenizer.pickle'))
         datasetfile = cls.sel.SELECT_EMOTIONS
         trainer = MultyLSTM.MultyLSTM(filemodel, filetokenizer, datasetfile)
