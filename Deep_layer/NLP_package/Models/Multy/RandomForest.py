@@ -9,23 +9,23 @@ from Deep_layer.NLP_package.Tokenizers import Tokenizer
 class RandomForest(IModel.IModel):
 
     def __init__(cls, filemodelname, tokenizerfilename, dataselect):
-
-
+#
+#
         RandomForest.__filemodelname = filemodelname
         RandomForest.__tokenizerfilename = tokenizerfilename
         RandomForest.__dataselect = dataselect
 
     @classmethod
     def __createmodel(cls):
-
-
+#
+#
         rfc = RandomForestClassifier(criterion='entropy', n_estimators=700)
         return rfc
 
     @classmethod
     def train(cls, target):
-
-
+#
+#
         try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)

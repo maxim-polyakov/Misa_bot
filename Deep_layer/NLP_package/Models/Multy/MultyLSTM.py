@@ -43,6 +43,8 @@ class MultyLSTM(IModel.IModel):
 
     @classmethod
     def train(cls, target, n_clases, epochs):
+#
+#
         try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)

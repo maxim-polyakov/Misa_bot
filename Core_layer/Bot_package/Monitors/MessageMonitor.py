@@ -59,6 +59,8 @@ class MessageMonitor(IMonitor.IMonitor):
 
     @classmethod
     def _neurodesc(cls, text, text_message, command):
+#
+#
         fullPathModels = str(next(Path().rglob('models')))
         fullPathTokenizers = str(next(Path().rglob('tokenizers')))
         modelarr = os.listdir(fullPathModels + '/binary/LSTM/')
@@ -73,9 +75,8 @@ class MessageMonitor(IMonitor.IMonitor):
         predicts = []
         mapaslist = cls._mapaslist.getlistmapas()
         for id in range(0, len(modelpaths)):
-            predicts.append(cls._bpred.predict(text, mapaslist[id],
-                                         modelpaths[id],
-                                         tokenizerpaths[id]))
+            predicts.append(cls._bpred.predict(text, mapaslist[id], modelpaths[id], tokenizerpaths[id]))
+
         return cls.__decision(text_message,
                               emotion,
                               command,

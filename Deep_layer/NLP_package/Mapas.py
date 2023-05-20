@@ -13,8 +13,8 @@ class Mapa:
 class ListMapas(Mapa):
 
     def getlistmapas(self):
-
-
+#
+#
         listmaps = []
         listmaps.append(super().HIMAPA)
         listmaps.append(super().THMAPA)

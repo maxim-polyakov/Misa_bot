@@ -18,16 +18,16 @@ class BinaryLSTM(IModel.IModel):
     EMBEDDING_VECTOR_LENGTH = 33
 
     def __init__(self, filemodelname, tokenizerfilename, dataselect):
-
-
+#
+#
         BinaryLSTM.__filemodelname = filemodelname
         BinaryLSTM.__tokenizerfilename = tokenizerfilename
         BinaryLSTM.__dataselect = dataselect
 
     @classmethod
     def __createmodel(cls, tokenizer):
-
-
+#
+#
         optimzer = Adam(clipvalue=0.5)
         model = Sequential()
         model.add(Embedding(len(tokenizer.tokenizer.word_index) + 1,
@@ -47,9 +47,8 @@ class BinaryLSTM(IModel.IModel):
 
     @classmethod
     def train(cls, target, epochs):
-
-
-
+#
+#
         try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)

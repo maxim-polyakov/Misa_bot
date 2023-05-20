@@ -9,8 +9,8 @@ from Deep_layer.NLP_package.Tokenizers import Tokenizer as t
 class XGBClassifier(IModel.IModel):
 
     def __init__(cls, filemodelname, tokenizerfilename, dataselect):
-
-
+#
+#
         XGBClassifier.__filemodelname = filemodelname
         XGBClassifier.__tokenizerfilename = tokenizerfilename
         XGBClassifier.__dataselect = dataselect
@@ -18,8 +18,8 @@ class XGBClassifier(IModel.IModel):
 
     @classmethod
     def __createmodel(cls):
-
-
+#
+#
         model_xgboost = xgboost.XGBClassifier(learning_rate=0.1,
                                               max_depth=10,
                                               n_estimators=500,
@@ -31,8 +31,8 @@ class XGBClassifier(IModel.IModel):
 
     @classmethod
     def train(cls, target):
-
-
+#
+#
         try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)

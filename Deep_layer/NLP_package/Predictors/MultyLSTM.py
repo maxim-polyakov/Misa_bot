@@ -7,8 +7,8 @@ class MultyLSTM(IPredictor.IPredictor):
 
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
-
-
+#
+#
         try:
             model = load_model(model)
             inn = []

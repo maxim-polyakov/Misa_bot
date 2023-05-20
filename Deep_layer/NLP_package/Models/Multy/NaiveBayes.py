@@ -9,23 +9,23 @@ from sklearn.feature_extraction.text import CountVectorizer
 class NaiveBayes(IModel.IModel):
 
     def __init__(self,filemodelname, tokenizerfilename, dataselect):
-
-
+#
+#
         NaiveBayes.__filemodelname = filemodelname
         NaiveBayes.__tokenizerfilename = tokenizerfilename
         NaiveBayes.__dataselect = dataselect
 
     @classmethod
     def __createmodel(cls):
-
-
+#
+#
         nb_model = MultinomialNB()
         return nb_model
 
     @classmethod
     def train(cls, target):
-
-
+#
+#
         try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)

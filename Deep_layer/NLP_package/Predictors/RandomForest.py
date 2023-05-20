@@ -6,8 +6,8 @@ class RandomForest(IPredictor.IPredictor):
 
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
-
-
+#
+#
         try:
             with open(model, 'rb') as handle:
                 model = p.load(handle)

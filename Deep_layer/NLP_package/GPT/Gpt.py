@@ -8,8 +8,8 @@ class Gpt(IGpt.IGpt):
 
     @classmethod
     def generate(cls, text):
-
-
+#
+#
         try:
             model_name_or_path = "sberbank-ai/rugpt3large_based_on_gpt2"
             tokenizer = GPT2Tokenizer.from_pretrained(model_name_or_path)

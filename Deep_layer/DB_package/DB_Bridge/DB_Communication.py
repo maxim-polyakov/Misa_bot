@@ -10,6 +10,8 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @classmethod
     @dispatch(object, object, object, object, object, object, object)
     def insert_to(cls, text, tablename, string, agenda, classification, classtype):
+#
+#
         try:
             postgr_conn = Connections.PostgresConnection()
             pr = TextPreprocessers.CommonPreprocessing()
@@ -26,6 +28,8 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @classmethod
     @dispatch(object, int, object, object, object)
     def insert_to(cls, idx, txt, insert, datatable):
+#
+#
         try:
             postgr_conn = Connections.PostgresConnection()
             insert = insert.split(', ')
@@ -42,6 +46,8 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @classmethod
     @dispatch(object, object, object, object)
     def insert_to(cls, df, datatable, schema):
+#
+#
         try:
             postgr_conn = Connections.PostgresConnection()
             df.to_sql(datatable, con=postgr_conn.engine_remote, schema=schema,
@@ -52,6 +58,8 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @classmethod
     @dispatch(object, object, object)
     def insert_to(cls, df, datatable):
+#
+#
        try:
             postgr_conn = Connections.PostgresConnection()
             df.to_sql(datatable, con=postgr_conn.engine_remote, schema='assistant_sets',
@@ -62,6 +70,8 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @classmethod
     @dispatch(object, str, str)
     def insert_to(cls, string, datatable):
+#
+#
        try:
             postgr_conn = Connections.PostgresConnection()
             dfvalid = pd.read_sql('select count(tokens) from assistant_sets.' + datatable,
@@ -79,6 +89,8 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @classmethod
     @dispatch(object, object)
     def insert_to(cls, lowertext):
+#
+#
         try:
             postgr_conn = Connections.PostgresConnection()
             def insert(table, count, text, schema):
@@ -101,6 +113,8 @@ class DB_Communication(IDB_Communication.IDB_Communication):
 
     @classmethod
     def get_data(cls, select):
+#
+#
         try:
             postgr_conn = Connections.PostgresConnection()
             df = pd.read_sql(select, postgr_conn.conn_remote)
@@ -111,6 +125,8 @@ class DB_Communication(IDB_Communication.IDB_Communication):
 
     @classmethod
     def delete_data(cls, delete):
+#
+#
         try:
             postgr_conn = Connections.PostgresConnection()
 
@@ -123,6 +139,8 @@ class DB_Communication(IDB_Communication.IDB_Communication):
 
     @classmethod
     def checkcommands(cls, input_string):
+#
+#
         try:
             postgr_conn = Connections.PostgresConnection()
             df = pd.read_sql('SELECT text FROM assistant_sets.commands', postgr_conn.conn_remote)

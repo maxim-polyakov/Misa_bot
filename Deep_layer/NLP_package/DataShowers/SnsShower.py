@@ -10,8 +10,8 @@ class SnsShower(IDataShower.IDataShower):
 
     @classmethod
     def showdata(self, train, target):
-
-
+#
+#
             path = 'Data.png'
             key_metrics = {'samples': len(train),
                            'samples_per_class': train[target].value_counts().median(),
