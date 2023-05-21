@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class IAction(ABC):
+class ICommandAction(ABC):
 
     @abstractmethod
     def fas(cls):
