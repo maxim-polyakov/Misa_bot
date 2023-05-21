@@ -6,7 +6,7 @@ from Deep_layer.NLP_package.DataShowers import SnsShower
 from Core_layer.Command_package.CommandActions import ICommandAction
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 
-class CommandAction(IAction.IAction):
+class CommandAction(ICommandAction.ICommandAction):
 
     boto = None
     message = None
