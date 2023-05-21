@@ -3,10 +3,10 @@ from Deep_layer.API_package.Calculators import SympyCalculator
 from Deep_layer.API_package.Finders import WikiFinder
 from Deep_layer.API_package.Translators import GoogleTranslator
 from Deep_layer.NLP_package.DataShowers import SnsShower
-from Core_layer.Command_package.CommandActions import ICommandAction
+from Core_layer.Command_package.CommandActions import IAction
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 
-class CommandAction(ICommandAction.ICommandAction):
+class CommandAction(IAction.IAction):
 
     boto = None
     message = None
