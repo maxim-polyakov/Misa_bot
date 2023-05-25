@@ -26,7 +26,7 @@ class BinaryLSTM(IModel.IModel):
 
     @classmethod
     def __createmodel(cls, tokenizer):
-#
+#       NN Model
 #
         optimzer = Adam(clipvalue=0.5)
         model = Sequential()

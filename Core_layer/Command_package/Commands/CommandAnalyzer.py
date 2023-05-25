@@ -1,9 +1,9 @@
 from Deep_layer.NLP_package.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
 from Core_layer.Command_package.CommandActions import CommandAction
-from Core_layer.Command_package.Commands import ICommandAnalyzer
+from Core_layer.Command_package.Commands import IAnalyzer
 
 
-class CommandAnalyzer(ICommandAnalyzer.ICommandAnalyzer):
+class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
@@ -23,7 +23,6 @@ class CommandAnalyzer(ICommandAnalyzer.ICommandAnalyzer):
             info_dict = {
                 'атаковать': ac.fas,
                 'фас': ac.fas,
-                'пиздануть': ac.fas,
                 'поссчитать': ac.find,
                 'перевести': ac.translate,
                 'находить': ac.find,
@@ -43,10 +42,12 @@ class CommandAnalyzer(ICommandAnalyzer.ICommandAnalyzer):
 
     def commandanalyse(self, message_text):
         outstr = ''
+
         if (message_text.count('.') > 0):
             word_arr = message_text.split('. ')
         else:
             word_arr = message_text.split(', ')
+
         for word in word_arr:
             outlist = self.__action(word)
             if (outlist != None):
