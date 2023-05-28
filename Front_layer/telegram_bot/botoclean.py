@@ -2,7 +2,7 @@ from Front_layer import telegram_bot
 from Core_layer.Bot_package.DataCleaners import MemoryCleaner
 
 @telegram_bot.dp.message_handler(commands=['clean'])
-async def get_user_text(message):
+async def get_user_text_EDA(message):
 
 
     if (message.chat.username == 'The_Baxic'):

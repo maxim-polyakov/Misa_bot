@@ -5,7 +5,7 @@ from multipledispatch import dispatch
 from Deep_layer.API_package.Translators import ITranslator
 
 
-class GoogleTranslator(ITranslator.ITranslator):
+class EDA_GoogleTranslator(ITranslator.ITranslator):
 
     _translator = Translator()
 

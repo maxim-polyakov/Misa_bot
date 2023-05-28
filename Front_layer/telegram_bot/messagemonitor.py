@@ -2,7 +2,7 @@ from Front_layer import telegram_bot
 from Core_layer.Bot_package.Monitors import MessageMonitorTelegram
 
 @telegram_bot.dp.message_handler(content_types=['text'])
-async def get_user_text(message):
+async def get_user_text_EDA(message):
 
 
     mon = MessageMonitorTelegram.MessageMonitorTelegram(message)

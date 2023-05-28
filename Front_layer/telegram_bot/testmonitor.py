@@ -7,7 +7,7 @@ from Core_layer.Test_package.TestMonitors import TestMonitorXGB
 from Core_layer.Bot_package.ValidsetAnalizers import ValidsetAlanizer
 
 @telegram_bot.dp.message_handler(commands=['testmonitor'])
-async def get_user_text(message):
+async def get_user_text_EDA(message):
 
 
     if (message.chat.username == 'The_Baxic'):

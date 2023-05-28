@@ -2,7 +2,9 @@ from Front_layer import discord_bot
 from Core_layer.Bot_package.Bototrainers import LSTMtrain
 
 @discord_bot.bot.command()
-async def LSTMemotionstrain(ctx, arg):
+async def LSTMemotionstrain_EDA(ctx, arg):
+#
+#
     try:
         if ctx.author != discord_bot.bot.user:
             if ctx.author.display_name == 'Seraphim' and ctx.author.discriminator == '8341':
@@ -23,7 +25,7 @@ async def LSTMemotionstrain(ctx, arg):
         await ctx.channel.send('😊')
 
 @discord_bot.bot.command()
-async def LSTMtrain(ctx, arg):
+async def LSTMtrain_EDA(ctx, arg):
     try:
         if ctx.author != discord_bot.bot.user:
             if ctx.author.display_name == 'Seraphim' and ctx.author.discriminator == '8341':
