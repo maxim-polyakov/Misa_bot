@@ -5,7 +5,7 @@ from Deep_layer.DB_package.DB_Bridge import IDB_Communication, Connections
 import psycopg2
 
 
-class DB_Communication_EDA(IDB_Communication.IDB_Communication):
+class DB_Communication(IDB_Communication.IDB_Communication):
 
     @classmethod
     @dispatch(object, object, object, object, object, object, object)
