@@ -1,7 +1,7 @@
 import psycopg2
 from sqlalchemy import create_engine
 
-class PostgresConnection_EDA:
+class PostgresConnection:
 
     def __init__(self):
         self.conn_remote = psycopg2.connect(

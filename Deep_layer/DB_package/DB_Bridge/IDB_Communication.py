@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class IDB_Communication_EDA(ABC):
+class IDB_Communication(ABC):
 
     @abstractmethod
     def insert_to(cls):
