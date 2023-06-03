@@ -36,7 +36,7 @@ class MessageMonitor(IMonitor.IMonitor):
     @classmethod
     def __decision(cls, text_message, emotion, commands, predicts):
         if (cls._dbc.checkcommands(cls._pr.preprocess_text(text_message))):
-            return commands.commandanalyse(text_message)
+            return commands.analyse(text_message)
         elif (text_message.count('?') > 0):
             outlist = []
             answer = cls._qa.answer(text_message)

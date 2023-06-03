@@ -40,7 +40,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         outlist = list(set(outlist))
         return outlist
 
-    def commandanalyse(self, message_text):
+    def analyse(self, message_text):
         outstr = ''
 
         if (message_text.count('.') > 0):
