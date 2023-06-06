@@ -8,6 +8,8 @@ from Core_layer.Bot_package.ValidsetAnalizers import ValidsetAlanizer
 
 @telegram_bot.dp.message_handler(commands=['testmonitor'])
 async def get_user_text(message):
+#
+#
     if (message.chat.username == 'The_Baxic'):
 
          tmonlstm = TestMonitorLSTM.TestMonitorLSTM()

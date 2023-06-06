@@ -4,6 +4,8 @@ from pathlib import Path
 
 @telegram_bot.dp.message_handler(commands='LSTMtrain')
 async def get_user_text(message):
+#
+#
     try:
         if (message.chat.username == 'The_Baxic'):
             resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
@@ -61,6 +63,8 @@ async def get_user_text(message):
 
 @telegram_bot.dp.message_handler(commands='LSTMweathertrain')
 async def get_user_text(message):
+#
+#
     try:
         if (message.chat.username == 'The_Baxic'):
             resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
@@ -73,7 +77,7 @@ async def get_user_text(message):
             else:
                 epochs = 200
 
-            lt.weathertrain((int(epochs)))
+            await lt.weathertrain((int(epochs)))
             await telegram_bot.boto.send_message(message.chat.id, 'weathertrain', parse_mode='html')
             await telegram_bot.boto.send_photo(message.chat.id,
                                            photo=open(resultrainingpath, 'rb'))
@@ -87,6 +91,8 @@ async def get_user_text(message):
 
 @telegram_bot.dp.message_handler(commands='LSTMtrashtrain')
 async def get_user_text(message):
+#
+#
     try:
         if (message.chat.username == 'The_Baxic'):
             resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
@@ -113,6 +119,8 @@ async def get_user_text(message):
 
 @telegram_bot.dp.message_handler(commands='LSTMhitrain')
 async def get_user_text(message):
+#
+#
     try:
         if (message.chat.username == 'The_Baxic'):
             resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
@@ -137,6 +145,8 @@ async def get_user_text(message):
 
 @telegram_bot.dp.message_handler(commands='LSTMthtrain')
 async def get_user_text(message):
+#
+#
     try:
         if (message.chat.username == 'The_Baxic'):
             resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
@@ -161,6 +171,8 @@ async def get_user_text(message):
 
 @telegram_bot.dp.message_handler(commands='LSTMbusinesstrain')
 async def get_user_text(message):
+#
+#
     try:
         if (message.chat.username == 'The_Baxic'):
             resultrainingpath = next(Path().rglob('resultstraining_binary.png'))
@@ -186,6 +198,8 @@ async def get_user_text(message):
 
 @telegram_bot.dp.message_handler(commands='LSTMemotionstrain')
 async def get_user_text(message):
+#
+#
     try:
         if (message.chat.username == 'The_Baxic'):
             message.text = message.text.replace('/LSTMemotionstrain ', ' ')

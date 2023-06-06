@@ -62,6 +62,8 @@ async def get_user_text(message):
 
 @telegram_bot.dp.message_handler(commands='RFthtrain')
 async def get_user_text(message):
+#
+#
     if (message.chat.username == 'The_Baxic'):
         xgb = XGBtrain.XGBtrain()
 
@@ -73,6 +75,8 @@ async def get_user_text(message):
 
 @telegram_bot.dp.message_handler(commands='RFbusinesstrain')
 async def get_user_text(message):
+#
+#
     if (message.chat.username == 'The_Baxic'):
         xgb = XGBtrain.XGBtrain()
 
@@ -85,6 +89,8 @@ async def get_user_text(message):
 
 @telegram_bot.dp.message_handler(commands='RFemotionstrain')
 async def get_user_text(message):
+#
+#
     if (message.chat.username == 'The_Baxic'):
         xgb = XGBtrain.XGBtrain()
 
