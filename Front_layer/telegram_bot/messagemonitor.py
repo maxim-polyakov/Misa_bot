@@ -5,6 +5,7 @@ from Core_layer.Bot_package.Monitors import MessageMonitorTelegram
 async def get_user_text(message):
 #
 #
+#
     mon = MessageMonitorTelegram.MessageMonitorTelegram(message)
     await telegram_bot.boto.send_message(message.chat.id, mon.monitor(), parse_mode='html')
 
