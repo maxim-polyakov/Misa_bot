@@ -10,60 +10,78 @@ class RFtrain(ITrainer.ITrainer):
 
     @classmethod
     def hitrain(cls):
-        filemodel = next(Path().rglob('0_rfhimodel.pickle'))
-        filetokenizer = next(Path().rglob('0_rfhiencoder.pickle'))
-        datasetfile = cls.sel.SELECT_HI
+        try:
+            filemodel = next(Path().rglob('0_rfhimodel.pickle'))
+            filetokenizer = next(Path().rglob('0_rfhiencoder.pickle'))
+            datasetfile = cls.sel.SELECT_HI
 
-        trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
-        trainer.train('hi')
+            trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
+            trainer.train('hi')
+        except:
+            pass
 
     @classmethod
     def thtrain(cls):
-        filemodel = next(Path().rglob('1_rfthmodel.pickle'))
-        filetokenizer = next(Path().rglob('1_rfthencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('1_rfthmodel.pickle'))
+            filetokenizer = next(Path().rglob('1_rfthencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_TH
+            datasetfile = cls.sel.SELECT_TH
 
-        trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
-        trainer.train('thanks')
+            trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
+            trainer.train('thanks')
+        except:
+            pass
 
     @classmethod
     def businesstrain(cls):
-        filemodel = next(Path().rglob('2_rfbusinessmodel.pickle'))
-        filetokenizer = next(Path().rglob('2_rfbusinessencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('2_rfbusinessmodel.pickle'))
+            filetokenizer = next(Path().rglob('2_rfbusinessencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_BUSINESS
+            datasetfile = cls.sel.SELECT_BUSINESS
 
-        trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile,)
-        trainer.train('business')
+            trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile,)
+            trainer.train('business')
+        except:
+            pass
 
     @classmethod
     def weathertrain(cls):
-        filemodel = next(Path().rglob('3_rfweathermodel.pickle'))
-        filetokenizer = next(Path().rglob('3_rfweatherencoder.pickle'))
-        datasetfile = cls.sel.SELECT_WEATHER
+        try:
+            filemodel = next(Path().rglob('3_rfweathermodel.pickle'))
+            filetokenizer = next(Path().rglob('3_rfweatherencoder.pickle'))
+            datasetfile = cls.sel.SELECT_WEATHER
 
-        trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
-        trainer.train('weather')
+            trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
+            trainer.train('weather')
+        except:
+            pass
 
     @classmethod
     def trashtrain(cls):
-        filemodel = next(Path().rglob('4_rftrashmodel.pickle'))
-        filetokenizer = next(Path().rglob('4_rftrashencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('4_rftrashmodel.pickle'))
+            filetokenizer = next(Path().rglob('4_rftrashencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_TRASH
+            datasetfile = cls.sel.SELECT_TRASH
 
-        trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
-        trainer.train('trash')
+            trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
+            trainer.train('trash')
+        except:
+            pass
 
     @classmethod
     def emotionstrain(cls):
-        filemodel = next(Path().rglob('0_rfemotionsmodel.pickle'))
-        filetokenizer = next(Path().rglob('0_rfemotionsencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('0_rfemotionsmodel.pickle'))
+            filetokenizer = next(Path().rglob('0_rfemotionsencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_EMOTIONS
+            datasetfile = cls.sel.SELECT_EMOTIONS
 
-        trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
-        trainer.train('emotionid')
+            trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile)
+            trainer.train('emotionid')
+        except:
+            pass
 
 

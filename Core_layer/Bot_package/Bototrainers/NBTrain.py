@@ -9,58 +9,76 @@ class NBTrain(ITrainer.ITrainer):
 
     @classmethod
     def hitrain(cls):
-        filemodel = next(Path().rglob('0_nbhimodel.pickle'))
-        filetokenizer = next(Path().rglob('0_nbhiencoder.pickle'))
-        datasetfile = cls.sel.SELECT_HI
+        try:
+            filemodel = next(Path().rglob('0_nbhimodel.pickle'))
+            filetokenizer = next(Path().rglob('0_nbhiencoder.pickle'))
+            datasetfile = cls.sel.SELECT_HI
 
-        trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
-        trainer.train('hi')
+            trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
+            trainer.train('hi')
+        except:
+            pass
 
     @classmethod
     def thtrain(cls):
-        filemodel = next(Path().rglob('1_nbthmodel.pickle'))
-        filetokenizer = next(Path().rglob('1_nbthencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('1_nbthmodel.pickle'))
+            filetokenizer = next(Path().rglob('1_nbthencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_TH
+            datasetfile = cls.sel.SELECT_TH
 
-        trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
-        trainer.train('thanks')
+            trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
+            trainer.train('thanks')
+        except:
+            pass
 
     @classmethod
     def businesstrain(cls):
-        filemodel = next(Path().rglob('2_nbbusinessmodel.pickle'))
-        filetokenizer = next(Path().rglob('2_nbbusinessencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('2_nbbusinessmodel.pickle'))
+            filetokenizer = next(Path().rglob('2_nbbusinessencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_BUSINESS
+            datasetfile = cls.sel.SELECT_BUSINESS
 
-        trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile,)
-        trainer.train('business')
+            trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile,)
+            trainer.train('business')
+        except:
+            pass
 
     @classmethod
     def weathertrain(cls):
-        filemodel = next(Path().rglob('3_nbweathermodel.pickle'))
-        filetokenizer = next(Path().rglob('3_nbweatherencoder.pickle'))
-        datasetfile = cls.sel.SELECT_WEATHER
+        try:
+            filemodel = next(Path().rglob('3_nbweathermodel.pickle'))
+            filetokenizer = next(Path().rglob('3_nbweatherencoder.pickle'))
+            datasetfile = cls.sel.SELECT_WEATHER
 
-        trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
-        trainer.train('weather')
+            trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
+            trainer.train('weather')
+        except:
+            pass
 
     @classmethod
     def trashtrain(cls):
-        filemodel = next(Path().rglob('4_nbtrashmodel.pickle'))
-        filetokenizer = next(Path().rglob('4_nbtrashencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('4_nbtrashmodel.pickle'))
+            filetokenizer = next(Path().rglob('4_nbtrashencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_TRASH
+            datasetfile = cls.sel.SELECT_TRASH
 
-        trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
-        trainer.train('trash')
+            trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
+            trainer.train('trash')
+        except:
+            pass
 
     @classmethod
     def emotionstrain(cls):
-        filemodel = next(Path().rglob('0_nbemotionsmodel.pickle'))
-        filetokenizer = next(Path().rglob('0_nbemotionsencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('0_nbemotionsmodel.pickle'))
+            filetokenizer = next(Path().rglob('0_nbemotionsencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_EMOTIONS
+            datasetfile = cls.sel.SELECT_EMOTIONS
 
-        trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
-        trainer.train('emotionid')
+            trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile)
+            trainer.train('emotionid')
+        except:
+            pass

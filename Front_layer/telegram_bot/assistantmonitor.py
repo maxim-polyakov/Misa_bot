@@ -6,4 +6,4 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         message.text = message.text.replace('/token ', '')
 
-        Token.Token.add_token(message.text)
+        await Token.Token.add_token(message.text)

@@ -8,19 +8,19 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
 
         nbt = NBTrain.NBTrain()
-        nbt.hitrain()
+        await nbt.hitrain()
         await telegram_bot.boto.send_message(message.chat.id, 'hitrain', parse_mode='html')
 
-        nbt.thtrain()
+        await nbt.thtrain()
         await telegram_bot.boto.send_message(message.chat.id, 'thtrain', parse_mode='html')
 
-        nbt.businesstrain()
+        await nbt.businesstrain()
         await telegram_bot.boto.send_message(message.chat.id, 'businesstrain', parse_mode='html')
 
-        nbt.weathertrain()
+        await nbt.weathertrain()
         await telegram_bot.boto.send_message(message.chat.id, 'weathertrain', parse_mode='html')
 
-        nbt.trashtrain()
+        await nbt.trashtrain()
         await telegram_bot.boto.send_message(message.chat.id, 'trashtrain', parse_mode='html')
 
         await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
@@ -33,7 +33,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         nbt = NBTrain.NBTrain()
 
-        nbt.weathertrain()
+        await nbt.weathertrain()
         await telegram_bot.boto.send_message(message.chat.id, 'weathertrain', parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
@@ -44,7 +44,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         nbt = NBTrain.NBTrain()
 
-        nbt.trashtrain()
+        await nbt.trashtrain()
         await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
@@ -55,7 +55,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         nbt = NBTrain.NBTrain()
 
-        nbt.hitrain()
+        await nbt.hitrain()
         await telegram_bot.boto.send_message(message.chat.id, 'hitrain', parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
@@ -66,7 +66,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         nbt = NBTrain.NBTrain()
 
-        nbt.thtrain()
+        await nbt.thtrain()
         await telegram_bot.boto.send_message(message.chat.id, 'thtrain', parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
@@ -77,7 +77,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         nbt = NBTrain.NBTrain()
 
-        nbt.businesstrain()
+        await nbt.businesstrain()
         await telegram_bot.boto.send_message(message.chat.id, 'businesstrain', parse_mode='html')
         pass
     else:
@@ -89,7 +89,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         nbt = NBTrain.NBTrain()
 
-        nbt.emotionstrain()
+        await nbt.emotionstrain()
         await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')

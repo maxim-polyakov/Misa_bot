@@ -7,19 +7,19 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
 
         rt = RFTrain.RFtrain()
-        rt.hitrain()
+        await rt.hitrain()
         await telegram_bot.boto.send_message(message.chat.id, 'hitrain', parse_mode='html')
 
-        rt.thtrain()
+        await rt.thtrain()
         await telegram_bot.boto.send_message(message.chat.id, 'thtrain', parse_mode='html')
 
-        rt.businesstrain()
+        await rt.businesstrain()
         await telegram_bot.boto.send_message(message.chat.id, 'businesstrain', parse_mode='html')
 
-        rt.weathertrain()
+        await rt.weathertrain()
         await telegram_bot.boto.send_message(message.chat.id, 'weathertrain', parse_mode='html')
 
-        rt.trashtrain()
+        await rt.trashtrain()
         await telegram_bot.boto.send_message(message.chat.id, 'trashtrain', parse_mode='html')
 
         await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
@@ -31,7 +31,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         rt = RFTrain.RFtrain()
 
-        rt.weathertrain()
+        await rt.weathertrain()
         await telegram_bot.boto.send_message(message.chat.id, 'weathertrain', parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
@@ -41,7 +41,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         rt = RFTrain.RFtrain()
 
-        rt.trashtrain()
+        await rt.trashtrain()
         await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
@@ -51,7 +51,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         rt = RFTrain.RFtrain()
 
-        rt.hitrain()
+        await rt.hitrain()
         await telegram_bot.boto.send_message(message.chat.id, 'hitrain', parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
@@ -61,7 +61,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         rt = RFTrain.RFtrain()
 
-        rt.thtrain()
+        await rt.thtrain()
         await telegram_bot.boto.send_message(message.chat.id, 'thtrain', parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
@@ -71,7 +71,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         rt = RFTrain.RFtrain()
 
-        rt.businesstrain()
+        await rt.businesstrain()
         await telegram_bot.boto.send_message(message.chat.id, 'businesstrain', parse_mode='html')
         pass
     else:
@@ -82,7 +82,7 @@ async def get_user_text(message):
     if (message.chat.username == 'The_Baxic'):
         rt = RFTrain.RFtrain()
         
-        rt.emotionstrain()
+        await rt.emotionstrain()
         await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')

@@ -10,60 +10,78 @@ class XGBtrain(ITrainer.ITrainer):
 
     @classmethod
     def hitrain(cls):
-        filemodel = next(Path().rglob('0_xgbhimodel.pickle'))
-        filetokenizer = next(Path().rglob('0_xgbhiencoder.pickle'))
-        datasetfile = cls.sel.SELECT_HI
+        try:
+            filemodel = next(Path().rglob('0_xgbhimodel.pickle'))
+            filetokenizer = next(Path().rglob('0_xgbhiencoder.pickle'))
+            datasetfile = cls.sel.SELECT_HI
 
-        trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile)
-        trainer.train('hi')
+            trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile)
+            trainer.train('hi')
+        except:
+            pass
 
     @classmethod
     def thtrain(cls):
-        filemodel = next(Path().rglob('1_xgbthmodel.pickle'))
-        filetokenizer = next(Path().rglob('1_xgbthencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('1_xgbthmodel.pickle'))
+            filetokenizer = next(Path().rglob('1_xgbthencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_TH
+            datasetfile = cls.sel.SELECT_TH
 
-        trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile)
-        trainer.train('thanks')
+            trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile)
+            trainer.train('thanks')
+        except:
+            pass
 
     @classmethod
     def businesstrain(cls):
-        filemodel = next(Path().rglob('2_xgbbusinessmodel.pickle'))
-        filetokenizer = next(Path().rglob('2_xgbbusinessencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('2_xgbbusinessmodel.pickle'))
+            filetokenizer = next(Path().rglob('2_xgbbusinessencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_BUSINESS
+            datasetfile = cls.sel.SELECT_BUSINESS
 
-        trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile,)
-        trainer.train('business')
+            trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile,)
+            trainer.train('business')
+        except:
+            pass
 
     @classmethod
     def weathertrain(cls):
-        filemodel = next(Path().rglob('3_xgbweathermodel.pickle'))
-        filetokenizer = next(Path().rglob('3_xgbweatherencoder.pickle'))
-        datasetfile = cls.sel.SELECT_WEATHER
+        try:
+            filemodel = next(Path().rglob('3_xgbweathermodel.pickle'))
+            filetokenizer = next(Path().rglob('3_xgbweatherencoder.pickle'))
+            datasetfile = cls.sel.SELECT_WEATHER
 
-        trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile)
-        trainer.train('weather')
+            trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile)
+            trainer.train('weather')
+        except:
+            pass
 
     @classmethod
     def trashtrain(cls):
-        filemodel = next(Path().rglob('4_xgbtrashmodel.pickle'))
-        filetokenizer = next(Path().rglob('4_xgbtrashencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('4_xgbtrashmodel.pickle'))
+            filetokenizer = next(Path().rglob('4_xgbtrashencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_TRASH
+            datasetfile = cls.sel.SELECT_TRASH
 
-        trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile)
-        trainer.train('trash')
+            trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile)
+            trainer.train('trash')
+        except:
+            pass
 
     @classmethod
     def emotionstrain(cls):
-        filemodel = next(Path().rglob('0_xgbemotionsmodel.pickle'))
-        filetokenizer = next(Path().rglob('0_xgbemotionsencoder.pickle'))
+        try:
+            filemodel = next(Path().rglob('0_xgbemotionsmodel.pickle'))
+            filetokenizer = next(Path().rglob('0_xgbemotionsencoder.pickle'))
 
-        datasetfile = cls.sel.SELECT_EMOTIONS
+            datasetfile = cls.sel.SELECT_EMOTIONS
 
-        trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile)
-        trainer.train('emotionid')
+            trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile)
+            trainer.train('emotionid')
+        except:
+            pass
 
 
