@@ -16,7 +16,7 @@ async def get_user_text(message):
             else:
                 epochs = 200
 
-            await lt.hitrain(int(epochs))
+            lt.hitrain(int(epochs))
             await telegram_bot.boto.send_message(message.chat.id, 'hitrain', parse_mode='html')
             await telegram_bot.boto.send_photo(message.chat.id,
                                                photo=open(resultrainingpath, 'rb'))
@@ -27,7 +27,7 @@ async def get_user_text(message):
             else:
                 pass
 
-            await lt.thtrain(int(epochs))
+            lt.thtrain(int(epochs))
             await telegram_bot.boto.send_message(message.chat.id, 'thtrain', parse_mode='html')
             await telegram_bot.boto.send_photo(message.chat.id,
                                                photo=open(resultrainingpath, 'rb'))
@@ -38,16 +38,16 @@ async def get_user_text(message):
             else:
                 pass
 
-            await lt.businesstrain(int(epochs))
+            lt.businesstrain(int(epochs))
 
             await telegram_bot.boto.send_message(message.chat.id, 'businesstrain', parse_mode='html')
             await telegram_bot.boto.send_photo(message.chat.id,
                                                photo=open(resultrainingpath, 'rb'))
-            await lt.weathertrain((int(epochs)))
+            lt.weathertrain((int(epochs)))
             await telegram_bot.boto.send_message(message.chat.id, 'weathertrain', parse_mode='html')
             await telegram_bot.boto.send_photo(message.chat.id,
                                                photo=open(resultrainingpath, 'rb'))
-            await lt.trashtrain(int(epochs))
+            lt.trashtrain(int(epochs))
             await telegram_bot.boto.send_message(message.chat.id, 'trashtrain', parse_mode='html')
             await telegram_bot.boto.send_photo(message.chat.id,
                                                photo=open(resultrainingpath, 'rb'))
@@ -173,7 +173,7 @@ async def get_user_text(message):
             else:
                 epochs = 200
 
-            await lt.businesstrain(int(epochs))
+            lt.businesstrain(int(epochs))
 
             await telegram_bot.boto.send_message(message.chat.id, 'businesstrain', parse_mode='html')
             await telegram_bot.boto.send_photo(message.chat.id,
@@ -195,7 +195,7 @@ async def get_user_text(message):
                 epochs = message_text_array.pop(0)
             else:
                 epochs = 200
-            await lt.emotionstrain(int(epochs))
+            lt.emotionstrain(int(epochs))
             resultrainingpath = next(Path().rglob('resultstraining_multy.png'))
             await telegram_bot.boto.send_photo(message.chat.id,
                                        photo=open(resultrainingpath, 'rb'))
