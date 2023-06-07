@@ -1,6 +1,7 @@
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 import random
-from Core_layer.Answer_package.Answers import IAnswer
+from Core_layer.Answer_package.Answers.Interfaces import IAnswer
+
 
 class RandomAnswer(IAnswer.IAnswer):
     __inpt = DB_Communication.DB_Communication.get_data('SELECT * FROM answer_sets.hianswer')

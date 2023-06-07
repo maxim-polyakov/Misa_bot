@@ -23,4 +23,4 @@ class BinaryLSTM(IPredictor.IPredictor):
             score = model.predict(tokenized_inpt)
             outpt = max(np.round(score).astype(int))
             cls.outscore = max(score)
-            return(tmap[outpt[0]])
+            return(tmap[outpt[0]] + ' ' + str(cls.outscore))
