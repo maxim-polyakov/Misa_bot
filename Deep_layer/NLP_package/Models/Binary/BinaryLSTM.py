@@ -31,10 +31,10 @@ class BinaryLSTM(IModel.IModel):
                             input_length=tokenizer.MAX_SEQUENCE_LENGTH,
                             trainable=True, mask_zero=True))
         model.add(Dropout(0.5))
-        model.add(LSTM(64, dropout=0.2, recurrent_dropout=0.2))
-        model.add(Dense(512, activation='sigmoid'))
+        model.add(LSTM(128, dropout=0.2, recurrent_dropout=0.2))
+        model.add(Dense(256, activation='sigmoid'))
         model.add(Dropout(0.5))
-        model.add(Dense(512, activation='sigmoid'))
+        model.add(Dense(256, activation='sigmoid'))
         model.add(Dense(1, activation='sigmoid'))
         model.compile(optimizer=optimzer, loss='binary_crossentropy',
                       metrics=['binary_accuracy'])
