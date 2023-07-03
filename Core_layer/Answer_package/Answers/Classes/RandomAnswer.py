@@ -10,12 +10,16 @@ class RandomAnswer(IAnswer.IAnswer):
 
     @classmethod
     def answer(self):
+#
+#
         try:
             for i in range(0, len(self.__data['text']) - 1):
                 if (self.__data['agenda'][i] == 'Приветствие'):
                     self.__df.append(self.__data['text'][i])
             outmapa = {0: [self.__df[random.randint(0, len(self.__df))]]}
-
-            return str(outmapa[0])
+            if(outmapa[0] != 'Т'):
+                return str(outmapa[0])
+            else:
+                return 'Привет'
         except:
             return 'The exception in RandomAnswer.answer'
