@@ -10,8 +10,6 @@ from Core_layer.Bot_package.Token import Token
 tkn = Token.Token()
 df = tkn.get_token('select token from assistant_sets.tokens where botname = \'Misa\' and platformname = \'Telegram\'')
 API_TOKEN = df['token'][0]
-APP_HOST = '127.0.0.1'
-APP_PORT = '9000'
 boto = Bot(token=API_TOKEN)
 app = flask.Flask(__name__)
 dp = Dispatcher(bot=boto)
