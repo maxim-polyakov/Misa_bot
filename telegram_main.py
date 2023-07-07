@@ -5,6 +5,7 @@ from Front_layer.telegram_bot import botoclean
 from Front_layer.telegram_bot.bototrain import lstmtrain, rftrain, nbtrain, xgbtrain
 from Front_layer.telegram_bot import testmonitor
 from Front_layer.telegram_bot import messagemonitor
+from Front_layer.telegram_bot import picturemonitor
 
 # _______________________________________________________________________________
 if __name__ == "__main__":
