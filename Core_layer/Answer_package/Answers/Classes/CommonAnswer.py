@@ -1,6 +1,7 @@
 from Deep_layer.NLP_package.GPT import Gpt
 import re
-from Core_layer.Answer_package.Answers import IAnswer
+from Core_layer.Answer_package.Answers.Interfaces import IAnswer
+
 
 class CommonAnswer(IAnswer.IAnswer):
     __gpt = Gpt.Gpt

@@ -1,7 +1,7 @@
 import pickle as p
 from tensorflow.keras.models import load_model
 import numpy as np
-from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
+from Deep_layer.NLP_package.TextPreprocessers import QuestionPreprocessing, CommandPreprocessing, CommonPreprocessing
 from Deep_layer.NLP_package.Predictors import IPredictor
 
 class BinaryLSTM(IPredictor.IPredictor):
@@ -9,9 +9,8 @@ class BinaryLSTM(IPredictor.IPredictor):
 
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
-#
-#
             model = load_model(model)
+
             inn = []
             pr = CommonPreprocessing.CommonPreprocessing()
             for i in inpt:
@@ -23,5 +22,5 @@ class BinaryLSTM(IPredictor.IPredictor):
 
             score = model.predict(tokenized_inpt)
             outpt = max(np.round(score).astype(int))
-            #cls.outscore = max(score)
-            return(tmap[outpt[0]])
+            cls.outscore = max(score)
+            return(tmap[outpt[0]] + ' ' + str(cls.outscore))

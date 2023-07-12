@@ -1,5 +1,5 @@
 from Core_layer.Test_package.TestMonitors import TestMonitorLSTM as tmon
-from Core_layer.Answer_package.Answers import QuestionAnswer as answ
+from Core_layer.Answer_package.Answers.Classes import QuestionAnswer as answ
 from Core_layer.Test_package.PythonTests import ITestCase
 import unittest
 
