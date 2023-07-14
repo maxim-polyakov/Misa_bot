@@ -1,4 +1,4 @@
-![plot](https://github.com/maxim-polyakov/Misa_bot/blob/train_dev_branch/Misa_architecture.png)
+![plot](https://github.com/maxim-polyakov/Misa_bot/blob/train_dev_branch/House.jpg)
 
 # Misa_bot
 
