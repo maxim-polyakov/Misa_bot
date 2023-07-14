@@ -6,5 +6,9 @@ async def get_user_text(message):
 #
 #
     mon = MessageMonitorTelegram.MessageMonitorTelegram(message)
-    await telegram_bot.boto.send_message(message.chat.id, mon.monitor(), parse_mode='html')
+    output = mon.monitor()
+    if(output != ''):
+        await telegram_bot.boto.send_message(message.chat.id, output, parse_mode='html')
+    else:
+        await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
 
