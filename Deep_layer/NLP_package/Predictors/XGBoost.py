@@ -6,11 +6,10 @@ class Xgboost(IPredictor.IPredictor):
 
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
-#
-#
         try:
             with open(model, 'rb') as handle:
                 model = p.load(handle)
+
             inn = []
             pr = CommonPreprocessing.CommonPreprocessing()
             for i in inpt:

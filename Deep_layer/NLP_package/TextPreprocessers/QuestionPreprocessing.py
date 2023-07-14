@@ -7,8 +7,6 @@ class QuestionPreprocessing(Preprocessing.Preprocessing):
 
     @classmethod
     def preprocess_text(cls, text):
-#
-#
         try:
             tokens = str(text).split(' ')
             tokens = Mystem().lemmatize(text.lower())
@@ -23,8 +21,6 @@ class QuestionPreprocessing(Preprocessing.Preprocessing):
 
     @classmethod
     def reversepreprocess_text(cls, text):
-#
-#
         try:
             tokens = str(text)
             tokens = Mystem().lemmatize(text.lower())

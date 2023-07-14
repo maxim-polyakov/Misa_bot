@@ -6,8 +6,6 @@ from Deep_layer.NLP_package.TextPreprocessers import Preprocessing
 class CommandPreprocessing(Preprocessing.Preprocessing):
     @classmethod
     def preprocess_text(cls, text):
-#
-#
         try:
             tokens = str(text)
             tokens = text.lower().split(' ')
@@ -21,8 +19,6 @@ class CommandPreprocessing(Preprocessing.Preprocessing):
 
     @classmethod
     def reversepreprocess_text(cls, text):
-#
-#
         try:
             document = spacy.load('ru_core_news_md')
             tokens = [token.lemma_ for token in document if token.pos_ == 'VERB']
