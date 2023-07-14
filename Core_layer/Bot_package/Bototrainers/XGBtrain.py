@@ -10,6 +10,8 @@ class XGBtrain(ITrainer.ITrainer):
 
     @classmethod
     def hitrain(cls):
+#
+#
         try:
             filemodel = next(Path().rglob('0_xgbhimodel.pickle'))
             filetokenizer = next(Path().rglob('0_xgbhiencoder.pickle'))

@@ -10,6 +10,8 @@ class RFtrain(ITrainer.ITrainer):
 
     @classmethod
     def hitrain(cls):
+#
+#
         try:
             filemodel = next(Path().rglob('0_rfhimodel.pickle'))
             filetokenizer = next(Path().rglob('0_rfhiencoder.pickle'))
@@ -22,6 +24,8 @@ class RFtrain(ITrainer.ITrainer):
 
     @classmethod
     def thtrain(cls):
+#
+#
         try:
             filemodel = next(Path().rglob('1_rfthmodel.pickle'))
             filetokenizer = next(Path().rglob('1_rfthencoder.pickle'))

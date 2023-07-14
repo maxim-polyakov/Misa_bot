@@ -11,6 +11,8 @@ class LSTMtrain(ITrainer.ITrainer):
 
     @classmethod
     def hitrain(cls, epochs):
+#
+#
         try:
             filemodel = next(Path().rglob('0_lstmhimodel.h5'))
             filetokenizer = next(Path().rglob('0_lstmhitokenizer.pickle'))

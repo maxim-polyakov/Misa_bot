@@ -9,6 +9,8 @@ class NBTrain(ITrainer.ITrainer):
 
     @classmethod
     def hitrain(cls):
+#
+#
         try:
             filemodel = next(Path().rglob('0_nbhimodel.pickle'))
             filetokenizer = next(Path().rglob('0_nbhiencoder.pickle'))
