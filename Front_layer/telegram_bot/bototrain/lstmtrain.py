@@ -1,6 +1,7 @@
 from Front_layer import telegram_bot
 from Core_layer.Bot_package.Bototrainers import LSTMtrain
 from pathlib import Path
+import asyncio
 
 @telegram_bot.dp.message_handler(commands='LSTMtrain')
 async def get_user_text(message):
@@ -197,10 +198,10 @@ async def get_user_text(message):
 
 
 @telegram_bot.dp.message_handler(commands='LSTMemotionstrain')
-async def get_user_text(message):
+def get_user_text(message):
 #
 #
-    try:
+
         if (message.chat.username == 'The_Baxic'):
             message.text = message.text.replace('/LSTMemotionstrain ', ' ')
             lt = LSTMtrain.LSTMtrain()
@@ -209,12 +210,12 @@ async def get_user_text(message):
                 epochs = message_text_array.pop(0)
             else:
                 epochs = 200
+
             lt.emotionstrain(int(epochs))
             resultrainingpath = next(Path().rglob('resultstraining_multy.png'))
-            await telegram_bot.boto.send_photo(message.chat.id,
+            telegram_bot.boto.send_photo(message.chat.id,
                                        photo=open(resultrainingpath, 'rb'))
-            await telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
+            telegram_bot.boto.send_message(message.chat.id, 'trained', parse_mode='html')
         else:
-            await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
-    except:
-        pass
+            telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
+

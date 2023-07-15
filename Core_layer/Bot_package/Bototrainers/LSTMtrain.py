@@ -23,6 +23,8 @@ class LSTMtrain(ITrainer.ITrainer):
             pass
     @classmethod
     def thtrain(cls, epochs):
+#
+#
         try:
             filemodel = next(Path().rglob('1_lstmthmodel.h5'))
             filetokenizer = next(Path().rglob('1_lstmthtokenizer.pickle'))
@@ -34,6 +36,8 @@ class LSTMtrain(ITrainer.ITrainer):
 
     @classmethod
     def businesstrain(cls, epochs):
+#
+#
         try:
             filemodel = next(Path().rglob('2_lstmbusinessmodel.h5'))
             filetokenizer = next(Path().rglob('2_lstmbusinesstokenizer.pickle'))
@@ -45,6 +49,8 @@ class LSTMtrain(ITrainer.ITrainer):
 
     @classmethod
     def weathertrain(cls, epochs):
+#
+#
         try:
             filemodel = next(Path().rglob('3_lstmweathermodel.h5'))
             filetokenizer = next(Path().rglob('3_lstmweathertokenizer.pickle'))
@@ -56,6 +62,8 @@ class LSTMtrain(ITrainer.ITrainer):
 
     @classmethod
     def trashtrain(cls, epochs):
+#
+#
         try:
             filemodel = next(Path().rglob('4_lstmtrashmodel.h5'))
             filetokenizer = next(Path().rglob('4_lstmtrashtokenizer.pickle'))
@@ -67,13 +75,13 @@ class LSTMtrain(ITrainer.ITrainer):
 
     @classmethod
     def emotionstrain(cls, epochs):
-        try:
-            filemodel = next(Path().rglob('0_lstmemotionsmodel.pickle'))
+#
+#
+            filemodel = next(Path().rglob('0_lstmemotionsmodel.h5'))
             filetokenizer = next(Path().rglob('0_lstmemotionstokenizer.pickle'))
             datasetfile = cls.sel.SELECT_EMOTIONS
             trainer = MultyLSTM.MultyLSTM(filemodel, filetokenizer, datasetfile)
             trainer.train('emotionid', 7, epochs)
-        except:
-            pass
+
 
 
