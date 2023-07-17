@@ -1,8 +1,8 @@
 from pathlib import Path
 from Deep_layer.NLP_package.Models.Multy import MultyLSTM
 from Deep_layer.NLP_package.Models.Binary import BinaryLSTM
-from Core_layer.Bot_package import Selects
-from Core_layer.Bot_package.Bototrainers import ITrainer
+from Core_layer.Bot_package.Classes import Selects
+from Core_layer.Bot_package.Interfaces import ITrainer
 
 
 class LSTMtrain(ITrainer.ITrainer):

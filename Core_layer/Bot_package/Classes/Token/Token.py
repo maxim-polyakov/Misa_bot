@@ -1,5 +1,6 @@
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
-from Core_layer.Bot_package.Token import IToken
+from Core_layer.Bot_package.Interfaces import IToken
+
 
 class Token(IToken.IToken):
 

@@ -1,6 +1,6 @@
 from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
-from Core_layer.Bot_package.DataCleaners import ICleaner
+from Core_layer.Bot_package.Interfaces import ICleaner
 
 
 class MemoryCleaner(ICleaner.ICleaner):

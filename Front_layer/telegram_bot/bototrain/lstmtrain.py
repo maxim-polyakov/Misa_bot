@@ -1,5 +1,5 @@
 from Front_layer import telegram_bot
-from Core_layer.Bot_package.Bototrainers import LSTMtrain
+from Core_layer.Bot_package.Classes.Bototrainers import LSTMtrain
 from pathlib import Path
 import asyncio
 

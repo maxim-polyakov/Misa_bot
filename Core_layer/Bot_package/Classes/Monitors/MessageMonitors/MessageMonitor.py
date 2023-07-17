@@ -4,7 +4,7 @@ from Core_layer.Answer_package.Answers.Classes import QuestionAnswer, RandomAnsw
 from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
-from Core_layer.Bot_package.Monitors import IMonitor
+from Core_layer.Bot_package.Interfaces import IMonitor
 import os
 
 class MessageMonitor(IMonitor.IMonitor):

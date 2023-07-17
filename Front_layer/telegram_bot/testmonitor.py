@@ -4,7 +4,7 @@ from Core_layer.Test_package.TestMonitors import TestMonitorNB
 from Core_layer.Test_package.TestMonitors import TestMonitorRF
 from Core_layer.Test_package.TestMonitors import TestMonitorXGB
 
-from Core_layer.Bot_package.ValidsetAnalizers import ValidsetAlanizer
+from Core_layer.Bot_package.Classes.ValidsetAnalizers import ValidsetAlanizer
 
 @telegram_bot.dp.message_handler(commands=['testmonitor'])
 async def get_user_text(message):

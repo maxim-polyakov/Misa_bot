@@ -1,5 +1,5 @@
 from Front_layer import telegram_bot
-from Core_layer.Bot_package.DataCleaners import MemoryCleaner
+from Core_layer.Bot_package.Classes.DataCleaners import MemoryCleaner
 
 @telegram_bot.dp.message_handler(commands=['clean'])
 async def get_user_text(message):

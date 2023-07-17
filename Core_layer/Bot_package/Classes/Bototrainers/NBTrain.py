@@ -1,7 +1,8 @@
 from pathlib import Path
 from Deep_layer.NLP_package.Models.Multy import NaiveBayes
-from Core_layer.Bot_package import Selects
-from Core_layer.Bot_package.Bototrainers import ITrainer
+from Core_layer.Bot_package.Classes import Selects
+from Core_layer.Bot_package.Interfaces import ITrainer
+
 
 class NBTrain(ITrainer.ITrainer):
 
