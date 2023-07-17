@@ -2,7 +2,7 @@ import discord
 import flask
 from multiprocessing import Process
 from discord.ext import commands
-from Core_layer.Bot_package.Token import Token
+from Core_layer.Bot_package.Classes.Token import Token
 import nest_asyncio
 
 config = {

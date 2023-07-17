@@ -1,5 +1,5 @@
 from Front_layer import discord_bot
-from Core_layer.Bot_package.Monitors import MessageMonitorDiscord
+from Core_layer.Bot_package.Classes.Monitors.MessageMonitors.MessageMonitorDiscord import MessageMonitorDiscord
 
 @discord_bot.bot.listen()
 async def on_message_EDA(message):
