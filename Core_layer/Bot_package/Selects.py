@@ -59,14 +59,14 @@ class Select:
                   'union all' +
                   '(select text, weather FROM train_sets.all_set_trash WHERE (weather=0) ORDER BY random() LIMIT 500)')
 
-    SELECT_EMOTIONS = str('(select text, emotionid  FROM train_sets.all_set_weather ORDER BY random() LIMIT 3000)'
-                          'union all'
-                          '(select text, emotionid FROM train_sets.all_set_none ORDER BY random() limit 500)'
-                          'union all'
-                          '(select text, emotionid FROM train_sets.all_set_thanks order by random() LIMIT 500)'
-                          'union all'
-                          '(select text, emotionid FROM train_sets.all_set_hi order by random() limit 500)'
-                          'union all'
-                          '(select text, emotionid  FROM train_sets.all_set_business order by random() limit 500)'
-                          'union all'
+    SELECT_EMOTIONS = str('(select text, emotionid  FROM train_sets.all_set_weather ORDER BY random() LIMIT 3000)' +
+                          'union all' +
+                          '(select text, emotionid FROM train_sets.all_set_none ORDER BY random() limit 500)' +
+                          'union all' +
+                          '(select text, emotionid FROM train_sets.all_set_thanks order by random() LIMIT 500)' +
+                          'union all' +
+                          '(select text, emotionid FROM train_sets.all_set_hi order by random() limit 500)' +
+                          'union all' +
+                          '(select text, emotionid  FROM train_sets.all_set_business order by random() limit 500)' +
+                          'union all' +
                           '(select text, emotionid  FROM train_sets.all_set_trash order by random() limit 500)')
