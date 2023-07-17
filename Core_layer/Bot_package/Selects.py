@@ -69,4 +69,6 @@ class Select:
                           'union all'
                           '(select text, emotionid  FROM train_sets.all_set_business order by random() limit 500)'
                           'union all'
-                          '(select text, emotionid  FROM train_sets.all_set_trash order by random() limit 500)')
+                          '(select text, emotionid  FROM train_sets.all_set_trash order by random() limit 500)'
+                          'union all'
+                          '(select text, emotionid  FROM train_sets.all_set_mood order by random() limit 500)')
