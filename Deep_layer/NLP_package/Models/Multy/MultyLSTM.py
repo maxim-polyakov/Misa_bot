@@ -42,6 +42,7 @@ class MultyLSTM(IModel.IModel):
     @classmethod
     def train(cls, target, n_clases, epochs):
 
+        try:
             train = DB_Communication.DB_Communication.get_data(cls.__dataselect)
             train.text = train.text.astype(str)
 
@@ -77,3 +78,5 @@ class MultyLSTM(IModel.IModel):
                 p.dump(tokenizer, handle, protocol=p.HIGHEST_PROTOCOL)
 
             ResultSaver.ResultSaver.saveRes(history, 'resultstraining_multy.png', 'accuracy')
+        except:
+            print("The exception is in MultyLSTM.train")
