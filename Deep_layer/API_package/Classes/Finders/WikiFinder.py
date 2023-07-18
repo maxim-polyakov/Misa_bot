@@ -1,5 +1,6 @@
 import wikipedia as w
-from Deep_layer.API_package.Finders import IFinder
+from Deep_layer.API_package.Interfaces import IFinder
+
 
 class WikiFinder(IFinder.IFinder):
 

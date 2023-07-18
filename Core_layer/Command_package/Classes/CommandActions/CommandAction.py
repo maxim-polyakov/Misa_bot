@@ -1,8 +1,8 @@
 from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing, Preprocessing
-from Deep_layer.API_package.Calculators import SympyCalculator
-from Deep_layer.API_package.Finders import WikiFinder
-from Deep_layer.API_package.Translators import GoogleTranslator
-from Core_layer.Command_package.CommandActions import IAction
+from Deep_layer.API_package.Classes.Calculators import SympyCalculator
+from Deep_layer.API_package.Classes.Finders import WikiFinder
+from Deep_layer.API_package.Classes.Translators import GoogleTranslator
+from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 
 class CommandAction(IAction.IAction):
@@ -18,7 +18,6 @@ class CommandAction(IAction.IAction):
         CommandAction.message_text = message_text
         CommandAction.boto = boto
         CommandAction.message = message
-
     @classmethod
     def fas(cls):
         Inputstr = cls.__pred.preprocess_text(cls.message_text)
@@ -27,7 +26,6 @@ class CommandAction(IAction.IAction):
         cls.command_flag = 1
         Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
         return Inputstr + ' - пидор.'
-
     @classmethod
     def __calculate(cls, message_text):
         Inputarr = message_text.split(' ')
@@ -44,7 +42,6 @@ class CommandAction(IAction.IAction):
         message_text = message_text.strip(' ')
         cls.command_flag = 1
         return message_text
-
     @classmethod
     def find(cls):
         message_text = cls.message_text.strip(' ').replace('находить ', '').replace('поссчитать ', '')
@@ -59,14 +56,12 @@ class CommandAction(IAction.IAction):
                 return str(finded_list)
             except:
                 return "Не нашла"
-
     @classmethod
     def translate(cls):
         message_text = cls.message_text.strip(' ').replace('перевести ', '')
         tr = GoogleTranslator.GoogleTranslator("ru")
         translated = tr.translate(message_text)
         return translated
-
     @classmethod
     def show(cls):
         dbc = DB_Communication.DB_Communication()
@@ -87,3 +82,7 @@ class CommandAction(IAction.IAction):
         shower = SnsShower.SnsShower()
         outpath = shower.showdata(train, target)
         return outpath
+
+    @classmethod
+    def predict(cls):
+        pass

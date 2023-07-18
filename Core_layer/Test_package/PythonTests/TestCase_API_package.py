@@ -1,7 +1,7 @@
 import unittest
-from Deep_layer.API_package.Calculators import SympyCalculator as calc
-from Deep_layer.API_package.Finders import WikiFinder as find
-from Deep_layer.API_package.Translators import GoogleTranslator as trans
+from Deep_layer.API_package.Classes.Calculators import SympyCalculator as calc
+from Deep_layer.API_package.Classes.Finders import WikiFinder as find
+from Deep_layer.API_package.Classes.Translators import GoogleTranslator as trans
 from Core_layer.Test_package.PythonTests import ITestCase
 
 class TestCase_API_package(ITestCase.ITestCase):
