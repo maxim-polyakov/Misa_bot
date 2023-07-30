@@ -1,5 +1,5 @@
 from pathlib import Path
-from Deep_layer.NLP_package.Models.Multy import RandomForest
+from Deep_layer.NLP_package.Classes.Models.Multy import RandomForest
 from Core_layer.Bot_package.Classes import Selects
 from Core_layer.Bot_package.Interfaces import ITrainer
 
@@ -45,7 +45,7 @@ class RFtrain(ITrainer.ITrainer):
 
             datasetfile = cls.sel.SELECT_BUSINESS
 
-            trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile,)
+            trainer = RandomForest.RandomForest(filemodel, filetokenizer, datasetfile, )
             trainer.train('business')
         except:
             pass

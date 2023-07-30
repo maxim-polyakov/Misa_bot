@@ -1,4 +1,4 @@
-from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing, Preprocessing
+from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 from Deep_layer.API_package.Classes.Calculators import SympyCalculator
 from Deep_layer.API_package.Classes.Finders import WikiFinder
 from Deep_layer.API_package.Classes.Translators import GoogleTranslator

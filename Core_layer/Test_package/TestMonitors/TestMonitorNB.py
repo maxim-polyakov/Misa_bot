@@ -1,6 +1,8 @@
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
 from Core_layer.Test_package.TestMonitors import TestMonitor
-from Deep_layer.NLP_package.Predictors import BinaryLSTM, MultyLSTM, RandomForest, NaiveBayes, XGBoost
+from Deep_layer.NLP_package.Predictors import MultyLSTM, RandomForest, NaiveBayes, XGBoost
+from Deep_layer.NLP_package.Classes.Predictors import BinaryLSTM
+
 
 class TestMonitorNB(TestMonitor.TestMonitor):
 

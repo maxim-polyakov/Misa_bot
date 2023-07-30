@@ -1,5 +1,5 @@
 from pathlib import Path
-from Deep_layer.NLP_package.Models.Multy import XGBClassifier
+from Deep_layer.NLP_package.Classes.Models.Multy import XGBClassifier
 from Core_layer.Bot_package.Classes import Selects
 from Core_layer.Bot_package.Interfaces import ITrainer
 
@@ -43,7 +43,7 @@ class XGBtrain(ITrainer.ITrainer):
 
             datasetfile = cls.sel.SELECT_BUSINESS
 
-            trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile,)
+            trainer = XGBClassifier.XGBClassifier(filemodel, filetokenizer, datasetfile, )
             trainer.train('business')
         except:
             pass

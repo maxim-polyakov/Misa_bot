@@ -3,7 +3,7 @@ import seaborn as sns
 plt.style.use('ggplot')
 import numpy as np
 import pandas as pd
-from Deep_layer.NLP_package.DataShowers import IDataShower
+from Deep_layer.NLP_package.Interfaces import IDataShower
 
 
 class SnsShower(IDataShower.IDataShower):

@@ -2,7 +2,7 @@ from nltk.corpus import stopwords
 from string import punctuation
 from pymystem3 import Mystem
 import re
-from Deep_layer.NLP_package.TextPreprocessers import Preprocessing
+from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 
 class CommonPreprocessing(Preprocessing.Preprocessing):
 

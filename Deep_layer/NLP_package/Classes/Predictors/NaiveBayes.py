@@ -1,6 +1,7 @@
 import pickle as p
-from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
-from Deep_layer.NLP_package.Predictors import IPredictor
+from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
+from Deep_layer.NLP_package.Interfaces import IPredictor
+
 
 class NaiveBayes(IPredictor.IPredictor):
 

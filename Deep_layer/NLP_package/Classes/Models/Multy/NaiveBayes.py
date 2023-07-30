@@ -2,7 +2,7 @@ import pickle as p
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
-from Deep_layer.NLP_package.Models import IModel
+from Deep_layer.NLP_package.Interfaces import IModel
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer
 

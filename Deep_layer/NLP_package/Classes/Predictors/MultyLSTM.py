@@ -1,7 +1,8 @@
 import pickle as p
 from tensorflow.keras.models import load_model
-from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
-from Deep_layer.NLP_package.Predictors import IPredictor
+from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
+from Deep_layer.NLP_package.Interfaces import IPredictor
+
 
 class MultyLSTM(IPredictor.IPredictor):
 

@@ -1,4 +1,4 @@
-from Deep_layer.NLP_package.GPT import Gpt
+from Deep_layer.NLP_package.Classes.GPT import Gpt
 import re
 from Core_layer.Answer_package.Answers.Interfaces import IAnswer
 

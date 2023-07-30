@@ -1,7 +1,7 @@
 from nltk.corpus import stopwords
 from string import punctuation
 import spacy
-from Deep_layer.NLP_package.TextPreprocessers import Preprocessing
+from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 
 class CommandPreprocessing(Preprocessing.Preprocessing):
     @classmethod

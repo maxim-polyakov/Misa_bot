@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
-from Deep_layer.NLP_package.ResultSavers import ISaver
+from Deep_layer.NLP_package.Interfaces import ISaver
+
 
 class ResultSaver(ISaver.ISaver):
 

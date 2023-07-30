@@ -1,17 +1,16 @@
-from keras.layers import Embedding, LSTM, Dense, Dropout, GRU, Input
+from keras.layers import Embedding, LSTM, Dense, Dropout
 from keras.models import Sequential
 import pickle as p
-from tensorflow.keras.models import load_model
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.layers import Dense, LSTM, Embedding, Bidirectional
+from tensorflow.keras.layers import Dense, LSTM, Embedding
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
-from Deep_layer.NLP_package.Tokenizers import Tokenizer as t
-from Deep_layer.NLP_package.ResultSavers import ResultSaver
-from Deep_layer.NLP_package.Models import IModel
+from Deep_layer.NLP_package.Classes.Tokenizers import Tokenizer as t
+from Deep_layer.NLP_package.Classes.ResultSavers import ResultSaver
+from Deep_layer.NLP_package.Interfaces import IModel
+
 
 class BinaryLSTM(IModel.IModel):
 

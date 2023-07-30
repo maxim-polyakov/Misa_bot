@@ -1,5 +1,5 @@
 from pathlib import Path
-from Deep_layer.NLP_package.Models.Multy import NaiveBayes
+from Deep_layer.NLP_package.Classes.Models import NaiveBayes
 from Core_layer.Bot_package.Classes import Selects
 from Core_layer.Bot_package.Interfaces import ITrainer
 
@@ -43,7 +43,7 @@ class NBTrain(ITrainer.ITrainer):
 
             datasetfile = cls.sel.SELECT_BUSINESS
 
-            trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile,)
+            trainer = NaiveBayes.NaiveBayes(filemodel, filetokenizer, datasetfile, )
             trainer.train('business')
         except:
             pass

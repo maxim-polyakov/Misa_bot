@@ -3,8 +3,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import xgboost
 from Deep_layer.DB_package.DB_Bridge import DB_Communication
-from Deep_layer.NLP_package.Models import IModel
-from Deep_layer.NLP_package.Tokenizers import Tokenizer as t
+from Deep_layer.NLP_package.Interfaces import IModel
+from Deep_layer.NLP_package.Classes.Tokenizers import Tokenizer as t
 
 class XGBClassifier(IModel.IModel):
 

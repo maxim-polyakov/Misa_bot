@@ -1,6 +1,6 @@
 from string import punctuation
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
-from Deep_layer.NLP_package.GPT import IGpt
+from Deep_layer.NLP_package.Interfaces import IGpt
 import torch
 DEVICE = torch.device('cpu')
 

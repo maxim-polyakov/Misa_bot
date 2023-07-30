@@ -1,4 +1,4 @@
-from Deep_layer.NLP_package.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
+from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
 from Core_layer.Command_package.Classes.CommandActions import CommandAction
 from Core_layer.Command_package.Interfaces import IAnalyzer
 

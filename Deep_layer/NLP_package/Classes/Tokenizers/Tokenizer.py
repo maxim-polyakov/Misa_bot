@@ -1,6 +1,6 @@
 from keras.preprocessing.text import Tokenizer as token
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-from Deep_layer.NLP_package.Tokenizers import ITokenizer
+from Deep_layer.NLP_package.Interfaces import ITokenizer
 
 
 class Tokenizer(ITokenizer.ITokenizer):

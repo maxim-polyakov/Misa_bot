@@ -1,6 +1,5 @@
 from Core_layer.Test_package.PythonTests import ITestCase
-from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
-from Core_layer.Bot_package.DataCleaners import MemoryCleaner
+from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 import unittest
 
 class TestCase_TextPreprocessing(ITestCase.ITestCase):
