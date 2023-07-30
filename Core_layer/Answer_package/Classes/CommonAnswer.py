@@ -1,6 +1,6 @@
 from Deep_layer.NLP_package.Classes.GPT import Gpt
 import re
-from Core_layer.Answer_package.Answers.Interfaces import IAnswer
+from Core_layer.Answer_package.Interfaces import IAnswer
 
 
 class CommonAnswer(IAnswer.IAnswer):

@@ -1,4 +1,4 @@
-from Core_layer.Test_package.PythonTests import ITestCase
+from Core_layer.Test_package.Interfases import ITestCase
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 import unittest
 

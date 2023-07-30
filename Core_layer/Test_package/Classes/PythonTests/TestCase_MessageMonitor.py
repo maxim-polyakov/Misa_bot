@@ -1,5 +1,5 @@
 from Core_layer.Bot_package.Monitors import MessageMonitorTelegram
-from Core_layer.Test_package.PythonTests import ITestCase
+from Core_layer.Test_package.Interfases import ITestCase
 import unittest
 class TestCase_API_package(ITestCase.ITestCase):
 

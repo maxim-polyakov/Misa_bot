@@ -1,9 +1,9 @@
 import os
 from pathlib import Path
-from Core_layer.Test_package.TestMonitors import ITestMonitor
+from Core_layer.Test_package.Interfases import ITestMonitor
 from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
-from Deep_layer.DB_package.DB_Bridge import DB_Communication
+from Deep_layer.DB_package.Classes import DB_Communication
 
 
 class TestMonitor(ITestMonitor.ITestMonitor):

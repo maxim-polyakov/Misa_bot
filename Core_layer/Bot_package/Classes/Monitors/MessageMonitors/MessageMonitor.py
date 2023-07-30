@@ -1,10 +1,10 @@
 from pathlib import Path
 from Deep_layer.NLP_package.Predictors import MultyLSTM
 from Deep_layer.NLP_package.Classes.Predictors import BinaryLSTM
-from Core_layer.Answer_package.Answers.Classes import QuestionAnswer, RandomAnswer
+from Core_layer.Answer_package.Classes import RandomAnswer, QuestionAnswer
 from Deep_layer.NLP_package import Mapas
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
-from Deep_layer.DB_package.DB_Bridge import DB_Communication
+from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Bot_package.Interfaces import IMonitor
 import os
 

@@ -1,6 +1,6 @@
-from Core_layer.Test_package.TestMonitors import TestMonitorLSTM as tmon
-from Core_layer.Answer_package.Answers.Classes import QuestionAnswer as answ
-from Core_layer.Test_package.PythonTests import ITestCase
+from Core_layer.Test_package.Classes.TestMonitors import TestMonitorLSTM as tmon
+from Core_layer.Answer_package.Classes import QuestionAnswer as answ
+from Core_layer.Test_package.Interfases import ITestCase
 import unittest
 
 class TestCase_API_package(ITestCase.ITestCase):

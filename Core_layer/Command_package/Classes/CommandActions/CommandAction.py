@@ -3,7 +3,8 @@ from Deep_layer.API_package.Classes.Calculators import SympyCalculator
 from Deep_layer.API_package.Classes.Finders import WikiFinder
 from Deep_layer.API_package.Classes.Translators import GoogleTranslator
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.DB_package.DB_Bridge import DB_Communication
+from Deep_layer.DB_package.Classes import DB_Communication
+
 
 class CommandAction(IAction.IAction):
 

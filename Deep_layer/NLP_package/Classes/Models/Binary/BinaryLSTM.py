@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, Embedding
-from Deep_layer.DB_package.DB_Bridge import DB_Communication
+from Deep_layer.DB_package.Classes import DB_Communication
 from Deep_layer.NLP_package.Classes.Tokenizers import Tokenizer as t
 from Deep_layer.NLP_package.Classes.ResultSavers import ResultSaver
 from Deep_layer.NLP_package.Interfaces import IModel

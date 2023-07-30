@@ -1,6 +1,6 @@
-from Deep_layer.DB_package.DB_Bridge import DB_Communication
+from Deep_layer.DB_package.Classes import DB_Communication
 import random
-from Core_layer.Answer_package.Answers.Interfaces import IAnswer
+from Core_layer.Answer_package.Interfaces import IAnswer
 
 
 class RandomAnswer(IAnswer.IAnswer):

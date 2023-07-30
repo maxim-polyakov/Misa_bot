@@ -1,5 +1,5 @@
 from Core_layer.Bot_package.ValidsetAnalizers import ValidsetAlanizer as va
-from Core_layer.Test_package.PythonTests import ITestCase
+from Core_layer.Test_package.Interfases import ITestCase
 import unittest
 
 class TestCase_ValidsetAlanizer(ITestCase.ITestCase):

@@ -1,5 +1,5 @@
-from Deep_layer.DB_package.DB_Bridge import DB_Communication as bridge
-from Core_layer.Test_package.PythonTests import ITestCase
+from Deep_layer.DB_package.Classes import DB_Communication as bridge
+from Core_layer.Test_package.Interfases import ITestCase
 import unittest
 
 class TestCase_DB_package(ITestCase.ITestCase):

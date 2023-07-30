@@ -1,8 +1,6 @@
 from Front_layer import telegram_bot
-from Core_layer.Test_package.TestMonitors import TestMonitorLSTM
-from Core_layer.Test_package.TestMonitors import TestMonitorNB
-from Core_layer.Test_package.TestMonitors import TestMonitorRF
-from Core_layer.Test_package.TestMonitors import TestMonitorXGB
+from Core_layer.Test_package.Classes.TestMonitors import TestMonitorLSTM, TestMonitorRF, TestMonitorXGB
+from Core_layer.Test_package.Classes.TestMonitors import TestMonitorNB
 
 from Core_layer.Bot_package.Classes.ValidsetAnalizers import ValidsetAlanizer
 

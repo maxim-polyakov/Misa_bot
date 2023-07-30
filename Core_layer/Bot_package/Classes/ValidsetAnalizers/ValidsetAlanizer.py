@@ -1,4 +1,4 @@
-from Deep_layer.DB_package.DB_Bridge import DB_Communication
+from Deep_layer.DB_package.Classes import DB_Communication
 from sklearn.metrics import accuracy_score
 from multipledispatch import dispatch
 from Core_layer.Bot_package.ValidsetAnalizers import IAnalyzer

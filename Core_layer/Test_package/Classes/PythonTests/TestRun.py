@@ -1,7 +1,3 @@
-from Core_layer.Test_package.PythonTests import TestCase_API_package
-from Core_layer.Test_package.PythonTests import TestCase_DB_package
-from Core_layer.Test_package.PythonTests import TestCase_Answer_package
-
 class TestRun:
 
   @classmethod
