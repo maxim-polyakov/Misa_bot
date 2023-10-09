@@ -1,7 +1,11 @@
 from abc import ABC, abstractmethod
 
 class IDB_Communication(ABC):
+    """
 
+    Summary
+
+    """
     @abstractmethod
     def insert_to(cls):
         pass

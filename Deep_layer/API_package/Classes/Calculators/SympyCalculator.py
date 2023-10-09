@@ -4,7 +4,11 @@ from Deep_layer.API_package.Interfaces import ICalculator
 
 
 class SympyCalculator(ICalculator.ICalculator):
+    """
 
+    Summary
+
+    """
     __pr = tp.QuestionPreprocessing()
 
     @classmethod

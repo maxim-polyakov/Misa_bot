@@ -5,6 +5,7 @@ DEVICE = torch.device('cpu')
 
 class IGpt(ABC):
 
+
     @abstractmethod
     def generate(self):
         pass

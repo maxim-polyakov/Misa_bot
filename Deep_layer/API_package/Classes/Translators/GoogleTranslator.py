@@ -6,7 +6,11 @@ from Deep_layer.API_package.Interfaces import ITranslator
 
 
 class GoogleTranslator(ITranslator.ITranslator):
+    """
 
+    Summary
+
+    """
     _translator = Translator()
 
     lang = 'ru'

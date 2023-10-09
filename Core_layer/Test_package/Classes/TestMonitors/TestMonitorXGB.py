@@ -5,6 +5,7 @@ from Deep_layer.NLP_package.Predictors import MultyLSTM, XGBoost
 
 class TestMonitorXGB(TestMonitor.TestMonitor):
 
+
     @classmethod
     def monitor(cls):
 

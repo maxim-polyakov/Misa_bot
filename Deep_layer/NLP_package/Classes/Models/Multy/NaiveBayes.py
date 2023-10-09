@@ -8,6 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 class NaiveBayes(IModel.IModel):
 
+
     def __init__(self,filemodelname, tokenizerfilename, dataselect):
         NaiveBayes.__filemodelname = filemodelname
         NaiveBayes.__tokenizerfilename = tokenizerfilename

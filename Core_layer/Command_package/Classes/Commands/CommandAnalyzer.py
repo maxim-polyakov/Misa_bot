@@ -5,6 +5,7 @@ from Core_layer.Command_package.Interfaces import IAnalyzer
 
 class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
+
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
     __cpr = CommandPreprocessing.CommandPreprocessing()

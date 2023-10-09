@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
-class IAnalyzer(ABC):
-
+class IDrawer:
 
     @abstractmethod
-    def analyse(self, message_text):
+    def draw(self):
         pass

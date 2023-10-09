@@ -4,7 +4,11 @@ from Core_layer.Test_package.Interfases import ITestCase
 import unittest
 
 class TestCase_API_package(ITestCase.ITestCase):
+    """
 
+    Summary
+
+    """
     testmonlstm = tmon.TestMonitorLSTM()
     answer = answ.QuestionAnswer()
 

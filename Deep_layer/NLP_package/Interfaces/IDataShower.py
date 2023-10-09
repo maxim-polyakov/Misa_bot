@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 
 class IDataShower(ABC):
 
+
     @abstractmethod
     def showdata(self, train, target):
         pass

@@ -5,6 +5,7 @@ from Deep_layer.NLP_package.Interfaces import IPredictor
 
 class NaiveBayes(IPredictor.IPredictor):
 
+
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
 

@@ -5,6 +5,7 @@ from Deep_layer.NLP_package.Predictors import MultyLSTM, RandomForest
 
 class TestMonitorRF(TestMonitor.TestMonitor):
 
+
     @classmethod
     def monitor(cls):
 

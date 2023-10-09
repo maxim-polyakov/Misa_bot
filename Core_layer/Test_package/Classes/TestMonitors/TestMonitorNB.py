@@ -4,7 +4,11 @@ from Deep_layer.NLP_package.Predictors import MultyLSTM, NaiveBayes
 
 
 class TestMonitorNB(TestMonitor.TestMonitor):
+    """
 
+     Summary
+
+     """
     @classmethod
     def monitor(cls):
 

@@ -10,6 +10,7 @@ import os
 
 class MessageMonitor(IMonitor.IMonitor):
 
+
     _bpred = BinaryLSTM.BinaryLSTM()
     _mpred = MultyLSTM.MultyLSTM()
     _pr = CommonPreprocessing.CommonPreprocessing()

@@ -4,8 +4,9 @@ from Deep_layer.NLP_package.Interfaces import ITokenizer
 
 
 class Tokenizer(ITokenizer.ITokenizer):
-    TOP_K = 20000
 
+
+    TOP_K = 20000
     MAX_SEQUENCE_LENGTH = 33
 
     def __init__(self, train_texts):

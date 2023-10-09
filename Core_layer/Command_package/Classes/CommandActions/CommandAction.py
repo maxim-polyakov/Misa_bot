@@ -8,6 +8,7 @@ from Deep_layer.DB_package.Classes import DB_Communication
 
 class CommandAction(IAction.IAction):
 
+
     boto = None
     message = None
     message_text = None

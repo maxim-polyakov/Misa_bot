@@ -9,7 +9,6 @@ from Deep_layer.DB_package.Classes import DB_Communication
 class TestMonitor(ITestMonitor.ITestMonitor):
 
 
-
     _pr = CommonPreprocessing.CommonPreprocessing()
     _dbc = DB_Communication.DB_Communication()
     _mapa = Mapas.Mapa()

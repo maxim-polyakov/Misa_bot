@@ -5,7 +5,11 @@ from Deep_layer.NLP_package.Classes.Predictors import BinaryLSTM
 
 
 class TestMonitorLSTM(TestMonitor.TestMonitor):
+    """
 
+    Summary
+
+    """
     @classmethod
     def monitor(cls):
 

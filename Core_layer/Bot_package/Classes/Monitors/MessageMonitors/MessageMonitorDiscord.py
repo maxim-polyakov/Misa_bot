@@ -4,6 +4,7 @@ from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonit
 
 class MessageMonitorDiscord(MessageMonitor.MessageMonitor):
 
+
     def __init__(self, message):
         MessageMonitorDiscord.__command = CommandAnalyzer.CommandAnalyzer(
             telegram_bot.boto, message, 'discord')

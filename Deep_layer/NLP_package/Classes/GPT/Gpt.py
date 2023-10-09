@@ -6,6 +6,7 @@ DEVICE = torch.device('cpu')
 
 class Gpt(IGpt.IGpt):
 
+
     @classmethod
     def generate(cls, text):
         try:

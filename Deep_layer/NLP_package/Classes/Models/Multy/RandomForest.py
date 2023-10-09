@@ -8,6 +8,7 @@ from Deep_layer.NLP_package.Classes.Tokenizers import Tokenizer
 
 class RandomForest(IModel.IModel):
 
+
     def __init__(cls, filemodelname, tokenizerfilename, dataselect,):
         RandomForest.__filemodelname = filemodelname
         RandomForest.__tokenizerfilename = tokenizerfilename

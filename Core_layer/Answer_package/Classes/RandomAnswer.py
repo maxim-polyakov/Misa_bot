@@ -4,6 +4,8 @@ from Core_layer.Answer_package.Interfaces import IAnswer
 
 
 class RandomAnswer(IAnswer.IAnswer):
+
+
     __inpt = DB_Communication.DB_Communication.get_data('SELECT * FROM answer_sets.hianswer')
     __data = __inpt
     __df = []

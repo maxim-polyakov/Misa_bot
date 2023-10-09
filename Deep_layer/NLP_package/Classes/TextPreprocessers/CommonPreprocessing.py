@@ -6,6 +6,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 
 class CommonPreprocessing(Preprocessing.Preprocessing):
 
+
     @classmethod
     def preprocess_text(cls, text):
 

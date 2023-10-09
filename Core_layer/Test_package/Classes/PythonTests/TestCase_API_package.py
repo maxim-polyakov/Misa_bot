@@ -6,7 +6,11 @@ from Core_layer.Test_package.Interfases import ITestCase
 
 
 class TestCase_API_package(ITestCase.ITestCase):
+    """
 
+    Summary
+
+    """
     math = calc.SympyCalculator()
     found = find.WikiFinder()
     traslated = trans.GoogleTranslator("ru")
@@ -22,6 +26,10 @@ class TestCase_API_package(ITestCase.ITestCase):
         found = find.WikiFinder()
         return_arr = found.find("нож")
         self.assertNotEqual(return_arr, None)
+    def test_second_founder(self):
+        found = find.WikiFinder()
+        theWikiAnswer = found.find("USA")
+        self.assertEqual(theWikiAnswer, "")
 
     def test_trans(self):
         mes = self.traslated.translate("knife")

@@ -4,6 +4,8 @@ from Core_layer.Bot_package.Interfaces import ICleaner
 
 
 class MemoryCleaner(ICleaner.ICleaner):
+
+
     __pr = CommonPreprocessing.CommonPreprocessing()
     dbname = None
 
@@ -17,5 +19,5 @@ class MemoryCleaner(ICleaner.ICleaner):
         df['text'] = df['text'].apply(cls.__pr.preprocess_text)
         print(df['text'])
         DB_Communication.DB_Communication.delete_data('DELETE FROM train_sets.' + cls.dbname)
-
+        
         DB_Communication.DB_Communication.insert_to(df, cls.dbname, 'train_sets')

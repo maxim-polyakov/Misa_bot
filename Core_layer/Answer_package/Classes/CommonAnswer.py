@@ -4,6 +4,8 @@ from Core_layer.Answer_package.Interfaces import IAnswer
 
 
 class CommonAnswer(IAnswer.IAnswer):
+
+
     __gpt = Gpt.Gpt
 
     @classmethod

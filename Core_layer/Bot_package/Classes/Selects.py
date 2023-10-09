@@ -1,4 +1,6 @@
 class Select:
+
+
     SELECT_TH = str('(select text, thanks FROM train_sets.all_set_thanks WHERE (thanks=1) ORDER BY random() LIMIT 3000) ' +
              'union all'
              '(select text, thanks FROM train_sets.all_set_none WHERE (thanks=0) ORDER BY random() LIMIT 2000)' +

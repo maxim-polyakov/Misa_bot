@@ -6,6 +6,7 @@ from Core_layer.Bot_package.Interfaces import ITrainer
 
 class RFtrain(ITrainer.ITrainer):
 
+
     sel = Selects.Select()
 
     @classmethod

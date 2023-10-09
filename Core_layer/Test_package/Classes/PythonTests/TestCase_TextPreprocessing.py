@@ -3,7 +3,11 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 import unittest
 
 class TestCase_TextPreprocessing(ITestCase.ITestCase):
+    """
 
+    Summary
+
+    """
     def test_nbmodel_train(self):
         pr = CommonPreprocessing.CommonPreprocessing()
         pr.preprocess_text("покажи данные")

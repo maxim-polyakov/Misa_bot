@@ -7,7 +7,11 @@ import psycopg2
 
 
 class DB_Communication(IDB_Communication.IDB_Communication):
+    """
 
+    Summary
+
+    """
     @classmethod
     @dispatch(object, object, object, object, object, object, object)
     def insert_to(cls, text, tablename, string, agenda, classification, classtype):
