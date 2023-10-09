@@ -6,8 +6,11 @@ from Core_layer.Bot_package.Interfaces import ITrainer
 
 
 class LSTMtrain(ITrainer.ITrainer):
+    """
 
+    Summary
 
+    """
     sel = Selects.Select()
 
     @classmethod

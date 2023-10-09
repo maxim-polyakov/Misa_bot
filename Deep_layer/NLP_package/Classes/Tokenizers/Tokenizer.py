@@ -4,8 +4,11 @@ from Deep_layer.NLP_package.Interfaces import ITokenizer
 
 
 class Tokenizer(ITokenizer.ITokenizer):
+    """
 
+    Summary
 
+    """
     TOP_K = 20000
     MAX_SEQUENCE_LENGTH = 33
 

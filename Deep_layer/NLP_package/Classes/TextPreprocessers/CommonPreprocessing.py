@@ -5,8 +5,11 @@ import re
 from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 
 class CommonPreprocessing(Preprocessing.Preprocessing):
+    """
 
+    Summary
 
+    """
     @classmethod
     def preprocess_text(cls, text):
 

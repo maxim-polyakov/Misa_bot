@@ -5,8 +5,11 @@ import torch
 DEVICE = torch.device('cpu')
 
 class Gpt(IGpt.IGpt):
+    """
 
+    Summary
 
+    """
     @classmethod
     def generate(cls, text):
         try:

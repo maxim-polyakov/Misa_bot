@@ -4,8 +4,11 @@ from Core_layer.Answer_package.Interfaces import IAnswer
 
 
 class QuestionAnswer(IAnswer.IAnswer):
+    """
 
+    Summary
 
+    """
     __gpt = Gpt.Gpt
 
     @classmethod

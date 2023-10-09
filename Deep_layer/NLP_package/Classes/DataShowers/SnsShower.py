@@ -7,8 +7,11 @@ from Deep_layer.NLP_package.Interfaces import IDataShower
 
 
 class SnsShower(IDataShower.IDataShower):
+    """
 
+    Summary
 
+    """
     @classmethod
     def showdata(self, train, target):
 

@@ -4,8 +4,11 @@ from Deep_layer.NLP_package.Interfaces import IPreprocessing
 
 
 class Preprocessing(IPreprocessing.IPreprocessing):
+    """
 
+    Summary
 
+    """
     @classmethod
     def preprocess_text(cls, text):
         try:

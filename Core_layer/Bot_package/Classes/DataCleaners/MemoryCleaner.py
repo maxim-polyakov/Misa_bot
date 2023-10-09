@@ -4,8 +4,11 @@ from Core_layer.Bot_package.Interfaces import ICleaner
 
 
 class MemoryCleaner(ICleaner.ICleaner):
+    """
 
+    Summary
 
+    """
     __pr = CommonPreprocessing.CommonPreprocessing()
     dbname = None
 

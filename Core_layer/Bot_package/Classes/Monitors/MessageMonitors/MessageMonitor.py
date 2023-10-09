@@ -9,8 +9,11 @@ from Core_layer.Bot_package.Interfaces import IMonitor
 import os
 
 class MessageMonitor(IMonitor.IMonitor):
+    """
 
+    Summary
 
+    """
     _bpred = BinaryLSTM.BinaryLSTM()
     _mpred = MultyLSTM.MultyLSTM()
     _pr = CommonPreprocessing.CommonPreprocessing()

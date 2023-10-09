@@ -5,8 +5,11 @@ from Core_layer.Bot_package.Interfaces import ITrainer
 
 
 class RFtrain(ITrainer.ITrainer):
+    """
 
+    Summary
 
+    """
     sel = Selects.Select()
 
     @classmethod

@@ -4,8 +4,11 @@ from Deep_layer.NLP_package.Predictors import MultyLSTM, RandomForest
 
 
 class TestMonitorRF(TestMonitor.TestMonitor):
+    """
 
+    Summary
 
+    """
     @classmethod
     def monitor(cls):
 

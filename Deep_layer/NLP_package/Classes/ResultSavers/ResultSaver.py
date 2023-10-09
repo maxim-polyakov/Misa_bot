@@ -3,8 +3,11 @@ from Deep_layer.NLP_package.Interfaces import ISaver
 
 
 class ResultSaver(ISaver.ISaver):
+    """
 
+    Summary
 
+    """
     @classmethod
     def saveRes(cls, history, path, accuracy):
         s, (at, al) = plt.subplots(2, 1)

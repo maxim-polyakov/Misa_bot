@@ -13,8 +13,11 @@ from Deep_layer.NLP_package.Interfaces import IModel
 
 
 class BinaryLSTM(IModel.IModel):
+    """
 
+    Summary
 
+    """
     EMBEDDING_VECTOR_LENGTH = 33
 
     def __init__(self, filemodelname, tokenizerfilename, dataselect):
