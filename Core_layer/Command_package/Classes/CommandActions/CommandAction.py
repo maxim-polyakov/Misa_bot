@@ -67,26 +67,27 @@ class CommandAction(IAction.IAction):
         tr = GoogleTranslator.GoogleTranslator("ru")
         translated = tr.translate(message_text)
         return translated
-    @classmethod
-    def show(cls):
-        dbc = DB_Communication.DB_Communication()
-        message_text = cls.message_text.split(' ')
-        target = str(message_text[2])
-        ALL_SELECT = str(
-                         '(SELECT distinct text, ' + str(target) + ' FROM train_sets.all_set_hi) ' +
-                         'UNION ALL ' +
-                         '(select distinct text, ' + str(target) + ' FROM train_sets.all_set_none) ' +
-                         'UNION ALL ' +
-                         '(select distinct text, ' + str(target) + ' FROM train_sets.all_set_thanks) ' +
-                         'UNION ALL ' +
-                         '(select distinct text, ' + str(target) + ' FROM train_sets.all_set_business) ' +
-                         'UNION ALL ' +
-                         '(select distinct text, ' + str(target) + ' FROM train_sets.all_set_trash) '
-                         )
-        train = dbc.get_data(ALL_SELECT)
-        shower = SnsShower.SnsShower()
-        outpath = shower.showdata(train, target)
-        return outpath
+
+    # @classmethod
+    # def show(cls):
+    #     dbc = DB_Communication.DB_Communication()
+    #     message_text = cls.message_text.split(' ')
+    #     target = str(message_text[2])
+    #     ALL_SELECT = str(
+    #                      '(SELECT distinct text, ' + str(target) + ' FROM train_sets.all_set_hi) ' +
+    #                      'UNION ALL ' +
+    #                      '(select distinct text, ' + str(target) + ' FROM train_sets.all_set_none) ' +
+    #                      'UNION ALL ' +
+    #                      '(select distinct text, ' + str(target) + ' FROM train_sets.all_set_thanks) ' +
+    #                      'UNION ALL ' +
+    #                      '(select distinct text, ' + str(target) + ' FROM train_sets.all_set_business) ' +
+    #                      'UNION ALL ' +
+    #                      '(select distinct text, ' + str(target) + ' FROM train_sets.all_set_trash) '
+    #                      )
+    #     train = dbc.get_data(ALL_SELECT)
+    #     shower = SnsShower.SnsShower()
+    #     outpath = shower.showdata(train, target)
+    #     return outpath
 
     @classmethod
     def predict(cls):
