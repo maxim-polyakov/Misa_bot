@@ -9,6 +9,5 @@ if __name__ == "__main__":
     test.run_all_tests()
     bot_process = tb.Process(target=tb.bot_start_polling)
     bot_process.start()
-    tb.app.run(host = '127.0.0.1', port='9000')
 
 

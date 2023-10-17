@@ -12,5 +12,4 @@ if __name__ == "__main__":
     test.run_all_tests()
     bot_process = db.Process(target=db.bot_start_polling)
     bot_process.start()
-    db.app.run(host='127.0.0.1', port='8000')
 
