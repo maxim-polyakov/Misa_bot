@@ -1,6 +1,7 @@
 import pickle as p
 from tensorflow.keras.models import load_model
 import numpy as np
+from Deep_layer.NLP_package.Classes.Tokenizers import Tokenizer
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Deep_layer.NLP_package.Interfaces import IPredictor
 

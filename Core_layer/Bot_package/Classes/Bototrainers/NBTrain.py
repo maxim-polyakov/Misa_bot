@@ -1,5 +1,5 @@
 from pathlib import Path
-from Deep_layer.NLP_package.Classes.Models import NaiveBayes
+from Deep_layer.NLP_package.Classes.Models.Multy import NaiveBayes
 from Core_layer.Bot_package.Classes import Selects
 from Core_layer.Bot_package.Interfaces import ITrainer
 

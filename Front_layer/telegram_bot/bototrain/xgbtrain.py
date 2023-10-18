@@ -1,5 +1,5 @@
 from Front_layer import telegram_bot
-from Core_layer.Bot_package.Bototrainers import XGBtrain
+from Core_layer.Bot_package.Classes.Bototrainers import XGBtrain
 from pathlib import Path
 
 @telegram_bot.dp.message_handler(commands='XGBtrain')

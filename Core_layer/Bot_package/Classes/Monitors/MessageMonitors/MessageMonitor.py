@@ -1,5 +1,5 @@
 from pathlib import Path
-from Deep_layer.NLP_package.Predictors import MultyLSTM
+from Deep_layer.NLP_package.Classes.Predictors import MultyLSTM
 from Deep_layer.NLP_package.Classes.Predictors import BinaryLSTM
 from Core_layer.Answer_package.Classes import RandomAnswer, QuestionAnswer
 from Deep_layer.NLP_package import Mapas

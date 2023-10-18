@@ -63,6 +63,7 @@ class MultyLSTM(IModel.IModel):
             tokenizer.train_tokenize()
             tokenized_X_train = tokenizer.vectorize_input(X_train['text'])
             tokenized_X_val = tokenizer.vectorize_input(X_val['text'])
+
             y_trainmatrix = tensorflow.keras.utils.to_categorical(
                 y_train, n_clases)
             y_valmatrix = tensorflow.keras.utils.to_categorical(

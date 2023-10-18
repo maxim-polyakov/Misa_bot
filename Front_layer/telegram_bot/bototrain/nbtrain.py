@@ -1,5 +1,5 @@
 from Front_layer import telegram_bot
-from Core_layer.Bot_package.Bototrainers import NBTrain
+from Core_layer.Bot_package.Classes.Bototrainers import NBTrain
 from pathlib import Path
 
 

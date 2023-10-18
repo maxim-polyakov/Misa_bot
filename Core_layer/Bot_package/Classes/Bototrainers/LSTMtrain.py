@@ -3,7 +3,7 @@ from Deep_layer.NLP_package.Classes.Models.Multy import MultyLSTM
 from Deep_layer.NLP_package.Classes.Models.Binary import BinaryLSTM
 from Core_layer.Bot_package.Classes import Selects
 from Core_layer.Bot_package.Interfaces import ITrainer
-
+import os
 
 class LSTMtrain(ITrainer.ITrainer):
     """
@@ -18,10 +18,11 @@ class LSTMtrain(ITrainer.ITrainer):
 #
 #
         try:
-            filemodel = next(Path().rglob('0_lstmhimodel.h5'))
+            filemodel = '0_lstmhimodel.h5'
+            dirneme = next(Path().rglob('LSTM'))
             filetokenizer = next(Path().rglob('0_lstmhitokenizer.pickle'))
             datasetfile = cls.sel.SELECT_HI
-            trainer = BinaryLSTM.BinaryLSTM(filemodel, filetokenizer, datasetfile)
+            trainer = BinaryLSTM.BinaryLSTM(dirneme + filemodel, filetokenizer, datasetfile)
             trainer.train('hi', epochs)
         except:
             pass
