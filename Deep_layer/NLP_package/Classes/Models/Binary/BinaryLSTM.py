@@ -79,7 +79,7 @@ class BinaryLSTM(IModel.IModel):
                        protocol=p.HIGHEST_PROTOCOL)
             ResultSaver.ResultSaver.saveRes(history, 'resultstraining_binary.png', 'binary_accuracy')
         except:
-           print('The exception in BinaryLSTM.train')
+           print('The exception is in BinaryLSTM.train')
 
 
 

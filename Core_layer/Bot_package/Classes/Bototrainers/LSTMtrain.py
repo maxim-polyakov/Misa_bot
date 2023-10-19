@@ -18,11 +18,10 @@ class LSTMtrain(ITrainer.ITrainer):
 #
 #
         try:
-            filemodel = '0_lstmhimodel.h5'
-            dirneme = next(Path().rglob('LSTM'))
+            filemodel = next(Path().rglob('0_lstmhimodel.h5'))
             filetokenizer = next(Path().rglob('0_lstmhitokenizer.pickle'))
             datasetfile = cls.sel.SELECT_HI
-            trainer = BinaryLSTM.BinaryLSTM(dirneme + filemodel, filetokenizer, datasetfile)
+            trainer = BinaryLSTM.BinaryLSTM(filemodel, filetokenizer, datasetfile)
             trainer.train('hi', epochs)
         except:
             pass
