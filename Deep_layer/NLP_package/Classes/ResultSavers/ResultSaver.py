@@ -3,9 +3,11 @@ from Deep_layer.NLP_package.Interfaces import ISaver
 
 
 class ResultSaver(ISaver.ISaver):
+
+
     """
 
-    Summary
+    This class is for a saving any results i na picture
 
     """
     @classmethod
@@ -26,5 +28,4 @@ class ResultSaver(ISaver.ISaver):
         al.legend(['train', 'val'], loc='upper left')
 
         fig = al.get_figure()
-        fig.savefig('resultstraining_multy.png')
         fig.savefig(path)

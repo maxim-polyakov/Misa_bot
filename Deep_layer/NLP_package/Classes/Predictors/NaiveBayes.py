@@ -4,14 +4,17 @@ from Deep_layer.NLP_package.Interfaces import IPredictor
 
 
 class NaiveBayes(IPredictor.IPredictor):
-    """
 
-    Summary
 
     """
+
+    This class is written for predictions of NaiveBayes classifier
+
+    """
+    score = None
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
-
+        try:
             with open(model, 'rb') as handle:
                 model = p.load(handle)
 
@@ -27,3 +30,5 @@ class NaiveBayes(IPredictor.IPredictor):
             cls.score = model.predict_proba(tokenized_inpt)
 
             return(tmap[cls.score.argmax(axis=-1)[0]])
+        except:
+            print('The exception is in NaiveBayes.predict')

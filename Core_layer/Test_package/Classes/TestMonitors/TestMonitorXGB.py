@@ -22,5 +22,5 @@ class TestMonitorXGB(TestMonitor.TestMonitor):
 
         modelpath = '/binary/XgBoost/'
 
-        super().setvariables(XGBoost.Xgboost(), MultyLSTM.MultyLSTM())
+        super().setvariables(XGBoost.XGBoost(), MultyLSTM.MultyLSTM())
         super().monitor(df, datatable, modelpath)

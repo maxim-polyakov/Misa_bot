@@ -13,9 +13,11 @@ from Deep_layer.NLP_package.Interfaces import IModel
 
 
 class BinaryLSTM(IModel.IModel):
+
+
     """
 
-    Summary
+    This class desctibies a BinaryLSTM model with training and saving a result to the file
 
     """
     EMBEDDING_VECTOR_LENGTH = 33
@@ -54,8 +56,7 @@ class BinaryLSTM(IModel.IModel):
             train[target] = train[target].astype(int)
             train = train.drop_duplicates()
             print(train)
-            X_train, X_val, y_train, y_val = train_test_split(
-                train, train[target], test_size=0.3, random_state=32)
+            X_train, X_val, y_train, y_val = train_test_split(train, train[target], test_size=0.3, random_state=32)
 
             tokenizer = t.Tokenizer(train_texts=X_train['text'])
 

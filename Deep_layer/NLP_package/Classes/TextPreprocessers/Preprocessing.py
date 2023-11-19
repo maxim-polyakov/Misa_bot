@@ -1,12 +1,12 @@
 from nltk.corpus import stopwords
 from string import punctuation
-from Deep_layer.NLP_package.Interfaces import IPreprocessing
+from Deep_layer.NLP_package.Interfaces import IPreprocessor
 
 
-class Preprocessing(IPreprocessing.IPreprocessing):
+class Preprocessing(IPreprocessor.IPreprocessor):
     """
 
-    Summary
+    This class is written for a preprocessiong of text column in a DataFrame
 
     """
     @classmethod

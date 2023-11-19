@@ -4,9 +4,11 @@ from Deep_layer.NLP_package.Interfaces import IPredictor
 
 
 class RandomForest(IPredictor.IPredictor):
+
+
     """
 
-    Summary
+    This class is written for predictions of RandomForest classifier
 
     """
     @classmethod

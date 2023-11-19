@@ -8,6 +8,12 @@ from abc import ABC, abstractmethod
 class IDataShower(ABC):
 
 
+    """
+
+    This entyty describes a showing of data and loking it in picture
+
+    """
+
     @abstractmethod
     def showdata(self, train, target):
         pass

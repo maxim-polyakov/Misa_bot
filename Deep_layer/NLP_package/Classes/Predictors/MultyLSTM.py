@@ -5,9 +5,11 @@ from Deep_layer.NLP_package.Interfaces import IPredictor
 
 
 class MultyLSTM(IPredictor.IPredictor):
+
+
     """
 
-    Summary
+    This class is written for predictions of MultyLSTM classifier
 
     """
     @classmethod

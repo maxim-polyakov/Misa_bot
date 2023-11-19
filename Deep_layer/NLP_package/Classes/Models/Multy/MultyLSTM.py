@@ -16,6 +16,12 @@ from Deep_layer.NLP_package.Interfaces import IModel
 class MultyLSTM(IModel.IModel):
 
 
+    """
+
+    This class desctibies a MultyLSTM model with training and sabing a result to the file
+
+    """
+
     EMBEDDING_VECTOR_LENGTH = 33
 
     def __init__(self, filemodelname, tokenizerfilename, dataselect):

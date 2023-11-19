@@ -9,6 +9,11 @@ from sklearn.feature_extraction.text import CountVectorizer
 class NaiveBayes(IModel.IModel):
 
 
+    """
+
+    This class desctibies a NaiveBayes model with training and sabing a result to the file
+
+    """
     def __init__(self,filemodelname, tokenizerfilename, dataselect):
         NaiveBayes.__filemodelname = filemodelname
         NaiveBayes.__tokenizerfilename = tokenizerfilename
@@ -30,9 +35,10 @@ class NaiveBayes(IModel.IModel):
             train = df[~df[target].isna()]
             train[target] = train[target].astype(int)
             train = train.drop_duplicates()
+
             print(train)
 
-            X_train, X_val, Y_train, Y_val = train_test_split(train['text'], train[target], test_size=0.3, random_state=32)
+            X_train, X_val, Y_train, Y_val = train_test_split(train, train[target], test_size=0.3, random_state=32)
 
             print('Shape of train', X_train.shape)
             print('Shape of Validation ', X_val.shape)

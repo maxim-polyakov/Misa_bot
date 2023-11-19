@@ -9,6 +9,11 @@ from Deep_layer.NLP_package.Classes.Tokenizers import Tokenizer
 class RandomForest(IModel.IModel):
 
 
+    """
+
+    This class desctibies a RF model with training and sabing a result to the file
+
+    """
     def __init__(cls, filemodelname, tokenizerfilename, dataselect):
         RandomForest.__filemodelname = filemodelname
         RandomForest.__tokenizerfilename = tokenizerfilename

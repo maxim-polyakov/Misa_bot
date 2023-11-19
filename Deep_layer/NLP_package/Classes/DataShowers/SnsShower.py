@@ -14,7 +14,7 @@ class SnsShower(IDataShower.IDataShower):
     """
     @classmethod
     def showdata(self, train, target):
-
+        try:
             path = 'Data.png'
             key_metrics = {'samples': len(train),
                            'samples_per_class': train[target].value_counts().median(),
@@ -29,6 +29,8 @@ class SnsShower(IDataShower.IDataShower):
             fig = sns_plot.get_figure()
             fig.savefig(path)
             return path
+        except:
+            print('The exception is in SnsShower.showdata')
 
 
 

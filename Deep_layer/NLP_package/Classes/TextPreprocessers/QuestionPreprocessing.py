@@ -6,7 +6,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 class QuestionPreprocessing(Preprocessing.Preprocessing):
     """
 
-    Summary
+    This class is written for a preprocessiong of text column in a DataFrame
 
     """
     @classmethod

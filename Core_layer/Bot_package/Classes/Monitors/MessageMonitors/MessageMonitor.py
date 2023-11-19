@@ -18,7 +18,7 @@ class MessageMonitor(IMonitor.IMonitor):
     _mpred = MultyLSTM.MultyLSTM()
     _pr = CommonPreprocessing.CommonPreprocessing()
     _dbc = DB_Communication.DB_Communication()
-    _mapa = Mapas.Mapa()
+    _mapa = Mapas.Map()
     _mapaslist = Mapas.ListMapas()
     _qa = QuestionAnswer.QuestionAnswer()
 

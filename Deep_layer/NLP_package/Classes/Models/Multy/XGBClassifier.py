@@ -9,6 +9,11 @@ from Deep_layer.NLP_package.Classes.Tokenizers import Tokenizer as t
 class XGBClassifier(IModel.IModel):
 
 
+    """
+
+    This class desctibies a XGBClassifier model with training and sabing a result to the file
+
+    """
     def __init__(cls, filemodelname, tokenizerfilename, dataselect):
         XGBClassifier.__filemodelname = filemodelname
         XGBClassifier.__tokenizerfilename = tokenizerfilename

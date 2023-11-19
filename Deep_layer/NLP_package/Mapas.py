@@ -1,7 +1,9 @@
-class Mapa:
+class Map:
+
+
     """
 
-    Summary
+    This is a class map which is written for using a multydict of predictions.
 
     """
     HIMAPA = {0: 'Не приветствие', 1: 'Приветствие'}
@@ -15,10 +17,12 @@ class Mapa:
     EMOTIONSMAPA = {0: '😞', 1: '🤬', 2: '😨', 3: '😊', 4: '❤', 5: '😳', 6: ''}
     HI_TH_COMMANDMAPA = {0: 'Утверждение', 1: 'Команда', 2: 'Приветствие', 3: 'Благодарность'}
 
-class ListMapas(Mapa):
+class ListMapas(Map):
+
+
     """
 
-    Summary
+    This is a class map which is written for using a multydict of predictions.
 
     """
     def getlistmapas(self):

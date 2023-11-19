@@ -7,13 +7,16 @@ from Deep_layer.NLP_package.Interfaces import IPredictor
 
 
 class BinaryLSTM(IPredictor.IPredictor):
+
+    
     """
 
-    Summary
+    This class is written for predictions of MultyLSTM classifier
 
     """
     @classmethod
     def predict(cls, inpt, tmap, model, tokenizer):
+        try:
             model = load_model(model)
 
             inn = []
@@ -29,3 +32,5 @@ class BinaryLSTM(IPredictor.IPredictor):
             outpt = max(np.round(score).astype(int))
             cls.outscore = max(score)
             return(tmap[outpt[0]])
+        except:
+            print('The exception is in BinaryLSTM.predict')

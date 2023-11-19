@@ -3,10 +3,12 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Deep_layer.NLP_package.Interfaces import IPredictor
 
 
-class Xgboost(IPredictor.IPredictor):
+class XGBoost(IPredictor.IPredictor):
+
+
     """
 
-    Summary
+    This class is written for predictions of Xgboost classifier
 
     """
     @classmethod
