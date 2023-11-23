@@ -7,9 +7,11 @@ from Deep_layer.DB_package.Classes import DB_Communication
 
 
 class TestMonitor(ITestMonitor.ITestMonitor):
+
+
     """
 
-    Summary
+    This class is written for testing a message monitor
 
     """
     _pr = CommonPreprocessing.CommonPreprocessing()

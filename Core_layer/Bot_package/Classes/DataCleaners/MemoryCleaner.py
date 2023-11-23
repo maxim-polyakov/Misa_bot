@@ -4,9 +4,11 @@ from Core_layer.Bot_package.Interfaces import ICleaner
 
 
 class MemoryCleaner(ICleaner.ICleaner):
+
+
     """
 
-    Summary
+    This method is written for cleaning a data in a data bases
 
     """
     __pr = CommonPreprocessing.CommonPreprocessing()

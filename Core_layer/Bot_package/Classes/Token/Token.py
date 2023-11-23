@@ -5,7 +5,7 @@ from Core_layer.Bot_package.Interfaces import IToken
 class Token(IToken.IToken):
     """
 
-    Summary
+    This class describes object of taking monitors from a database
 
     """
     @classmethod

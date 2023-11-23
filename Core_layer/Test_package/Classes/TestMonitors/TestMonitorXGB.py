@@ -4,9 +4,11 @@ from Deep_layer.NLP_package.Predictors import MultyLSTM, XGBoost
 
 
 class TestMonitorXGB(TestMonitor.TestMonitor):
+
+
     """
 
-    Summary
+    This class describes a test monitor on base XGM classifiers.
 
     """
     @classmethod

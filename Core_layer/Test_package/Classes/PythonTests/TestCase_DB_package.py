@@ -3,9 +3,11 @@ from Core_layer.Test_package.Interfases import ITestCase
 import unittest
 
 class TestCase_DB_package(ITestCase.ITestCase):
+
+
     """
 
-    Summary
+    This class is written for testing an entityes of system
 
     """
     con = bridge.DB_Communication()

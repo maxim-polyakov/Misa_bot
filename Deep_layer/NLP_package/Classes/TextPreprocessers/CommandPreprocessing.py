@@ -1,9 +1,11 @@
 from nltk.corpus import stopwords
 from string import punctuation
 import spacy
-from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
+from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessor
 
-class CommandPreprocessing(Preprocessing.Preprocessing):
+class CommandPreprocessing(Preprocessor.Preprocessor):
+
+
     """
 
     This class is written for a preprocessiong of text column in a DataFrame

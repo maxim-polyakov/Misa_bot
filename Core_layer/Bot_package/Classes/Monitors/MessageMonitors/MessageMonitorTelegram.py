@@ -5,7 +5,7 @@ from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonit
 class MessageMonitorTelegram(MessageMonitor.MessageMonitor):
     """
 
-    Summary
+    This class is describes object for monitoring messages from chats
 
     """
     def __init__(self, message):

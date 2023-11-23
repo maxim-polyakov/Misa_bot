@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 from Core_layer.Bot_package.Interfaces import IDrawer
 class Drawer(IDrawer.IDrawer):
+
+
     """
 
-    Summary
+    That's a class drawer. It describes an image drawing algorithm.
 
     """
     @classmethod

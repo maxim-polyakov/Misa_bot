@@ -6,9 +6,11 @@ from Core_layer.Test_package.Interfases import ITestCase
 
 
 class TestCase_API_package(ITestCase.ITestCase):
+
+
     """
 
-    Summary
+    This class is written for testing an entityes of system
 
     """
     math = calc.SympyCalculator()

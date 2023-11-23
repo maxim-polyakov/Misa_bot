@@ -11,7 +11,7 @@ import os
 class MessageMonitor(IMonitor.IMonitor):
     """
 
-    Summary
+    This class is describes object for monitoring messages from chats
 
     """
     _bpred = BinaryLSTM.BinaryLSTM()

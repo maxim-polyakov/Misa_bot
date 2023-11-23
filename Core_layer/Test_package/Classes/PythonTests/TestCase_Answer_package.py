@@ -4,9 +4,11 @@ from Core_layer.Test_package.Interfases import ITestCase
 import unittest
 
 class TestCase_API_package(ITestCase.ITestCase):
+
+
     """
 
-    Summary
+    This class is written for testing an entityes of system
 
     """
     testmonlstm = tmon.TestMonitorLSTM()
@@ -21,8 +23,6 @@ class TestCase_API_package(ITestCase.ITestCase):
 
     def test_answer(self):
         answer = self.answer.answer('тут?')
-
-
 
 if __name__ == '__main__':
     unittest.main()

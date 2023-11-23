@@ -2,9 +2,11 @@ from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonit
 from Core_layer.Test_package.Interfases import ITestCase
 import unittest
 class TestCase_API_package(ITestCase.ITestCase):
+
+
     """
 
-    Summary
+    This class is written for testing an entityes of system
 
     """
     def test_MessageMonitorTelegram(self):
@@ -18,8 +20,6 @@ class TestCase_API_package(ITestCase.ITestCase):
 
         mon = MessageMonitorTelegram.MessageMonitorTelegram(message)
         mon.monitor()
-
-
 
 if __name__ == '__main__':
     unittest.main()

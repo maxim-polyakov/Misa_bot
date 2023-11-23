@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class IPreprocessing(ABC):
+class IPreprocessor(ABC):
 
 
     """

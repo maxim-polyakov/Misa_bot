@@ -1,5 +1,6 @@
 from Front_layer import telegram_bot
 from Core_layer.Bot_package.Classes.Bototrainers import RFTrain
+from Core_layer.Bot_package.Classes import Selects
 from pathlib import Path
 
 @telegram_bot.dp.message_handler(commands='RFtrain')
@@ -98,8 +99,9 @@ async def get_user_text(message):
 #
 #
     try:
+        sel = Selects.Select()
         if (message.chat.username == 'The_Baxic'):
-            rt = RFTrain.RFtrain()
+            rt = RFTrain.RFtrain(next(Path().rglob('0_rfhimodel.pickle')), next(Path().rglob('0_rfhiencoder.pickle')), sel.SELECT_HI)
 
             await rt.businesstrain()
             await telegram_bot.boto.send_message(message.chat.id, 'businesstrain', parse_mode='html')

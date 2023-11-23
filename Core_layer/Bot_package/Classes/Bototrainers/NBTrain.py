@@ -5,9 +5,11 @@ from Core_layer.Bot_package.Interfaces import ITrainer
 
 
 class NBTrain(ITrainer.ITrainer):
+
+
     """
 
-    Summary
+    This method is written for traning models
 
     """
     sel = Selects.Select()

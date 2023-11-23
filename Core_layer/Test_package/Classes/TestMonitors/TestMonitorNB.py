@@ -4,9 +4,11 @@ from Deep_layer.NLP_package.Predictors import MultyLSTM, NaiveBayes
 
 
 class TestMonitorNB(TestMonitor.TestMonitor):
+
+
     """
 
-     Summary
+     This class describes testing a test variant of message monitor on base NB
 
      """
     @classmethod

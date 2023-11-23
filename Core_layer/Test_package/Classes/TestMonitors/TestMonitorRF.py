@@ -1,12 +1,14 @@
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Test_package.Classes.TestMonitors import TestMonitor
-from Deep_layer.NLP_package.Predictors import MultyLSTM, RandomForest
+from Deep_layer.NLP_package.Classes.Models.Multy import MultyLSTM, RandomForest
 
 
 class TestMonitorRF(TestMonitor.TestMonitor):
+
+
     """
 
-    Summary
+    This class describes testing a test variant of message monitor on RF base
 
     """
     @classmethod

@@ -5,9 +5,11 @@ from Deep_layer.NLP_package.Classes.Predictors import BinaryLSTM
 
 
 class TestMonitorLSTM(TestMonitor.TestMonitor):
+
+
     """
 
-    Summary
+    This class describes testing a test variant of message monitor on base LSTM
 
     """
     @classmethod

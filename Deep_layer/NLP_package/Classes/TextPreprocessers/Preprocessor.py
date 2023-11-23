@@ -3,7 +3,9 @@ from string import punctuation
 from Deep_layer.NLP_package.Interfaces import IPreprocessor
 
 
-class Preprocessing(IPreprocessor.IPreprocessor):
+class Preprocessor(IPreprocessor.IPreprocessor):
+
+
     """
 
     This class is written for a preprocessiong of text column in a DataFrame
@@ -25,5 +27,5 @@ class Preprocessing(IPreprocessor.IPreprocessor):
             return 'The exception is in Preprocessing.preprocess_text'
 
     @classmethod
-    def reversepreprocess_text(cls,text):
+    def reversepreprocess_text(cls, text):
         pass
