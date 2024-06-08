@@ -13,7 +13,7 @@ from Front_layer.discord_bot import messagemonitor
 if __name__ == "__main__":
 #
 #
-    tkn = Token.Token()
+    #tkn = Token.Token()
     test = PyTest.TestRun()
     test.run_all_tests()
     bot_process = db.Process(target=db.bot_start_polling)

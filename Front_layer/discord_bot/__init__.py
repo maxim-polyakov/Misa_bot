@@ -14,6 +14,7 @@ bot = commands.Bot(command_prefix=config['prefix'], intents=config['intents'])
 tkn = Token.Token()
 df = tkn.get_token('select token from assistant_sets.tokens where botname = \'Misa\' and platformname = \'Discord\'')
 token = df['token'][0]
+#token = "7069527640:AAHNppnEcgguuRAo5CTBOhx30AlOoVm0Ycs"
 
 app = flask.Flask(__name__)
 def bot_start_polling():
