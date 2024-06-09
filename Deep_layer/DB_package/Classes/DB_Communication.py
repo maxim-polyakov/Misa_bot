@@ -2,7 +2,7 @@ import pandas as pd
 from Deep_layer.NLP_package.Classes import TextPreprocessers
 from multipledispatch import dispatch
 from Deep_layer.DB_package.Classes import Connections
-from Deep_layer.API_package.Interfaces import IDB_Communication
+from Deep_layer.DB_package.Interfaces import IDB_Communication
 import psycopg2
 
 
