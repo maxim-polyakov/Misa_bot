@@ -38,18 +38,17 @@ class MessageMonitor(IMonitor.IMonitor):
             return ''
 
     @classmethod
-    def __decision(cls, text_message, emotion, commands, predicts):
+    def __decision(cls, text_message, commands):
+        outlist = []
+
         if (cls._dbc.checkcommands(cls._pr.preprocess_text(text_message))):
             return commands.analyse(text_message)
         elif (text_message.count('?') > 0):
-            outlist = []
+
             answer = cls._qa.answer(text_message)
             outlist.append(answer)
-        else:
-            outlist = []
-            for predict in predicts:
-                outlist.append(cls.__classify(predict))
-        outlist.append(' ' + emotion)
+
+        outlist.append(' ')
         return outlist
 
     @classmethod
@@ -65,26 +64,24 @@ class MessageMonitor(IMonitor.IMonitor):
     def _neurodesc(cls, text, text_message, command):
 #
 #
-        fullPathModels = str(next(Path().rglob('models')))
-        fullPathTokenizers = str(next(Path().rglob('tokenizers')))
-        modelarr = os.listdir(fullPathModels + '/binary/LSTM/')
-        tokenizerarr = os.listdir(fullPathTokenizers + '/binary/LSTM/')
-        modelpaths = []
-        tokenizerpaths = []
-        for model in modelarr:
-            modelpaths.append(str(fullPathModels) + '/binary/LSTM/' + str(model))
-        for tokenizer in tokenizerarr:
-            tokenizerpaths.append(str(fullPathTokenizers) + '/binary/LSTM/' + str(tokenizer))
-        emotion = cls._emotionsrecognition(text)
-        predicts = []
-        mapaslist = cls._mapaslist.getlistmapas()
-        for id in range(0, len(modelpaths)):
-            predicts.append(cls._bpred.predict(text, mapaslist[id], modelpaths[id], tokenizerpaths[id]))
+        #fullPathModels = str(next(Path().rglob('models')))
+        #fullPathTokenizers = str(next(Path().rglob('tokenizers')))
+        #modelarr = os.listdir(fullPathModels + '/binary/LSTM/')
+        #tokenizerarr = os.listdir(fullPathTokenizers + '/binary/LSTM/')
+        #modelpaths = []
+        #tokenizerpaths = []
+        #for model in modelarr:
+#    modelpaths.append(str(fullPathModels) + '/binary/LSTM/' + str(model))
+        #for tokenizer in tokenizerarr:
+#   tokenizerpaths.append(str(fullPathTokenizers) + '/binary/LSTM/' + str(tokenizer))
+        #emotion # cls._emotionsrecognition(text)
+        #predicts = []
+        #mapaslist = cls._mapaslist.getlistmapas()
+        #for id in range(0, len(modelpaths)):
+#   predicts.append(cls._bpred.predict(text, mapaslist[id], modelpaths[id], tokenizerpaths[id]))
 
         return cls.__decision(text_message,
-                              emotion,
-                              command,
-                              predicts)
+                              command)
 
     @classmethod
     def monitor(cls, message, command, pltype):
