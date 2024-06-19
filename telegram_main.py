@@ -1,9 +1,5 @@
 import Front_layer.telegram_bot as tb
 from Core_layer.Test_package.Classes.PythonTests import TestRun as PyTest
-from Front_layer.telegram_bot.bototrain import lstmtrain
-from Front_layer.telegram_bot.bototrain import rftrain
-from Front_layer.telegram_bot.bototrain import nbtrain
-from Front_layer.telegram_bot.bototrain import xgbtrain
 from Front_layer.telegram_bot import messagemonitor
 
 

@@ -1,5 +1,4 @@
 import pandas as pd
-from Deep_layer.NLP_package.Classes import TextPreprocessers
 from multipledispatch import dispatch
 from Deep_layer.DB_package.Classes import Connections
 from Deep_layer.DB_package.Inerfaces import IDB_Communication
@@ -53,24 +52,22 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     def insert_to(cls, df, datatable, schema):
 #
 #
-        try:
-            postgr_conn = Connections.PostgresConnection()
-            df.to_sql(datatable, con=postgr_conn.engine_remote, schema=schema,
-                index=False, if_exists='append')
-        except:
-            print("exception is in DB_Communication.insert_to")
+        postgr_conn = Connections.PostgresConnection()
+        df.to_sql(datatable, con=postgr_conn.engine_remote, schema=schema,
+            index=False, if_exists='append')
 
-    @classmethod
-    @dispatch(object, object, object)
-    def insert_to(cls, df, datatable):
-#
-#
-       try:
-            postgr_conn = Connections.PostgresConnection()
-            df.to_sql(datatable, con=postgr_conn.engine_remote, schema='assistant_sets',
-                index=False, if_exists='append')
-       except psycopg2.OperationalError:
-           print("exception is in DB_Communication.insert_to")
+
+#     @classmethod
+#     @dispatch(object, object, object)
+#     def insert_to(cls, df, datatable):
+# #
+# #
+#        try:
+#             postgr_conn = Connections.PostgresConnection()
+#             df.to_sql(datatable, con=postgr_conn.engine_remote, schema='assistant_sets',
+#                 index=False, if_exists='append')
+#        except psycopg2.OperationalError:
+#            print("exception is in DB_Communication.insert_to")
 
     @classmethod
     @dispatch(object, str, str)
@@ -79,13 +76,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
 #
        try:
             postgr_conn = Connections.PostgresConnection()
-            dfvalid = pd.read_sql('select count(tokens) from assistant_sets.' + datatable,
-                            postgr_conn.conn_remote)
-            count = dfvalid['count'][0]
-            data = {'id': count + 1, 'token': string}
             df = pd.DataFrame()
-            new_row = pd.Series(data)
-            df = df.append(new_row, ignore_index=True)
             df.to_sql(datatable, con=postgr_conn.engine_remote, schema='assistant_sets',
                         index=False, if_exists='append')
        except psycopg2.OperationalError:
