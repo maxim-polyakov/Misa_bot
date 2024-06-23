@@ -2,6 +2,7 @@ import pandas as pd
 from multipledispatch import dispatch
 from Deep_layer.DB_package.Classes import Connections
 from Deep_layer.DB_package.Inerfaces import IDB_Communication
+from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 import psycopg2
 
 
@@ -11,41 +12,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     Summary
 
     """
-    @classmethod
-    @dispatch(object, object, object, object, object, object, object)
-    def insert_to(cls, text, tablename, string, agenda, classification, classtype):
-#
-#
-        try:
-            postgr_conn = Connections.PostgresConnection()
-            pr = TextPreprocessers.CommonPreprocessing()
-            data = {'text': pr.preprocess_text(
-                text), agenda: string, classification: classtype}
-            df = pd.DataFrame()
-            new_row = pd.Series(data)
-            df = df.append(new_row, ignore_index=True)
-            df.to_sql(tablename, con=postgr_conn.engine_remote,
-                schema='recognized_sets', index=False, if_exists='append')
-        except:
-            print("exception is in DB_Communication.insert_to")
 
-    @classmethod
-    @dispatch(object, int, object, object, object)
-    def insert_to(cls, idx, txt, insert, datatable):
-#
-#
-        try:
-            postgr_conn = Connections.PostgresConnection()
-            insert = insert.split(', ')
-            data = {'id': idx, 'text': txt, 'agenda': insert[0], 'emotion': insert[1]}
-            df = pd.DataFrame()
-            new_row = pd.Series(data)
-            df = df.append(new_row, ignore_index=True)
-            df.to_sql(datatable, con=postgr_conn.engine_remote, schema='validation_sets',
-                index=False, if_exists='append')
-
-        except psycopg2.OperationalError:
-            print("exception is in DB_Communication.insert_to")
 
     @classmethod
     @dispatch(object, object, object, object)
@@ -97,6 +64,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
                     df = df.append(new_row, ignore_index=True)
                     df.to_sql(table, con=postgr_conn.engine_remote, schema=schema,
                         index=False, if_exists='append')
+
             lowertext = lowertext.replace('миса ', '').replace('misa ', '')
             text = []
             dfmesstor = pd.read_sql('select count(text) from messtorage.storage',
