@@ -24,17 +24,17 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             index=False, if_exists='append')
 
 
-#     @classmethod
-#     @dispatch(object, object, object)
-#     def insert_to(cls, df, datatable):
-# #
-# #
-#        try:
-#             postgr_conn = Connections.PostgresConnection()
-#             df.to_sql(datatable, con=postgr_conn.engine_remote, schema='assistant_sets',
-#                 index=False, if_exists='append')
-#        except psycopg2.OperationalError:
-#            print("exception is in DB_Communication.insert_to")
+    @classmethod
+    @dispatch(object, object, object)
+    def insert_to(cls, df, datatable):
+#
+#
+       try:
+            postgr_conn = Connections.PostgresConnection()
+            df.to_sql(datatable, con=postgr_conn.engine_remote, schema='assistant_sets',
+                index=False, if_exists='append')
+       except psycopg2.OperationalError:
+           print("exception is in DB_Communication.insert_to")
 
     @classmethod
     @dispatch(object, str, str)
