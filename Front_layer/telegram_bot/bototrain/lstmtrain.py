@@ -78,7 +78,7 @@ async def get_user_text(message):
             else:
                 epochs = 200
 
-            await lt.weathertrain((int(epochs)))
+            lt.weathertrain((int(epochs)))
             await telegram_bot.boto.send_message(message.chat.id, 'weathertrain', parse_mode='html')
             await telegram_bot.boto.send_photo(message.chat.id,
                                            photo=open(resultrainingpath, 'rb'))

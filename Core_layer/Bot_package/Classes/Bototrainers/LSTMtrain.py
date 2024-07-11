@@ -81,7 +81,7 @@ class LSTMtrain(ITrainer.ITrainer):
             filetokenizer = next(Path().rglob('0_lstmemotionstokenizer.pickle'))
             datasetfile = cls.sel.SELECT_EMOTIONS
             trainer = MultyLSTM.MultyLSTM(filemodel, filetokenizer, datasetfile)
-            trainer.train('emotionid', 7, epochs)
+            trainer.train('emotionid', 6, epochs)
 
 
 
