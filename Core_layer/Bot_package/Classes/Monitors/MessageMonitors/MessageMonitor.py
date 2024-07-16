@@ -72,7 +72,7 @@ class MessageMonitor(IMonitor.IMonitor):
             lowertext = message.content.lower()
         else:
             lowertext = message.text.lower()
-        DB_Communication.DB_Communication.insert_to(lowertext)
+        cls._dbc.insert_to(lowertext)
         outstr = ''
         if (lowertext.count('миса') > 0 or lowertext.lower().count('misa') > 0 or lowertext.count('миса,')):
             lowertext = lowertext.replace('миса ', '').replace('misa ', '').replace('миса,', '').replace('misa,', '')
