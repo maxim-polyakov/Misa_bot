@@ -1,5 +1,5 @@
 import pandas as pd
-from Deep_layer.NLP_package import TextPreprocessers
+from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
 from multipledispatch import dispatch
 from Deep_layer.DB_package.DB_Bridge import IDB_Communication, Connections
 import psycopg2
@@ -14,7 +14,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
 #
         try:
             postgr_conn = Connections.PostgresConnection()
-            pr = TextPreprocessers.CommonPreprocessing()
+            pr = CommonPreprocessing.CommonPreprocessing()
             data = {'text': pr.preprocess_text(
                 text), agenda: string, classification: classtype}
             df = pd.DataFrame()
@@ -157,11 +157,14 @@ class DB_Communication(IDB_Communication.IDB_Communication):
         #
         #
         try:
+            pr = CommonPreprocessing.CommonPreprocessing()
             postgr_conn = Connections.PostgresConnection()
             df = pd.read_sql('SELECT text FROM train_sets.' + table, postgr_conn.conn_remote)
             Cdict = df['text'].to_dict()
+            inpt = []
+            inpt.append(pr.preprocess_text(input_string[0]))
             for cdictvalue in Cdict.values():
-                if (cdictvalue in input_string):
+                if (cdictvalue in inpt):
                     return True
             return False
         except psycopg2.OperationalError:

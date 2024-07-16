@@ -40,7 +40,10 @@ class MessageMonitor(IMonitor.IMonitor):
             outlist.append(answer)
         else:
             outlist = []
-            outlist.append(cls.__classify(predicts.index(True)))
+            try:
+                outlist.append(cls.__classify(predicts.index(True)))
+            except:
+                outlist.append(':)')
         outlist.append(' ' + emotion)
         return outlist
 
