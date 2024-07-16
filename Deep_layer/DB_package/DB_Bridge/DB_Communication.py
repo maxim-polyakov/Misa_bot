@@ -151,3 +151,18 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             return False
         except psycopg2.OperationalError:
             print("exception is in DB_Communication.checkcommands")
+
+    @classmethod
+    def check(cls, input_string, table):
+        #
+        #
+        try:
+            postgr_conn = Connections.PostgresConnection()
+            df = pd.read_sql('SELECT text FROM train_sets.' + table, postgr_conn.conn_remote)
+            Cdict = df['text'].to_dict()
+            for cdictvalue in Cdict.values():
+                if (cdictvalue in input_string):
+                    return True
+            return False
+        except psycopg2.OperationalError:
+            print("exception is in DB_Communication.checkcommands")
