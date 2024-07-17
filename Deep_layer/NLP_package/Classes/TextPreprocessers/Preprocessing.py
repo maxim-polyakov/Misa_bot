@@ -1,16 +1,10 @@
 from nltk.corpus import stopwords
 from string import punctuation
-from Deep_layer.NLP_package.Interfaces import IPreprocessor
+from Deep_layer.NLP_package.Classes.TextPreprocessers import IPreprocessing
 
 
-class Preprocessor(IPreprocessor.IPreprocessor):
+class Preprocessing(IPreprocessing.IPreprocessing):
 
-
-    """
-
-    This class is written for a preprocessiong of text column in a DataFrame
-
-    """
     @classmethod
     def preprocess_text(cls, text):
         try:
@@ -27,5 +21,5 @@ class Preprocessor(IPreprocessor.IPreprocessor):
             return 'The exception is in Preprocessing.preprocess_text'
 
     @classmethod
-    def reversepreprocess_text(cls, text):
+    def reversepreprocess_text(cls,text):
         pass

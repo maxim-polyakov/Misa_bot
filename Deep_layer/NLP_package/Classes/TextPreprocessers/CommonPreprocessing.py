@@ -2,19 +2,14 @@ from nltk.corpus import stopwords
 from string import punctuation
 from pymystem3 import Mystem
 import re
-from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessor
-
-class CommonPreprocessing(Preprocessor.Preprocessor):
+from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 
 
-    """
+class CommonPreprocessing(Preprocessing.Preprocessing):
 
-    This class is written for a preprocessiong of text column in a DataFrame
-
-    """
     @classmethod
     def preprocess_text(cls, text):
-        try:
+            tokens = str(text)
             tokens = Mystem().lemmatize(text.lower())
             tokens = [token for token in tokens if token not in stopwords.words('russian')
                       and token != ' '
@@ -29,8 +24,9 @@ class CommonPreprocessing(Preprocessor.Preprocessor):
             text = re.sub(pattern2, '', text)
             text = re.sub('  ', ' ', text)
             return text
-        except:
-            return 'The exception is in CommonPreprocessing.preprocess_text'
+        #try:
+        #except:
+        #    return 'The exception is in CommonPreprocessing.preprocess_text'
 
     @classmethod
     def reversepreprocess_text(cls, text):

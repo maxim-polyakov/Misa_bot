@@ -1,7 +1,8 @@
 import pandas as pd
-from Deep_layer.NLP_package.TextPreprocessers import CommonPreprocessing
+from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from multipledispatch import dispatch
-from Deep_layer.DB_package.DB_Bridge import IDB_Communication, Connections
+from Deep_layer.DB_package.Inerfaces import IDB_Communication
+from Deep_layer.DB_package.Classes import Connections
 import psycopg2
 
 

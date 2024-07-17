@@ -1,16 +1,11 @@
 from nltk.corpus import stopwords
 from pymystem3 import Mystem
 import re
-from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessor
-
-class QuestionPreprocessing(Preprocessor.Preprocessor):
+from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 
 
-    """
+class QuestionPreprocessing(Preprocessing.Preprocessing):
 
-    This class is written for a preprocessiong of text column in a DataFrame
-
-    """
     @classmethod
     def preprocess_text(cls, text):
         try:

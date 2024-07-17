@@ -1,16 +1,10 @@
 from nltk.corpus import stopwords
 from string import punctuation
 import spacy
-from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessor
-
-class CommandPreprocessing(Preprocessor.Preprocessor):
+from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 
 
-    """
-
-    This class is written for a preprocessiong of text column in a DataFrame
-
-    """
+class CommandPreprocessing(Preprocessing.Preprocessing):
     @classmethod
     def preprocess_text(cls, text):
         try:
