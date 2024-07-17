@@ -1,4 +1,4 @@
-from Core_layer.Answer_package.Classes import CommonAnswer as answc
+from Core_layer.Answer_package.Classes import RandomAnswer as answc
 from Core_layer.Answer_package.Classes import QuestionAnswer as answq
 from Core_layer.Test_package.Interfases import ITestCase
 import unittest
