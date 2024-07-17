@@ -1,9 +1,13 @@
-from Deep_layer.DB_package.DB_Bridge import DB_Communication
+from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Bot_package.Interfaces import IToken
 
 
 class Token(IToken.IToken):
+    """
 
+    This class describes object of taking monitors from a database
+
+    """
     @classmethod
     def add_token(cls, token):
         DB_Communication.DB_Communication.insert_to(str(token), 'tokens')

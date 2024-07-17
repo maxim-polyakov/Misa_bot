@@ -1,10 +1,6 @@
 import Front_layer.telegram_bot as tb
-import nltk
-from Core_layer.Test_package.PythonTests import TestRun as PyTest
-from Front_layer.telegram_bot.bototrain import lstmtrain
+from Core_layer.Test_package.Classes.PythonTests import TestRun as PyTest
 from Front_layer.telegram_bot import botoclean
-from Front_layer.telegram_bot import testmonitor
-from Front_layer.telegram_bot import picturemonitor
 from Front_layer.telegram_bot import messagemonitor
 
 
@@ -17,3 +13,5 @@ if __name__ == "__main__":
     bot_process = tb.Process(target=tb.bot_start_polling)
     bot_process.start()
     tb.app.run(host = '127.0.0.1', port='9000')
+
+

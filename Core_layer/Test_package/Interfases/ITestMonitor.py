@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
-class IMonitor(ABC):
+class ITestMonitor(ABC):
+
 
     @abstractmethod
-    def monitor(cls, message, command, pltype):
+    def monitor(self):
         pass

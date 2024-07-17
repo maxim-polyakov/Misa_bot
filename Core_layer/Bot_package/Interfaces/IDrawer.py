@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-class IMonitor(ABC):
+class IDrawer:
 
     @abstractmethod
-    def monitor(cls, message, command, pltype):
+    def draw(self):
         pass
