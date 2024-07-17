@@ -1,6 +1,6 @@
 from nltk.corpus import stopwords
 from string import punctuation
-from Deep_layer.NLP_package.Classes.TextPreprocessers import IPreprocessing
+from Deep_layer.NLP_package.Interfaces import IPreprocessing
 
 
 class Preprocessing(IPreprocessing.IPreprocessing):

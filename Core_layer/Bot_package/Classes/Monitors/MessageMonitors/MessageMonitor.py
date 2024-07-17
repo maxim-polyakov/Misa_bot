@@ -1,14 +1,11 @@
-from Deep_layer.NLP_package.Predictors import BinaryLSTM, MultyLSTM
-from Core_layer.Answer_package.Answers.Classes import QuestionAnswer, RandomAnswer
+from Core_layer.Answer_package.Classes import QuestionAnswer, RandomAnswer
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
-from Deep_layer.DB_package.DB_Bridge import DB_Communication
+from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Bot_package.Interfaces import IMonitor
 
 
 class MessageMonitor(IMonitor.IMonitor):
 
-    _bpred = BinaryLSTM.BinaryLSTM()
-    _mpred = MultyLSTM.MultyLSTM()
     _pr = CommonPreprocessing.CommonPreprocessing()
     _dbc = DB_Communication.DB_Communication()
     _qa = QuestionAnswer.QuestionAnswer()
@@ -29,7 +26,7 @@ class MessageMonitor(IMonitor.IMonitor):
             return ''
 
     @classmethod
-    def __decision(cls, text_message, emotion, commands, predicts):
+    def __decision(cls, text_message, emotion, predicts):
         if (text_message.count('?') > 0):
             outlist = []
             answer = cls._qa.answer(text_message)
@@ -44,25 +41,22 @@ class MessageMonitor(IMonitor.IMonitor):
         return outlist
 
     @classmethod
-    def _neurodesc(cls, text, text_message, command):
+    def _neurodesc(cls, text, text_message):
 #
 #
         modelpaths = ['all_set_hi', 'all_set_thanks', 'all_set_business', 'all_set_weather', 'all_set_trash']
-        tokenizerpaths = []
 
         emotion = ''
         predicts = []
-        mapaslist = cls._mapaslist.getlistmapas()
         for id in range(0, len(modelpaths)):
             predicts.append(cls._dbc.check(text, modelpaths[id]))
 
         return cls.__decision(text_message,
                               emotion,
-                              command,
                               predicts)
 
     @classmethod
-    def monitor(cls, message, command, pltype):
+    def monitor(cls, message, pltype):
         text = []
         if(pltype == 'discord'):
             lowertext = message.content.lower()
@@ -73,7 +67,7 @@ class MessageMonitor(IMonitor.IMonitor):
         if (lowertext.count('миса') > 0 or lowertext.lower().count('misa') > 0 or lowertext.count('миса,')):
             lowertext = lowertext.replace('миса ', '').replace('misa ', '').replace('миса,', '').replace('misa,', '')
             text.append(lowertext)
-            outlist = cls._neurodesc(text, lowertext, command)
+            outlist = cls._neurodesc(text, lowertext)
             if (outlist != None):
                 for outmes in outlist:
                     outstr += outmes
