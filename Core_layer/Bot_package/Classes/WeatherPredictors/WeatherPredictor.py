@@ -6,23 +6,32 @@ import requests
 class WetherPredictor(IWeather.IWeather):
 
     city = None
+    temperature = None
+    temperature_feels = None
 
     def __init__(self, city):
         WetherPredictor.city = city
+
     @classmethod
-    def predict(cls):
-        url = str('https://api.openweathermap.org/data/2.5/weather?q='+cls.city+'&units=metric&lang=ru&appid=79d1ca96933b0328e1c7e3e7a26cb347')
+    def __get(cls):
+        url = 'https://api.openweathermap.org/data/2.5/weather?q=' + cls.city + '&units=metric&lang=ru&appid=2133d9a270be8e41515cce9d14a0636d'
         # отправляем запрос на сервер и сразу получаем результат
         weather_data = requests.get(url).json()
         # получаем данные о температуре и о том, как она ощущается
-        temperature = round(weather_data['main']['temp'])
-        #temperature_feels = round(weather_data['main']['feels_like'])
-        # выводим значения на экран,
+        cls.temperature = round(weather_data['main']['temp'])
+        cls.temperature_feels = round(weather_data['main']['feels_like'])
+
+    @classmethod
+    def predict(cls):
+        try:
+            cls.__get()
+        except:
+            cls.__get()
 
         out = []
-        foutstr = 'Сейчас в городе ' + cls.city + ' ' + str(temperature) + ' °C'
-        #soutstr = 'Ощущается как' + str(temperature_feels) + ' °C'
+        foutstr = 'Сейчас в городе ' + cls.city + ' ' + str(cls.temperature) + ' °C'
+        soutstr = 'Ощущается как' + str(cls.temperature_feels) + ' °C'
 
         out.append(foutstr)
-        #out.append(soutstr)
+        out.append(soutstr)
         return out

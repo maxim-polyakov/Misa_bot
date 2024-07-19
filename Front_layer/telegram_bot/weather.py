@@ -11,6 +11,6 @@ async def get_user_text(message):
         wp = WeatherPredictor.WetherPredictor(city)
         wp = wp.predict()
         await telegram_bot.boto.send_message(message.chat.id, wp[0], parse_mode='html')
-        #await telegram_bot.boto.send_message(message.chat.id, wp[1], parse_mode='html')
+        await telegram_bot.boto.send_message(message.chat.id, wp[1], parse_mode='html')
     else:
         await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
