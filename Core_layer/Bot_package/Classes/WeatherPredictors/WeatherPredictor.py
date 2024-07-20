@@ -27,7 +27,7 @@ class WetherPredictor(IWeather.IWeather):
 
         out = []
         foutstr = 'Сейчас в городе ' + cls.city + ' ' + str(temperature) + ' °C'
-        soutstr = 'Ощущается как' + str(temperature_feels) + ' °C'
+        soutstr = 'Ощущается как ' + str(temperature_feels) + ' °C'
 
         out.append(foutstr)
         out.append(soutstr)
