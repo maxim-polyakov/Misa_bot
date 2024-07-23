@@ -1,6 +1,4 @@
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
-from Deep_layer.DB_package.Classes import DB_Communication
-from Core_layer.Bot_package.Interfaces import IWeather
+from Core_layer.API_package.Interfaces import IWeather
 from Core_layer.Bot_package.Classes.Token import Token
 import requests
 
