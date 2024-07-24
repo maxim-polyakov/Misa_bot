@@ -1,6 +1,9 @@
 import Front_layer.telegram_bot as tb
 from Core_layer.Test_package.Classes.PythonTests import TestRun as PyTest
 from Front_layer.telegram_bot import botoclean
+from Front_layer.telegram_bot import translate
+from Front_layer.telegram_bot import calculate
+from Front_layer.telegram_bot import find
 from Front_layer.telegram_bot import weather
 from Front_layer.telegram_bot import messagemonitor
 
