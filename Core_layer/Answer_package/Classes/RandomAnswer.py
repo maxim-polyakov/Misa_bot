@@ -17,14 +17,9 @@ class RandomAnswer(IAnswer.IAnswer):
     def answer(self, text):
 #
 #
-        try:
-            if text =='Привет':
-                for i in range(0, len(self.__data['text']) - 1):
-                    self.__df.append(self.__data['text'][i])
-                outmapa = {0: [self.__df[random.randint(0, len(self.__df))]]}
-                if(outmapa[0] != 'Т'):
-                    return str(outmapa[0])
-            else:
-                return 'Привет'
-        except:
-            return 'The exception in RandomAnswer.answer'
+        if text ==0:
+            for i in range(0, len(self.__data['text']) - 1):
+                self.__df.append(self.__data['text'][i])
+            outmapa = {0: self.__df[random.randint(0, len(self.__df))]}
+            return str(outmapa[0])
+        return 'Привет'

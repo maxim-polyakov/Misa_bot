@@ -12,18 +12,15 @@ class MessageMonitor(IMonitor.IMonitor):
 
     @classmethod
     def __classify(cls, chosen_item):
-        try:
-            ra = RandomAnswer.RandomAnswer()
-            info_dict = {
-                0: str(ra.answer()) + ' ',
-                1: 'не за что. ',
-                2: 'утверждение про дела. ',
-                3: 'утверждение про погоду. ',
-                4: 'просьба, оставить неприличные высказывания при себе. '
-            }
-            return info_dict[chosen_item]
-        except:
-            return ''
+        ra = RandomAnswer.RandomAnswer()
+        info_dict = {
+            0: str(ra.answer(0)) + ' ',
+            1: 'не за что. ',
+            2: 'утверждение про дела. ',
+            3: 'утверждение про погоду. ',
+            4: 'просьба, оставить неприличные высказывания при себе. '
+        }
+        return info_dict[chosen_item]
 
     @classmethod
     def __decision(cls, text_message, emotion, predicts):
@@ -33,11 +30,9 @@ class MessageMonitor(IMonitor.IMonitor):
             outlist.append(answer)
         else:
             outlist = []
-            try:
-                outlist.append(cls.__classify(predicts.index(True)))
-            except:
-                outlist.append(':)')
-        outlist.append(' ' + emotion)
+            res = cls.__classify(predicts.index(True))
+            outlist.append(res)
+        outlist.append('' + emotion)
         return outlist
 
     @classmethod
