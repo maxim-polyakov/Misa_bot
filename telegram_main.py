@@ -1,5 +1,4 @@
 import Front_layer.telegram_bot as tb
-import nltk
 from Core_layer.Test_package.Classes.PythonTests import TestRun as PyTest
 from Front_layer.telegram_bot import botoclean
 from Front_layer.telegram_bot import translate
@@ -13,7 +12,6 @@ from Front_layer.telegram_bot import messagemonitor
 if __name__ == "__main__":
 #
 #
-    nltk.download('stopwords')
     test = PyTest.TestRun()
     test.run_all_tests()
     bot_process = tb.Process(target=tb.bot_start_polling)
