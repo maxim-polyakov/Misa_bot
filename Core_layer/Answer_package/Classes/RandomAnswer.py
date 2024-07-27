@@ -9,17 +9,12 @@ class RandomAnswer(IAnswer.IAnswer):
     Summary
 
     """
-    __inpt = DB_Communication.DB_Communication.get_data('SELECT * FROM answer_sets.hianswer')
-    __data = __inpt
-    __df = []
+
 
     @classmethod
-    def answer(self, text):
+    def answer(cls, text):
 #
 #
-        if text ==0:
-            for i in range(0, len(self.__data['text']) - 1):
-                self.__df.append(self.__data['text'][i])
-            outmapa = {0: self.__df[random.randint(0, len(self.__df))]}
-            return str(outmapa[0])
-        return 'Привет'
+        inpt = DB_Communication.DB_Communication.get_data(str('SELECT text FROM answer_sets.' + text))
+        out = inpt['text'][random.randint(0, (len(inpt)-1))]
+        return str(out)

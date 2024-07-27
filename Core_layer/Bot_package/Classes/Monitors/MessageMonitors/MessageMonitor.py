@@ -14,7 +14,7 @@ class MessageMonitor(IMonitor.IMonitor):
     def __classify(cls, chosen_item):
         ra = RandomAnswer.RandomAnswer()
         info_dict = {
-            0: str(ra.answer(0)) + ' ',
+            0: str(ra.answer('hianswer')) + ' ',
             1: 'не за что. ',
             2: 'утверждение про дела. ',
             3: 'утверждение про погоду. ',
