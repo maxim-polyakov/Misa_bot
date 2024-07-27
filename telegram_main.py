@@ -13,6 +13,7 @@ from Front_layer.telegram_bot import messagemonitor
 if __name__ == "__main__":
 #
 #
+    nltk.download('stopwords')
     test = PyTest.TestRun()
     test.run_all_tests()
     bot_process = tb.Process(target=tb.bot_start_polling)

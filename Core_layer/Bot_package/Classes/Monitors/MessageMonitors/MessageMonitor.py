@@ -15,10 +15,10 @@ class MessageMonitor(IMonitor.IMonitor):
         ra = RandomAnswer.RandomAnswer()
         info_dict = {
             0: str(ra.answer('hianswer')) + ' ',
-            1: 'не за что. ',
-            2: 'утверждение про дела. ',
-            3: 'утверждение про погоду. ',
-            4: 'просьба, оставить неприличные высказывания при себе. '
+            1: str(ra.answer('thanksanswer')) + ' ',
+            2: str(ra.answer('businessanswer')) + ' ',
+            3: str(ra.answer('weatheranswer')) + ' ',
+            4: str(ra.answer('trashanswer')) + ' '
         }
         return info_dict[chosen_item]
 
@@ -30,7 +30,10 @@ class MessageMonitor(IMonitor.IMonitor):
             outlist.append(answer)
         else:
             outlist = []
-            res = cls.__classify(predicts.index(True))
+            if True in predicts:
+                res = cls.__classify(predicts.index(True))
+            else:
+                res = 'Нет классификации. '
             outlist.append(res)
         outlist.append('' + emotion)
         return outlist
