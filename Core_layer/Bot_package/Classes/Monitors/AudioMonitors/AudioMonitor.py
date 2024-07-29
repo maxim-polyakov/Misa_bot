@@ -1,6 +1,7 @@
 import wave
 import sys
 import soundfile
+import json
 
 from vosk import Model, KaldiRecognizer, SetLogLevel
 from Core_layer.Bot_package.Interfaces import IMonitor
@@ -32,4 +33,11 @@ class AudioMonitor(IMonitor.IMonitor):
             data = wf.readframes(4000)
             if len(data) == 0:
                 break
-        return rec.FinalResult()
+            if rec.AcceptWaveform(data):
+                print(rec.Result())
+            else:
+                print(rec.PartialResult())
+
+        output = json.loads(rec.FinalResult())
+        out = output["text"]
+        return out

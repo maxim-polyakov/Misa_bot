@@ -7,5 +7,4 @@ async def download_photo(message):
     await telegram_bot.boto.download_file(file_info.file_path, "audios/123.wav")
     am = AudioMonitor.AudioMonitor()
     output = am.monitor()
-
     await telegram_bot.boto.send_message(message.chat.id, output, parse_mode='html')
