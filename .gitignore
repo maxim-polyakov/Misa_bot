@@ -1,5 +1,7 @@
+*.wav
 *.pyc
 .idea/*
 venv/*
 photos/*
 resphotos/*
+audios/*

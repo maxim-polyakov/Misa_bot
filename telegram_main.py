@@ -6,6 +6,7 @@ from Front_layer.telegram_bot import calculate
 from Front_layer.telegram_bot import find
 from Front_layer.telegram_bot import weather
 
+from Front_layer.telegram_bot import audiomonitor
 from Front_layer.telegram_bot import picturemonitor
 from Front_layer.telegram_bot import messagemonitor
 
