@@ -15,7 +15,7 @@ class AudioMonitor(IMonitor.IMonitor):
     @classmethod
     def monitor(cls):
 
-        file_path = "audios/123.wav"
+        file_path = "audios/TmpAudioFile.wav"
         data, samplerate = soundfile.read(file_path)
         soundfile.write(file_path, data, samplerate)
 
@@ -34,9 +34,9 @@ class AudioMonitor(IMonitor.IMonitor):
             if len(data) == 0:
                 break
             if rec.AcceptWaveform(data):
-                print(rec.Result())
+                pass
             else:
-                print(rec.PartialResult())
+                pass
 
         output = json.loads(rec.FinalResult())
         out = output["text"]
