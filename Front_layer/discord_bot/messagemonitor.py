@@ -5,7 +5,7 @@ from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonit
 async def on_message(message):
 
     """
-    This finction is for taking messsages from a chat
+    This function is for taking messages from a chat
     """
 
     if message.author != discord_bot.bot.user:

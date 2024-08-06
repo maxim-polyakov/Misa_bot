@@ -41,7 +41,7 @@ class PictureMonitor(IMonitor.IMonitor):
                 flags=cv2.CASCADE_SCALE_IMAGE)
             for (x, y, w, h) in faces:
                 cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 3)
-                cv2.putText(image, 'Woman', (x, y), font,
+                cv2.putText(image, 'Face', (x, y), font,
                             fontScale, color, thickness, cv2.LINE_AA)
 
             dir_name = 'resphotos'

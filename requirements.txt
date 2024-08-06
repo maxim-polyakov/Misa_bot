@@ -126,3 +126,5 @@ seaborn
 opencv-python
 vosk
 soundfile
+youtube-dl==2021.2.10
+PyNaCl
