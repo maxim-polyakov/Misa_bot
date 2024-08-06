@@ -35,10 +35,13 @@ async def play(ctx, url):
             info = ydl.extract_info(url, download=False)
             URL = info['url']
 
-        if voice_client is not None:
-            voice_client.play(discord_bot.discord.FFmpegPCMAudio(URL))
-            await ctx.send(f'Now playing: {url}')
+        vc = discord_bot.bot.voice_clients
 
+        if voice_client and voice_client.is_connected():
+            vc.play(discord_bot.discord.FFmpegPCMAudio(URL))
+            await ctx.send(f'Now playing: {url}')
+        else:
+            pass
     except Exception as e:
         await ctx.send(f'An error occurred while playing the music: {e}')
 
