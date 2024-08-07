@@ -58,12 +58,28 @@ class MessageMonitor(IMonitor.IMonitor):
         text = []
         if(pltype == 'discord'):
             lowertext = message.content.lower()
-        else:
+        elif (pltype=='telegram'):
             lowertext = message.text.lower()
+        else:
+            lowertext = message.lower()
+
         cls._dbc.insert_to(lowertext)
         outstr = ''
-        if (lowertext.count('миса') > 0 or lowertext.lower().count('misa') > 0 or lowertext.count('миса,')):
-            lowertext = lowertext.replace('миса ', '').replace('misa ', '').replace('миса,', '').replace('misa,', '')
+        if (lowertext.count('миса') > 0
+            or lowertext.lower().count('misa')
+            or lowertext.count('миша') > 0
+            or lowertext.count('misha') > 0
+            or lowertext.count('миса,')>0
+            or lowertext.count('иса')>0):
+
+            lowertext = (lowertext.replace('миса ', '')
+                         .replace('misa ', '')
+                         .replace('миса,', '')
+                         .replace('misa,', '')
+                         .replace('миша', '')
+                         .replace('misha', '')
+                         .replace('иса', ''))
+
             text.append(lowertext)
             outlist = cls._neurodesc(text, lowertext)
             if (outlist != None):
@@ -71,4 +87,5 @@ class MessageMonitor(IMonitor.IMonitor):
                     outstr += outmes
             return outstr.capitalize()
         else:
+            outstr = ':)'
             return outstr.capitalize()
