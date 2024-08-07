@@ -20,7 +20,7 @@ contourpy==1.0.7
 cycler==0.11.0
 cymem==2.0.7
 discord==2.1.0
-discord.py==2.1.1
+discord.py[voice]==2.4.0
 filelock==3.9.0
 Flask==2.2.3
 flatbuffers==23.1.21
