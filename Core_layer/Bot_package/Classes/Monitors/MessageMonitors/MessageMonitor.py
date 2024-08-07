@@ -87,5 +87,4 @@ class MessageMonitor(IMonitor.IMonitor):
                     outstr += outmes
             return outstr.capitalize()
         else:
-            outstr = ':)'
             return outstr.capitalize()
