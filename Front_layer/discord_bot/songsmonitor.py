@@ -1,49 +1,53 @@
 from Front_layer import discord_bot
 from Core_layer.Bot_package.Classes.Monitors.SongsMonitors import YTDLSource
-import discord
 import yt_dlp
+import asyncio
+import urllib.parse, urllib.request, re
+
+queues = {}
+voice_clients = {}
+youtube_base_url = 'https://www.youtube.com/'
+youtube_results_url = youtube_base_url + 'results?'
+youtube_watch_url = youtube_base_url + 'watch?v='
+ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5','options': '-vn -filter:a "volume=0.25"'}
+yt_dl_options = {"format": "bestaudio/best"}
+ytdl = yt_dlp.YoutubeDL(yt_dl_options)
+
+
+async def play_next(ctx):
+    if queues[ctx.guild.id] != []:
+        link = queues[ctx.guild.id].pop(0)
+        await play(ctx, link=link)
 
 @discord_bot.bot.command(name='play_song', help='To play song')
-async def play(ctx, url):
-    if not ctx.author.voice or not ctx.author.voice.channel:
-        await ctx.send('You are not in a voice channel!')
-        return
+async def play(ctx, *, link):
+        try:
+            voice_client = await ctx.author.voice.channel.connect()
+            voice_clients[voice_client.guild.id] = voice_client
+        except Exception as e:
+            print(e)
 
-    voice_channel = ctx.author.voice.channel
+        if youtube_base_url not in link:
+            query_string = urllib.parse.urlencode({
+                'search_query': link
+            })
 
-    try:
-        server = ctx.message.guild
-        voice_client = server.voice_client
+            content = urllib.request.urlopen(
+                youtube_results_url + query_string
+            )
 
-        if voice_client is None:
-            voice_client = await voice_channel.connect()
+            search_results = re.findall(r'/watch\?v=(.{11})', content.read().decode())
 
-        ydl_opts = {
-            'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-            'outtmpl': 'downloads/%(title)s.%(ext)s',
-            'quiet': True,  # Меньше выводить информации в консоль
-            'noplaylist': True,  # Не загружать плейлисты
-            'nocheckcertificate': True,  # Не проверять сертификаты SSL
-        }
+            link = youtube_watch_url + search_results[0]
 
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
-            URL = info['url']
+        loop = asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(link, download=False))
 
-        vc = discord_bot.bot.voice_clients
-
-        if voice_client and voice_client.is_connected():
-            vc.play(discord_bot.discord.FFmpegPCMAudio(URL))
-            await ctx.send(f'Now playing: {url}')
-        else:
-            pass
-    except Exception as e:
-        await ctx.send(f'An error occurred while playing the music: {e}')
+        song = data['url']
+        player = discord_bot.discord.FFmpegOpusAudio(song, **ffmpeg_options)
+        id = ctx.guild.id
+        voice_clients[id].play(player,
+                                         after=lambda e: asyncio.run_coroutine_threadsafe(play_next(ctx), discord_bot.bot.loop))
 
 
 @discord_bot.bot.command(name='pause', help='This command pauses the song')

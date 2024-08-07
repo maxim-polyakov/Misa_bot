@@ -21,5 +21,5 @@ token = df['token'][0]
 app = flask.Flask(__name__)
 def bot_start_polling():
     bot.run(token)
+    #client.run(token)
     nest_asyncio.apply()
-    client.run(token)
