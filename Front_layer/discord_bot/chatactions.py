@@ -5,12 +5,12 @@ def remove_all_files(dir):
         os.remove(os.path.join(dir, f))
 
 @discord_bot.bot.command(name='join', help='Tells the bot to join the voice channel')
-async def join(ctx):
-    voice_channel = ctx.message.author.voice.channel
+async def join(message):
+    voice_channel = message.message.author.voice.channel
     await voice_channel.connect()
 
 @discord_bot.bot.command(name='leave', help='To make the bot leave the voice channel')
-async def leave(ctx):
-    server = ctx.message.guild
-    voice_channel = server.voice_client
-    await voice_channel.disconnect()
+async def leave(message):
+    server = message.message.guild
+    voice_client = server.voice_client
+    await voice_client.disconnect()
