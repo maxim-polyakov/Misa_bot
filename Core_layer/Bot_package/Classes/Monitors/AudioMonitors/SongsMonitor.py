@@ -26,17 +26,26 @@ class SongsMonitor(IMonitor.IMonitor):
         SongsMonitor.message = message
 
     @classmethod
+    async def __play_next(cls, message):
+        if cls.queues[message.guild.id] != []:
+            link = cls.queues[message.guild.id].pop(0)
+            sm = SongsMonitor(cls.bot, message)
+            await sm.monitor(link)
+
+    @classmethod
     async def join(cls):
         try:
             voice_client = await cls.message.author.voice.channel.connect()
             cls.voice_clients[voice_client.guild.id] = voice_client
         except Exception as e:
             print(e)
+
     @classmethod
     async def leave(cls):
         server = cls.message.message.guild
         voice_client = server.voice_client
         await voice_client.disconnect()
+
     @classmethod
     async def queue(cls, url):
         if cls.message.guild.id not in cls.queues:
@@ -44,13 +53,24 @@ class SongsMonitor(IMonitor.IMonitor):
         cls.queues[cls.message.guild.id].append(url)
         out = "Added to queue!"
         return out
-    @classmethod
-    async def __play_next(cls, message):
-        if cls.queues[message.guild.id] != []:
-            link = cls.queues[message.guild.id].pop(0)
-            sm = SongsMonitor(cls.bot, message)
-            await sm.monitor(link)
 
+    @classmethod
+    async def stop(cls):
+        voice_client = cls.message.message.guild.voice_client
+        if voice_client.is_playing():
+            await voice_client.stop()
+        else:
+            await cls.message.send("The bot is not playing anything at the moment.")
+
+    @classmethod
+    async def pause(cls):
+        voice_client = cls.message.message.guild.voice_client
+        if voice_client.is_playing():
+            await voice_client.pause()
+        else:
+            await cls.message.send("The bot is not playing anything at the moment.")
+
+    @classmethod
     async def resume(cls):
         try:
             cls.voice_clients[cls.message.guild.id].resume()
