@@ -2,21 +2,6 @@ from Front_layer import discord_bot
 import yt_dlp
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import SongsMonitor
 
-queues = {}
-voice_clients = {}
-youtube_base_url = 'https://www.youtube.com/'
-youtube_results_url = youtube_base_url + 'results?'
-youtube_watch_url = youtube_base_url + 'watch?v='
-ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5','options': '-vn -filter:a "volume=0.25"'}
-yt_dl_options = {"format": "bestaudio/best"}
-ytdl = yt_dlp.YoutubeDL(yt_dl_options)
-
-
-async def play_next(message):
-    if queues[message.guild.id] != []:
-        link = queues[message.guild.id].pop(0)
-        await play(message, link=link)
-
 @discord_bot.bot.command(name='play_song', help='To play song')
 async def play(message, *, url):
     sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)

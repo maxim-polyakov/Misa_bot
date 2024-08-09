@@ -1,5 +1,6 @@
 import Front_layer.discord_bot as db
 from Core_layer.Test_package.Classes.PythonTests import TestRun as PyTest
+from Front_layer.discord_bot import botoclean
 from Front_layer.discord_bot import chatactions
 from Front_layer.discord_bot import songsmonitor
 from Front_layer.discord_bot import messagemonitor
