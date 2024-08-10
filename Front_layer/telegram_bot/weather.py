@@ -1,5 +1,5 @@
 from Front_layer import telegram_bot
-from Core_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
+from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 
 
 @telegram_bot.dp.message_handler(commands=['weather'])

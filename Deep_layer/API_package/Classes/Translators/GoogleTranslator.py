@@ -2,7 +2,7 @@ from googletrans import Translator
 import pandas as pd
 from Deep_layer.DB_package.Classes import DB_Communication
 from multipledispatch import dispatch
-from Core_layer.API_package.Interfaces import ITranslator
+from Deep_layer.API_package.Interfaces import ITranslator
 
 
 class GoogleTranslator(ITranslator.ITranslator):

@@ -23,12 +23,14 @@ class MessageMonitor(IMonitor.IMonitor):
         return info_dict[chosen_item]
 
     @classmethod
-    def __decision(cls, text_message, emotion, predicts):
+    def __decision(cls, text_message, emotion, commands, predicts):
         if (text_message.count('?') > 0):
             outlist = []
             answer = cls._qa.answer(text_message)
             outlist.append(answer)
         else:
+            if (cls._dbc.checkcommands(text_message)):
+                return commands.analyse(text_message)
             outlist = []
             if True in predicts:
                 res = cls.__classify(predicts.index(True))
@@ -39,7 +41,7 @@ class MessageMonitor(IMonitor.IMonitor):
         return outlist
 
     @classmethod
-    def _neurodesc(cls, text, text_message):
+    def _neurodesc(cls, text, text_message, command):
 #
 #
         modelpaths = ['all_set_hi', 'all_set_thanks', 'all_set_business', 'all_set_weather', 'all_set_trash']
@@ -51,10 +53,11 @@ class MessageMonitor(IMonitor.IMonitor):
 
         return cls.__decision(text_message,
                               emotion,
+                              command,
                               predicts)
 
     @classmethod
-    def monitor(cls, message, pltype):
+    def monitor(cls, message, command, pltype):
         text = []
         if(pltype == 'discord'):
             lowertext = message.content.lower()
@@ -81,7 +84,7 @@ class MessageMonitor(IMonitor.IMonitor):
                          .replace('иса', ''))
 
             text.append(lowertext)
-            outlist = cls._neurodesc(text, lowertext)
+            outlist = cls._neurodesc(text, lowertext, command)
             if (outlist != None):
                 for outmes in outlist:
                     outstr += outmes
