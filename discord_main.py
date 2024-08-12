@@ -1,5 +1,6 @@
 import Front_layer.discord_bot as db
 from Core_layer.Test_package.Classes.PythonTests import TestRun as PyTest
+from Front_layer.discord_bot import on_ready
 from Front_layer.discord_bot import botoclean
 from Front_layer.discord_bot import weather
 from Front_layer.discord_bot import chatactions
