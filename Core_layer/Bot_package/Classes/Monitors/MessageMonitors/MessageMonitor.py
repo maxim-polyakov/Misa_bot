@@ -24,14 +24,17 @@ class MessageMonitor(IMonitor.IMonitor):
 
     @classmethod
     def __decision(cls, text_message, emotion, commands, predicts):
+        outlist = []
         if (text_message.count('?') > 0):
-            outlist = []
+            if (cls._dbc.checkcommands(cls._pr.preprocess_text(text_message))):
+                outlist.append(commands.analyse(text_message))
+                return outlist
             answer = cls._qa.answer(text_message)
             outlist.append(answer)
         else:
             if (cls._dbc.checkcommands(text_message)):
-                return commands.analyse(text_message)
-            outlist = []
+                outlist.append(commands.analyse(text_message))
+                return outlist
             if True in predicts:
                 res = cls.__classify(predicts.index(True))
             else:

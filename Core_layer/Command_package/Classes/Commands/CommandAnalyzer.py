@@ -21,12 +21,13 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
         try:
             info_dict = {
-                'атаковать': ac.fas(),
-                'фас': ac.fas(),
-                'поссчитать': ac.find(),
-                'перевести': ac.translate(),
-                'находить': ac.find(),
-            }
+                'погода': str(ac.weather()),
+                'атаковать': str(ac.fas()),
+                'фас': str(ac.fas()),
+                'перевести': str(ac.translate()),
+                'поссчитать': str(ac.find()),
+                'находить': str(ac.find())
+                }
             return info_dict[chosen_item]
         except:
             return ''
@@ -36,7 +37,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         outlist = []
         array_of_message_text = message_text.split(' ')
         for word in array_of_message_text:
-            outlist.append((cls.__action_step(cls.__pr.preprocess_text(word), cls.__pr.preprocess_text(message_text))))
+            outlist.append(cls.__action_step(cls.__pr.preprocess_text(word), cls.__pr.preprocess_text(message_text)))
         outlist = list(set(outlist))
         return outlist
 

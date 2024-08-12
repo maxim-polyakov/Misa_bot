@@ -2,6 +2,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Deep_layer.API_package.Classes.Calculators import SympyCalculator
 from Deep_layer.API_package.Classes.Finders import WikiFinder
 from Deep_layer.API_package.Classes.Translators import GoogleTranslator
+from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Core_layer.Command_package.Interfaces import IAction
 
 class CommandAction(IAction.IAction):
@@ -13,8 +14,8 @@ class CommandAction(IAction.IAction):
     __pr = CommonPreprocessing.CommonPreprocessing()
 
     def __init__(self, message, message_text):
-        CommandAction.message_text = message_text
         CommandAction.message = message
+        CommandAction.message_text = message_text
 
     @classmethod
     def fas(cls):
@@ -59,9 +60,9 @@ class CommandAction(IAction.IAction):
             cls.command_flag = 1
             return message_text
         else:
-            apif = WikiFinder.WikiFinder()
-            finded_list = apif.find(message_text)
             try:
+                apif = WikiFinder.WikiFinder()
+                finded_list = apif.find(message_text)
                 return str(finded_list)
             except:
                 return "Не нашла"
@@ -74,5 +75,11 @@ class CommandAction(IAction.IAction):
         return translated
 
     @classmethod
-    def predict(cls):
-        pass
+    def weather(cls):
+        try:
+            wp = WeatherPredictor.WetherPredictor(cls.message_text)
+            res = wp.predict()
+            out = str(res[0] + '. ' + res[1])
+            return out
+        except Exception as e:
+            return 'Проблемы с сервисом'
