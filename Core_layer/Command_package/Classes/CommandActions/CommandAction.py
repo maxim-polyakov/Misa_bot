@@ -69,15 +69,18 @@ class CommandAction(IAction.IAction):
 
     @classmethod
     def translate(cls):
-        message_text = cls.message_text.strip(' ').replace('перевести ', '')
-        tr = GoogleTranslator.GoogleTranslator("ru")
-        translated = tr.translate(message_text)
-        return translated
-
+        try:
+            message_text = cls.message_text.strip(' ').replace('перевести ', '')
+            tr = GoogleTranslator.GoogleTranslator("ru")
+            translated = tr.translate(message_text)
+            return translated
+        except Exception as e:
+            return 'Проблемы с сервисом'
     @classmethod
     def weather(cls):
         try:
-            wp = WeatherPredictor.WetherPredictor(cls.message_text)
+            message = cls.message_text.replace('погода ','')
+            wp = WeatherPredictor.WetherPredictor(message)
             res = wp.predict()
             out = str(res[0] + '. ' + res[1])
             return out
