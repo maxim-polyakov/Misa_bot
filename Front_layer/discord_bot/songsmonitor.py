@@ -1,5 +1,4 @@
 from Front_layer import discord_bot
-import yt_dlp
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import SongsMonitor
 
 @discord_bot.bot.command(name='play_song', help='To play song')

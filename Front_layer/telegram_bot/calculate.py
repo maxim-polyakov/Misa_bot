@@ -1,5 +1,4 @@
 from Front_layer import telegram_bot
-from Deep_layer.API_package.Classes.Calculators import SympyCalculator
 from Core_layer.Command_package.Classes.CommandActions import CommandAction
 
 
