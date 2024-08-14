@@ -47,7 +47,11 @@ class MessageMonitor(IMonitor.IMonitor):
     def _neurodesc(cls, text, text_message, command):
 #
 #
-        modelpaths = ['all_set_hi', 'all_set_thanks', 'all_set_business', 'all_set_weather', 'all_set_trash']
+        modelpaths = ['all_set_hi',
+                      'all_set_thanks',
+                      'all_set_business',
+                      'all_set_weather',
+                      'all_set_trash']
 
         emotion = ''
         predicts = []
