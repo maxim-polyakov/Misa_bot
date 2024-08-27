@@ -22,7 +22,6 @@ class PictureMonitor(IMonitor.IMonitor):
         color = (255, 0, 0)
         # Line thickness of 2 px
         thickness = 2
-        faces = []
         images = []
         face_classifier = cv2.CascadeClassifier(
             cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
