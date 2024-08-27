@@ -28,7 +28,6 @@ class PictureMonitor(IMonitor.IMonitor):
             ):
                 # Load the image
                 total_con = os.listdir('photos')
-                tmp = ''
                 # font
                 count = len(total_con)
                 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -39,17 +38,16 @@ class PictureMonitor(IMonitor.IMonitor):
                 # Line thickness of 2 px
                 thickness = 2
                 images = []
-                face_classifier = cv2.CascadeClassifier(
-                    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-                )
 
                 img_data = requests.get(attachment.url).content
-                file = "photos/file_" + str(count + 1) + ".jpg"
-                tmp = "file_" + str(count + 1) + ".jpg"
+                file = "photos/file_" + str(count) + ".jpg"
+                tmp = "file_" + str(count) + ".jpg"
                 with open(file, "wb") as handler:
                     handler.write(img_data)
 
-                total_con = os.listdir('photos')
+                face_classifier = cv2.CascadeClassifier(
+                    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+                )
 
                 image = cv2.imread(file, cv2.COLOR_BGR2GRAY)
                 images.append(image)

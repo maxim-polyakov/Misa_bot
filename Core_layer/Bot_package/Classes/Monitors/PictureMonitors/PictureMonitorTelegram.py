@@ -8,12 +8,17 @@ class PictureMonitor(IMonitor.IMonitor):
     Summary
 
     """
+    def __init__(self, message):
+        PictureMonitor.message = message
+
     @classmethod
-    def monitor(cls):
-        # Load the image
+    async def monitor(cls):
+
         total_con = os.listdir('photos')
-        tmp = ''
         count = len(total_con)
+        file = "photos/file_" + str(count) + ".jpg"
+        tmp = "file_" + str(count) + ".jpg"
+        await cls.message.photo[-1].download((file))
         # font
         font = cv2.FONT_HERSHEY_SIMPLEX
         # fontScale
@@ -26,10 +31,9 @@ class PictureMonitor(IMonitor.IMonitor):
         face_classifier = cv2.CascadeClassifier(
             cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
         )
-        for con in total_con:
-            image = cv2.imread("photos/" + con, cv2.COLOR_BGR2GRAY)
-            images.append(image)
-            tmp = con
+
+        image = cv2.imread(file, cv2.COLOR_BGR2GRAY)
+        images.append(image)
         for image in images:
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             faces = face_classifier.detectMultiScale(
