@@ -12,7 +12,7 @@ async def on_message(message):
 
     if message.author != discord_bot.bot.user:
         mmon = MessageMonitorDiscord.MessageMonitorDiscord(message)
-        pmon = PictureMonitorDiscord.PictureMonitor(message)
+        pmon = PictureMonitorDiscord.PictureMonitorDiscord(message)
         photo = pmon.monitor()
         outstr = mmon.monitor()
 

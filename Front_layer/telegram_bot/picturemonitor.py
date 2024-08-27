@@ -3,8 +3,8 @@ from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonit
 import os
 @telegram_bot.dp.message_handler(content_types=['photo'])
 async def download_photo(message):
-    picMon = PictureMonitorTelegram.PictureMonitor(message)
+    picMon = PictureMonitorTelegram.PictureMonitorTelegram(message)
     res = await picMon.monitor()
-    photo = 'resphotos/' + str(res)
+    photo =  str(res)
     await telegram_bot.boto.send_photo(message.chat.id,
                                        photo=open(photo, 'rb'))
