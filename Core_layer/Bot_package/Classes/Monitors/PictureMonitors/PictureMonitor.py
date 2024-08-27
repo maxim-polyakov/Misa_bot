@@ -9,7 +9,6 @@ class PictureMonitor(IMonitor.IMonitor):
     Summary
 
     """
-    i = 0
     def __init__(self, message):
         PictureMonitor.message = message
 
