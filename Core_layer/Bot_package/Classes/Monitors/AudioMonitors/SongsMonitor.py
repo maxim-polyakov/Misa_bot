@@ -93,10 +93,10 @@ class SongsMonitor(IMonitor.IMonitor):
 
                 cls.url = cls.youtube_watch_url + search_results[0]
 
-            loop = asyncio.get_event_loop()
-            data = await loop.run_in_executor(None, lambda: cls.ytdl.extract_info(url, download=False))
+            #loop = asyncio.get_event_loop()
+            #data = await loop.run_in_executor(None, lambda: cls.ytdl.extract_info(url, download=False))
 
-            song = data['url']
+            song = url
             player = discord.FFmpegOpusAudio(song, **cls.ffmpeg_options)
             id = cls.message.guild.id
             cls.voice_clients[id].play(player,
