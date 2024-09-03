@@ -3,7 +3,7 @@ from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import AuidoMonitorDi
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import SongsMonitor
 
 @discord_bot.bot.command(name='start_recording', help='This command starts recording')
-async def start_recording(message: discord_bot.discord.ApplicationContext):
+async def start_recording(message):
     smon = SongsMonitor.SongsMonitor(discord_bot.bot, message)
 
     mon = AuidoMonitorDiscord.AudioMonitorDiscord(message)
@@ -12,7 +12,7 @@ async def start_recording(message: discord_bot.discord.ApplicationContext):
     await mon.monitor()
 
 @discord_bot.bot.command(name='stop_recording', help='This command stops recording')
-async def stop_recording(message: discord_bot.discord.ApplicationContext):
+async def stop_recording(message):
 
     mon = AuidoMonitorDiscord.AudioMonitorDiscord(message)
     await mon.stop()
