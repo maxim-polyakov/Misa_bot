@@ -40,12 +40,10 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
             file = discord.File(audio.file, filename=f"{user_id}.wav")
             files.append(file)
             file_path = "audios/" + str(user_id) + ".wav"
-            with open(file_path, "wb") as f:
-                f.write(audio.file.getbuffer())
 
         for seg in audio_segs:
             longest = longest.overlay(seg)
-
+        longest.export(file_path, format="wav")
         await channel.send(
             f"Finished! Recorded audio for {', '.join(mention_strs)}.",
             files=files,
