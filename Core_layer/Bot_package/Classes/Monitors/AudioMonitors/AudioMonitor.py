@@ -1,6 +1,4 @@
 import wave
-import sys
-import soundfile
 import json
 
 from vosk import Model, KaldiRecognizer, SetLogLevel
@@ -13,11 +11,7 @@ class AudioMonitor(IMonitor.IMonitor):
 
     """
     @classmethod
-    def monitor(cls):
-
-        file_path = "audios/TmpAudioFile.wav"
-        data, samplerate = soundfile.read(file_path)
-        soundfile.write(file_path, data, samplerate)
+    def monitor(cls, file_path):
 
         wf = wave.open(file_path, "rb")
 

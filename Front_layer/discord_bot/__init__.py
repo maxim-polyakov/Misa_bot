@@ -1,7 +1,7 @@
 import discord
 import flask
 from multiprocessing import Process
-from discord.ext import commands,tasks
+from discord.ext import commands
 from Core_layer.Bot_package.Classes.Token import Token
 import nest_asyncio
 
@@ -10,8 +10,6 @@ config = {
     'intents': discord.Intents.default()
 }
 config['intents'].message_content = True
-intents = discord.Intents().all()
-client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix=config['prefix'], intents=config['intents'])
 tkn = Token.Token()
 df = tkn.get_token('select token from assistant_sets.tokens where botname = \'Misa\' and platformname = \'Discord\'')

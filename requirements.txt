@@ -129,3 +129,5 @@ soundfile
 youtube-dl
 PyNaCl
 yt-dlp
+py-cord
+pydub==0.25.1
