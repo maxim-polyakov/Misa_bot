@@ -18,7 +18,9 @@ class MessageMonitor(IMonitor.IMonitor):
             1: str(ra.answer('thanksanswer')) + ' ',
             2: str(ra.answer('businessanswer')) + ' ',
             3: str(ra.answer('weatheranswer')) + ' ',
-            4: str(ra.answer('trashanswer')) + ' '
+            4: str(ra.answer('trashanswer')) + ' ',
+            5: "Настроение в порядке ",
+            6: "Здоровье в порядке "
         }
         return info_dict[chosen_item]
 
@@ -51,7 +53,9 @@ class MessageMonitor(IMonitor.IMonitor):
                       'all_set_thanks',
                       'all_set_business',
                       'all_set_weather',
-                      'all_set_trash']
+                      'all_set_trash',
+                      'all_set_mood',
+                      'all_set_helath']
 
         emotion = ''
         predicts = []
