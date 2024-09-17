@@ -7,7 +7,7 @@ import nest_asyncio
 
 config = {
     'prefix': '/',
-    'intents': discord.Intents.default()
+    'intents': discord.Intents.all()
 }
 config['intents'].message_content = True
 bot = commands.Bot(command_prefix=config['prefix'], intents=config['intents'])
