@@ -55,7 +55,7 @@ class MessageMonitor(IMonitor.IMonitor):
                       'all_set_weather',
                       'all_set_trash',
                       'all_set_mood',
-                      'all_set_helath']
+                      'all_set_health']
 
         emotion = ''
         predicts = []

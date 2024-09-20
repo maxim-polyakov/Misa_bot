@@ -5,4 +5,6 @@ venv/*
 photos/*
 resphotos/*
 audios/*
+downloads/*
+*.pt
 *.exe
