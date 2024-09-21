@@ -37,6 +37,6 @@ class TextMonitor(IMonitor.IMonitor):
         if not os.path.isdir("audios"):
             os.mkdir("audios")
         myobj.save(audio_paths)
-        player = discord.FFmpegOpusAudio(audio_paths, **cls.ffmpeg_options)
+        #player = discord.FFmpegOpusAudio(audio_paths, **cls.ffmpeg_options)
         id = message.guild.id
-        cls.voice_clients[id].play(player)
+        cls.voice_clients[id].play(audio_paths)
