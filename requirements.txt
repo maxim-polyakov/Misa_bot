@@ -107,7 +107,7 @@ termcolor==2.2.0
 thinc==8.1.7
 threadpoolctl==3.1.0
 tokenizers==0.13.2
-torch==1.13.1
+torch
 torchaudio==0.13.1
 torchvision==0.14.1
 tqdm==4.64.1

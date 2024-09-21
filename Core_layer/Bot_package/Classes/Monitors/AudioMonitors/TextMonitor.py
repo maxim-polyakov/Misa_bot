@@ -13,6 +13,10 @@ class TextMonitor(IMonitor.IMonitor):
     Summary
 
     """
+
+    ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+                      'options': '-vn -filter:a "volume=0.25"'}
+
     @classmethod
     def monitor(cls, message, ptype):
         device = torch.device('cpu')
@@ -33,12 +37,13 @@ class TextMonitor(IMonitor.IMonitor):
                                         speaker=speaker,
                                         sample_rate=sample_rate
                                         )
+            print(audio_paths)
         else:
             audio_paths = model.save_wav(audio_path='audios/test.wav',
                                         text=message.text,
                                         speaker=speaker,
                                         sample_rate=sample_rate
                                         )
-            player = discord.FFmpegOpusAudio(audio_paths)
-            id = cls.message.guild.id
-            cls.voice_clients[id].play(player)
+        player = discord.FFmpegOpusAudio(audio_paths, **cls.ffmpeg_options)
+        id = cls.message.guild.id
+        cls.voice_clients[id].play(player)
