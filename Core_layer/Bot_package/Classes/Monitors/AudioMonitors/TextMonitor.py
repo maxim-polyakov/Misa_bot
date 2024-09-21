@@ -13,7 +13,7 @@ class TextMonitor(IMonitor.IMonitor):
 
     ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
                       'options': '-vn -filter:a "volume=0.25"'}
-
+    voice_clients = {}
     @classmethod
     def monitor(cls, message, ptype):
         language = 'ru'
@@ -29,5 +29,5 @@ class TextMonitor(IMonitor.IMonitor):
             os.mkdir("audios")
         myobj.save(audio_paths)
         player = discord.FFmpegOpusAudio(audio_paths, **cls.ffmpeg_options)
-        id = cls.message.guild.id
+        id = message.guild.id
         cls.voice_clients[id].play(player)
