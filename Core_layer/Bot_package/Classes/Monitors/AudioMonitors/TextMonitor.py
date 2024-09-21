@@ -1,10 +1,6 @@
 # V4
-import os
-import torch
-import yt_dlp
-import asyncio
+from gtts import gTTS
 import discord
-import urllib.parse, urllib.request, re
 from Core_layer.Bot_package.Interfaces import IMonitor
 
 class TextMonitor(IMonitor.IMonitor):
@@ -19,30 +15,15 @@ class TextMonitor(IMonitor.IMonitor):
 
     @classmethod
     def monitor(cls, message, ptype):
-        device = torch.device('cpu')
-        torch.set_num_threads(4)
-        local_file = 'model.pt'
-        if not os.path.isfile(local_file):
-            torch.hub.download_url_to_file('https://models.silero.ai/models/tts/ru/v4_ru.pt',
-                                           local_file)
-        model = torch.package.PackageImporter(local_file).load_pickle("tts_models", "model")
-        model.to(device)
+        language = 'ru'
 
-        sample_rate = 48000
-        speaker = 'baya'
-
+        audio_paths = 'audios/test.wav'
         if ptype == 'discord':
-            audio_paths = model.save_wav(audio_path='audios/test.wav',
-                                        text=message.content,
-                                        speaker=speaker,
-                                        sample_rate=sample_rate
-                                        )
+            myobj = gTTS(text=message.content, lang=language, slow=False)
+            myobj.save(audio_paths)
         else:
-            audio_paths = model.save_wav(audio_path='audios/test.wav',
-                                        text=message.text,
-                                        speaker=speaker,
-                                        sample_rate=sample_rate
-                                        )
+            myobj = gTTS(text=message.text, lang=language, slow=False)
+            myobj.save(audio_paths)
         player = discord.FFmpegOpusAudio(audio_paths, **cls.ffmpeg_options)
         id = cls.message.guild.id
         cls.voice_clients[id].play(player)
