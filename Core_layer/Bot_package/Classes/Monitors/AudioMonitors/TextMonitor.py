@@ -37,7 +37,6 @@ class TextMonitor(IMonitor.IMonitor):
                                         speaker=speaker,
                                         sample_rate=sample_rate
                                         )
-            print(audio_paths)
         else:
             audio_paths = model.save_wav(audio_path='audios/test.wav',
                                         text=message.text,
