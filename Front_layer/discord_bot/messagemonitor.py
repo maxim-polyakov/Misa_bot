@@ -15,7 +15,6 @@ async def on_message(message):
         mmon = MessageMonitorDiscord.MessageMonitorDiscord(message)
         pmon = PictureMonitorDiscord.PictureMonitorDiscord(message)
         tmon = TextMonitorDiscord.TextMonitorDiscord(message)
-        smon = SongsMonitor.SongsMonitor(discord_bot.bot, message)
         photo = pmon.monitor()
         #outstr = mmon.monitor()
 
@@ -25,7 +24,7 @@ async def on_message(message):
             #await message.channel.send(outstr)
         #except:
             #pass
-        await tmon.join()
-        tmon.monitor()
+        await tmon.join(message)
+        await tmon.monitor()
 
 

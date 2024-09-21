@@ -16,15 +16,15 @@ class TextMonitor(IMonitor.IMonitor):
     voice_clients = {}
 
     @classmethod
-    async def join(cls):
+    async def join(cls, message):
         try:
-            voice_client = await cls.message.author.voice.channel.connect()
+            voice_client = await message.author.voice.channel.connect()
             cls.voice_clients[voice_client.guild.id] = voice_client
         except Exception as e:
             print(e)
 
     @classmethod
-    def monitor(cls, message, ptype):
+    async def monitor(cls, message, ptype):
         language = 'ru'
 
         audio_paths = 'audios/test.wav'
