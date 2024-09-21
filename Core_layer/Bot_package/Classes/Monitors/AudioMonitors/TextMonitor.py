@@ -27,7 +27,7 @@ class TextMonitor(IMonitor.IMonitor):
     async def monitor(cls, message, ptype):
         language = 'ru'
 
-        audio_paths = 'audios/test.wav'
+        audio_paths = 'audios/test.mp3'
         if ptype == 'discord':
             myobj = gTTS(text=message.content, lang=language, slow=False)
 
