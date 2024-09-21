@@ -25,7 +25,7 @@ async def on_message(message):
             #await message.channel.send(outstr)
         #except:
             #pass
-        await smon.join()
+        await tmon.join()
         tmon.monitor()
 
 

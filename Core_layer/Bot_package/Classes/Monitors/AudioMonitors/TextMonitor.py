@@ -14,6 +14,15 @@ class TextMonitor(IMonitor.IMonitor):
     ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
                       'options': '-vn -filter:a "volume=0.25"'}
     voice_clients = {}
+
+    @classmethod
+    async def join(cls):
+        try:
+            voice_client = await cls.message.author.voice.channel.connect()
+            cls.voice_clients[voice_client.guild.id] = voice_client
+        except Exception as e:
+            print(e)
+
     @classmethod
     def monitor(cls, message, ptype):
         language = 'ru'
