@@ -39,4 +39,4 @@ class TextMonitor(IMonitor.IMonitor):
         myobj.save(audio_paths)
         player = discord.FFmpegPCMAudio(audio_paths, **cls.ffmpeg_options)
         id = message.guild.id
-        cls.voice_clients[id].play(audio_paths)
+        cls.voice_clients[id].play(player)
