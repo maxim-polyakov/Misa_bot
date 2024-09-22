@@ -26,9 +26,11 @@ class PictureMonitorDiscord(PictureMonitor.PictureMonitor):
                     or attachment.filename.endswith(".webp")
                     or attachment.filename.endswith(".gif")
             ):
-                # Load the image
+                if not os.path.isdir("photos"):
+                    os.mkdir("photos")
+
                 total_con = os.listdir('photos')
-                # font
+
                 count = len(total_con)
 
                 img_data = requests.get(attachment.url).content
