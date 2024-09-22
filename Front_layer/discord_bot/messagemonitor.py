@@ -19,16 +19,17 @@ async def on_message(message):
         outstr = mmon.monitor()
         tmon = TextMonitorDiscord.TextMonitorDiscord(message, outstr)
 
-        try:
-            await tmon.join(message)
-            await tmon.monitor()
-        except:
+        if photo != None:
+            await message.channel.send(file=discord_bot.discord.File(photo))
+        else:
             try:
-                if photo != None:
-                    await message.channel.send(file=discord_bot.discord.File(photo))
-                await message.channel.send(outstr)
+                await tmon.join(message)
+                await tmon.monitor()
             except:
-                pass
+                try:
+                    await message.channel.send(outstr)
+                except:
+                    pass
 
 
 
