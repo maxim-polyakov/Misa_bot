@@ -7,14 +7,10 @@ class TextMonitorDiscord(TextMonitor.TextMonitor):
     Summary
 
     """
-
-    device = torch.device('cpu')
-
-    local_file = 'Deep_layer/NLP_package/models/model.pt'
-
-    def __init__(self, message):
+    def __init__(self, message, outstr):
         TextMonitorDiscord.__message = message
+        TextMonitorDiscord.__outstr = outstr
 
     @classmethod
     def monitor(cls):
-        return super().monitor(cls.__message,'discord')
+        return super().monitor(cls.__message,'discord', cls.__outstr)

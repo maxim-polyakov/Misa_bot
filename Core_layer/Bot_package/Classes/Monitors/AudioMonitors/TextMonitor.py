@@ -24,15 +24,11 @@ class TextMonitor(IMonitor.IMonitor):
             print(e)
 
     @classmethod
-    async def monitor(cls, message, ptype):
+    async def monitor(cls, message, ptype, outstr):
         language = 'ru'
 
         audio_paths = 'audios/test.mp3'
-        if ptype == 'discord':
-            myobj = gTTS(text=message.content, lang=language, slow=False)
-
-        else:
-            myobj = gTTS(text=message.text, lang=language, slow=False)
+        myobj = gTTS(text=outstr, lang=language, slow=False)
 
         if not os.path.isdir("audios"):
             os.mkdir("audios")
