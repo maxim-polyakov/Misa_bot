@@ -19,29 +19,23 @@ class MessageMonitor(IMonitor.IMonitor):
             2: str(ra.answer('businessanswer')) + ' ',
             3: str(ra.answer('weatheranswer')) + ' ',
             4: str(ra.answer('trashanswer')) + ' ',
-            5: "Настроение в порядке ",
-            6: "Здоровье в порядке "
+            5: str(ra.answer('moodanswer')) + ' ',
+            6: str(ra.answer('helathanswer')) + ' '
         }
         return info_dict[chosen_item]
 
     @classmethod
     def __decision(cls, text_message, emotion, commands, predicts):
         outlist = []
-        if (text_message.count('?') > 0):
-            if (cls._dbc.checkcommands(cls._pr.preprocess_text(text_message))):
-                outlist.append(commands.analyse(text_message))
-                return outlist
-            answer = cls._qa.answer(text_message)
-            outlist.append(answer)
+
+        if (cls._dbc.checkcommands(text_message)):
+            outlist.append(commands.analyse(text_message))
+            return outlist
+        if True in predicts:
+            res = cls.__classify(predicts.index(True))
         else:
-            if (cls._dbc.checkcommands(text_message)):
-                outlist.append(commands.analyse(text_message))
-                return outlist
-            if True in predicts:
-                res = cls.__classify(predicts.index(True))
-            else:
-                res = 'Нет классификации. '
-            outlist.append(res)
+            res = 'Нет классификации. '
+        outlist.append(res)
         outlist.append('' + emotion)
         return outlist
 
