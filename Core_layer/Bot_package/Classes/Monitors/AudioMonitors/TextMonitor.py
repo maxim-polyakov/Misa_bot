@@ -18,7 +18,7 @@ class TextMonitor(IMonitor.IMonitor):
     @classmethod
     async def join(cls, message):
         try:
-            voice_client = await message.author.voice.channel.connect()
+            voice_client = await message.author.voice.channel.connect(timeout=500, reconnect=True)
             cls.voice_clients[voice_client.guild.id] = voice_client
         except Exception as e:
             print(e)

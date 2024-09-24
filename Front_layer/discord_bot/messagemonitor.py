@@ -14,17 +14,21 @@ async def on_message(message):
     if message.author != discord_bot.bot.user:
         mmon = MessageMonitorDiscord.MessageMonitorDiscord(message)
         pmon = PictureMonitorDiscord.PictureMonitorDiscord(message)
+        tmon = TextMonitorDiscord.TextMonitorDiscord(message)
 
+        try:
+            await tmon.join(message)
+        except:
+            pass
         photo = pmon.monitor()
         outstr = mmon.monitor()
-        tmon = TextMonitorDiscord.TextMonitorDiscord(message, outstr)
+
 
         if photo != None:
             await message.channel.send(file=discord_bot.discord.File(photo))
         else:
             try:
-                await tmon.join(message)
-                await tmon.monitor()
+                await tmon.monitor(outstr)
             except:
                 try:
                     await message.channel.send(outstr)

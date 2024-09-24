@@ -7,10 +7,9 @@ class TextMonitorDiscord(TextMonitor.TextMonitor):
     Summary
 
     """
-    def __init__(self, message, outstr):
+    def __init__(self, message):
         TextMonitorDiscord.__message = message
-        TextMonitorDiscord.__outstr = outstr
 
     @classmethod
-    def monitor(cls):
-        return super().monitor(cls.__message,'discord', cls.__outstr)
+    def monitor(cls, outstr):
+        return super().monitor(cls.__message,'discord', outstr)
