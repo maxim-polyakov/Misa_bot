@@ -17,7 +17,9 @@ async def on_message(message):
         tmon = TextMonitorDiscord.TextMonitorDiscord(message)
 
         try:
-            await tmon.join(message)
+            lowertext = message.content.lower()
+            if lowertext.count('миса') >0:
+                await tmon.join(message)
         except:
             pass
         photo = pmon.monitor()
