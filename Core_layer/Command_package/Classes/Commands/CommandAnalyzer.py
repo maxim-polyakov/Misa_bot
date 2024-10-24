@@ -25,8 +25,9 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'атаковать': str(ac.fas()),
                 'фас': str(ac.fas()),
                 'перевести': str(ac.translate()),
-                'поссчитать': str(ac.find()),
-                'находить': str(ac.find())
+                'поссчитать': str(ac.find('wikipedia')),
+                'находить': str(ac.find()),
+                'находить википедия': str(ac.wikifind())
                 }
             return info_dict[chosen_item]
         except:

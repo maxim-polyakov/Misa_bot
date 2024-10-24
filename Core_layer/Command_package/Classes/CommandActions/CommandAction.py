@@ -48,10 +48,13 @@ class CommandAction(IAction.IAction):
         return message_text
 
     @classmethod
-    def find(cls):
+    def find(cls, finder):
         message_text = (cls.message_text.strip(' ')
                         .replace('находить ', '')
-                        .replace('поссчитать ', ''))
+                        .replace('поссчитать ', '')
+                        .replace('википедия', '')
+                        .replace('google', '')
+                        .replace('гугл', ''))
         if (message_text.count('производная') > 0) or (message_text.count('интеграл') > 0):
             message_text = (cls.message_text.strip(' ')
                             .replace('производная ', '')
@@ -60,12 +63,13 @@ class CommandAction(IAction.IAction):
             cls.command_flag = 1
             return message_text
         else:
-            try:
-                apif = WikiFinder.WikiFinder()
-                finded_list = apif.find(message_text)
-                return str(finded_list)
-            except:
-                return "Не нашла"
+            if finder == 'wikipedia':
+                try:
+                    apif = WikiFinder.WikiFinder()
+                    finded_list = apif.find(message_text)
+                    return str(finded_list)
+                except:
+                    return "Не нашла"
 
     @classmethod
     def translate(cls):
