@@ -25,12 +25,11 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'атаковать': str(ac.fas()),
                 'фас': str(ac.fas()),
                 'перевести': str(ac.translate()),
-                'поссчитать': str(ac.find('wikipedia')),
-                'находить': str(ac.find()),
-                'находить википедия': str(ac.wikifind())
+                'поссчитать': str(ac.find()),
+                'находить': str(ac.find())
                 }
             return info_dict[chosen_item]
-        except:
+        except Exception as e:
             return ''
 
     @classmethod
@@ -38,7 +37,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         outlist = []
         array_of_message_text = message_text.split(' ')
         for word in array_of_message_text:
-            outlist.append(cls.__action_step(cls.__pr.preprocess_text(word), cls.__pr.preprocess_text(message_text)))
+            outlist.append(cls.__action_step(cls.__pr.preprocess_text(word), message_text))
         outlist = list(set(outlist))
         return outlist
 

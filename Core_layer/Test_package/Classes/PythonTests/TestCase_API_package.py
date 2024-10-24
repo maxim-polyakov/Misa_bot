@@ -1,6 +1,7 @@
 import unittest
 from Deep_layer.API_package.Classes.Calculators import SympyCalculator as calc
 from Deep_layer.API_package.Classes.Finders import WikiFinder as find
+from Deep_layer.API_package.Classes.Finders import BingFinder as bfind
 from Deep_layer.API_package.Classes.Translators import GoogleTranslator as trans
 from Core_layer.Test_package.Interfases import ITestCase
 
@@ -18,8 +19,13 @@ class TestCase_API_package(ITestCase.ITestCase):
         self.assertEqual(outputder, '2*x')
         self.assertEqual(outputint, 'x^3/3')
 
-    def test_founder(self):
+    def test_wikifinder(self):
         found = find.WikiFinder()
+        return_arr = found.find("нож")
+        self.assertNotEqual(return_arr, None)
+
+    def test_bingfinder(self):
+        found = bfind.BingFinder()
         return_arr = found.find("нож")
         self.assertNotEqual(return_arr, None)
 

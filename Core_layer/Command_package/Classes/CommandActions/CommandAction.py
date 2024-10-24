@@ -1,6 +1,7 @@
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 from Deep_layer.API_package.Classes.Calculators import SympyCalculator
 from Deep_layer.API_package.Classes.Finders import WikiFinder
+from Deep_layer.API_package.Classes.Finders import BingFinder
 from Deep_layer.API_package.Classes.Translators import GoogleTranslator
 from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Core_layer.Command_package.Interfaces import IAction
@@ -19,6 +20,8 @@ class CommandAction(IAction.IAction):
 
     @classmethod
     def fas(cls):
+
+
         Inputstr = cls.__pred.preprocess_text(cls.message_text)
         Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
         Inputarr = Inputstr.split(' ')
@@ -27,18 +30,23 @@ class CommandAction(IAction.IAction):
         return Inputstr + ' - пидор.'
 
     @classmethod
-    def calculate(cls):
-        Inputarr = cls.message_text.split(' ')
+    def calculate(cls,):
+
+
+        message_text = (cls.message_text.strip(' ')
+                        .replace('найди ', '')
+                        .replace('поссчитай ', ''))
+        Inputarr = message_text.split(' ')
         c = SympyCalculator.SympyCalculator()
-        if cls.__pr.preprocess_text(Inputarr[0]) == 'производная':
-            output = c.deravative(Inputarr[1], Inputarr[2])
+        if Inputarr[0] == 'производную':
+            output = c.deravative(Inputarr[1], Inputarr[3])
             return output
-        elif cls.__pr.preprocess_text(Inputarr[0]) == 'интеграл':
-            output = c.integrate(Inputarr[1], Inputarr[2])
+        elif Inputarr[0] == 'интеграл':
+            output = c.integrate(Inputarr[1], Inputarr[3])
             return output
         else:
-            outputone = c.deravative(Inputarr[0], Inputarr[1])
-            outputtwo = c.integrate(Inputarr[0], Inputarr[1])
+            outputone = c.deravative(Inputarr[1], Inputarr[3])
+            outputtwo = c.integrate(Inputarr[1], Inputarr[3])
             output = 'производная ' + outputone + ', ' +'интеграл '+ outputtwo
             return output
         message_text = cls.message_text.replace(Inputarr[1].rstrip(), '')
@@ -47,32 +55,45 @@ class CommandAction(IAction.IAction):
         cls.command_flag = 1
         return message_text
 
+
     @classmethod
-    def find(cls, finder):
+    def find(cls):
+
+
         message_text = (cls.message_text.strip(' ')
-                        .replace('находить ', '')
-                        .replace('поссчитать ', '')
-                        .replace('википедия', '')
-                        .replace('google', '')
-                        .replace('гугл', ''))
-        if (message_text.count('производная') > 0) or (message_text.count('интеграл') > 0):
-            message_text = (cls.message_text.strip(' ')
-                            .replace('производная ', '')
-                            .replace('интеграл ', ''))
-            message_text = cls.calculate(message_text)
+                        .replace('найди ', '')
+                        .replace('поссчитай ', ''))
+        if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
+            message_text = cls.calculate()
             cls.command_flag = 1
             return message_text
         else:
-            if finder == 'wikipedia':
+            if (message_text.count('википедии') > 0):
+                message_text = (message_text.strip(' ')
+                                .replace('википедии ', ''))
                 try:
                     apif = WikiFinder.WikiFinder()
-                    finded_list = apif.find(message_text)
+                    finded_list = apif.find(cls.__pr.preprocess_text(message_text))
                     return str(finded_list)
                 except:
                     return "Не нашла"
+            else:
+                try:
+                    bpif = BingFinder.BingFinder()
+                    finded_list = bpif.find(message_text)
+                    outstr = ''
+                    if (finded_list != None):
+                        for outmes in finded_list:
+                            outstr += outmes + ' '
+                    return outstr
+                except Exception as e:
+                    return "Не нашла"
+
 
     @classmethod
     def translate(cls):
+
+
         try:
             message_text = cls.message_text.strip(' ').replace('перевести ', '')
             tr = GoogleTranslator.GoogleTranslator("ru")
@@ -82,6 +103,8 @@ class CommandAction(IAction.IAction):
             return 'Проблемы с сервисом'
     @classmethod
     def weather(cls):
+
+
         try:
             message = cls.message_text.replace('погода ','')
             wp = WeatherPredictor.WetherPredictor(message)
