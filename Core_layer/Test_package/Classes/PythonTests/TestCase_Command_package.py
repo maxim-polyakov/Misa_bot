@@ -19,8 +19,8 @@ class TestCase_API_package(ITestCase.ITestCase):
 
     def test_commandanalyzerf(self):
         command = CommandAnalyzer.CommandAnalyzer(
-            'найди нож', 'test')
-        output = command.analyse(message_text='найди нож')
+            'найди пистолет', 'test')
+        output = command.analyse(message_text='найди пистолет')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzers(self):
