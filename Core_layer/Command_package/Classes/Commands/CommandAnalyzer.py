@@ -28,6 +28,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'поссчитать': str(ac.find()),
                 'находить': str(ac.find())
                 }
+            print(info_dict[chosen_item])
             return info_dict[chosen_item]
         except Exception as e:
             return ''
@@ -55,4 +56,5 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             if (outlist != None):
                 for outmes in outlist:
                     outstr += outmes
+        print(outstr)
         return outstr

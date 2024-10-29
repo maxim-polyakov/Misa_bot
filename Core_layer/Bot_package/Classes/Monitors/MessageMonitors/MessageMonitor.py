@@ -93,6 +93,8 @@ class MessageMonitor(IMonitor.IMonitor):
             if (outlist != None):
                 for outmes in outlist:
                     outstr += outmes
+            print(outstr)
             return outstr.capitalize()
         else:
+            print(outstr)
             return outstr.capitalize()
