@@ -34,5 +34,6 @@ class TestCase_API_package(ITestCase.ITestCase):
             'найди производную x^2 по x', 'test')
         output = command.analyse(message_text='найди производную x^2 по x')
         self.assertNotEqual(output, None)
+
 if __name__ == '__main__':
     unittest.main()

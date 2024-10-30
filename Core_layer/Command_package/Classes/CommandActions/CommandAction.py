@@ -1,7 +1,7 @@
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 from Deep_layer.API_package.Classes.Calculators import SympyCalculator
 from Deep_layer.API_package.Classes.Finders import WikiFinder
-from Deep_layer.API_package.Classes.Finders import BingFinder
+from Deep_layer.API_package.Classes.Finders import GoogleFinder
 from Deep_layer.API_package.Classes.Translators import GoogleTranslator
 from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Core_layer.Command_package.Interfaces import IAction
@@ -79,12 +79,12 @@ class CommandAction(IAction.IAction):
                     return "Не нашла"
             else:
                 try:
-                    bpif = BingFinder.BingFinder()
-                    finded_list = bpif.find(message_text)
+                    gpif = GoogleFinder.GoogleFinder()
+                    finded_list = gpif.find(message_text)
                     outstr = ''
                     if (finded_list != None):
                         for outmes in finded_list:
-                            outstr += outmes + ' '
+                            outstr += outmes + ' \n '
                     return outstr
                 except Exception as e:
                     return "Не нашла"
