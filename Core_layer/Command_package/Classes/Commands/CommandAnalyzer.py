@@ -1,7 +1,7 @@
 from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
 from Core_layer.Command_package.Classes.CommandActions import CommandAction
 from Core_layer.Command_package.Interfaces import IAnalyzer
-
+import logging
 
 class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
