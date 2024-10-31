@@ -17,8 +17,9 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
     @classmethod
     def __action_step(cls, chosen_item, message_text):
+#
+#
         ac = CommandAction.CommandAction(cls.__message, message_text)
-
         try:
             info_dict = {
                 'погода': str(ac.weather()),
@@ -34,6 +35,8 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
     @classmethod
     def __action(cls, message_text):
+#
+#
         outlist = []
         array_of_message_text = message_text.split(' ')
         for word in array_of_message_text:
@@ -43,6 +46,8 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
     @classmethod
     def analyse(cls, message_text):
+#
+#
         outstr = ''
 
         if (message_text.count('.') > 0):
