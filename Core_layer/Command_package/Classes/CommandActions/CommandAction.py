@@ -33,7 +33,7 @@ class CommandAction(IAction.IAction):
             logging.info('The commandaction.fas is done')
             return Inputstr + ' - пидор.'
         except Exception as e:
-            logging.exception(str('The exception in commandaction.fas ' + e))
+            logging.exception(str('The exception in commandaction.fas ' + str(e)))
     @classmethod
     def calculate(cls,):
 #
@@ -66,7 +66,7 @@ class CommandAction(IAction.IAction):
             logging.info('The commandaction.calculate is done')
             return message_text
         except Exception as e:
-            logging.exception(str('The exception in commandaction.calculate ' + e))
+            logging.exception(str('The exception in commandaction.calculate ' + str(e)))
 
     @classmethod
     def find(cls):
@@ -91,7 +91,7 @@ class CommandAction(IAction.IAction):
                     logging.info('The commandaction.find is done')
                     return str(finded_list)
                 except Exception as e:
-                    logging.exception(str('The exception in commandaction.find ' + e))
+                    logging.exception(str('The exception in commandaction.find ' + str(e)))
                     return "Не нашла"
             else:
                 try:
@@ -104,7 +104,7 @@ class CommandAction(IAction.IAction):
                     logging.info('The commandaction.find is done')
                     return outstr
                 except Exception as e:
-                    logging.exception(str('The exception in commandaction.find ' + e))
+                    logging.exception(str('The exception in commandaction.find ' + str(e)))
                     return "Не нашла"
 
 
@@ -120,7 +120,7 @@ class CommandAction(IAction.IAction):
             logging.info('The commandaction.translate is done')
             return translated
         except Exception as e:
-            logging.exception(str('The exception in commandaction.translate ' + e))
+            logging.exception(str('The exception in commandaction.translate ' + str(e)))
             return 'Проблемы с сервисом'
     @classmethod
     def weather(cls):
@@ -135,5 +135,5 @@ class CommandAction(IAction.IAction):
             logging.info('The commandaction.weather is done')
             return out
         except Exception as e:
-            logging.exception(str('The exception in commandaction.weather ' + e))
+            logging.exception(str('The exception in commandaction.weather ' + str(e)))
             return 'Проблемы с сервисом'
