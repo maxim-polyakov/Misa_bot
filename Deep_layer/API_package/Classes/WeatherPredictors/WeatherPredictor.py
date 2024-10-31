@@ -1,7 +1,7 @@
 from Deep_layer.API_package.Interfaces import IWeather
 from Core_layer.Bot_package.Classes.Token import Token
 import requests
-
+import logging
 class WetherPredictor(IWeather.IWeather):
 
     city = None
@@ -11,22 +11,29 @@ class WetherPredictor(IWeather.IWeather):
 
     @classmethod
     def predict(cls):
+#
+#
+        try:
+            tkn = Token.Token()
+            df = tkn.get_token(
+                'select token from assistant_sets.tokens where botname = \'Weather\' and platformname = \'Weather\'')
+            api = df['token'][0]
+            url = 'https://api.openweathermap.org/data/2.5/weather?q=' + cls.city + '&units=metric&lang=ru&appid=' + api
+            # отправляем запрос на сервер и сразу получаем результат
+            weather_data = requests.get(url).json()
+            # получаем данные о температуре и о том, как она ощущается
+            temperature = round(weather_data['main']['temp'])
+            temperature_feels = round(weather_data['main']['feels_like'])
 
-        tkn = Token.Token()
-        df = tkn.get_token(
-            'select token from assistant_sets.tokens where botname = \'Weather\' and platformname = \'Weather\'')
-        api = df['token'][0]
-        url = 'https://api.openweathermap.org/data/2.5/weather?q=' + cls.city + '&units=metric&lang=ru&appid=' + api
-        # отправляем запрос на сервер и сразу получаем результат
-        weather_data = requests.get(url).json()
-        # получаем данные о температуре и о том, как она ощущается
-        temperature = round(weather_data['main']['temp'])
-        temperature_feels = round(weather_data['main']['feels_like'])
+            out = []
+            foutstr = 'Сейчас в городе ' + cls.city + ' ' + str(temperature) + ' °C'
+            soutstr = 'Ощущается как ' + str(temperature_feels) + ' °C'
 
-        out = []
-        foutstr = 'Сейчас в городе ' + cls.city + ' ' + str(temperature) + ' °C'
-        soutstr = 'Ощущается как ' + str(temperature_feels) + ' °C'
-
-        out.append(foutstr)
-        out.append(soutstr)
-        return out
+            out.append(foutstr)
+            out.append(soutstr)
+            logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+            logging.info(str(out))
+            return out
+        except Exception as e:
+            logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+            logging.exception(str('The exception is in WetherPredictor.predict' + e))

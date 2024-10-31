@@ -1,3 +1,4 @@
+import logging
 from Core_layer.Answer_package.Classes import QuestionAnswer, RandomAnswer
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Deep_layer.DB_package.Classes import DB_Communication
@@ -93,8 +94,6 @@ class MessageMonitor(IMonitor.IMonitor):
             if (outlist != None):
                 for outmes in outlist:
                     outstr += outmes
-            print(outstr)
             return outstr.capitalize()
         else:
-            print(outstr)
             return outstr.capitalize()

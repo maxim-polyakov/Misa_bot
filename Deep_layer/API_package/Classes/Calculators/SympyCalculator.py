@@ -1,4 +1,5 @@
 from sympy import *
+import logging
 from Deep_layer.NLP_package.Classes.TextPreprocessers import QuestionPreprocessing as tp
 from Deep_layer.API_package.Interfaces import ICalculator
 
@@ -9,28 +10,32 @@ class SympyCalculator(ICalculator.ICalculator):
 
     @classmethod
     def deravative(cls, inptmes, dx):
-
-
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             inp = cls.__pr.preprocess_text(dx)
             x = Symbol(inp[0])
             y = sympify(str(inptmes))
             yprime = y.diff(x)
             output = str(yprime).replace('**', '^')
+            logging.info(str(output))
             return output
-        except:
-            print('The exception in SympyCalculator.deravative')
+        except Exception as e:
+            logging.exception(str('The exception in SympyCalculator.deravative ' + e))
 
     @classmethod
     def integrate(cls, inptmes, dx):
-
-
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             inp = cls.__pr.preprocess_text(dx)
             x = Symbol(inp[0])
             y = sympify(str(inptmes))
             yprime = y.integrate(x)
             output = str(yprime).replace('**', '^')
+            logging.info(str(output))
             return output
-        except:
-            print('The exception in SympyCalculator.integrate')
+        except Exception as e:
+            logging.exception(str('The exception in SympyCalculator.integrate ' + e))

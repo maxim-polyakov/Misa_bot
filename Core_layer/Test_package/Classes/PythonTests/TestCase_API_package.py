@@ -5,7 +5,7 @@ from Deep_layer.API_package.Classes.Finders import BingFinder as bfind
 from Deep_layer.API_package.Classes.Finders import GoogleFinder as gfind
 from Deep_layer.API_package.Classes.Translators import GoogleTranslator as trans
 from Core_layer.Test_package.Interfases import ITestCase
-
+import logging
 
 class TestCase_API_package(ITestCase.ITestCase):
 
