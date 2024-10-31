@@ -35,4 +35,4 @@ class WetherPredictor(IWeather.IWeather):
             logging.info('The wetherpredictor.predict is done')
             return out
         except Exception as e:
-            logging.exception(str('The exception is in wetherpredictor.predict' + e))
+            logging.exception(str('The exception is in wetherpredictor.predict' + str(e)))

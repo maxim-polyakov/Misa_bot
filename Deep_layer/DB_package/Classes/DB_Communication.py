@@ -27,7 +27,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             df.to_sql(tablename, con=postgr_conn.engine_remote,
                 schema='recognized_sets', index=False, if_exists='append')
         except Exception as e:
-            logging.exception(str('The exception is in db_communication.insert_to ' + e))
+            logging.exception(str('The exception is in db_communication.insert_to ' + str(e)))
 
     @classmethod
     @dispatch(object, int, object, object, object)
@@ -46,7 +46,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             df.to_sql(datatable, con=postgr_conn.engine_remote, schema='validation_sets',
                 index=False, if_exists='append')
         except Exception as e:
-            logging.exception(str('The exception is in db_communication.insert_to ' + e))
+            logging.exception(str('The exception is in db_communication.insert_to ' + str(e)))
 
     @classmethod
     @dispatch(object, object, object, object)
@@ -60,7 +60,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             df.to_sql(datatable, con=postgr_conn.engine_remote, schema=schema,
                 index=False, if_exists='append')
         except Exception as e:
-            logging.exception(str('The exception is in db_communication.insert_to ' + e))
+            logging.exception(str('The exception is in db_communication.insert_to ' + str(e)))
 
     @classmethod
     @dispatch(object, object, object)
@@ -74,7 +74,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             df.to_sql(datatable, con=postgr_conn.engine_remote, schema='assistant_sets',
                 index=False, if_exists='append')
        except Exception as e:
-           logging.exception(str('The exception is in db_communication.insert_to ' + e))
+           logging.exception(str('The exception is in db_communication.insert_to ' + str(e)))
 
     @classmethod
     @dispatch(object, str, str)
@@ -95,7 +95,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             df.to_sql(datatable, con=postgr_conn.engine_remote, schema='assistant_sets',
                         index=False, if_exists='append')
        except Exception as e:
-           logging.exception(str('The exception is in db_communication.insert_to ' + e))
+           logging.exception(str('The exception is in db_communication.insert_to ' + str(e)))
 
     @classmethod
     @dispatch(object, object)
@@ -122,7 +122,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             text.append(lowertext)
             insert('storage', counts, text, 'messtorage')
         except Exception as e:
-            logging.exception(str('The exception is in db_communication.get_data ' + e))
+            logging.exception(str('The exception is in db_communication.get_data ' + str(e)))
 
     @classmethod
     def get_data(cls, select):
@@ -135,7 +135,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             logging.info('The db_communication.get_data is done')
             return df
         except Exception as e:
-            logging.exception(str('The exception is in db_communication.get_data ' + e))
+            logging.exception(str('The exception is in db_communication.get_data ' + str(e)))
 
 
     @classmethod
@@ -152,7 +152,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             logging.info('The db_communication.delete_data is done')
             cur.close()
         except Exception as e:
-            logging.exception(str('The exception is in db_communication.delete_data ' + e))
+            logging.exception(str('The exception is in db_communication.delete_data ' + str(e)))
 
     @classmethod
     def checkcommands(cls, input_string):
@@ -170,7 +170,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             logging.info('The db_communication.checkcommands is done')
             return False
         except Exception as e:
-            logging.exception(str('The exception is in db_communication.checkcommands ' + e))
+            logging.exception(str('The exception is in db_communication.checkcommands ' + str(e)))
 
     @classmethod
     def check(cls, input_string, table):
@@ -191,4 +191,4 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             logging.info(str('The db_communication.check is done'))
             return False
         except Exception as e:
-            logging.exception(str('The exception is in db_communication.check ' + e))
+            logging.exception(str('The exception is in db_communication.check ' + str(e)))

@@ -21,7 +21,7 @@ class CommandPreprocessing(Preprocessing.Preprocessing):
             logging.info('The commandpreprocessing is done')
             return text
         except Exception as e:
-            logging.exception(str('The exception is in commandpreprocessing.preprocess_text ' + e))
+            logging.exception(str('The exception is in commandpreprocessing.preprocess_text ' + str(e)))
 
     @classmethod
     def reversepreprocess_text(cls, text):
@@ -35,4 +35,4 @@ class CommandPreprocessing(Preprocessing.Preprocessing):
             logging.info('The commandpreprocessing.reversepreprocess_text is done')
             return text
         except Exception as e:
-            logging.exception(str('The exception is in commandpreprocessing.reversepreprocess_text ' + e))
+            logging.exception(str('The exception is in commandpreprocessing.reversepreprocess_text ' + str(e)))

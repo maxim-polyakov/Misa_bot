@@ -40,7 +40,7 @@ class GoogleTranslator(ITranslator.ITranslator):
             logging.info('The googletranslator.translate 1  is done')
             return 'Готово'
         except Exception as e:
-            logging.exception(str('The exception is in googletranslator.translate ' + e))
+            logging.exception(str('The exception is in googletranslator.translate ' + str(e)))
 
     @classmethod
     @dispatch(object, object)
@@ -53,4 +53,4 @@ class GoogleTranslator(ITranslator.ITranslator):
             logging.info('The googletranslator.translate 2 is done')
             return tranlated
         except Exception as e:
-            logging.exception(str('The exception is in googletranslatorMes.translate ' + e))
+            logging.exception(str('The exception is in googletranslatorMes.translate ' + str(e)))

@@ -26,4 +26,4 @@ class Gpt(IGpt.IGpt):
             logging.info('The gpt.generate is done')
             return generated_text.replace('\xa0', ' ').replace('\n', '').replace(text, '').replace('—', '')
         except Exception as e:
-            logging.exception(str('The exception is in gpt.generate ' + e))
+            logging.exception(str('The exception is in gpt.generate ' + str(e)))

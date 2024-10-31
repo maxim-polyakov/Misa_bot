@@ -17,4 +17,4 @@ class GoogleFinder(IFinder.IFinder):
             logging.info('The googlefinder.find is done')
             return set(output)
         except Exception as e:
-            logging.exception(str('The exception is in googlefinder.find ' + e))
+            logging.exception(str('The exception is in googlefinder.find ' + str(e)))

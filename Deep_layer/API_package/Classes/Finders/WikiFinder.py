@@ -17,4 +17,4 @@ class WikiFinder(IFinder.IFinder):
             logging.info('The wikifinder is done')
             return return_list[0]
         except Exception as e:
-            logging.exception(str('The exception is in wikifinder.find ' + e))
+            logging.exception(str('The exception is in wikifinder.find ' + str(e)))

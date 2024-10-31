@@ -31,7 +31,7 @@ class CommonPreprocessing(Preprocessing.Preprocessing):
             logging.info('The commonPreprocessing.preprocess_text is done')
             return text
         except Exception as e:
-            logging.exception(str('The exception is in commonpreprocessing.preprocess_text ' + e))
+            logging.exception(str('The exception is in commonpreprocessing.preprocess_text ' + str(e)))
 
     @classmethod
     def reversepreprocess_text(cls, text):
