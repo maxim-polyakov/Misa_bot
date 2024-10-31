@@ -20,7 +20,7 @@ class GoogleTranslator(ITranslator.ITranslator):
 #
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         tranlated = cls._translator.translate(inputText, dest=cls.lang)
-        logging.info(str(tranlated.text))
+        logging.info('The googletranslator.translate internal  is done')
         return tranlated.text
 
     @classmethod
@@ -37,10 +37,10 @@ class GoogleTranslator(ITranslator.ITranslator):
             df['text'] = df['text'].apply(cls._translate)
             dbc = DB_Communication.DB_Communication()
             dbc.insert_to(df, 'translated')
-            logging.info(str('Готово'))
+            logging.info('The googletranslator.translate 1  is done')
             return 'Готово'
         except Exception as e:
-            logging.exception(str('The exception is in GoogleTranslator.translate ' + e))
+            logging.exception(str('The exception is in googletranslator.translate ' + e))
 
     @classmethod
     @dispatch(object, object)
@@ -50,6 +50,7 @@ class GoogleTranslator(ITranslator.ITranslator):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             tranlated = cls._translate(inptmes)
+            logging.info('The googletranslator.translate 2 is done')
             return tranlated
         except Exception as e:
-            logging.exception(str('The exception is in GoogleTranslatorMes.translate' + e))
+            logging.exception(str('The exception is in googletranslatorMes.translate ' + e))

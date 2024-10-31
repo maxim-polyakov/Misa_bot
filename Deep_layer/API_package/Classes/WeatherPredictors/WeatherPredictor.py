@@ -13,6 +13,7 @@ class WetherPredictor(IWeather.IWeather):
     def predict(cls):
 #
 #
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             tkn = Token.Token()
             df = tkn.get_token(
@@ -31,9 +32,7 @@ class WetherPredictor(IWeather.IWeather):
 
             out.append(foutstr)
             out.append(soutstr)
-            logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
-            logging.info(str(out))
+            logging.info('The wetherpredictor.predict is done')
             return out
         except Exception as e:
-            logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
-            logging.exception(str('The exception is in WetherPredictor.predict' + e))
+            logging.exception(str('The exception is in wetherpredictor.predict' + e))

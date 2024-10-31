@@ -1,4 +1,3 @@
-import logging
 from Front_layer import telegram_bot
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorTelegram
 

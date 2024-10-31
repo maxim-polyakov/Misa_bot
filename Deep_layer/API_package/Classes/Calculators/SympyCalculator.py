@@ -19,7 +19,7 @@ class SympyCalculator(ICalculator.ICalculator):
             y = sympify(str(inptmes))
             yprime = y.diff(x)
             output = str(yprime).replace('**', '^')
-            logging.info(str(output))
+            logging.info('The sympyCalculator.deravative is done')
             return output
         except Exception as e:
             logging.exception(str('The exception in SympyCalculator.deravative ' + e))
@@ -35,7 +35,7 @@ class SympyCalculator(ICalculator.ICalculator):
             y = sympify(str(inptmes))
             yprime = y.integrate(x)
             output = str(yprime).replace('**', '^')
-            logging.info(str(output))
+            logging.info('The sympycalculator.integrate is done')
             return output
         except Exception as e:
-            logging.exception(str('The exception in SympyCalculator.integrate ' + e))
+            logging.exception(str('The exception in sympycalculator.integrate ' + e))

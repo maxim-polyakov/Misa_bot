@@ -1,5 +1,6 @@
 from nltk.corpus import stopwords
 from string import punctuation
+import logging
 from Deep_layer.NLP_package.Interfaces import IPreprocessing
 
 
@@ -7,6 +8,9 @@ class Preprocessing(IPreprocessing.IPreprocessing):
 
     @classmethod
     def preprocess_text(cls, text):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             tokens = str(text)
             tokens = text.lower().split(' ')
@@ -16,9 +20,10 @@ class Preprocessing(IPreprocessing.IPreprocessing):
 
             text = " ".join(tokens).rstrip('\n')
             text = text.replace('  ', ' ')
+            logging.info('The preprocessing.preprocess_text is done')
             return text
-        except:
-            return 'The exception is in Preprocessing.preprocess_text'
+        except Exception as e:
+            logging.exception(str('The exception is in preprocessing.preprocess_text ' + e))
 
     @classmethod
     def reversepreprocess_text(cls,text):

@@ -1,6 +1,7 @@
 from nltk.corpus import stopwords
 from pymystem3 import Mystem
 import re
+import logging
 from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 
 
@@ -8,6 +9,9 @@ class QuestionPreprocessing(Preprocessing.Preprocessing):
 
     @classmethod
     def preprocess_text(cls, text):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             tokens = str(text).split(' ')
             tokens = Mystem().lemmatize(text.lower())
@@ -16,9 +20,10 @@ class QuestionPreprocessing(Preprocessing.Preprocessing):
             text = re.sub('[!@#$-><%^&*()_=+/\|:;~,.]', '', text)
             text = re.sub('  ', ' ', text)
             text = text.replace(' ? ', '?')
+            logging.info('The questionpreprocessing.preprocess_text is done')
             return text
-        except:
-            return 'The exception is in QuestionPreprocessing.preprocess_text'
+        except Exception as e:
+            logging.exception(str('The exception is in preprocessing.preprocess_text ' + e))
 
     @classmethod
     def reversepreprocess_text(cls, text):
@@ -29,6 +34,7 @@ class QuestionPreprocessing(Preprocessing.Preprocessing):
                       and (token != ' ' or token == '?')]
             text = ' '.join(tokens).rstrip('\n')
             text = re.sub('  ', ' ', text)
+            logging.info('The questionpreprocessing.reversepreprocess_text is done')
             return text
-        except:
-            return 'The exception is in QuestionPreprocessing.reversepreprocess_text'
+        except Exception as e:
+            logging.exception(str('The exception is in preprocessing.reversepreprocess_text ' + e))

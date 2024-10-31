@@ -14,7 +14,7 @@ class GoogleFinder(IFinder.IFinder):
 
             for outex in outlist:
                 output.append(str(outex.title) + ' ' + str(outex.url))
-            logging.info(str(set(output)))
+            logging.info('The googlefinder.find is done')
             return set(output)
         except Exception as e:
-            logging.exception(str('The exception is in GoogleFinder.find' + e))
+            logging.exception(str('The exception is in googlefinder.find ' + e))

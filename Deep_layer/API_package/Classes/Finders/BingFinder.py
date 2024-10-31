@@ -23,8 +23,7 @@ class BingFinder(IFinder.IFinder):
                 link = result.find('a')['href']
                 output.append(str(counter) + ' ' + str(title) + ' ' + str(link))
 
-
-            logging.info(str(output))
+            logging.info('The bingfinder.find is done')
             return output
         except Exception as e:
-            logging.exception(str('The exception is in BingFinder.find' + e))
+            logging.exception(str('The exception is in bingfinder.find ' + e))
