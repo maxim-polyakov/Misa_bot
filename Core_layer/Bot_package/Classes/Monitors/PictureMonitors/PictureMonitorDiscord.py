@@ -1,7 +1,7 @@
-from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonitor
-import cv2
 import os
 import requests
+import logging
+from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonitor
 
 class PictureMonitorDiscord(PictureMonitor.PictureMonitor):
     """
@@ -14,29 +14,33 @@ class PictureMonitorDiscord(PictureMonitor.PictureMonitor):
 
     @classmethod
     def monitor(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            if len(cls.message.attachments) > 0:
+                attachment = cls.message.attachments[0]
 
+                if (
+                        attachment.filename.endswith(".jpg")
+                        or attachment.filename.endswith(".jpeg")
+                        or attachment.filename.endswith(".png")
+                        or attachment.filename.endswith(".webp")
+                        or attachment.filename.endswith(".gif")
+                ):
+                    if not os.path.isdir("photos"):
+                        os.mkdir("photos")
 
-        if len(cls.message.attachments) > 0:
-            attachment = cls.message.attachments[0]
+                    total_con = os.listdir('photos')
 
-            if (
-                    attachment.filename.endswith(".jpg")
-                    or attachment.filename.endswith(".jpeg")
-                    or attachment.filename.endswith(".png")
-                    or attachment.filename.endswith(".webp")
-                    or attachment.filename.endswith(".gif")
-            ):
-                if not os.path.isdir("photos"):
-                    os.mkdir("photos")
+                    count = len(total_con)
 
-                total_con = os.listdir('photos')
-
-                count = len(total_con)
-
-                img_data = requests.get(attachment.url).content
-                file = "photos/file_" + str(count) + ".jpg"
-                tmp = "file_" + str(count) + ".jpg"
-                with open(file, "wb") as handler:
-                    handler.write(img_data)
-
-                return super().monitor(file, tmp)
+                    img_data = requests.get(attachment.url).content
+                    file = "photos/file_" + str(count) + ".jpg"
+                    tmp = "file_" + str(count) + ".jpg"
+                    with open(file, "wb") as handler:
+                        handler.write(img_data)
+                    logging.info('The picturemonitordiscord.monitor is done')
+                    return super().monitor(file, tmp)
+        except Exception as e:
+            logging.exception(str('The exception in picturemonitordiscord.monitor ' + str(e)))
