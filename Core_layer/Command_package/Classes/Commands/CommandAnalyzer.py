@@ -37,27 +37,37 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
     def __action(cls, message_text):
 #
 #
-        outlist = []
-        array_of_message_text = message_text.split(' ')
-        for word in array_of_message_text:
-            outlist.append(cls.__action_step(cls.__pr.preprocess_text(word), message_text))
-        outlist = list(set(outlist))
-        return outlist
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            outlist = []
+            array_of_message_text = message_text.split(' ')
+            for word in array_of_message_text:
+                outlist.append(cls.__action_step(cls.__pr.preprocess_text(word), message_text))
+            outlist = list(set(outlist))
+            logging.info('The commandanalyzer.__action is done')
+            return outlist
+        except Exception as e:
+            logging.exception(str('The exception in commandanalyzer.__action ' + str(e)))
+
 
     @classmethod
     def analyse(cls, message_text):
 #
 #
-        outstr = ''
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            outstr = ''
 
-        if (message_text.count('.') > 0):
-            word_arr = message_text.split('. ')
-        else:
-            word_arr = message_text.split(', ')
-
-        for word in word_arr:
-            outlist = cls.__action(word)
-            if (outlist != None):
-                for outmes in outlist:
-                    outstr += outmes
-        return outstr
+            if (message_text.count('.') > 0):
+                word_arr = message_text.split('. ')
+            else:
+                word_arr = message_text.split(', ')
+            for word in word_arr:
+                outlist = cls.__action(word)
+                if (outlist != None):
+                    for outmes in outlist:
+                        outstr += outmes
+            logging.info('The commandanalyzer.analyse is done')
+            return outstr
+        except Exception as e:
+            logging.exception(str('The exception in commandanalyzer.analyse ' + str(e)))

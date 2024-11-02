@@ -22,7 +22,7 @@ class SympyCalculator(ICalculator.ICalculator):
             logging.info('The sympyCalculator.deravative is done')
             return output
         except Exception as e:
-            logging.exception(str('The exception in SympyCalculator.deravative ' + str(e)))
+            logging.exception(str('The exception in sympycalculator.deravative ' + str(e)))
 
     @classmethod
     def integrate(cls, inptmes, dx):
