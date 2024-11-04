@@ -1,11 +1,12 @@
+import logging
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 from Deep_layer.API_package.Classes.Calculators import SympyCalculator
 from Deep_layer.API_package.Classes.Finders import WikiFinder
 from Deep_layer.API_package.Classes.Finders import GoogleFinder
 from Deep_layer.API_package.Classes.Translators import GoogleTranslator
 from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
+from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import SongsMonitor
 from Core_layer.Command_package.Interfaces import IAction
-import logging
 
 class CommandAction(IAction.IAction):
     boto = None
@@ -34,6 +35,7 @@ class CommandAction(IAction.IAction):
             return Inputstr + ' - пидор.'
         except Exception as e:
             logging.exception(str('The exception in commandaction.fas ' + str(e)))
+
     @classmethod
     def calculate(cls,):
 #
@@ -107,7 +109,6 @@ class CommandAction(IAction.IAction):
                     logging.exception(str('The exception in commandaction.find ' + str(e)))
                     return "Не нашла"
 
-
     @classmethod
     def translate(cls):
 #
@@ -122,6 +123,7 @@ class CommandAction(IAction.IAction):
         except Exception as e:
             logging.exception(str('The exception in commandaction.translate ' + str(e)))
             return 'Проблемы с сервисом'
+
     @classmethod
     def weather(cls):
 #
@@ -137,3 +139,14 @@ class CommandAction(IAction.IAction):
         except Exception as e:
             logging.exception(str('The exception in commandaction.weather ' + str(e)))
             return 'Проблемы с сервисом'
+
+    @classmethod
+    def say(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            message_text = cls.message_text.replace('скажи ', '')
+            return message_text
+        except Exception as e:
+            logging.exception(str('The exception in commandaction.say ' + str(e)))

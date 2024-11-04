@@ -27,7 +27,8 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'фас': str(ac.fas()),
                 'перевести': str(ac.translate()),
                 'поссчитать': str(ac.find()),
-                'находить': str(ac.find())
+                'находить': str(ac.find()),
+                'сказать': str(ac.say())
                 }
             return info_dict[chosen_item]
         except Exception as e:
