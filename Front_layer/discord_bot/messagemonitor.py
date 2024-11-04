@@ -12,16 +12,19 @@ async def on_message(message):
     """
 
     if message.author != discord_bot.bot.user:
+        isCommand = False
         mmon = MessageMonitorDiscord.MessageMonitorDiscord(message)
         pmon = PictureMonitorDiscord.PictureMonitorDiscord(message)
         tmon = TextMonitorDiscord.TextMonitorDiscord(message)
-
-        try:
+        voice_client = None
+        if (mmon.check(message.content)):
+            isCommand = True
+        else:
             lowertext = message.content.lower()
             if lowertext.count('миса') >0:
-                await tmon.join(message)
-        except:
-            pass
+                voice_client = await tmon.join(message)
+
+
         photo = pmon.monitor()
         outstr = mmon.monitor()
 
@@ -29,13 +32,14 @@ async def on_message(message):
         if photo != None:
             await message.channel.send(file=discord_bot.discord.File(photo))
         else:
-            try:
-                await tmon.monitor(outstr)
-            except:
-                try:
+            if(isCommand):
+                await message.channel.send(outstr)
+            else:
+                if(voice_client != None):
+                    await tmon.monitor(outstr)
+                else:
                     await message.channel.send(outstr)
-                except:
-                    pass
+
 
 
 

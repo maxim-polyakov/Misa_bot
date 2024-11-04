@@ -24,6 +24,7 @@ class TextMonitor(IMonitor.IMonitor):
         try:
             voice_client = await message.author.voice.channel.connect(timeout=500, reconnect=True)
             cls.voice_clients[voice_client.guild.id] = voice_client
+            return cls.voice_clients[voice_client.guild.id]
             logging.info('The textmonitor.join is done')
         except Exception as e:
             logging.exception(str('The exception in textmonitor.join ' + str(e)))

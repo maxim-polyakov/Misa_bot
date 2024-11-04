@@ -83,6 +83,16 @@ class MessageMonitor(IMonitor.IMonitor):
             logging.exception(str('The exception in messagemonitor._neurodesc ' + str(e)))
 
     @classmethod
+    def check(cls, text_message):
+        if (cls._dbc.checkcommands(text_message)):
+            return True
+        else:
+            return False
+
+
+
+
+    @classmethod
     def monitor(cls, message, command, pltype):
 #
 #
