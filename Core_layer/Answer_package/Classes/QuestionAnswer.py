@@ -3,6 +3,7 @@ import logging
 from Core_layer.Answer_package.Interfaces import IAnswer
 from Deep_layer.NLP_package.Classes.GPT import Gpt
 
+
 class QuestionAnswer(IAnswer.IAnswer):
     """
 

@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
 
-class ICalculator(ABC):
 
+class ICalculator(ABC):
+    """
+
+    """
     @abstractmethod
     def deravative(cls, boto, message, inptmes, dx):
         pass
