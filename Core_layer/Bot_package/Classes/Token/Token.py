@@ -8,10 +8,12 @@ class Token(IToken.IToken):
     This class describes object of taking monitors from a database
 
     """
+    __dbc = DB_Communication.DB_Communication()
+
     @classmethod
     def add_token(cls, token):
-        DB_Communication.DB_Communication.insert_to(str(token), 'tokens')
+        cls.__dbc.insert_to(str(token), 'tokens')
 
     @classmethod
     def get_token(cls, select):
-        return DB_Communication.DB_Communication.get_data(select)
+        return cls.__dbc.get_data(select)
