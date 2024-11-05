@@ -1,6 +1,8 @@
 import logging
 import os
 from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonitor
+
+
 class PictureMonitorTelegram(PictureMonitor.PictureMonitor):
     """
 

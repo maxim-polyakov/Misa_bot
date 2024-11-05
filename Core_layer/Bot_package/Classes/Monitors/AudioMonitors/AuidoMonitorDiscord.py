@@ -1,11 +1,12 @@
 import discord
-from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import AudioMonitor
-from discord.sinks import WaveSink
-import pydub
-import logging
-from vosk import Model, KaldiRecognizer, SetLogLevel
 import wave
 import json
+import pydub
+import logging
+from discord.sinks import WaveSink
+from vosk import Model, KaldiRecognizer, SetLogLevel
+from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import AudioMonitor
+
 
 class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
     """

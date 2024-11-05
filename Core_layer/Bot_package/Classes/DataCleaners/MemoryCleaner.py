@@ -1,10 +1,13 @@
 import logging
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Bot_package.Interfaces import ICleaner
+from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 
 
 class MemoryCleaner(ICleaner.ICleaner):
+    """
+
+    """
     __pr = CommonPreprocessing.CommonPreprocessing()
     dbname = None
 

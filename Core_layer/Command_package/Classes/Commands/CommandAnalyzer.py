@@ -1,10 +1,13 @@
-from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
-from Core_layer.Command_package.Classes.CommandActions import CommandAction
-from Core_layer.Command_package.Interfaces import IAnalyzer
 import logging
+from Core_layer.Command_package.Interfaces import IAnalyzer
+from Core_layer.Command_package.Classes.CommandActions import CommandAction
+from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
+
 
 class CommandAnalyzer(IAnalyzer.IAnalyzer):
+    """
 
+    """
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
     __cpr = CommandPreprocessing.CommandPreprocessing()
@@ -28,7 +31,8 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'перевести': str(ac.translate()),
                 'поссчитать': str(ac.find()),
                 'находить': str(ac.find()),
-                'сказать': str(ac.say())
+                'сказать': str(ac.say()),
+                'поздороваться':str(ac.sayhi())
                 }
             return info_dict[chosen_item]
         except Exception as e:

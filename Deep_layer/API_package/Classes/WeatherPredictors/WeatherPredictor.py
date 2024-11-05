@@ -1,9 +1,13 @@
-from Deep_layer.API_package.Interfaces import IWeather
-from Core_layer.Bot_package.Classes.Token import Token
 import requests
 import logging
-class WetherPredictor(IWeather.IWeather):
+from Deep_layer.API_package.Interfaces import IWeather
+from Core_layer.Bot_package.Classes.Token import Token
 
+
+class WetherPredictor(IWeather.IWeather):
+    """
+
+    """
     city = None
 
     def __init__(self, city):

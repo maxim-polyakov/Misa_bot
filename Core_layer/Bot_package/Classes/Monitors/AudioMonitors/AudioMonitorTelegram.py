@@ -2,6 +2,7 @@ import soundfile
 import logging
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import AudioMonitor
 
+
 class AudioMonitorTelegram(AudioMonitor.AudioMonitor):
     """
 

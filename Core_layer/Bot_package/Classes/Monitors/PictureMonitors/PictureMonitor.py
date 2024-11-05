@@ -1,8 +1,8 @@
-from Core_layer.Bot_package.Interfaces import IMonitor
 import cv2
 import os
 import logging
-import requests
+from Core_layer.Bot_package.Interfaces import IMonitor
+
 
 class PictureMonitor(IMonitor.IMonitor):
     """

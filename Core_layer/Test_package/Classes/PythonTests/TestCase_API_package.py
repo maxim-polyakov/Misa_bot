@@ -5,10 +5,14 @@ from Deep_layer.API_package.Classes.Finders import BingFinder as bfind
 from Deep_layer.API_package.Classes.Finders import GoogleFinder as gfind
 from Deep_layer.API_package.Classes.Translators import GoogleTranslator as trans
 from Core_layer.Test_package.Interfases import ITestCase
-import logging
+
 
 class TestCase_API_package(ITestCase.ITestCase):
+    """
 
+    This class is written for testing entityes of system
+
+    """
     math = calc.SympyCalculator()
     found = find.WikiFinder()
     traslated = trans.GoogleTranslator("ru")

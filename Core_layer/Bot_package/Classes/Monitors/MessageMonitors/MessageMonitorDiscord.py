@@ -1,6 +1,7 @@
 from Core_layer.Command_package.Classes.Commands import CommandAnalyzer
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitor
 
+
 class MessageMonitorDiscord(MessageMonitor.MessageMonitor):
     """
 

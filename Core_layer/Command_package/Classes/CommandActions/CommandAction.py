@@ -1,14 +1,18 @@
 import logging
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
-from Deep_layer.API_package.Classes.Calculators import SympyCalculator
+from Core_layer.Answer_package.Classes import RandomAnswer
+from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.API_package.Classes.Finders import WikiFinder
 from Deep_layer.API_package.Classes.Finders import GoogleFinder
+from Deep_layer.API_package.Classes.Calculators import SympyCalculator
 from Deep_layer.API_package.Classes.Translators import GoogleTranslator
 from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
-from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import SongsMonitor
-from Core_layer.Command_package.Interfaces import IAction
+from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
+
 
 class CommandAction(IAction.IAction):
+    """
+
+    """
     boto = None
     message = None
     message_text = None
@@ -150,5 +154,17 @@ class CommandAction(IAction.IAction):
         try:
             message_text = cls.message_text.replace('скажи ', '')
             return message_text
+        except Exception as e:
+            logging.exception(str('The exception in commandaction.say ' + str(e)))
+
+    @classmethod
+    def sayhi(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+
+            ra = RandomAnswer.RandomAnswer()
+            return str(ra.answer('hianswer')) + ' '
         except Exception as e:
             logging.exception(str('The exception in commandaction.say ' + str(e)))

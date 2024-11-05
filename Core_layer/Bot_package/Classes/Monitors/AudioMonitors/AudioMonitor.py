@@ -4,6 +4,7 @@ import logging
 from vosk import Model, KaldiRecognizer, SetLogLevel
 from Core_layer.Bot_package.Interfaces import IMonitor
 
+
 class AudioMonitor(IMonitor.IMonitor):
     """
 

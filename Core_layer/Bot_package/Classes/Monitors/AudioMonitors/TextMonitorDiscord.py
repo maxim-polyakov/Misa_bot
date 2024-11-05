@@ -1,6 +1,7 @@
 import torch
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import TextMonitor
 
+
 class TextMonitorDiscord(TextMonitor.TextMonitor):
     """
 

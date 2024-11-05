@@ -3,6 +3,7 @@ import requests
 import logging
 from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonitor
 
+
 class PictureMonitorDiscord(PictureMonitor.PictureMonitor):
     """
 

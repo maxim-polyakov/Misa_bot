@@ -9,8 +9,6 @@ class RandomAnswer(IAnswer.IAnswer):
     Summary
 
     """
-
-
     @classmethod
     def answer(cls, text):
 #

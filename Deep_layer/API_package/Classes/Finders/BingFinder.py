@@ -1,11 +1,14 @@
-import wikipedia as w
-from Deep_layer.API_package.Interfaces import IFinder
 import requests
 import logging
+import wikipedia as w
 from bs4 import BeautifulSoup
+from Deep_layer.API_package.Interfaces import IFinder
+
 
 class BingFinder(IFinder.IFinder):
+    """
 
+    """
     @classmethod
     def find(cls, message_text):
 

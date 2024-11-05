@@ -1,11 +1,13 @@
-from sympy import *
 import logging
-from Deep_layer.NLP_package.Classes.TextPreprocessers import QuestionPreprocessing as tp
+from sympy import *
 from Deep_layer.API_package.Interfaces import ICalculator
+from Deep_layer.NLP_package.Classes.TextPreprocessers import QuestionPreprocessing as tp
 
 
 class SympyCalculator(ICalculator.ICalculator):
+    """
 
+    """
     __pr = tp.QuestionPreprocessing()
 
     @classmethod

@@ -1,8 +1,8 @@
 import logging
-from Core_layer.Answer_package.Classes import QuestionAnswer, RandomAnswer
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Bot_package.Interfaces import IMonitor
+from Core_layer.Answer_package.Classes import QuestionAnswer, RandomAnswer
+from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 
 
 class MessageMonitor(IMonitor.IMonitor):

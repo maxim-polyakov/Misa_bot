@@ -1,14 +1,15 @@
-import pandas as pd
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
-from multipledispatch import dispatch
-from Deep_layer.DB_package.Inerfaces import IDB_Communication
-from Deep_layer.DB_package.Classes import Connections
-import psycopg2
 import logging
+import pandas as pd
+from multipledispatch import dispatch
+from Deep_layer.DB_package.Classes import Connections
+from Deep_layer.DB_package.Inerfaces import IDB_Communication
+from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 
 
 class DB_Communication(IDB_Communication.IDB_Communication):
+    """
 
+    """
     @classmethod
     @dispatch(object, object, object, object, object, object, object)
     def insert_to(cls, text, tablename, string, agenda, classification, classtype):
@@ -136,7 +137,6 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             return df
         except Exception as e:
             logging.exception(str('The exception is in db_communication.get_data ' + str(e)))
-
 
     @classmethod
     def delete_data(cls, delete):

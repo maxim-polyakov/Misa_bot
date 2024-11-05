@@ -1,9 +1,13 @@
-import wikipedia as w
-from Deep_layer.API_package.Interfaces import IFinder
-from googlesearch import search
 import logging
-class GoogleFinder(IFinder.IFinder):
+import wikipedia as w
+from googlesearch import search
+from Deep_layer.API_package.Interfaces import IFinder
 
+
+class GoogleFinder(IFinder.IFinder):
+    """
+
+    """
     @classmethod
     def find(cls, message_text):
 

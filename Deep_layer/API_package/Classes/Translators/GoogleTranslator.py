@@ -1,19 +1,20 @@
-from googletrans import Translator
 import pandas as pd
 import logging
-from Deep_layer.DB_package.Classes import DB_Communication
+from googletrans import Translator
 from multipledispatch import dispatch
 from Deep_layer.API_package.Interfaces import ITranslator
+from Deep_layer.DB_package.Classes import DB_Communication
 
 
 class GoogleTranslator(ITranslator.ITranslator):
+    """
 
+    """
     _translator = Translator()
 
     lang = 'ru'
     def __init__(self, lang,):
         GoogleTranslator.lang = lang
-
     @classmethod
     def _translate(cls, inputText):
 #
@@ -22,7 +23,6 @@ class GoogleTranslator(ITranslator.ITranslator):
         tranlated = cls._translator.translate(inputText, dest=cls.lang)
         logging.info('The googletranslator.translate internal  is done')
         return tranlated.text
-
     @classmethod
     @dispatch(object, object, object)
     def translate(cls, dataselect, insertdtname):
@@ -41,7 +41,6 @@ class GoogleTranslator(ITranslator.ITranslator):
             return 'Готово'
         except Exception as e:
             logging.exception(str('The exception is in googletranslator.translate ' + str(e)))
-
     @classmethod
     @dispatch(object, object)
     def translate(cls, inptmes):

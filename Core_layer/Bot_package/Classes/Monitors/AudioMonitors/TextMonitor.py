@@ -5,6 +5,7 @@ import os
 import logging
 from Core_layer.Bot_package.Interfaces import IMonitor
 
+
 class TextMonitor(IMonitor.IMonitor):
     """
 
