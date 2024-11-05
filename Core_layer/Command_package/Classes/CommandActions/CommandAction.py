@@ -133,9 +133,11 @@ class CommandAction(IAction.IAction):
             message = cls.message_text.replace('погода ','')
             wp = WeatherPredictor.WetherPredictor(message)
             res = wp.predict()
-            out = str(res[0] + '. ' + res[1])
+            if res != None:
+                out = str(res[0] + '. ' + res[1])
+                logging.info('The commandaction.weather is done')
+                return out
             logging.info('The commandaction.weather is done')
-            return out
         except Exception as e:
             logging.exception(str('The exception in commandaction.weather ' + str(e)))
             return 'Проблемы с сервисом'
