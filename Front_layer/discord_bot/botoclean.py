@@ -1,6 +1,7 @@
 from Front_layer import discord_bot
 from Core_layer.Bot_package.Classes.DataCleaners import MemoryCleaner
 
+
 @discord_bot.bot.command(name='clean', help='To play song')
 async def clean(message, table):
     name = message.message.author.name

@@ -1,5 +1,5 @@
+from asyncio import sleep
 from Front_layer import discord_bot
-from asyncio import sleep #не забываем
 
 
 @discord_bot.bot.event

@@ -4,6 +4,7 @@ from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonit
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import TextMonitorDiscord
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import SongsMonitor
 
+
 @discord_bot.bot.listen()
 async def on_message(message):
 

@@ -1,6 +1,7 @@
 from Front_layer import discord_bot
 from Core_layer.Command_package.Classes.CommandActions import CommandAction
 
+
 @discord_bot.bot.command(name='calculate', help='To play song')
 async def calculate(message, fsubject = 'x', ssubject = 'x'):
     name = message.message.author.name

@@ -2,6 +2,7 @@ from Front_layer import telegram_bot
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import AudioMonitorTelegram
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorVoice
 
+
 @telegram_bot.dp.message_handler(content_types=['voice'])
 async def download_photo(message):
     file_info = await telegram_bot.boto.get_file(message.voice.file_id)
