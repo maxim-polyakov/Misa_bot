@@ -54,7 +54,6 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         except Exception as e:
             logging.exception(str('The exception in commandanalyzer.__action ' + str(e)))
 
-
     @classmethod
     def analyse(cls, message_text):
 #
