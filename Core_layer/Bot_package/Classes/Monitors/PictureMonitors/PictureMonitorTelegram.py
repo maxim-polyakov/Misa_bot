@@ -6,7 +6,7 @@ from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonit
 class PictureMonitorTelegram(PictureMonitor.PictureMonitor):
     """
 
-    Summary
+    It is child of picture monitor for telegram
 
     """
     def __init__(self, message):

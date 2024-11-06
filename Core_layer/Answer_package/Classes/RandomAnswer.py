@@ -7,7 +7,7 @@ from Deep_layer.DB_package.Classes import DB_Communication
 class RandomAnswer(IAnswer.IAnswer):
     """
 
-    Summary
+    It is class for random answering on messanges
 
     """
     @classmethod

@@ -11,7 +11,7 @@ from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import AudioMonitor
 class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
     """
 
-    Summary
+    It is a child of audio monitor for discord
 
     """
 

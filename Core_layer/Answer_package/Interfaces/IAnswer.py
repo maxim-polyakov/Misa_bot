@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 
 
 class IAnswer(ABC):
-    ("""
-    
     """
-    @abstractmethod)
+    Its entity of answering
+    """
+    @abstractmethod
     def answer(self):
         pass

@@ -11,7 +11,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 
 class CommandAction(IAction.IAction):
     """
-
+    It is class for comand's actions
     """
     boto = None
     message = None

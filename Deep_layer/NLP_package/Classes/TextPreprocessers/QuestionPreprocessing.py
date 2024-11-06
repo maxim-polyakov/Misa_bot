@@ -7,7 +7,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 
 class QuestionPreprocessing(Preprocessing.Preprocessing):
     """
-
+    It is a preprocessing of questions
     """
     @classmethod
     def preprocess_text(cls, text):

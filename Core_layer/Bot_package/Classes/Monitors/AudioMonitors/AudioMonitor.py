@@ -8,7 +8,7 @@ from Core_layer.Bot_package.Interfaces import IMonitor
 class AudioMonitor(IMonitor.IMonitor):
     """
 
-    Summary
+    This is a monitor for speach recognition
 
     """
     @classmethod

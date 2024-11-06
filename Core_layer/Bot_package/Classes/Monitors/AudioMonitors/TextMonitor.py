@@ -9,7 +9,7 @@ from Core_layer.Bot_package.Interfaces import IMonitor
 class TextMonitor(IMonitor.IMonitor):
     """
 
-    Summary
+    It is class for speaking
 
     """
 

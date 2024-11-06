@@ -8,7 +8,7 @@ from Deep_layer.DB_package.Classes import DB_Communication
 
 class GoogleTranslator(ITranslator.ITranslator):
     """
-
+    It is google translator class
     """
     _translator = Translator()
 

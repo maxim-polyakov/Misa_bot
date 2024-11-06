@@ -6,7 +6,7 @@ from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import AudioMonitor
 class AudioMonitorTelegram(AudioMonitor.AudioMonitor):
     """
 
-    Summary
+    It is a child of audio monitor for telegram
 
     """
     @classmethod

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class ICalculator(ABC):
     """
-
+    It is entyti of calculator
     """
     @abstractmethod
     def deravative(cls, boto, message, inptmes, dx):

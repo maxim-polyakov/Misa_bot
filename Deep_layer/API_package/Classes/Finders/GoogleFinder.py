@@ -6,7 +6,7 @@ from Deep_layer.API_package.Interfaces import IFinder
 
 class GoogleFinder(IFinder.IFinder):
     """
-
+    It is google finder class
     """
     @classmethod
     def find(cls, message_text):

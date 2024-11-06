@@ -7,7 +7,7 @@ DEVICE = torch.device('cpu')
 
 class Gpt(IGpt.IGpt):
     """
-
+    It is a gpt text generator
     """
     @classmethod
     def generate(cls, text):

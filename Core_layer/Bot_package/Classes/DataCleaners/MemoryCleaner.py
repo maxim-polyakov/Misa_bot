@@ -6,7 +6,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 
 class MemoryCleaner(ICleaner.ICleaner):
     """
-
+    It is class for cleaning the memory
     """
     __pr = CommonPreprocessing.CommonPreprocessing()
     dbname = None

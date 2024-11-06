@@ -7,7 +7,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 
 class CommandPreprocessing(Preprocessing.Preprocessing):
     """
-
+    It is a common preprocessing of commands
     """
     @classmethod
     def preprocess_text(cls, text):

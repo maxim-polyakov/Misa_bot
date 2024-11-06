@@ -7,7 +7,7 @@ from Deep_layer.NLP_package.Classes.GPT import Gpt
 class QuestionAnswer(IAnswer.IAnswer):
     """
 
-    Summary
+    It is class for question answering
 
     """
     __gpt = Gpt.Gpt

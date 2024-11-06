@@ -7,7 +7,7 @@ from Deep_layer.API_package.Interfaces import IFinder
 
 class BingFinder(IFinder.IFinder):
     """
-
+    It is the bing finder class
     """
     @classmethod
     def find(cls, message_text):

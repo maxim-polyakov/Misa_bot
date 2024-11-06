@@ -6,7 +6,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, Comm
 
 class CommandAnalyzer(IAnalyzer.IAnalyzer):
     """
-
+    It is command analyzer
     """
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()

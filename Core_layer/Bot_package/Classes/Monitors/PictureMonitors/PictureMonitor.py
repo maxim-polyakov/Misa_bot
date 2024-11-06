@@ -7,7 +7,7 @@ from Core_layer.Bot_package.Interfaces import IMonitor
 class PictureMonitor(IMonitor.IMonitor):
     """
 
-    Summary
+    It is class for picture processing
 
     """
     def __init__(self, message):

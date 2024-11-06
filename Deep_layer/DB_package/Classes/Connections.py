@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 class PostgresConnection:
     """
 
-    Summary
+    It is connection class
 
     """
     def __init__(self):

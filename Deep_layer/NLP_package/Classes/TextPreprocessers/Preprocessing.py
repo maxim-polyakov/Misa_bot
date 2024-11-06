@@ -6,7 +6,7 @@ from Deep_layer.NLP_package.Interfaces import IPreprocessing
 
 class Preprocessing(IPreprocessing.IPreprocessing):
     """
-
+    It is a main preprocessing
     """
     @classmethod
     def preprocess_text(cls, text):

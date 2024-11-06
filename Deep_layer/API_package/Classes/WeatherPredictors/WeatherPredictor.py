@@ -6,7 +6,7 @@ from Core_layer.Bot_package.Classes.Token import Token
 
 class WetherPredictor(IWeather.IWeather):
     """
-
+    It is weather prediction class
     """
     city = None
 

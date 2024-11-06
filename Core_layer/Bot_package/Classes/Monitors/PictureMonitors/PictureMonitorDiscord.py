@@ -7,7 +7,7 @@ from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonit
 class PictureMonitorDiscord(PictureMonitor.PictureMonitor):
     """
 
-    Summary
+    It is child of picture monitor for discord
 
     """
     def __init__(self, message):

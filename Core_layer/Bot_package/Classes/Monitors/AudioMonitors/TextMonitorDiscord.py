@@ -5,7 +5,7 @@ from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import TextMonitor
 class TextMonitorDiscord(TextMonitor.TextMonitor):
     """
 
-    Summary
+    It is a child of text monitor for discord
 
     """
     def __init__(self, message):

@@ -8,7 +8,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing
 
 class CommonPreprocessing(Preprocessing.Preprocessing):
     """
-
+    It is a common preprocessing of sentences
     """
     @classmethod
     def preprocess_text(cls, text):

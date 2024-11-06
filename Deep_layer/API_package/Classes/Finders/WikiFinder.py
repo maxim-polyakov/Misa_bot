@@ -5,7 +5,7 @@ from Deep_layer.API_package.Interfaces import IFinder
 
 class WikiFinder(IFinder.IFinder):
     """
-
+    it is wiki finder class
     """
     @classmethod
     def find(cls, inptmes):

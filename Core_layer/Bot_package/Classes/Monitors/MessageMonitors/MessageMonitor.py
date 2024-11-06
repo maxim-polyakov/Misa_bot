@@ -7,7 +7,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 
 class MessageMonitor(IMonitor.IMonitor):
     """
-
+    It is class for messaging
     """
     _pr = CommonPreprocessing.CommonPreprocessing()
     _dbc = DB_Communication.DB_Communication()

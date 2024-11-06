@@ -6,7 +6,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import QuestionPreprocessi
 
 class SympyCalculator(ICalculator.ICalculator):
     """
-
+    It is calculator class
     """
     __pr = tp.QuestionPreprocessing()
 
