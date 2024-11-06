@@ -6,7 +6,9 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 
 
 class MessageMonitor(IMonitor.IMonitor):
+    """
 
+    """
     _pr = CommonPreprocessing.CommonPreprocessing()
     _dbc = DB_Communication.DB_Communication()
     _qa = QuestionAnswer.QuestionAnswer()

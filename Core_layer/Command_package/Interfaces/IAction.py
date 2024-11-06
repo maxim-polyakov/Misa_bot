@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 
 
 class IAction(ABC):
+    """
 
+    """
     @abstractmethod
     def fas(cls):
         pass

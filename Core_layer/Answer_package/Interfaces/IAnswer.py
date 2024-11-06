@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 
 
 class IAnswer(ABC):
-
-    @abstractmethod
+    ("""
+    
+    """
+    @abstractmethod)
     def answer(self):
         pass
