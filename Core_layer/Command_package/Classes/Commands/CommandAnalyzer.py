@@ -32,7 +32,9 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'поссчитать': str(ac.find()),
                 'находить': str(ac.find()),
                 'сказать': str(ac.say()),
-                'поздороваться':str(ac.sayhi())
+                'поздороваться': str(ac.sayhi()),
+                'почистить': str(ac.clean()),
+                'очистить': str(ac.clean())
                 }
             return info_dict[chosen_item]
         except Exception as e:

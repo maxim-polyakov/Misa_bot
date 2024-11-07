@@ -1,5 +1,6 @@
 import logging
 from Core_layer.Answer_package.Classes import RandomAnswer
+from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.API_package.Classes.Finders import WikiFinder
 from Deep_layer.API_package.Classes.Finders import GoogleFinder
@@ -163,8 +164,21 @@ class CommandAction(IAction.IAction):
 #
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-
             ra = RandomAnswer.RandomAnswer()
             return str(ra.answer('hianswer')) + ' '
+        except Exception as e:
+            logging.exception(str('The exception in commandaction.say ' + str(e)))
+
+
+    @classmethod
+    def clean(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            message_text = (cls.message_text.replace('почисти ', '')
+                                            .replace('очисти', ''))
+            pr = CommonPreprocessing.CommonPreprocessing()
+            return pr.preprocess_text(message_text)
         except Exception as e:
             logging.exception(str('The exception in commandaction.say ' + str(e)))
