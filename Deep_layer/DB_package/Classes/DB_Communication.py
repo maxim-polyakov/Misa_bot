@@ -1,4 +1,5 @@
 import logging
+import warnings
 import pandas as pd
 from multipledispatch import dispatch
 from Deep_layer.DB_package.Classes import Connections
@@ -10,6 +11,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     """
     It is class for communication with a data base
     """
+    warnings.filterwarnings('ignore')
     @classmethod
     @dispatch(object, object, object, object, object, object, object)
     def insert_to(cls, text, tablename, string, agenda, classification, classtype):
