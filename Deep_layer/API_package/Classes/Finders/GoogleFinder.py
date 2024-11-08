@@ -15,12 +15,9 @@ class GoogleFinder(IFinder.IFinder):
         try:
             output = []
             outlist = search(message_text, num_results=9, advanced=True, region="ru", lang="ru")
-
             for outex in outlist:
                 output.append(str(outex.title) + ' ' + str(outex.url))
             logging.info('The googlefinder.find is done')
-            if output == []:
-                return "Не нашла"
             return set(output)
         except Exception as e:
             logging.exception(str('The exception is in googlefinder.find ' + str(e)))

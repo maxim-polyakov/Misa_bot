@@ -99,7 +99,7 @@ class CommandAction(IAction.IAction):
                     return str(finded_list)
                 except Exception as e:
                     logging.exception(str('The exception in commandaction.find ' + str(e)))
-                    return "Не нашла"
+                    return 'Не нашла'
             else:
                 try:
                     gpif = GoogleFinder.GoogleFinder()
@@ -109,10 +109,12 @@ class CommandAction(IAction.IAction):
                         for outmes in finded_list:
                             outstr += outmes + ' \n '
                     logging.info('The commandaction.find is done')
+                    if outstr == '':
+                        return 'Не нашла'
                     return outstr
                 except Exception as e:
                     logging.exception(str('The exception in commandaction.find ' + str(e)))
-                    return "Не нашла"
+                    return 'Не нашла'
 
     @classmethod
     def translate(cls):
