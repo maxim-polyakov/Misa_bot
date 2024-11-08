@@ -36,7 +36,7 @@ class TestCase_API_package(ITestCase.ITestCase):
 
     def test_googlefinder(self):
         found = gfind.GoogleFinder()
-        return_arr = found.find("нож")
+        return_arr = found.find("картинку пингвина")
         self.assertNotEqual(return_arr, None)
 
     def test_trans(self):
