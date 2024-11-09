@@ -132,4 +132,5 @@ yt-dlp
 py-cord
 pydub==0.25.1
 gTTS
-googlesearch-python==1.2.5
+beautifulsoup4
+google-3.0.0
