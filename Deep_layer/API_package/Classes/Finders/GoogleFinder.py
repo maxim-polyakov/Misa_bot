@@ -14,7 +14,7 @@ class GoogleFinder(IFinder.IFinder):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             output = []
-            outlist = search(message_text, num_results=9, advanced=True, region="ru", lang="ru")
+            outlist = search(message_text, sleep_interval=5, num_results=9, advanced=True, region="ru", lang="ru")
             for outex in outlist:
                 output.append(str(outex.title) + ' ' + str(outex.url))
             logging.info('The googlefinder.find is done')
