@@ -31,7 +31,9 @@ async def on_message(message):
 
 
         if photo != None:
-            await message.channel.send(file=discord_bot.discord.File(photo))
+            lowertext = message.content.lower()
+            if lowertext.count('миса') >0:
+                await message.channel.send(file=discord_bot.discord.File(photo))
         else:
             if(isCommand):
                 await message.channel.send(outstr)
