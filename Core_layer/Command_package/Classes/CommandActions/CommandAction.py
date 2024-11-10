@@ -104,7 +104,7 @@ class CommandAction(IAction.IAction):
                 try:
                     gpif = GoogleFinder.GoogleFinder()
                     finded_list = gpif.find(message_text)
-                    outstr = ''
+                    outstr = 'Ссылки по запросу:\n'
                     if (finded_list != None):
                         for outmes in finded_list:
                             outstr += outmes + ' \n '
