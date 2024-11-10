@@ -13,8 +13,8 @@ class GoogleFinder(IFinder.IFinder):
 
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            output = []
-            outlist = search(message_text,tld="co.in", num=9, stop=9, pause=1)
+            output = ['Ссылки по запросу:']
+            outlist = search(message_text, tld="co.in", num=9, stop=9, pause=1)
             for result in outlist:
                 output.append(result)
             logging.info('The googlefinder.find is done')
