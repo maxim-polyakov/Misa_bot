@@ -133,4 +133,4 @@ py-cord
 pydub==0.25.1
 gTTS
 beautifulsoup4
-google-3.0.0
+google==3.0.0
