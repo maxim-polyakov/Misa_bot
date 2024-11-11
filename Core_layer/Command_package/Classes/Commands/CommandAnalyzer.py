@@ -1,6 +1,7 @@
 import logging
 from Core_layer.Command_package.Interfaces import IAnalyzer
 from Core_layer.Command_package.Classes.CommandActions import CommandAction
+from Core_layer.Command_package.Classes.CommandActions import AAction
 from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
 
 
@@ -22,16 +23,39 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
     def __action_step(cls, chosen_item, message_text):
 #
 #
+        fc = AAction.AAction(cls.__message, message_text)
         ac = CommandAction.CommandAction(cls.__message, message_text)
         try:
             info_dict = {
-                'погода': str(ac.weather()),
-                'атаковать': str(ac.fas()),
-                'фас': str(ac.fas()),
+                'авансировать': str(fc.first()),
+                'автоматизировать': str(fc.second()),
+                'агитировать': str(fc.third()),
+                'администрировать': str(fc.fourth()),
+                'акклиматизироваться': str(fc.fifth()),
+                'аккомпанировать': str(fc.sixth()),
+                'активизировать': str(fc.seventh()),
+                'акцентировать': str(fc.eighth()),
+                'алеть': str(fc.nineth()),
+                'амальгамировать': str(fc.tenth()),
+                'амнистировать': str(fc.eleventh()),
+                'ампутировать': str(fc.twelth()),
+                'анализировать': str(fc.thirteenth()),
+                'апеллировать': str(fc.fourteenth()),
+                'аплодировать': str(fc.fifteenth()),
+                'аргументировать': str(fc.sixteenth()),
+                'арендовать': str(fc.seventeenth()),
+                'арестовывать': str(fc.eithneenth()),
+                'ассигновать': str(fc.nineteenth()),
+                'ассистировать': str(fc.twenttyth()),
+                'атаковать': str(fc.twentyfirst()),
+                'аттестовывать': str(fc.twentysecond()),
+                'афишировать': str(fc.twentythird()),
+                'фас': str(fc.twentyfirst()),
                 'перевести': str(ac.translate()),
                 'поссчитать': str(ac.find()),
                 'находить': str(ac.find()),
                 'сказать': str(ac.say()),
+                'погода': str(ac.weather()),
                 'поздороваться': str(ac.sayhi()),
                 'почистить': str(ac.clean()),
                 'очистить': str(ac.clean())
@@ -72,7 +96,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 outlist = cls.__action(word)
                 if (outlist != None):
                     for outmes in outlist:
-                        outstr += outmes
+                        outstr += outmes + '\n'
             logging.info('The commandanalyzer.analyse is done')
             return outstr
         except Exception as e:

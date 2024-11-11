@@ -26,22 +26,6 @@ class CommandAction(IAction.IAction):
         CommandAction.message_text = message_text
 
     @classmethod
-    def fas(cls):
-#
-#
-        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
-        try:
-            Inputstr = cls.__pred.preprocess_text(cls.message_text)
-            Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
-            Inputarr = Inputstr.split(' ')
-            cls.command_flag = 1
-            Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
-            logging.info('The commandaction.fas is done')
-            return Inputstr + ' - пидор.'
-        except Exception as e:
-            logging.exception(str('The exception in commandaction.fas ' + str(e)))
-
-    @classmethod
     def calculate(cls,):
 #
 #
