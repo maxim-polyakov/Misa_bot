@@ -35,13 +35,14 @@ async def on_message(message):
             if lowertext.count('миса') >0:
                 await message.channel.send(file=discord_bot.discord.File(photo))
         else:
-            if(isCommand):
-                await message.channel.send(outstr)
-            else:
-                if(voice_client != None):
-                    await tmon.monitor(outstr)
-                else:
+            if outstr != '':
+                if(isCommand):
                     await message.channel.send(outstr)
+                else:
+                    if(voice_client != None):
+                        await tmon.monitor(outstr)
+                    else:
+                        await message.channel.send(outstr)
 
 
 
