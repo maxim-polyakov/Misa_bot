@@ -22,7 +22,7 @@ async def on_message(message):
             isCommand = True
         else:
             lowertext = message.content.lower()
-            if lowertext.count('миса') >0:
+            if lowertext.count('миса') > 0:
                 voice_client = await tmon.join(message)
 
 

@@ -33,7 +33,6 @@ class MessageMonitor(IMonitor.IMonitor):
             return info_dict[chosen_item]
         except Exception as e:
             logging.exception(str('The exception in messagemonitor.__classify ' + str(e)))
-
     @classmethod
     def __decision(cls, text_message, emotion, commands, predicts):
 #
@@ -55,7 +54,6 @@ class MessageMonitor(IMonitor.IMonitor):
             return outlist
         except Exception as e:
             logging.exception(str('The exception in messagemonitor.__decision ' + str(e)))
-
     @classmethod
     def _neurodesc(cls, text, text_message, command):
 #
@@ -83,17 +81,12 @@ class MessageMonitor(IMonitor.IMonitor):
                                 predicts)
         except Exception as e:
             logging.exception(str('The exception in messagemonitor._neurodesc ' + str(e)))
-
     @classmethod
     def check(cls, text_message):
         if (cls._dbc.checkcommands(text_message)):
             return True
         else:
             return False
-
-
-
-
     @classmethod
     def monitor(cls, message, command, pltype):
 #

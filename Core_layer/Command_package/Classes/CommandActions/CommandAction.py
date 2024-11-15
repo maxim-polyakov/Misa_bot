@@ -155,7 +155,6 @@ class CommandAction(IAction.IAction):
         except Exception as e:
             logging.exception(str('The exception in commandaction.say ' + str(e)))
 
-
     @classmethod
     def clean(cls):
 #
@@ -168,3 +167,19 @@ class CommandAction(IAction.IAction):
             return pr.preprocess_text(message_text)
         except Exception as e:
             logging.exception(str('The exception in commandaction.say ' + str(e)))
+
+    @classmethod
+    def fas(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            Inputstr = cls.__pred.preprocess_text(cls.message_text)
+            Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
+            Inputarr = Inputstr.split(' ')
+            cls.command_flag = 1
+            Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
+            logging.info('The commandaction.twentyfirst is done')
+            return Inputstr + ' - пидор.'
+        except Exception as e:
+            logging.exception(str('The exception in aaction.twentyfirst ' + str(e)))
