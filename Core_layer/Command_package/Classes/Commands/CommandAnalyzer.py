@@ -25,11 +25,11 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
     def __action_step(cls, chosen_item, message_text):
 #
 #
-        fc = AActionF.AActionF(cls.__message, message_text)
-        fcs = AActionS.AActionS(cls.__message, message_text)
-        sc = BAction.BAction(cls.__message, message_text)
-        ac = CommandAction.CommandAction(cls.__message, message_text)
         try:
+            fc = AActionF.AActionF(cls.__message, message_text)
+            fcs = AActionS.AActionS(cls.__message, message_text)
+            sc = BAction.BAction(cls.__message, message_text)
+            ac = CommandAction.CommandAction(cls.__message, message_text)
             info_dict = {
                 'абонировать': str(fc.first()),
                 'абонироваться': str(fc.second()),
@@ -207,8 +207,6 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'афишироваться': str(fcs.seventythird()),
                 'ахать': str(fcs.seventyfourth()),
                 'ахнуть': str(fcs.seventyfifth()),
-
-                #
                 'бабахать': str(sc.first()),
                 'бабахаться': str(sc.second()),
                 'бабахнуть': str(sc.third()),
@@ -244,7 +242,6 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'балдеть': str(sc.thirtythird()),
                 'балластировать': str(sc.thirtyfourth()),
                 'баллотировать': str(sc.thirtyfifth()),
-                #
                 'фас': str(ac.fas()),
                 'перевести': str(ac.translate()),
                 'поссчитать': str(ac.find()),

@@ -22,8 +22,8 @@ class AActionF(IAction.IAction):
     __pr = CommonPreprocessing.CommonPreprocessing()
 
     def __init__(self, message, message_text):
-        aactionfF.message = message
-        aactionfF.message_text = message_text
+        AActionF.message = message
+        AActionF.message_text = message_text
 
     @classmethod
     def first(cls):
