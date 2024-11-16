@@ -10,7 +10,7 @@ from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 
 
-class AAction(IAction.IAction):
+class AActionF(IAction.IAction):
     """
     It is class for comand's actions started on symbol a
     """
@@ -22,8 +22,8 @@ class AAction(IAction.IAction):
     __pr = CommonPreprocessing.CommonPreprocessing()
 
     def __init__(self, message, message_text):
-        AAction.message = message
-        AAction.message_text = message_text
+        aactionfF.message = message
+        aactionfF.message_text = message_text
 
     @classmethod
     def first(cls):
@@ -33,7 +33,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.first ' + str(e)))
+            logging.exception(str('The exception in aactionf.first ' + str(e)))
 
     @classmethod
     def second(cls):
@@ -43,7 +43,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.second ' + str(e)))
+            logging.exception(str('The exception in aactionf.second ' + str(e)))
 
     @classmethod
     def third(cls):
@@ -53,7 +53,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.third ' + str(e)))
+            logging.exception(str('The exception in aactionf.third ' + str(e)))
 
     @classmethod
     def fourth(cls):
@@ -63,7 +63,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourth ' + str(e)))
 
     @classmethod
     def fifth(cls):
@@ -73,7 +73,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fifth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fifth ' + str(e)))
 
     @classmethod
     def sixth(cls):
@@ -83,7 +83,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixth ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixth ' + str(e)))
 
     @classmethod
     def seventh(cls):
@@ -93,7 +93,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.seventh ' + str(e)))
+            logging.exception(str('The exception in aactionf.seventh ' + str(e)))
 
     @classmethod
     def eighth(cls):
@@ -103,7 +103,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eighth ' + str(e)))
+            logging.exception(str('The exception in aactionf.eighth ' + str(e)))
 
     @classmethod
     def nineth(cls):
@@ -113,7 +113,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.nineth ' + str(e)))
+            logging.exception(str('The exception in aactionf.nineth ' + str(e)))
 
     @classmethod
     def tenth(cls):
@@ -123,7 +123,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.tenth ' + str(e)))
+            logging.exception(str('The exception in aactionf.tenth ' + str(e)))
 
     @classmethod
     def eleventh(cls):
@@ -133,7 +133,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eleventh ' + str(e)))
+            logging.exception(str('The exception in aactionf.eleventh ' + str(e)))
 
     @classmethod
     def twelth(cls):
@@ -143,7 +143,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.twelth ' + str(e)))
+            logging.exception(str('The exception in aactionf.twelth ' + str(e)))
 
     @classmethod
     def thirteenth(cls):
@@ -153,7 +153,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.thirteenth ' + str(e)))
+            logging.exception(str('The exception in aactionf.thirteenth ' + str(e)))
 
     @classmethod
     def fourteenth(cls):
@@ -163,7 +163,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourteenth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourteenth ' + str(e)))
 
     @classmethod
     def fifteenth(cls):
@@ -173,7 +173,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fifteenth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fifteenth ' + str(e)))
 
     @classmethod
     def sixteenth(cls):
@@ -183,7 +183,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixteenth ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixteenth ' + str(e)))
 
     @classmethod
     def seventeenth(cls):
@@ -193,7 +193,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.seventeenth ' + str(e)))
+            logging.exception(str('The exception in aactionf.seventeenth ' + str(e)))
 
     @classmethod
     def eithneenth(cls):
@@ -203,7 +203,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eithneenth ' + str(e)))
+            logging.exception(str('The exception in aactionf.eithneenth ' + str(e)))
 
     @classmethod
     def nineteenth(cls):
@@ -213,7 +213,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.nineteenth ' + str(e)))
+            logging.exception(str('The exception in aactionf.nineteenth ' + str(e)))
 
     @classmethod
     def twenttyth(cls):
@@ -223,7 +223,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.twenttyth ' + str(e)))
+            logging.exception(str('The exception in aactionf.twenttyth ' + str(e)))
 
     @classmethod
     def twentyfirst(cls):
@@ -233,7 +233,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.twentyfirst ' + str(e)))
+            logging.exception(str('The exception in aactionf.twentyfirst ' + str(e)))
 
     @classmethod
     def twentysecond(cls):
@@ -243,7 +243,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.twentysecond ' + str(e)))
+            logging.exception(str('The exception in aactionf.twentysecond ' + str(e)))
 
     @classmethod
     def twentythird(cls):
@@ -253,7 +253,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.twentythird ' + str(e)))
+            logging.exception(str('The exception in aactionf.twentythird ' + str(e)))
 
     @classmethod
     def twentyfourth(cls):
@@ -263,7 +263,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.twentyfourth ' + str(e)))
+            logging.exception(str('The exception in aactionf.twentyfourth ' + str(e)))
 
     @classmethod
     def twentyfifth(cls):
@@ -273,7 +273,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.twentyfifth ' + str(e)))
+            logging.exception(str('The exception in aactionf.twentyfifth ' + str(e)))
 
     @classmethod
     def twentysixth(cls):
@@ -283,7 +283,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.twentysixth ' + str(e)))
+            logging.exception(str('The exception in aactionf.twentysixth ' + str(e)))
 
     @classmethod
     def twentyseventh(cls):
@@ -293,7 +293,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.twentyseventh ' + str(e)))
+            logging.exception(str('The exception in aactionf.twentyseventh ' + str(e)))
 
     @classmethod
     def twentyeighth(cls):
@@ -303,7 +303,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.twentyeighth ' + str(e)))
+            logging.exception(str('The exception in aactionf.twentyeighth ' + str(e)))
 
     @classmethod
     def twentynineth(cls):
@@ -313,7 +313,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.twentynineth ' + str(e)))
+            logging.exception(str('The exception in aactionf.twentynineth ' + str(e)))
 
     @classmethod
     def thirtyth(cls):
@@ -323,7 +323,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.thirty ' + str(e)))
+            logging.exception(str('The exception in aactionf.thirty ' + str(e)))
 
     @classmethod
     def thirtyfirst(cls):
@@ -333,7 +333,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.thirtyfirst ' + str(e)))
+            logging.exception(str('The exception in aactionf.thirtyfirst ' + str(e)))
 
     @classmethod
     def thirtysecond(cls):
@@ -343,7 +343,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.thirtysecond ' + str(e)))
+            logging.exception(str('The exception in aactionf.thirtysecond ' + str(e)))
 
     @classmethod
     def thirtythird(cls):
@@ -353,7 +353,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.thirtythird ' + str(e)))
+            logging.exception(str('The exception in aactionf.thirtythird ' + str(e)))
 
     @classmethod
     def thirtyfourth(cls):
@@ -363,7 +363,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.thirtyfourth ' + str(e)))
+            logging.exception(str('The exception in aactionf.thirtyfourth ' + str(e)))
 
     @classmethod
     def thirtyfifth(cls):
@@ -373,7 +373,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.thirtyfifth ' + str(e)))
+            logging.exception(str('The exception in aactionf.thirtyfifth ' + str(e)))
 
     @classmethod
     def thirtysixth(cls):
@@ -383,7 +383,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.thirtysixth ' + str(e)))
+            logging.exception(str('The exception in aactionf.thirtysixth ' + str(e)))
 
     @classmethod
     def thirtyseventh(cls):
@@ -393,7 +393,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.thirtyseventh ' + str(e)))
+            logging.exception(str('The exception in aactionf.thirtyseventh ' + str(e)))
 
     @classmethod
     def thirtyeighth(cls):
@@ -403,7 +403,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.thirtyeighth ' + str(e)))
+            logging.exception(str('The exception in aactionf.thirtyeighth ' + str(e)))
 
     @classmethod
     def thirynineth(cls):
@@ -413,7 +413,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.thirynineth ' + str(e)))
+            logging.exception(str('The exception in aactionf.thirynineth ' + str(e)))
 
     @classmethod
     def fourtyth(cls):
@@ -423,7 +423,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourty ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourty ' + str(e)))
 
     @classmethod
     def fourtyfirst(cls):
@@ -433,7 +433,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourtyfirst ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourtyfirst ' + str(e)))
 
     @classmethod
     def fourtysecond(cls):
@@ -443,7 +443,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourtysecond ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourtysecond ' + str(e)))
 
     @classmethod
     def fourythird(cls):
@@ -453,7 +453,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourythird ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourythird ' + str(e)))
 
     @classmethod
     def fourtyfourth(cls):
@@ -463,7 +463,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourtyfourth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourtyfourth ' + str(e)))
 
     @classmethod
     def fourtyfifth(cls):
@@ -473,7 +473,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourtyfifth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourtyfifth ' + str(e)))
 
     @classmethod
     def fourtysixth(cls):
@@ -483,7 +483,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourtysixth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourtysixth ' + str(e)))
 
     @classmethod
     def fourtyseventh(cls):
@@ -493,7 +493,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourtyseventh ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourtyseventh ' + str(e)))
 
     @classmethod
     def fourtyeight(cls):
@@ -503,7 +503,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourtyeight ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourtyeight ' + str(e)))
 
     @classmethod
     def fourtynineth(cls):
@@ -513,7 +513,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fourtynineth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fourtynineth ' + str(e)))
 
     @classmethod
     def fiftyth(cls):
@@ -523,7 +523,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fiftyth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fiftyth ' + str(e)))
 
     @classmethod
     def fiftyfirst(cls):
@@ -533,7 +533,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fiftyfirst ' + str(e)))
+            logging.exception(str('The exception in aactionf.fiftyfirst ' + str(e)))
 
     @classmethod
     def fiftysecond(cls):
@@ -543,7 +543,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fiftysecond ' + str(e)))
+            logging.exception(str('The exception in aactionf.fiftysecond ' + str(e)))
 
     @classmethod
     def fiftythird(cls):
@@ -553,7 +553,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fiftythird ' + str(e)))
+            logging.exception(str('The exception in aactionf.fiftythird ' + str(e)))
 
     @classmethod
     def fiftyfourth(cls):
@@ -563,7 +563,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fiftyfourth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fiftyfourth ' + str(e)))
 
     @classmethod
     def fiftyfifth(cls):
@@ -573,7 +573,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fiftyfifth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fiftyfifth ' + str(e)))
 
     @classmethod
     def fiftysixth(cls):
@@ -583,7 +583,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fiftysixth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fiftysixth ' + str(e)))
 
     @classmethod
     def fiftyseventh(cls):
@@ -593,7 +593,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fiftyseventh ' + str(e)))
+            logging.exception(str('The exception in aactionf.fiftyseventh ' + str(e)))
 
     @classmethod
     def fiftyeight(cls):
@@ -603,7 +603,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fiftyeight ' + str(e)))
+            logging.exception(str('The exception in aactionf.fiftyeight ' + str(e)))
 
     @classmethod
     def fiftynineth(cls):
@@ -613,7 +613,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fiftynineth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fiftynineth ' + str(e)))
 
     @classmethod
     def sixtyth(cls):
@@ -623,7 +623,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.fiftyfifth ' + str(e)))
+            logging.exception(str('The exception in aactionf.fiftyfifth ' + str(e)))
 
     @classmethod
     def sixtyfirst(cls):
@@ -633,7 +633,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixtyfirst ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixtyfirst ' + str(e)))
 
     @classmethod
     def sixtysecond(cls):
@@ -643,7 +643,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixtysecond ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixtysecond ' + str(e)))
 
     @classmethod
     def sixtythird(cls):
@@ -653,7 +653,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixtythird ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixtythird ' + str(e)))
 
     @classmethod
     def sixtyfourth(cls):
@@ -663,7 +663,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixtyfourth ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixtyfourth ' + str(e)))
 
     @classmethod
     def sixtyfifth(cls):
@@ -673,7 +673,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixtyfifth ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixtyfifth ' + str(e)))
 
     @classmethod
     def sixtysixth(cls):
@@ -683,7 +683,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixtysixth ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixtysixth ' + str(e)))
 
     @classmethod
     def sixsyseventh(cls):
@@ -693,7 +693,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixsyseventh ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixsyseventh ' + str(e)))
 
     @classmethod
     def sixtyeighthth(cls):
@@ -703,7 +703,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixtyeighthth ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixtyeighthth ' + str(e)))
 
     @classmethod
     def sixtynineth(cls):
@@ -713,7 +713,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixtynineth ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixtynineth ' + str(e)))
 
     @classmethod
     def seventyth(cls):
@@ -723,7 +723,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.seventyth ' + str(e)))
+            logging.exception(str('The exception in aactionf.seventyth ' + str(e)))
 
     @classmethod
     def seventyfirst(cls):
@@ -733,7 +733,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixsyseventh ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixsyseventh ' + str(e)))
 
     @classmethod
     def seventysecond(cls):
@@ -743,7 +743,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixtyeighthth ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixtyeighthth ' + str(e)))
 
     @classmethod
     def seventythird(cls):
@@ -753,7 +753,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.sixtynineth ' + str(e)))
+            logging.exception(str('The exception in aactionf.sixtynineth ' + str(e)))
 
     @classmethod
     def seventyfourth(cls):
@@ -763,8 +763,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.seventyth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.seventyth ' + str(e)))
 
     @classmethod
     def seventyfifth(cls):
@@ -774,8 +773,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.seventyfifth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.seventyfifth ' + str(e)))
 
     @classmethod
     def seventysixth(cls):
@@ -785,8 +783,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.seventysixth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.seventysixth ' + str(e)))
 
     @classmethod
     def seventyseventh(cls):
@@ -796,8 +793,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.seventyseventh ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.seventyseventh ' + str(e)))
 
     @classmethod
     def seventyeigth(cls):
@@ -807,8 +803,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.seventyeigth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.seventyeigth ' + str(e)))
 
     @classmethod
     def seventynineth(cls):
@@ -818,8 +813,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.seventynineth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.seventynineth ' + str(e)))
 
     @classmethod
     def eighthth(cls):
@@ -829,8 +823,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eighthth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.eighthth ' + str(e)))
 
     @classmethod
     def eightyth(cls):
@@ -840,8 +833,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eightyth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.eightyth ' + str(e)))
 
     @classmethod
     def eightyfirst(cls):
@@ -851,8 +843,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eightyfirst ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.eightyfirst ' + str(e)))
 
     @classmethod
     def eightysecond(cls):
@@ -862,8 +853,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eightysecond ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.eightysecond ' + str(e)))
 
     @classmethod
     def eightythird(cls):
@@ -873,8 +863,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eightythird ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.eightythird ' + str(e)))
 
     @classmethod
     def eightyfourth(cls):
@@ -884,8 +873,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eightyfourth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.eightyfourth ' + str(e)))
 
     @classmethod
     def eightyfifth(cls):
@@ -895,8 +883,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eightyfifth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.eightyfifth ' + str(e)))
 
     @classmethod
     def eightysixth(cls):
@@ -906,8 +893,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eightysixth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.eightysixth ' + str(e)))
 
     @classmethod
     def eightyseventh(cls):
@@ -917,8 +903,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eightyseventh ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.eightyseventh ' + str(e)))
 
     @classmethod
     def eightyeighth(cls):
@@ -928,8 +913,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eightyeighth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.eightyeighth ' + str(e)))
 
     @classmethod
     def eightynineth(cls):
@@ -939,8 +923,7 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.eightynineth ' + str(e)))
-
+            logging.exception(str('The exception in aactionf.eightynineth ' + str(e)))
 
     @classmethod
     def ninetyth(cls):
@@ -950,4 +933,103 @@ class AAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aaction.ninetyth ' + str(e)))
+            logging.exception(str('The exception in aactionf.ninetyth ' + str(e)))
+
+    @classmethod
+    def ninetyfirst(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            pass
+        except Exception as e:
+            logging.exception(str('The exception in aactionf.eightyseventh ' + str(e)))
+
+    @classmethod
+    def ninetysecond(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            pass
+        except Exception as e:
+            logging.exception(str('The exception in aactionf.eightyeighth ' + str(e)))
+
+    @classmethod
+    def ninetythird(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            pass
+        except Exception as e:
+            logging.exception(str('The exception in aactionf.eightynineth ' + str(e)))
+
+    @classmethod
+    def ninetyfourth(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            pass
+        except Exception as e:
+            logging.exception(str('The exception in aactionf.ninetyth ' + str(e)))
+
+    @classmethod
+    def ninetyfifth(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            pass
+        except Exception as e:
+            logging.exception(str('The exception in aactionf.eightyseventh ' + str(e)))
+
+    @classmethod
+    def ninetysixth(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            pass
+        except Exception as e:
+            logging.exception(str('The exception in aactionf.eightyeighth ' + str(e)))
+
+    @classmethod
+    def ninetyseventh(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            pass
+        except Exception as e:
+            logging.exception(str('The exception in aactionf.eightynineth ' + str(e)))
+
+    @classmethod
+    def ninetyeighth(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            pass
+        except Exception as e:
+            logging.exception(str('The exception in aactionf.ninetyth ' + str(e)))
+
+    @classmethod
+    def ninetynineth(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            pass
+        except Exception as e:
+            logging.exception(str('The exception in aactionf.ninetynineth ' + str(e)))
+    @classmethod
+    def hundredth(cls):
+#
+#
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            pass
+        except Exception as e:
+            logging.exception(str('The exception in aactionf.ninetynineth ' + str(e)))
