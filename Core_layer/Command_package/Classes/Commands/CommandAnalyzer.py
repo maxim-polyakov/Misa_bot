@@ -3,7 +3,8 @@ from Core_layer.Command_package.Interfaces import IAnalyzer
 from Core_layer.Command_package.Classes.CommandActions import CommandAction
 from Core_layer.Command_package.Classes.CommandActions.AActions import AActionF
 from Core_layer.Command_package.Classes.CommandActions.AActions import AActionS
-from Core_layer.Command_package.Classes.CommandActions import BAction
+from Core_layer.Command_package.Classes.CommandActions.BActions import BActionF
+from Core_layer.Command_package.Classes.CommandActions.BActions import BActionS
 from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
 
 
@@ -28,7 +29,8 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         try:
             fc = AActionF.AActionF(cls.__message, message_text)
             fcs = AActionS.AActionS(cls.__message, message_text)
-            sc = BAction.BAction(cls.__message, message_text)
+            sc = BActionF.BActionF(cls.__message, message_text)
+            scs = BActionS.BActionS(cls.__message, message_text)
             ac = CommandAction.CommandAction(cls.__message, message_text)
             info_dict = {
                 'абонировать': str(fc.first()),
@@ -287,6 +289,25 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'бедокурить': str(sc.seventyeigth()),
                 'бедствовать': str(sc.seventynineth()),
                 'бежать': str(sc.eightyth()),
+                'безбожничать': str(sc.eightyfirst()),
+                'бездействовать': str(sc.eightysecond()),
+                'бездельничать': str(sc.eightythird()),
+                'бездомничать': str(sc.eightyfourth()),
+                'беззаконничать': str(sc.eightyfifth()),
+                'безлюдеть': str(sc.eightysixth()),
+                'безмолвствовать': str(sc.eightyseventh()),
+                'безобразить': str(sc.eightyeighth()),
+                'безобразничать': str(sc.ninetyth()),
+                'безуметь': str(sc.ninetyfirst()),
+                'безумствовать': str(sc.ninetysecond()),
+                'белый': str(sc.ninetythird()),
+                'белеть': str(sc.ninetyfourth()),
+                'белеться': str(sc.ninetyfifth()),
+                'бель': str(sc.ninetysixth()),
+                'белить': str(sc.ninetyseventh()),
+                'белиться': str(sc.ninetyeighth()),
+                'белковать': str(sc.ninetynineth()),
+                'беллетризировать': str(sc.hundredth()),
                 #
                 'фас': str(ac.fas()),
                 'перевести': str(ac.translate()),

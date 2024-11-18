@@ -10,7 +10,7 @@ from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 
 
-class BAction(IAction.IAction):
+class BActionS(IAction.IAction):
     """
     It is class for comand's actions started on symbol a
     """
@@ -22,8 +22,8 @@ class BAction(IAction.IAction):
     __pr = CommonPreprocessing.CommonPreprocessing()
 
     def __init__(self, message, message_text):
-        BAction.message = message
-        BAction.message_text = message_text
+        BActionS.message = message
+        BActionS.message_text = message_text
 
     @classmethod
     def first(cls):
@@ -1024,6 +1024,7 @@ class BAction(IAction.IAction):
             pass
         except Exception as e:
             logging.exception(str('The exception in aactionf.ninetynineth ' + str(e)))
+
     @classmethod
     def hundredth(cls):
 #
