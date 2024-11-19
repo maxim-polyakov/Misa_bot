@@ -28,7 +28,7 @@ class BActionFour(IAction.IAction):
     @classmethod
     def first(cls):
 #
-#
+#       балансировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -38,7 +38,7 @@ class BActionFour(IAction.IAction):
     @classmethod
     def second(cls):
 #
-#
+#       балбесничать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -48,7 +48,7 @@ class BActionFour(IAction.IAction):
     @classmethod
     def third(cls):
 #
-#
+#       балдеть
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -58,7 +58,7 @@ class BActionFour(IAction.IAction):
     @classmethod
     def fourth(cls):
 #
-#
+#       балластировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -68,7 +68,7 @@ class BActionFour(IAction.IAction):
     @classmethod
     def fifth(cls):
 #
-#
+#       баллотировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -78,7 +78,7 @@ class BActionFour(IAction.IAction):
     @classmethod
     def sixth(cls):
 #
-#
+#       баллотироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -88,7 +88,7 @@ class BActionFour(IAction.IAction):
     @classmethod
     def seventh(cls):
 #
-#
+#       баловать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -98,7 +98,7 @@ class BActionFour(IAction.IAction):
     @classmethod
     def eighth(cls):
 #
-#
+#       баловаться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -108,7 +108,7 @@ class BActionFour(IAction.IAction):
     @classmethod
     def nineth(cls):
 #
-#
+#       бальзамировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -118,7 +118,7 @@ class BActionFour(IAction.IAction):
     @classmethod
     def tenth(cls):
 #
-#
+#       бальзамироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass

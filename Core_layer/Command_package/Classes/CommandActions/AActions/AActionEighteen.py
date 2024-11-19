@@ -28,7 +28,7 @@ class AActionEighteen(IAction.IAction):
     @classmethod
     def first(cls):
 #
-#
+#       аукнуть
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -38,7 +38,7 @@ class AActionEighteen(IAction.IAction):
     @classmethod
     def second(cls):
 #
-#
+#       аукнуться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -48,7 +48,7 @@ class AActionEighteen(IAction.IAction):
     @classmethod
     def third(cls):
 #
-#
+#       афишировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -58,7 +58,7 @@ class AActionEighteen(IAction.IAction):
     @classmethod
     def fourth(cls):
 #
-#
+#       афишироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -68,7 +68,7 @@ class AActionEighteen(IAction.IAction):
     @classmethod
     def fifth(cls):
 #
-#
+#       ахать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -78,7 +78,7 @@ class AActionEighteen(IAction.IAction):
     @classmethod
     def sixth(cls):
 #
-#
+#       ахнуть
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass

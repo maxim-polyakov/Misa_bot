@@ -28,7 +28,7 @@ class AActionTwelve(IAction.IAction):
     @classmethod
     def first(cls):
 #
-#
+#       анодировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -38,7 +38,7 @@ class AActionTwelve(IAction.IAction):
     @classmethod
     def second(cls):
 #
-#
+#       анодироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -48,7 +48,7 @@ class AActionTwelve(IAction.IAction):
     @classmethod
     def third(cls):
 #
-#
+#       анонсировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -58,7 +58,7 @@ class AActionTwelve(IAction.IAction):
     @classmethod
     def fourth(cls):
 #
-#
+#       анонсироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -68,7 +68,7 @@ class AActionTwelve(IAction.IAction):
     @classmethod
     def fifth(cls):
 #
-#
+#       антидатировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -78,7 +78,7 @@ class AActionTwelve(IAction.IAction):
     @classmethod
     def sixth(cls):
 #
-#
+#       антидатироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -88,7 +88,7 @@ class AActionTwelve(IAction.IAction):
     @classmethod
     def seventh(cls):
 #
-#
+#       антрепренерствовать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -98,7 +98,7 @@ class AActionTwelve(IAction.IAction):
     @classmethod
     def eighth(cls):
 #
-#
+#       апеллировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -108,17 +108,17 @@ class AActionTwelve(IAction.IAction):
     @classmethod
     def nineth(cls):
 #
-#
+#       аплодировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            return '👏'
         except Exception as e:
             logging.exception(str('The exception in aactionf.nineth ' + str(e)))
 
     @classmethod
     def tenth(cls):
 #
-#
+#       аппретировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass

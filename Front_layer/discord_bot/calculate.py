@@ -8,7 +8,7 @@ async def calculate(message, fsubject = 'x', ssubject = 'x'):
     if (name == 'seraphim8341'):
         subject = fsubject + ' ' + ssubject
         calc = CommandAction.CommandAction(message, subject)
-        outputder = calc.calculate()
+        outputder = calc.eighth()
         await message.channel.send(outputder)
     else:
         await message.channel.send('😊')

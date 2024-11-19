@@ -10,11 +10,6 @@ class TestCase_API_package(ITestCase.ITestCase):
     This class is written for testing entityes of system
 
     """
-    def test_commandaction(self):
-        ac = CommandAction.CommandAction(message='находить нож', message_text='находить нож')
-        res = ac.find('bing')
-        self.assertNotEqual(res, None)
-
     def test_commandanalyzerf(self):
         command = CommandAnalyzer.CommandAnalyzer(
             'найди пистолет', 'test')

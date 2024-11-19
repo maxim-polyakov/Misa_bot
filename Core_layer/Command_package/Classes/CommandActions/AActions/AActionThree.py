@@ -28,7 +28,7 @@ class AActionThree(IAction.IAction):
     @classmethod
     def first(cls):
 #
-#
+#       агломерировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -38,7 +38,7 @@ class AActionThree(IAction.IAction):
     @classmethod
     def second(cls):
 #
-#
+#       агломерироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -48,7 +48,7 @@ class AActionThree(IAction.IAction):
     @classmethod
     def third(cls):
 #
-#
+#       агонизировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -58,7 +58,7 @@ class AActionThree(IAction.IAction):
     @classmethod
     def fourth(cls):
 #
-#
+#       агрегатировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -68,7 +68,7 @@ class AActionThree(IAction.IAction):
     @classmethod
     def fifth(cls):
 #
-#
+#       агрегатироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -78,7 +78,7 @@ class AActionThree(IAction.IAction):
     @classmethod
     def sixth(cls):
 #
-#
+#       агрегировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -88,7 +88,7 @@ class AActionThree(IAction.IAction):
     @classmethod
     def seventh(cls):
 #
-#
+#       агрегироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -98,7 +98,7 @@ class AActionThree(IAction.IAction):
     @classmethod
     def eighth(cls):
 #
-#
+#       агукать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -108,7 +108,7 @@ class AActionThree(IAction.IAction):
     @classmethod
     def nineth(cls):
 #
-#
+#       агукнуть
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -118,7 +118,7 @@ class AActionThree(IAction.IAction):
     @classmethod
     def tenth(cls):
 #
-#
+#       адаптировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass

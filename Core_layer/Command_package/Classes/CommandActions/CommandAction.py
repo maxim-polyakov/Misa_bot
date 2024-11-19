@@ -26,49 +26,46 @@ class CommandAction(IAction.IAction):
         CommandAction.message_text = message_text
 
     @classmethod
-    def calculate(cls,):
+    def first(cls):
 #
-#
+#       фас
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            message_text = (cls.message_text.strip(' ')
-                            .replace('найди ', '')
-                            .replace('поссчитай ', ''))
-            Inputarr = message_text.split(' ')
-            c = SympyCalculator.SympyCalculator()
-            if Inputarr[0] == 'производную':
-                output = c.deravative(Inputarr[1], Inputarr[3])
-                logging.info('The commandaction.calculate is done')
-                return output
-            elif Inputarr[0] == 'интеграл':
-                output = c.integrate(Inputarr[1], Inputarr[3])
-                logging.info('The commandaction.calculate is done')
-                return output
-            else:
-                outputone = c.deravative(Inputarr[1], Inputarr[3])
-                outputtwo = c.integrate(Inputarr[1], Inputarr[3])
-                output = 'производная ' + outputone + ', ' +'интеграл '+ outputtwo
-                logging.info('The commandaction.calculate is done')
-                return output
-            message_text = cls.message_text.replace(Inputarr[1].rstrip(), '')
-            message_text = message_text.replace(Inputarr[2], '').replace(Inputarr[0], '')
-            message_text = message_text.strip(' ')
+            Inputstr = cls.__pred.preprocess_text(cls.message_text)
+            Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
+            Inputarr = Inputstr.split(' ')
             cls.command_flag = 1
-            logging.info('The commandaction.calculate is done')
-            return message_text
+            Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
+            logging.info('The commandaction.twentyfirst is done')
+            return Inputstr + ' - пидор.'
         except Exception as e:
-            logging.exception(str('The exception in commandaction.calculate ' + str(e)))
+            logging.exception(str('The exception in aaction.twentyfirst ' + str(e)))
 
     @classmethod
-    def find(cls):
+    def second(cls):
 #
-#
+#       перевести
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            message_text = cls.message_text.strip(' ').replace('перевести ', '')
+            tr = GoogleTranslator.GoogleTranslator("ru")
+            translated = tr.translate(message_text)
+            logging.info('The commandaction.translate is done')
+            return translated
+        except Exception as e:
+            logging.exception(str('The exception in commandaction.translate ' + str(e)))
+            return 'Проблемы с сервисом'
+
+    @classmethod
+    def third(cls):
+#       поссчитать
+#       находить
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         message_text = (cls.message_text.strip(' ')
                         .replace('найди ', '')
                         .replace('поссчитай ', ''))
         if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
-            message_text = cls.calculate()
+            message_text = cls.eighth()
             cls.command_flag = 1
             logging.info('The commandaction.find is done')
             return message_text
@@ -101,24 +98,20 @@ class CommandAction(IAction.IAction):
                     return 'Не нашла'
 
     @classmethod
-    def translate(cls):
+    def fourth(cls):
 #
-#
+#       сказать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            message_text = cls.message_text.strip(' ').replace('перевести ', '')
-            tr = GoogleTranslator.GoogleTranslator("ru")
-            translated = tr.translate(message_text)
-            logging.info('The commandaction.translate is done')
-            return translated
+            message_text = cls.message_text.replace('скажи ', '')
+            return message_text
         except Exception as e:
-            logging.exception(str('The exception in commandaction.translate ' + str(e)))
-            return 'Проблемы с сервисом'
+            logging.exception(str('The exception in commandaction.say ' + str(e)))
 
     @classmethod
-    def weather(cls):
+    def fifth(cls):
 #
-#
+#       погода
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             message = cls.message_text.replace('погода ','')
@@ -134,20 +127,9 @@ class CommandAction(IAction.IAction):
             return 'Проблемы с сервисом'
 
     @classmethod
-    def say(cls):
+    def sixth(cls):
 #
-#
-        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
-        try:
-            message_text = cls.message_text.replace('скажи ', '')
-            return message_text
-        except Exception as e:
-            logging.exception(str('The exception in commandaction.say ' + str(e)))
-
-    @classmethod
-    def sayhi(cls):
-#
-#
+#       поздороваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             ra = RandomAnswer.RandomAnswer()
@@ -156,9 +138,9 @@ class CommandAction(IAction.IAction):
             logging.exception(str('The exception in commandaction.say ' + str(e)))
 
     @classmethod
-    def clean(cls):
-#
-#
+    def seventh(cls):
+#       очистить
+#       почистить
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             message_text = (cls.message_text.replace('почисти ', '')
@@ -169,17 +151,41 @@ class CommandAction(IAction.IAction):
             logging.exception(str('The exception in commandaction.say ' + str(e)))
 
     @classmethod
-    def fas(cls):
-#
-#
+    def eighth(cls):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            Inputstr = cls.__pred.preprocess_text(cls.message_text)
-            Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
-            Inputarr = Inputstr.split(' ')
+            message_text = (cls.message_text.strip(' ')
+                            .replace('найди ', '')
+                            .replace('поссчитай ', ''))
+            Inputarr = message_text.split(' ')
+            c = SympyCalculator.SympyCalculator()
+            if Inputarr[0] == 'производную':
+                output = c.deravative(Inputarr[1], Inputarr[3])
+                logging.info('The commandaction.calculate is done')
+                return output
+            elif Inputarr[0] == 'интеграл':
+                output = c.integrate(Inputarr[1], Inputarr[3])
+                logging.info('The commandaction.calculate is done')
+                return output
+            else:
+                outputone = c.deravative(Inputarr[1], Inputarr[3])
+                outputtwo = c.integrate(Inputarr[1], Inputarr[3])
+                output = 'производная ' + outputone + ', ' + 'интеграл ' + outputtwo
+                logging.info('The commandaction.calculate is done')
+                return output
+            message_text = cls.message_text.replace(Inputarr[1].rstrip(), '')
+            message_text = message_text.replace(Inputarr[2], '').replace(Inputarr[0], '')
+            message_text = message_text.strip(' ')
             cls.command_flag = 1
-            Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
-            logging.info('The commandaction.twentyfirst is done')
-            return Inputstr + ' - пидор.'
+            logging.info('The commandaction.calculate is done')
+            return message_text
         except Exception as e:
-            logging.exception(str('The exception in aaction.twentyfirst ' + str(e)))
+            logging.exception(str('The exception in commandaction.calculate ' + str(e)))
+
+    @classmethod
+    def nineth(cls):
+        pass
+
+    @classmethod
+    def tenth(cls):
+        pass

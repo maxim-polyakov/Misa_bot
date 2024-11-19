@@ -37,7 +37,6 @@ from Core_layer.Command_package.Classes.CommandActions.BActions import BActionFi
 from Core_layer.Command_package.Classes.CommandActions.BActions import BActionSixteen
 from Core_layer.Command_package.Classes.CommandActions.BActions import BActionSeventeen
 from Core_layer.Command_package.Classes.CommandActions.BActions import BActionEighteen
-
 from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
 
 
@@ -376,15 +375,15 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'белковать': str(bten.nineth()),
                 'беллетризировать': str(bten.tenth()),
                 #
-                'фас': str(ac.fas()),
-                'перевести': str(ac.translate()),
-                'поссчитать': str(ac.find()),
-                'находить': str(ac.find()),
-                'сказать': str(ac.say()),
-                'погода': str(ac.weather()),
-                'поздороваться': str(ac.sayhi()),
-                'почистить': str(ac.clean()),
-                'очистить': str(ac.clean())
+                'фас': str(ac.first()),
+                'перевести': str(ac.second()),
+                'поссчитать': str(ac.third()),
+                'находить': str(ac.third()),
+                'сказать': str(ac.fourth()),
+                'погода': str(ac.fifth()),
+                'поздороваться': str(ac.sixth()),
+                'почистить': str(ac.seventh()),
+                'очистить': str(ac.seventh())
                 }
             return info_dict[chosen_item]
         except Exception as e:
