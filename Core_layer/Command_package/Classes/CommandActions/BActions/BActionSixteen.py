@@ -28,7 +28,7 @@ class BActionSixteen(IAction.IAction):
     @classmethod
     def first(cls):
 #
-#
+#       благословляться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -38,7 +38,7 @@ class BActionSixteen(IAction.IAction):
     @classmethod
     def second(cls):
 #
-#
+#       благотворительствовать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -48,7 +48,7 @@ class BActionSixteen(IAction.IAction):
     @classmethod
     def third(cls):
 #
-#
+#       благотворить
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -58,7 +58,7 @@ class BActionSixteen(IAction.IAction):
     @classmethod
     def fourth(cls):
 #
-#
+#       благоустраивать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -68,7 +68,7 @@ class BActionSixteen(IAction.IAction):
     @classmethod
     def fifth(cls):
 #
-#
+#       благоустраиваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -78,7 +78,7 @@ class BActionSixteen(IAction.IAction):
     @classmethod
     def sixth(cls):
 #
-#
+#       благоухать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -88,7 +88,7 @@ class BActionSixteen(IAction.IAction):
     @classmethod
     def seventh(cls):
 #
-#
+#       блаженствовать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -98,7 +98,7 @@ class BActionSixteen(IAction.IAction):
     @classmethod
     def eighth(cls):
 #
-#
+#       блажь
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -108,7 +108,7 @@ class BActionSixteen(IAction.IAction):
     @classmethod
     def nineth(cls):
 #
-#
+#       блажить
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -118,7 +118,7 @@ class BActionSixteen(IAction.IAction):
     @classmethod
     def tenth(cls):
 #
-#
+#       бланшировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
