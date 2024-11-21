@@ -37,6 +37,11 @@ from Core_layer.Command_package.Classes.CommandActions.BActions import BActionFi
 from Core_layer.Command_package.Classes.CommandActions.BActions import BActionSixteen
 from Core_layer.Command_package.Classes.CommandActions.BActions import BActionSeventeen
 from Core_layer.Command_package.Classes.CommandActions.BActions import BActionEighteen
+from Core_layer.Command_package.Classes.CommandActions.BActions import BActionNineteen
+from Core_layer.Command_package.Classes.CommandActions.BActions import BActionTwenty
+from Core_layer.Command_package.Classes.CommandActions.BActions import BActionTwentyOne
+from Core_layer.Command_package.Classes.CommandActions.BActions import BActionTwentyTwo
+from Core_layer.Command_package.Classes.CommandActions.BActions import BActionTwentyThree
 from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
 
 
@@ -96,6 +101,11 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             bsixteen = BActionSixteen.BActionSixteen(cls.__message, message_text)
             bseventeen = BActionSeventeen.BActionSeventeen(cls.__message, message_text)
             beighteen = BActionEighteen.BActionEighteen(cls.__message, message_text)
+            bnineteen = BActionNineteen.BACtionNineteen(cls.__message, message_text)
+            btwenty = BActionTwenty.BActionTwenty(cls.__message, message_text)
+            btwentyone = BActionTwentyOne.BActionTwentyOne(cls.__message, message_text)
+            btwentytwo = BActionTwentyTwo.BActionTwentyTwo(cls.__message, message_text)
+            btwentythree = BActionTwentyThree.BActionTwentyThree(cls.__message, message_text)
 
             ac = CommandAction.CommandAction(cls.__message, message_text)
             info_dict = {
@@ -454,6 +464,16 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'блудить': str(beighteen.seventh()),
                 'блуждать': str(beighteen.eighth()),
                 'блюсти': str(beighteen.tenth()),
+                'блюдись': str(bnineteen.first()),
+                'блюдитесь': str(bnineteen.second()),
+                'богатей': str(bnineteen.third()),
+                'богатеть': str(bnineteen.fourth()),
+                'богатить': str(bnineteen.fifth()),
+                'богословствовать': str(bnineteen.sixth()),
+                'боготворить': str(bnineteen.seventh()),
+                'богохульничать': str(bnineteen.eighth()),
+                'богохульствовать': str(bnineteen.nineth()),
+                'бодать': str(bnineteen.tenth()),
                 #
                 'фас': str(ac.first()),
                 'перевести': str(ac.second()),
