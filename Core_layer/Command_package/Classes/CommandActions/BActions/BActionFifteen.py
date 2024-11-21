@@ -33,7 +33,7 @@ class BActionFifteen(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionf.first ' + str(e)))
+            logging.exception(str('The exception in bactionfifteen.first ' + str(e)))
 
     @classmethod
     def second(cls):
@@ -43,7 +43,7 @@ class BActionFifteen(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionf.second ' + str(e)))
+            logging.exception(str('The exception in bactionfifteen.second ' + str(e)))
 
     @classmethod
     def third(cls):
@@ -53,7 +53,7 @@ class BActionFifteen(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionf.third ' + str(e)))
+            logging.exception(str('The exception in bactionfifteen.third ' + str(e)))
 
     @classmethod
     def fourth(cls):
@@ -63,7 +63,7 @@ class BActionFifteen(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionf.fourth ' + str(e)))
+            logging.exception(str('The exception in bactionfifteen.fourth ' + str(e)))
 
     @classmethod
     def fifth(cls):
@@ -73,7 +73,7 @@ class BActionFifteen(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionf.fifth ' + str(e)))
+            logging.exception(str('The exception in bactionfifteen.fifth ' + str(e)))
 
     @classmethod
     def sixth(cls):
@@ -83,7 +83,7 @@ class BActionFifteen(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionf.sixth ' + str(e)))
+            logging.exception(str('The exception in bactionfifteen.sixth ' + str(e)))
 
     @classmethod
     def seventh(cls):
@@ -93,7 +93,7 @@ class BActionFifteen(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionf.seventh ' + str(e)))
+            logging.exception(str('The exception in bactionfifteen.seventh ' + str(e)))
 
     @classmethod
     def eighth(cls):
@@ -103,7 +103,7 @@ class BActionFifteen(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionf.eighth ' + str(e)))
+            logging.exception(str('The exception in bactionfifteen.eighth ' + str(e)))
 
     @classmethod
     def nineth(cls):
@@ -113,7 +113,7 @@ class BActionFifteen(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionf.nineth ' + str(e)))
+            logging.exception(str('The exception in bactionfifteen.nineth ' + str(e)))
 
     @classmethod
     def tenth(cls):
@@ -123,4 +123,4 @@ class BActionFifteen(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionf.tenth ' + str(e)))
+            logging.exception(str('The exception in bactionfifteen.tenth ' + str(e)))

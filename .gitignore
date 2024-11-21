@@ -11,3 +11,4 @@ downloads/*
 *.log
 *.csv
 *.google-cookie
+*.csv#

@@ -40,7 +40,6 @@ class CommandAction(IAction.IAction):
             return Inputstr + ' - пидор.'
         except Exception as e:
             logging.exception(str('The exception in aaction.twentyfirst ' + str(e)))
-
     @classmethod
     def second(cls):
 #
@@ -55,7 +54,6 @@ class CommandAction(IAction.IAction):
         except Exception as e:
             logging.exception(str('The exception in commandaction.translate ' + str(e)))
             return 'Проблемы с сервисом'
-
     @classmethod
     def third(cls):
 #       поссчитать
@@ -96,7 +94,6 @@ class CommandAction(IAction.IAction):
                 except Exception as e:
                     logging.exception(str('The exception in commandaction.find ' + str(e)))
                     return 'Не нашла'
-
     @classmethod
     def fourth(cls):
 #
@@ -107,7 +104,6 @@ class CommandAction(IAction.IAction):
             return message_text
         except Exception as e:
             logging.exception(str('The exception in commandaction.say ' + str(e)))
-
     @classmethod
     def fifth(cls):
 #
@@ -125,7 +121,6 @@ class CommandAction(IAction.IAction):
         except Exception as e:
             logging.exception(str('The exception in commandaction.weather ' + str(e)))
             return 'Проблемы с сервисом'
-
     @classmethod
     def sixth(cls):
 #
@@ -136,7 +131,6 @@ class CommandAction(IAction.IAction):
             return str(ra.answer('hianswer')) + ' '
         except Exception as e:
             logging.exception(str('The exception in commandaction.say ' + str(e)))
-
     @classmethod
     def seventh(cls):
 #       очистить
@@ -149,7 +143,6 @@ class CommandAction(IAction.IAction):
             return pr.preprocess_text(message_text)
         except Exception as e:
             logging.exception(str('The exception in commandaction.say ' + str(e)))
-
     @classmethod
     def eighth(cls):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
@@ -181,11 +174,9 @@ class CommandAction(IAction.IAction):
             return message_text
         except Exception as e:
             logging.exception(str('The exception in commandaction.calculate ' + str(e)))
-
     @classmethod
     def nineth(cls):
         pass
-
     @classmethod
     def tenth(cls):
         pass
