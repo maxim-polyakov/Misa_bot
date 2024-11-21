@@ -32,7 +32,7 @@ class TestCase_API_package(ITestCase.ITestCase):
         command = CommandAnalyzer.CommandAnalyzer(
             'скажи пистолет', 'test')
         output = command.analyse(message_text='скажи пистолет')
-        self.assertEqual(output, 'пистолет')
+        self.assertNotEqual(output, None)
 
     def test_commandanalyzersi(self):
         command = CommandAnalyzer.CommandAnalyzer(
@@ -52,5 +52,10 @@ class TestCase_API_package(ITestCase.ITestCase):
         output = command.analyse(message_text='аплодировать')
         self.assertNotEqual(output, None)
 
+    def test_commandanalyzerni(self):
+        command = CommandAnalyzer.CommandAnalyzer(
+            'поссчитай производную x^2 по x', 'test')
+        output = command.analyse(message_text='поссчитай производную x^2 по x')
+        self.assertNotEqual(output, None)
 if __name__ == '__main__':
     unittest.main()

@@ -457,7 +457,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 #
                 'фас': str(ac.first()),
                 'перевести': str(ac.second()),
-                'поссчитать': str(ac.third()),
+                'поссчитать': str(ac.nineth()),
                 'находить': str(ac.third()),
                 'сказать': str(ac.fourth()),
                 'погода': str(ac.fifth()),

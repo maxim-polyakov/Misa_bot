@@ -39,7 +39,8 @@ class CommandAction(IAction.IAction):
             logging.info('The commandaction.twentyfirst is done')
             return Inputstr + ' - пидор.'
         except Exception as e:
-            logging.exception(str('The exception in aaction.twentyfirst ' + str(e)))
+            logging.exception(str('The exception in aaction.first ' + str(e)))
+
     @classmethod
     def second(cls):
 #
@@ -52,48 +53,53 @@ class CommandAction(IAction.IAction):
             logging.info('The commandaction.translate is done')
             return translated
         except Exception as e:
-            logging.exception(str('The exception in commandaction.translate ' + str(e)))
+            logging.exception(str('The exception in commandaction.second ' + str(e)))
             return 'Проблемы с сервисом'
+
     @classmethod
     def third(cls):
-#       поссчитать
+#
 #       находить
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
-        message_text = (cls.message_text.strip(' ')
-                        .replace('найди ', '')
-                        .replace('поссчитай ', ''))
-        if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
-            message_text = cls.eighth()
-            cls.command_flag = 1
-            logging.info('The commandaction.find is done')
-            return message_text
-        else:
-            if (message_text.count('википедии') > 0):
-                message_text = (message_text.strip(' ')
-                                .replace('википедии ', ''))
-                try:
-                    apif = WikiFinder.WikiFinder()
-                    finded_list = apif.find(cls.__pr.preprocess_text(message_text))
-                    logging.info('The commandaction.find is done')
-                    return str(finded_list)
-                except Exception as e:
-                    logging.exception(str('The exception in commandaction.find ' + str(e)))
-                    return 'Не нашла'
+        try:
+            message_text = (cls.message_text.strip(' ')
+                            .replace('найди ', ''))
+            if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
+                message_text = cls.eighth()
+                cls.command_flag = 1
+                logging.info('The commandaction.third is done')
+                return message_text
             else:
-                try:
-                    gpif = GoogleFinder.GoogleFinder()
-                    finded_list = gpif.find(message_text)
-                    outstr = 'Ссылки по запросу:\n'
-                    if (finded_list != None):
-                        for outmes in finded_list:
-                            outstr += outmes + ' \n '
-                    logging.info('The commandaction.find is done')
-                    if outstr == '':
+
+                if (message_text.count('википедии') > 0):
+                    message_text = (message_text.strip(' ')
+                                    .replace('википедии ', ''))
+                    try:
+                        apif = WikiFinder.WikiFinder()
+                        finded_list = apif.find(cls.__pr.preprocess_text(message_text))
+                        logging.info('The commandaction.find is done')
+                        return str(finded_list)
+                    except Exception as e:
+                        logging.exception(str('The exception in commandaction.third ' + str(e)))
                         return 'Не нашла'
-                    return outstr
-                except Exception as e:
-                    logging.exception(str('The exception in commandaction.find ' + str(e)))
-                    return 'Не нашла'
+                else:
+                    try:
+                        gpif = GoogleFinder.GoogleFinder()
+                        finded_list = gpif.find(message_text)
+                        outstr = 'Ссылки по запросу:\n'
+                        if (finded_list != None):
+                            for outmes in finded_list:
+                                outstr += outmes + ' \n '
+                        logging.info('The commandaction.find is done')
+                        if outstr == '':
+                            return 'Не нашла'
+                        return outstr
+                    except Exception as e:
+                        logging.exception(str('The exception in commandaction.third ' + str(e)))
+                        return 'Не нашла'
+        except Exception as e:
+            logging.exception(str('The exception in commandaction.third ' + str(e)))
+
     @classmethod
     def fourth(cls):
 #
@@ -103,7 +109,8 @@ class CommandAction(IAction.IAction):
             message_text = cls.message_text.replace('скажи ', '')
             return message_text
         except Exception as e:
-            logging.exception(str('The exception in commandaction.say ' + str(e)))
+            logging.exception(str('The exception in commandaction.fourth ' + str(e)))
+
     @classmethod
     def fifth(cls):
 #
@@ -115,12 +122,13 @@ class CommandAction(IAction.IAction):
             res = wp.predict()
             if res != None:
                 out = str(res[0] + '. ' + res[1])
-                logging.info('The commandaction.weather is done')
+                logging.info('The commandaction.fifth is done')
                 return out
-            logging.info('The commandaction.weather is done')
+            logging.info('The commandaction.fifth is done')
         except Exception as e:
-            logging.exception(str('The exception in commandaction.weather ' + str(e)))
+            logging.exception(str('The exception in commandaction.fifth ' + str(e)))
             return 'Проблемы с сервисом'
+
     @classmethod
     def sixth(cls):
 #
@@ -130,7 +138,8 @@ class CommandAction(IAction.IAction):
             ra = RandomAnswer.RandomAnswer()
             return str(ra.answer('hianswer')) + ' '
         except Exception as e:
-            logging.exception(str('The exception in commandaction.say ' + str(e)))
+            logging.exception(str('The exception in commandaction.sixth ' + str(e)))
+
     @classmethod
     def seventh(cls):
 #       очистить
@@ -142,7 +151,8 @@ class CommandAction(IAction.IAction):
             pr = CommonPreprocessing.CommonPreprocessing()
             return pr.preprocess_text(message_text)
         except Exception as e:
-            logging.exception(str('The exception in commandaction.say ' + str(e)))
+            logging.exception(str('The exception in commandaction.seventh ' + str(e)))
+
     @classmethod
     def eighth(cls):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
@@ -154,29 +164,43 @@ class CommandAction(IAction.IAction):
             c = SympyCalculator.SympyCalculator()
             if Inputarr[0] == 'производную':
                 output = c.deravative(Inputarr[1], Inputarr[3])
-                logging.info('The commandaction.calculate is done')
+                logging.info('The commandaction.eighth is done')
                 return output
             elif Inputarr[0] == 'интеграл':
                 output = c.integrate(Inputarr[1], Inputarr[3])
-                logging.info('The commandaction.calculate is done')
+                logging.info('The commandaction.eighth is done')
                 return output
             else:
                 outputone = c.deravative(Inputarr[1], Inputarr[3])
                 outputtwo = c.integrate(Inputarr[1], Inputarr[3])
                 output = 'производная ' + outputone + ', ' + 'интеграл ' + outputtwo
-                logging.info('The commandaction.calculate is done')
+                logging.info('The commandaction.eighth is done')
                 return output
             message_text = cls.message_text.replace(Inputarr[1].rstrip(), '')
             message_text = message_text.replace(Inputarr[2], '').replace(Inputarr[0], '')
             message_text = message_text.strip(' ')
             cls.command_flag = 1
-            logging.info('The commandaction.calculate is done')
+            logging.info('The commandaction.eighth is done')
             return message_text
         except Exception as e:
-            logging.exception(str('The exception in commandaction.calculate ' + str(e)))
+            logging.exception(str('The exception in commandaction.eighth ' + str(e)))
+
     @classmethod
     def nineth(cls):
-        pass
+#
+#       поссчитай
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            message_text = (cls.message_text.strip(' ')
+                        .replace('поссчитай ', ''))
+            if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
+                message_text = cls.eighth()
+                cls.command_flag = 1
+                logging.info('The commandaction.nineth is done')
+                return message_text
+        except Exception as e:
+            logging.exception(str('The exception in commandaction.nineth ' + str(e)))
+
     @classmethod
     def tenth(cls):
         pass
