@@ -57,5 +57,12 @@ class TestCase_API_package(ITestCase.ITestCase):
             'поссчитай производную x^2 по x', 'test')
         output = command.analyse(message_text='поссчитай производную x^2 по x')
         self.assertNotEqual(output, None)
+
+    def test_commandanalyzerte(self):
+        command = CommandAnalyzer.CommandAnalyzer(
+            'абонируй васю', 'test')
+        output = command.analyse(message_text='абонируй васю')
+        self.assertNotEqual(output, None)
+
 if __name__ == '__main__':
     unittest.main()

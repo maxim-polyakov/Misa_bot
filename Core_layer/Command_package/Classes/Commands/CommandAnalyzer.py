@@ -54,6 +54,8 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
     __cpr = CommandPreprocessing.CommandPreprocessing()
     __nothingflg = 0
     __cash = ''
+    __message = None
+    __mesentype = None
 
     def __init__(self, message, mesentype):
         CommandAnalyzer.__message = message
@@ -101,7 +103,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             bsixteen = BActionSixteen.BActionSixteen(cls.__message, message_text)
             bseventeen = BActionSeventeen.BActionSeventeen(cls.__message, message_text)
             beighteen = BActionEighteen.BActionEighteen(cls.__message, message_text)
-            bnineteen = BActionNineteen.BACtionNineteen(cls.__message, message_text)
+            bnineteen = BActionNineteen.BActionNineteen(cls.__message, message_text)
             btwenty = BActionTwenty.BActionTwenty(cls.__message, message_text)
             btwentyone = BActionTwentyOne.BActionTwentyOne(cls.__message, message_text)
             btwentytwo = BActionTwentyTwo.BActionTwentyTwo(cls.__message, message_text)

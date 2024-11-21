@@ -1,11 +1,9 @@
 import logging
+import pandas as pd
 from Core_layer.Answer_package.Classes import RandomAnswer
+from Deep_layer.DB_package.Classes import DB_Communication
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.API_package.Classes.Finders import WikiFinder
-from Deep_layer.API_package.Classes.Finders import GoogleFinder
-from Deep_layer.API_package.Classes.Calculators import SympyCalculator
-from Deep_layer.API_package.Classes.Translators import GoogleTranslator
 from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 
@@ -17,9 +15,11 @@ class AActionOne(IAction.IAction):
     boto = None
     message = None
     message_text = None
-
+    __hash = None
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
+    __ra = RandomAnswer.RandomAnswer()
+    __dbc = DB_Communication.DB_Communication()
 
     def __init__(self, message, message_text):
         AActionOne.message = message
@@ -31,7 +31,25 @@ class AActionOne(IAction.IAction):
 #       абонировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+
+
+            message_text = (cls.message_text.strip(' ')
+                            .replace('абонируй ', ''))
+            dfc = cls.__dbc.get_data('select count(subscriber) from assistant_sets.subscribetable')
+            counts = dfc['count'][0]
+            dbc = DB_Communication.DB_Communication()
+            data = {'id': counts + 1, 'subscriber': cls.__pr.preprocess_text(text=message_text)}
+            df = pd.DataFrame()
+            new_row = pd.Series(data)
+            df = df.append(new_row, ignore_index=True)
+            if cls.__hash == None:
+                dbc.insert_to(df, 'subscribetable', 'assistant_sets')
+                cls.__hash = cls.__pr.preprocess_text(text=message_text)
+                return cls.__ra.answer('subscribeanswer') + ' '
+            elif(cls.__hash == cls.__pr.preprocess_text(text=message_text)):
+                cls.__hash == None
+                return 'Уже добавляла'
+
         except Exception as e:
             logging.exception(str('The exception in aactionone.first ' + str(e)))
 
