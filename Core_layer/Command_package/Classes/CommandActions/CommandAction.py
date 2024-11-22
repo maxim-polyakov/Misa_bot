@@ -47,7 +47,7 @@ class CommandAction(IAction.IAction):
 #       перевести
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            message_text = cls.message_text.strip(' ').replace('перевести ', '')
+            message_text = cls.message_text.strip(' ').replace('переведи ', '')
             tr = GoogleTranslator.GoogleTranslator("ru")
             translated = tr.translate(message_text)
             logging.info('The commandaction.translate is done')
@@ -155,10 +155,11 @@ class CommandAction(IAction.IAction):
 
     @classmethod
     def eighth(cls):
+#
+#       поссчитай
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             message_text = (cls.message_text.strip(' ')
-                            .replace('найди ', '')
                             .replace('поссчитай ', ''))
             Inputarr = message_text.split(' ')
             c = SympyCalculator.SympyCalculator()
