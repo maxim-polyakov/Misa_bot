@@ -32,7 +32,7 @@ class AActionOne(IAction.IAction):
 #       абонировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('абонируй') > 0:
+            if cls.message_text.count('абонируй') > 0 and cls.message_text.count('абонируйся') == 0:
                 message_text = (cls.message_text.strip(' ')
                                 .replace('абонируй ', ''))
                 dfc = cls.__dbc.get_data('select count(subscriber) from assistant_sets.subscribetable')

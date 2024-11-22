@@ -70,5 +70,11 @@ class TestCase_API_package(ITestCase.ITestCase):
         output = command.analyse(message_text='переведи knife')
         self.assertNotEqual(output, None)
 
+    def test_commandanalyzertw(self):
+        command = CommandAnalyzer.CommandAnalyzer(
+            'абонируйся', 'test')
+        output = command.analyse(message_text='абонируйся')
+        self.assertNotEqual(output, None)
+
 if __name__ == '__main__':
     unittest.main()
