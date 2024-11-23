@@ -193,7 +193,7 @@ class CommandAction(IAction.IAction):
             logging.exception(str('The exception in commandaction.eighth ' + str(e)))
 
     @classmethod
-    def eight(cls):
+    def eighth(cls):
         pass
 
     @classmethod
