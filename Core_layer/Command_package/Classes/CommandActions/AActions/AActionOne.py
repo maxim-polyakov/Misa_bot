@@ -83,7 +83,8 @@ class AActionOne(IAction.IAction):
 #       абсолютизировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('абсолютизируй') > 0 and cls.message_text.count('абсолютизируйся') == 0:
+                return cls.__ra.answer('absolutizeanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionone.third ' + str(e)))
 
@@ -93,7 +94,8 @@ class AActionOne(IAction.IAction):
 #       абсолютизироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('абсолютизируйся') > 0:
+                return cls.__ra.answer('absolutizeselfanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionone.fourth ' + str(e)))
 
@@ -103,7 +105,8 @@ class AActionOne(IAction.IAction):
 #       абсолютировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('абсолютируй') > 0 and cls.message_text.count('абсолютируйся') == 0:
+                return cls.__ra.answer('to_absolutizeanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionone.fifth ' + str(e)))
 
@@ -113,7 +116,8 @@ class AActionOne(IAction.IAction):
 #       абсорбировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('абсорбируй') > 0 and cls.message_text.count('абсорбируйся') == 0:
+                return cls.__ra.answer('absorbanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionone.sixth ' + str(e)))
 
@@ -123,7 +127,8 @@ class AActionOne(IAction.IAction):
 #       абсорбироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('абсорбируйся') > 0:
+                return cls.__ra.answer('absorbselfanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionone.seventh ' + str(e)))
 
@@ -133,7 +138,8 @@ class AActionOne(IAction.IAction):
 #       абстрагировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('абстрагируй') > 0 and cls.message_text.count('абстрагируйся') == 0:
+                return cls.__ra.answer('abstractanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionone.eighth ' + str(e)))
 
@@ -143,7 +149,8 @@ class AActionOne(IAction.IAction):
 #       абстрагироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('абстрагируйся') > 0:
+                return cls.__ra.answer('abstractselfanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionone.nineth ' + str(e)))
 
@@ -153,6 +160,7 @@ class AActionOne(IAction.IAction):
 #       авансировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('авансируй') > 0 and cls.message_text.count('авансируйся') == 0:
+                return cls.__ra.answer('advanceanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionone.tenth ' + str(e)))

@@ -17,9 +17,9 @@ class AActionTwelve(IAction.IAction):
     boto = None
     message = None
     message_text = None
-
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
+    __ra = RandomAnswer.RandomAnswer()
 
     def __init__(self, message, message_text):
         AActionTwelve.message = message
@@ -111,7 +111,8 @@ class AActionTwelve(IAction.IAction):
 #       аплодировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            return '👏'
+            if cls.message_text.count('аплодируй') > 0 and cls.message_text.count('аплодируйся') == 0:
+                return cls.__ra.answer('applaudanswer')
         except Exception as e:
             logging.exception(str('The exception in aactiontwelve.nineth ' + str(e)))
 

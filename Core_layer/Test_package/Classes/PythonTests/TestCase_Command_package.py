@@ -76,5 +76,41 @@ class TestCase_API_package(ITestCase.ITestCase):
         output = command.analyse(message_text='абонируйся')
         self.assertNotEqual(output, None)
 
+    def test_commandanalyzerthi(self):
+        command = CommandAnalyzer.CommandAnalyzer(
+            'абсолютизируй', 'test')
+        output = command.analyse(message_text='абсолютизируй')
+        self.assertNotEqual(output, None)
+
+    def test_commandanalyzerfour(self):
+        command = CommandAnalyzer.CommandAnalyzer(
+            'абсолютизируйся', 'test')
+        output = command.analyse(message_text='абсолютизируйся')
+        self.assertNotEqual(output, None)
+
+    def test_commandanalyzerfif(self):
+        command = CommandAnalyzer.CommandAnalyzer(
+            'абсолютируй', 'test')
+        output = command.analyse(message_text='абсолютируй')
+        self.assertNotEqual(output, None)
+
+    def test_commandanalyzersix(self):
+        command = CommandAnalyzer.CommandAnalyzer(
+            'абсорбируйся', 'test')
+        output = command.analyse(message_text='абсорбируйся')
+        self.assertNotEqual(output, None)
+
+    def test_commandanalyzerseven(self):
+        command = CommandAnalyzer.CommandAnalyzer(
+            'абстрагируй', 'test')
+        output = command.analyse(message_text='абстрагируй')
+        self.assertNotEqual(output, None)
+
+    def test_commandanalyzereight(self):
+        command = CommandAnalyzer.CommandAnalyzer(
+            'авансируй', 'test')
+        output = command.analyse(message_text='авансируй')
+        self.assertNotEqual(output, None)
+
 if __name__ == '__main__':
     unittest.main()
