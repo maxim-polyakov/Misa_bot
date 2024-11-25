@@ -17,9 +17,9 @@ class AActionTwo(IAction.IAction):
     boto = None
     message = None
     message_text = None
-
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
+    __ra = RandomAnswer.RandomAnswer()
 
     def __init__(self, message, message_text):
         AActionTwo.message = message
@@ -31,7 +31,8 @@ class AActionTwo(IAction.IAction):
 #       авансироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('авансируйся') > 0:
+                return cls.__ra.answer('advanceselfanswer')
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.first ' + str(e)))
 
@@ -41,7 +42,8 @@ class AActionTwo(IAction.IAction):
 #       авизировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('авизируй') > 0 and cls.message_text.count('авизируйся') == 0:
+                return cls.__ra.answer('adviseanswer')
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.second ' + str(e)))
 
@@ -51,7 +53,8 @@ class AActionTwo(IAction.IAction):
 #       авизироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('авизируйся') > 0:
+                return cls.__ra.answer('adviseselfanswer')
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.third ' + str(e)))
 
@@ -61,7 +64,8 @@ class AActionTwo(IAction.IAction):
 #       автоматизировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('автоматизируй') > 0 and cls.message_text.count('автоматизируйся') == 0:
+                return cls.__ra.answer('automateanswer')
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.fourth ' + str(e)))
 
@@ -71,7 +75,8 @@ class AActionTwo(IAction.IAction):
 #       автоматизироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('автоматизируйся') > 0:
+                return cls.__ra.answer('automateselfanswer')
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.fifth ' + str(e)))
 
