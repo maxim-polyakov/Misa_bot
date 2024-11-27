@@ -112,5 +112,10 @@ class TestCase_API_package(ITestCase.ITestCase):
         output = command.analyse(message_text='автоматизируйся')
         self.assertNotEqual(output, None)
 
+    def test_commandanalyzernine(self):
+        command = CommandAnalyzer.CommandAnalyzer(
+            'агитируй', 'test')
+        output = command.analyse(message_text='агитируй')
+        self.assertNotEqual(output, None)
 if __name__ == '__main__':
     unittest.main()

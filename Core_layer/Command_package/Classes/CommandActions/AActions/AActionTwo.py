@@ -1,12 +1,7 @@
 import logging
 from Core_layer.Answer_package.Classes import RandomAnswer
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.API_package.Classes.Finders import WikiFinder
-from Deep_layer.API_package.Classes.Finders import GoogleFinder
-from Deep_layer.API_package.Classes.Calculators import SympyCalculator
-from Deep_layer.API_package.Classes.Translators import GoogleTranslator
-from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
+from Deep_layer.DB_package.Classes import DB_Communication
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 
 
@@ -17,6 +12,8 @@ class AActionTwo(IAction.IAction):
     boto = None
     message = None
     message_text = None
+    __hashone = None
+    __hashtwo = None
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
     __ra = RandomAnswer.RandomAnswer()
@@ -86,7 +83,8 @@ class AActionTwo(IAction.IAction):
 #       авторизовать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('авторизуй') > 0 and cls.message_text.count('авторизуйся') == 0:
+                return 'Авторизовала'
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.sixth ' + str(e)))
 
@@ -96,7 +94,8 @@ class AActionTwo(IAction.IAction):
 #       авторизоваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('авторизуйся') > 0:
+               return 'Авторизовалась'
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.seventh ' + str(e)))
 
@@ -106,7 +105,8 @@ class AActionTwo(IAction.IAction):
 #       агглютинировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агглютинируй') > 0 and cls.message_text.count('агглютинируйся') == 0:
+                return 'Аглютинирую'
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.eighth ' + str(e)))
 
@@ -116,7 +116,8 @@ class AActionTwo(IAction.IAction):
 #       агглютинироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агглютинируйся') > 0:
+                return 'Аглютинируюсь'
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.nineth ' + str(e)))
 
@@ -126,6 +127,7 @@ class AActionTwo(IAction.IAction):
 #       агитировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агитируй') > 0 and cls.message_text.count('агитируйся') == 0:
+                return cls.__ra.answer('agitateanswer')
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.tenth ' + str(e)))
