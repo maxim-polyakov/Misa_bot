@@ -117,6 +117,6 @@ class TestCase_API_package(ITestCase.ITestCase):
             'агитируй', 'test')
         output = command.analyse(message_text='агитируй')
         self.assertNotEqual(output, None)
-        
+
 if __name__ == '__main__':
     unittest.main()

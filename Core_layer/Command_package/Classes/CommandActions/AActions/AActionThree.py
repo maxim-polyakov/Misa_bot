@@ -2,11 +2,6 @@ import logging
 from Core_layer.Answer_package.Classes import RandomAnswer
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.API_package.Classes.Finders import WikiFinder
-from Deep_layer.API_package.Classes.Finders import GoogleFinder
-from Deep_layer.API_package.Classes.Calculators import SympyCalculator
-from Deep_layer.API_package.Classes.Translators import GoogleTranslator
-from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 
 
@@ -17,9 +12,9 @@ class AActionThree(IAction.IAction):
     boto = None
     message = None
     message_text = None
-
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
+    __ra = RandomAnswer.RandomAnswer()
 
     def __init__(self, message, message_text):
         AActionThree.message = message
@@ -101,7 +96,8 @@ class AActionThree(IAction.IAction):
 #       агукать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агукани') > 0:
+                return 'агу'
         except Exception as e:
             logging.exception(str('The exception in aactionthree.eighth ' + str(e)))
 
@@ -111,7 +107,8 @@ class AActionThree(IAction.IAction):
 #       агукнуть
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агукни') > 0:
+                return 'агу'
         except Exception as e:
             logging.exception(str('The exception in aactionthree.nineth ' + str(e)))
 
