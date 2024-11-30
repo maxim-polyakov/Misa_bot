@@ -48,7 +48,8 @@ class AActionThree(IAction.IAction):
 #       агонизировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агонизируй') > 0 and cls.message_text.count('агонезируйся') == 0:
+                return cls.__ra.answer('agonizeanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionthree.third ' + str(e)))
 
