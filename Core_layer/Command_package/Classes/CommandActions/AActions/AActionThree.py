@@ -26,7 +26,8 @@ class AActionThree(IAction.IAction):
 #       агломерировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агломерируй') > 0 and cls.message_text.count('агломерируйся') == 0:
+                return cls.__ra.answer('agglomerateanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionthree.first ' + str(e)))
 
@@ -36,7 +37,8 @@ class AActionThree(IAction.IAction):
 #       агломерироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агломерируйся') > 0:
+                return cls.__ra.answer('agglomerateselfanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionthree.second ' + str(e)))
 
