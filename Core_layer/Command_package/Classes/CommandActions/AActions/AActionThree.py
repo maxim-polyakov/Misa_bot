@@ -59,7 +59,8 @@ class AActionThree(IAction.IAction):
 #       агрегатировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агрегатируй') > 0 and cls.message_text.count('агрегатируйся') == 0:
+                return cls.__ra.answer('aggregateanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionthree.fourth ' + str(e)))
 
