@@ -31,7 +31,8 @@ class AActionFour(IAction.IAction):
 #       адаптироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('адаптируйся') > 0:
+                return 'Адаптируюсь'
         except Exception as e:
             logging.exception(str('The exception in aactionfour.first ' + str(e)))
 

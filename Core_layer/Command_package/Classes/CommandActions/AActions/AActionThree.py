@@ -70,7 +70,8 @@ class AActionThree(IAction.IAction):
 #       агрегатироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агрегатируйся') > 0:
+                return 'Агрегатируюсь'
         except Exception as e:
             logging.exception(str('The exception in aactionthree.fifth ' + str(e)))
 
@@ -80,7 +81,8 @@ class AActionThree(IAction.IAction):
 #       агрегировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агрегируй') > 0 and cls.message_text.count('агрегируйся') == 0:
+                return 'Агрегирую'
         except Exception as e:
             logging.exception(str('The exception in aactionthree.sixth ' + str(e)))
 
@@ -90,7 +92,8 @@ class AActionThree(IAction.IAction):
 #       агрегироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('агрегируйся') > 0:
+                return 'Агрегируюсь'
         except Exception as e:
             logging.exception(str('The exception in aactionthree.seventh ' + str(e)))
 
@@ -122,6 +125,7 @@ class AActionThree(IAction.IAction):
 #       адаптировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('адаптируй') > 0 and cls.message_text.count('адаптируйся') == 0:
+                return cls.__ra.answer('adaptanswer')
         except Exception as e:
             logging.exception(str('The exception in aactionthree.tenth ' + str(e)))
