@@ -42,7 +42,8 @@ class AActionFour(IAction.IAction):
 #       адвербиализироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('адвербиализируйся') > 0:
+                return 'Адвербиализируюсь'
         except Exception as e:
             logging.exception(str('The exception in aactionfour.second ' + str(e)))
 
@@ -52,7 +53,8 @@ class AActionFour(IAction.IAction):
 #       адвокатствовать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('адвокатствуй') > 0 and cls.message_text.count('адвокатствуйся') == 0:
+                return 'Адвокатствуюсь'
         except Exception as e:
             logging.exception(str('The exception in aactionfour.third ' + str(e)))
 
@@ -62,7 +64,8 @@ class AActionFour(IAction.IAction):
 #       администрировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('администрируй') > 0 and cls.message_text.count('администрируйся') == 0:
+                return 'Я администрирую собственную память'
         except Exception as e:
             logging.exception(str('The exception in aactionfour.fourth ' + str(e)))
 
