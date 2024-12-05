@@ -54,7 +54,7 @@ class AActionFour(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('адвокатствуй') > 0 and cls.message_text.count('адвокатствуйся') == 0:
-                return 'Адвокатствуюсь'
+                return 'Адвокатствую'
         except Exception as e:
             logging.exception(str('The exception in aactionfour.third ' + str(e)))
 
@@ -75,7 +75,8 @@ class AActionFour(IAction.IAction):
 #       адоптировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('адоптируй') > 0 and cls.message_text.count('адоптируйся') == 0:
+                return 'Адоптирую'
         except Exception as e:
             logging.exception(str('The exception in aactionfour.fifth ' + str(e)))
 
@@ -85,7 +86,8 @@ class AActionFour(IAction.IAction):
 #       адоптироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('адоптируйся') > 0:
+                return 'Адоптируюсь'
         except Exception as e:
             logging.exception(str('The exception in aactionfour.sixth ' + str(e)))
 
