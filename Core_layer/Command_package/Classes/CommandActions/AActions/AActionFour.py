@@ -97,7 +97,12 @@ class AActionFour(IAction.IAction):
 #       адресовать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('адресуй') > 0 and cls.message_text.count('адресуйся') == 0:
+                message_text = (cls.message_text.strip(' ')
+                                .replace('адресуй ', ''))
+                if message_text.count('сообщение') > 0:
+                    return 'сообщение для ' + str(cls.message.chat.username)
+                return 'Адресую'
         except Exception as e:
             logging.exception(str('The exception in aactionfour.seventh ' + str(e)))
 
@@ -107,7 +112,9 @@ class AActionFour(IAction.IAction):
 #       адресоваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('адресуйся') > 0:
+                return 'Cообщение для мисы'
+
         except Exception as e:
             logging.exception(str('The exception in aactionfour.eighth ' + str(e)))
 
@@ -117,7 +124,8 @@ class AActionFour(IAction.IAction):
 #       адсорбировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('адсорбируй') > 0 and cls.message_text.count('адсорьируйся') == 0:
+                return 'Адсорьирую'
         except Exception as e:
             logging.exception(str('The exception in aactionfour.nineth ' + str(e)))
 
@@ -127,6 +135,7 @@ class AActionFour(IAction.IAction):
 #       адсорбироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('адсорбируйся') > 0:
+                return 'Адсорьируюсь'
         except Exception as e:
             logging.exception(str('The exception in aactionfour.tenth ' + str(e)))
