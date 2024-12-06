@@ -1,31 +1,26 @@
-from string import punctuation
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from Deep_layer.NLP_package.Interfaces import IGpt
-import torch
+#from openai import OpenAi
 import logging
-DEVICE = torch.device('cpu')
+from Deep_layer.DB_package.Classes import DB_Communication
 
 class Gpt(IGpt.IGpt):
     """
     It is a gpt text generator
     """
+    __dbc = DB_Communication.DB_Communication()
     @classmethod
     def generate(cls, text):
 #
 #
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            model_name_or_path = "sberbank-ai/rugpt3large_based_on_gpt2"
-            tokenizer = GPT2Tokenizer.from_pretrained(model_name_or_path)
-            model = GPT2LMHeadModel.from_pretrained(model_name_or_path).to(DEVICE)
-            input_ids = tokenizer.encode(text, return_tensors="pt").to(DEVICE)
-            out = model.generate(input_ids, do_sample=False, max_length=100)
-            tokens = text
-            tokens = [token for token in tokens if token != ' '
-                      and token.strip() not in punctuation]
-            text = ' '.join(tokens).rstrip('\n')
-            generated_text = list(map(tokenizer.decode, out))[0]
-            logging.info('The gpt.generate is done')
-            return generated_text.replace('\xa0', ' ').replace('\n', '').replace(text, '').replace('—', '')
+            fdf = cls.__dbc.get_data('select token from assistant_sets.tokens where botname = \'Misa\' and platformname = \'Gpt\'')
+            sdf = cls.__dbc.get_data('select token from assistant_sets.projects where botname = \'Misa\' and platformname = \'Gpt\'')
+            tdf = cls.__dbc.get_data('select token from assistant_sets.organizations where botname = \'Misa\' and platformname = \'Gpt\'')
+            OPENAI_API_KEY = fdf['token'][0]
+            OPENAI_API_PROJECT = sdf['token'][0]
+            OPENAI_API_ORG = tdf['token'][0]
+            pass
+
         except Exception as e:
             logging.exception(str('The exception is in gpt.generate ' + str(e)))

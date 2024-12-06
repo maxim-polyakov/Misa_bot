@@ -20,5 +20,6 @@ class TestCase_API_package(ITestCase.ITestCase):
 
     def test_gpt(self):
         res = self.gpt.generate('это тест')
+        self.assertEqual(res, '')
 if __name__ == '__main__':
     unittest.main()
