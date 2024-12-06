@@ -1,5 +1,5 @@
 from Deep_layer.NLP_package.Interfaces import IGpt
-#from openai import OpenAi
+from openai import OpenAI
 import logging
 from Deep_layer.DB_package.Classes import DB_Communication
 
@@ -20,7 +20,23 @@ class Gpt(IGpt.IGpt):
             OPENAI_API_KEY = fdf['token'][0]
             OPENAI_API_PROJECT = sdf['token'][0]
             OPENAI_API_ORG = tdf['token'][0]
-            pass
+            client = OpenAI(
+                api_key=OPENAI_API_KEY,
+                organization=OPENAI_API_ORG,
+                project=OPENAI_API_PROJECT,
+            )
+            response = client.chat.completions.create(
+                model='gpt-4o-mini',
+                messages=[{
+                    "role": "user",
+                    "content": text,
+                }],
+                temperature=0,
+                top_p=1,
+                frequency_penalty=0,
+                presence_penalty=0
+            )
+            return response.choices[0].message.content
 
         except Exception as e:
             logging.exception(str('The exception is in gpt.generate ' + str(e)))
