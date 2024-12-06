@@ -16,5 +16,7 @@ class TestCase_API_package(ITestCase.ITestCase):
         res = self.pr.preprocess_text('поздоровайся')
         self.assertEqual(res, 'поздороваться')
 
+    def test_gpt(self):
+        pass
 if __name__ == '__main__':
     unittest.main()
