@@ -48,12 +48,13 @@ class CommandAction(IAction.IAction):
 #       перевести
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('переведи') > 0:
-                message_text = cls.message_text.strip(' ').replace('переведи ', '')
-                tr = GoogleTranslator.GoogleTranslator("ru")
-                translated = tr.translate(message_text)
-                logging.info('The commandaction.translate is done')
-                return translated
+            # if cls.message_text.count('переведи') > 0:
+            #     message_text = cls.message_text.strip(' ').replace('переведи ', '')
+            #     tr = GoogleTranslator.GoogleTranslator("ru")
+            #     translated = tr.translate(message_text)
+            #     logging.info('The commandaction.translate is done')
+            #     return translated
+            pass
         except Exception as e:
             logging.exception(str('The exception in commandaction.second ' + str(e)))
             return 'Проблемы с сервисом'

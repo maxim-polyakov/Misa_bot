@@ -168,7 +168,8 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             for cdictvalue in Cdict.values():
                 if(cdictvalue in input_string):
                     logging.info('The db_communication.checkcommands is done')
-                    return True
+                    if cdictvalue != 'при':
+                        return True
             logging.info('The db_communication.checkcommands is done')
             return False
         except Exception as e:
