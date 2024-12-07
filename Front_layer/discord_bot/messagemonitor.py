@@ -37,12 +37,18 @@ async def on_message(message):
         else:
             if outstr != '' or outstr != '\n':
                 if(isCommand):
-                    await message.channel.send(outstr)
+                    try:
+                        await message.channel.send(outstr)
+                    except Exception as e:
+                        pass
                 else:
                     if(voice_client != None):
                         await tmon.monitor(outstr)
                     else:
-                        await message.channel.send(outstr)
+                        try:
+                            await message.channel.send(outstr)
+                        except Exception as e:
+                            pass
 
 
 

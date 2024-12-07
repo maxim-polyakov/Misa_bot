@@ -165,10 +165,12 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             postgr_conn = Connections.PostgresConnection()
             df = pd.read_sql('SELECT text FROM assistant_sets.commands', postgr_conn.conn_remote)
             Cdict = df['text'].to_dict()
+
+            input_array = input_string.split(' ')
             for cdictvalue in Cdict.values():
-                if(cdictvalue in input_string):
-                    logging.info('The db_communication.checkcommands is done')
-                    if cdictvalue != 'при':
+                for item in input_array:
+                    if(cdictvalue == item):
+                        logging.info('The db_communication.checkcommands is done')
                         return True
             logging.info('The db_communication.checkcommands is done')
             return False

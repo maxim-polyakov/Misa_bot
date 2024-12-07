@@ -9,5 +9,7 @@ async def get_user_text(message):
     mon = MessageMonitorTelegram.MessageMonitorTelegram(message)
     output = mon.monitor()
     if(output != '' or output != '\n'):
-        await telegram_bot.boto.send_message(message.chat.id, output, parse_mode='html')
-
+        try:
+            await telegram_bot.boto.send_message(message.chat.id, output, parse_mode='html')
+        except Exception as e:
+            pass
