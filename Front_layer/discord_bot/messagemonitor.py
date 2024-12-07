@@ -35,7 +35,7 @@ async def on_message(message):
             if lowertext.count('миса') > 0:
                 await message.channel.send(file=discord_bot.discord.File(photo))
         else:
-            if outstr != '':
+            if outstr != '' or outstr != '\n':
                 if(isCommand):
                     await message.channel.send(outstr)
                 else:

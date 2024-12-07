@@ -86,7 +86,7 @@ class MessageMonitor(IMonitor.IMonitor):
                 outlist = cls._neurodesc(text, lowertext, command)
                 if (outlist != None):
                     for outmes in outlist:
-                        outstr += outmes
+                        outstr += str(outmes)
                 logging.info('The messagemonitor.monitor is done')
                 return outstr.capitalize()
             else:
