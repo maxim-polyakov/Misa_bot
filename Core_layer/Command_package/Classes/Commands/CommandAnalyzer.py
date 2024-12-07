@@ -523,7 +523,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 outlist = cls.__action(word)
                 if (outlist != None):
                     for outmes in outlist:
-                        outstr += outmes + '\n'
+                        outstr += str(outmes) + '\n'
             logging.info('The commandanalyzer.analyse is done')
             return outstr
         except Exception as e:
