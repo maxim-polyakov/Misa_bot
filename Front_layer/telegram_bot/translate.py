@@ -1,5 +1,5 @@
 from Front_layer import telegram_bot
-from Deep_layer.API_package.Classes.Translators import GoogleTranslator
+from Deep_layer.API_package.Classes.Translators import MemoryTranslator
 from Core_layer.Command_package.Classes.CommandActions import CommandAction
 
 

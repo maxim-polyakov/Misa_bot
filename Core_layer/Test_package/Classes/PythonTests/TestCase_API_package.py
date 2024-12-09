@@ -3,7 +3,7 @@ from Deep_layer.API_package.Classes.Calculators import SympyCalculator as calc
 from Deep_layer.API_package.Classes.Finders import WikiFinder as find
 from Deep_layer.API_package.Classes.Finders import BingFinder as bfind
 from Deep_layer.API_package.Classes.Finders import GoogleFinder as gfind
-from Deep_layer.API_package.Classes.Translators import GoogleTranslator as trans
+from Deep_layer.API_package.Classes.Translators import MemoryTranslator as trans
 from Core_layer.Test_package.Interfases import ITestCase
 
 
