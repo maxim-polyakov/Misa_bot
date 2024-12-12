@@ -490,7 +490,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 }
             return info_dict[chosen_item]
         except Exception as e:
-            return cls._gpta.answer(message_text)
+            return ''
 
     @classmethod
     def __action(cls, message_text):
@@ -526,6 +526,8 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                     for outmes in outlist:
                         outstr += str(outmes) + '\n'
             logging.info('The commandanalyzer.analyse is done')
+            if outstr == '':
+                return cls._gpta.answer(message_text)
             return outstr
         except Exception as e:
             logging.exception(str('The exception in commandanalyzer.analyse ' + str(e)))
