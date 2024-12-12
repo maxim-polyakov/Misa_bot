@@ -1,12 +1,9 @@
 import logging
 import pandas as pd
-from Core_layer.Answer_package.Classes import RandomAnswer
 from Deep_layer.DB_package.Classes import DB_Communication
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
-
+from Core_layer.Answer_package.Classes import GptAnswer
 
 class AActionOne(IAction.IAction):
     """
@@ -19,8 +16,8 @@ class AActionOne(IAction.IAction):
     __hashtwo = None
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
-    __ra = RandomAnswer.RandomAnswer()
     __dbc = DB_Communication.DB_Communication()
+    _gpta = GptAnswer.GptAnswer()
 
     def __init__(self, message, message_text):
         AActionOne.message = message
@@ -45,7 +42,7 @@ class AActionOne(IAction.IAction):
                 if cls.__hashone == None:
                     dbc.insert_to(df, 'subscribetable', 'assistant_sets')
                     cls.__hashone = cls.__pr.preprocess_text(text=message_text)
-                    return cls.__ra.answer('subscribeanswer') + ' '
+                    return 'Добавила в базу данных' + ' '
                 elif(cls.__hashone == cls.__pr.preprocess_text(text=message_text)):
                     cls.__hashone == None
                     return 'Уже добавляла'
@@ -70,7 +67,7 @@ class AActionOne(IAction.IAction):
                 if cls.__hashtwo == None:
                     dbc.insert_to(df, 'subscribetable', 'assistant_sets')
                     cls.__hashtwo = cls.__pr.preprocess_text(text=message_text)
-                    return cls.__ra.answer('subscribeself') + ' '
+                    return 'Добавила себя в базу данных' + ' '
                 elif (cls.__hashtwo == cls.__pr.preprocess_text(text=message_text)):
                     cls.__hashtwo == None
                     return 'Уже добавляла'
@@ -84,7 +81,7 @@ class AActionOne(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('абсолютизируй') > 0 and cls.message_text.count('абсолютизируйся') == 0:
-                return cls.__ra.answer('absolutizeanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionone.third ' + str(e)))
 
@@ -95,7 +92,7 @@ class AActionOne(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('абсолютизируйся') > 0:
-                return cls.__ra.answer('absolutizeselfanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionone.fourth ' + str(e)))
 
@@ -106,7 +103,7 @@ class AActionOne(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('абсолютируй') > 0 and cls.message_text.count('абсолютируйся') == 0:
-                return cls.__ra.answer('to_absolutizeanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionone.fifth ' + str(e)))
 
@@ -117,7 +114,7 @@ class AActionOne(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('абсорбируй') > 0 and cls.message_text.count('абсорбируйся') == 0:
-                return cls.__ra.answer('absorbanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionone.sixth ' + str(e)))
 
@@ -128,7 +125,7 @@ class AActionOne(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('абсорбируйся') > 0:
-                return cls.__ra.answer('absorbselfanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionone.seventh ' + str(e)))
 
@@ -139,7 +136,7 @@ class AActionOne(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('абстрагируй') > 0 and cls.message_text.count('абстрагируйся') == 0:
-                return cls.__ra.answer('abstractanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionone.eighth ' + str(e)))
 
@@ -150,7 +147,7 @@ class AActionOne(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('абстрагируйся') > 0:
-                return cls.__ra.answer('abstractselfanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionone.nineth ' + str(e)))
 
@@ -161,6 +158,6 @@ class AActionOne(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('авансируй') > 0 and cls.message_text.count('авансируйся') == 0:
-                return cls.__ra.answer('advanceanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionone.tenth ' + str(e)))

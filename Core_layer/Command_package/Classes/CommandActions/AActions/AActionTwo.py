@@ -1,9 +1,7 @@
 import logging
-from Core_layer.Answer_package.Classes import RandomAnswer
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.DB_package.Classes import DB_Communication
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
-
+from Core_layer.Answer_package.Classes import GptAnswer
 
 class AActionTwo(IAction.IAction):
     """
@@ -16,7 +14,7 @@ class AActionTwo(IAction.IAction):
     __hashtwo = None
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
-    __ra = RandomAnswer.RandomAnswer()
+    _gpta = GptAnswer.GptAnswer()
 
     def __init__(self, message, message_text):
         AActionTwo.message = message
@@ -29,7 +27,7 @@ class AActionTwo(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('авансируйся') > 0:
-                return cls.__ra.answer('advanceselfanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.first ' + str(e)))
 
@@ -40,7 +38,7 @@ class AActionTwo(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('авизируй') > 0 and cls.message_text.count('авизируйся') == 0:
-                return cls.__ra.answer('adviseanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.second ' + str(e)))
 
@@ -51,7 +49,7 @@ class AActionTwo(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('авизируйся') > 0:
-                return cls.__ra.answer('adviseselfanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.third ' + str(e)))
 
@@ -62,7 +60,7 @@ class AActionTwo(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('автоматизируй') > 0 and cls.message_text.count('автоматизируйся') == 0:
-                return cls.__ra.answer('automateanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.fourth ' + str(e)))
 
@@ -73,7 +71,7 @@ class AActionTwo(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('автоматизируйся') > 0:
-                return cls.__ra.answer('automateselfanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.fifth ' + str(e)))
 
@@ -84,7 +82,7 @@ class AActionTwo(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('авторизуй') > 0 and cls.message_text.count('авторизуйся') == 0:
-                return 'Авторизовала'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.sixth ' + str(e)))
 
@@ -95,7 +93,7 @@ class AActionTwo(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('авторизуйся') > 0:
-               return 'Авторизовалась'
+               return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.seventh ' + str(e)))
 
@@ -106,7 +104,7 @@ class AActionTwo(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('агглютинируй') > 0 and cls.message_text.count('агглютинируйся') == 0:
-                return 'Аглютинирую'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.eighth ' + str(e)))
 
@@ -117,7 +115,7 @@ class AActionTwo(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('агглютинируйся') > 0:
-                return 'Аглютинируюсь'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.nineth ' + str(e)))
 
@@ -128,6 +126,6 @@ class AActionTwo(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('агитируй') > 0 and cls.message_text.count('агитируйся') == 0:
-                return cls.__ra.answer('agitateanswer')
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactiontwo.tenth ' + str(e)))

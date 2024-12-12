@@ -120,8 +120,8 @@ class TestCase_API_package(ITestCase.ITestCase):
 
     def test_commandanalyzertwntn(self):
         command = CommandAnalyzer.CommandAnalyzer(
-            'адаптируй', 'test')
-        output = command.analyse(message_text='адаптируй')
+            'авансируйся', 'test')
+        output = command.analyse(message_text='авансируйся')
         self.assertNotEqual(output, None)
 
 if __name__ == '__main__':
