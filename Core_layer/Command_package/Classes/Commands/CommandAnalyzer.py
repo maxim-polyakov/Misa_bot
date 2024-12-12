@@ -43,7 +43,7 @@ from Core_layer.Command_package.Classes.CommandActions.BActions import BActionTw
 from Core_layer.Command_package.Classes.CommandActions.BActions import BActionTwentyTwo
 from Core_layer.Command_package.Classes.CommandActions.BActions import BActionTwentyThree
 from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
-
+from Core_layer.Answer_package.Classes import GptAnswer
 
 class CommandAnalyzer(IAnalyzer.IAnalyzer):
     """
@@ -56,6 +56,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
     __cash = ''
     __message = None
     __mesentype = None
+    _gpta = GptAnswer.GptAnswer()
 
     def __init__(self, message, mesentype):
         CommandAnalyzer.__message = message
@@ -489,7 +490,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 }
             return info_dict[chosen_item]
         except Exception as e:
-            return 'Этой команды нет в списке команд на исполнение '
+            return cls._gpta.answer(message_text)
 
     @classmethod
     def __action(cls, message_text):
