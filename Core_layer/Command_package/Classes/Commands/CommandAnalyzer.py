@@ -489,7 +489,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 }
             return info_dict[chosen_item]
         except Exception as e:
-            return 'Этой команды нет в списке команд на исполнение'
+            return 'Этой команды нет в списке команд на исполнение '
 
     @classmethod
     def __action(cls, message_text):
