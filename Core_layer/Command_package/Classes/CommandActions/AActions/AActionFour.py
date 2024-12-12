@@ -1,14 +1,7 @@
 import logging
-from Core_layer.Answer_package.Classes import RandomAnswer
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.API_package.Classes.Finders import WikiFinder
-from Deep_layer.API_package.Classes.Finders import GoogleFinder
-from Deep_layer.API_package.Classes.Calculators import SympyCalculator
-from Deep_layer.API_package.Classes.Translators import MemoryTranslator
-from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
-
+from Core_layer.Answer_package.Classes import GptAnswer
 
 class AActionFour(IAction.IAction):
     """
@@ -17,9 +10,9 @@ class AActionFour(IAction.IAction):
     boto = None
     message = None
     message_text = None
-
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
+    _gpta = GptAnswer.GptAnswer()
 
     def __init__(self, message, message_text):
         AActionFour.message = message
@@ -32,7 +25,7 @@ class AActionFour(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('адаптируйся') > 0:
-                return 'Адаптируюсь'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfour.first ' + str(e)))
 
@@ -43,7 +36,7 @@ class AActionFour(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('адвербиализируйся') > 0:
-                return 'Адвербиализируюсь'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfour.second ' + str(e)))
 
@@ -54,7 +47,7 @@ class AActionFour(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('адвокатствуй') > 0 and cls.message_text.count('адвокатствуйся') == 0:
-                return 'Адвокатствую'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfour.third ' + str(e)))
 
@@ -65,7 +58,7 @@ class AActionFour(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('администрируй') > 0 and cls.message_text.count('администрируйся') == 0:
-                return 'Я администрирую собственную память'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfour.fourth ' + str(e)))
 
@@ -76,7 +69,7 @@ class AActionFour(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('адоптируй') > 0 and cls.message_text.count('адоптируйся') == 0:
-                return 'Адоптирую'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfour.fifth ' + str(e)))
 
@@ -87,7 +80,7 @@ class AActionFour(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('адоптируйся') > 0:
-                return 'Адоптируюсь'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfour.sixth ' + str(e)))
 
@@ -102,7 +95,7 @@ class AActionFour(IAction.IAction):
                                 .replace('адресуй ', ''))
                 if message_text.count('сообщение') > 0:
                     return 'сообщение для ' + str(cls.message.chat.username)
-                return 'Адресую'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfour.seventh ' + str(e)))
 
@@ -113,8 +106,7 @@ class AActionFour(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('адресуйся') > 0:
-                return 'Cообщение для мисы'
-
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfour.eighth ' + str(e)))
 
@@ -125,7 +117,7 @@ class AActionFour(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('адсорбируй') > 0 and cls.message_text.count('адсорьируйся') == 0:
-                return 'Адсорьирую'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfour.nineth ' + str(e)))
 
@@ -136,6 +128,6 @@ class AActionFour(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('адсорбируйся') > 0:
-                return 'Адсорьируюсь'
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfour.tenth ' + str(e)))

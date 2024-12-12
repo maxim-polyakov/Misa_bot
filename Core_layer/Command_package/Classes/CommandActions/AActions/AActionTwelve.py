@@ -1,14 +1,8 @@
 import logging
 from Core_layer.Answer_package.Classes import RandomAnswer
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.API_package.Classes.Finders import WikiFinder
-from Deep_layer.API_package.Classes.Finders import GoogleFinder
-from Deep_layer.API_package.Classes.Calculators import SympyCalculator
-from Deep_layer.API_package.Classes.Translators import MemoryTranslator
-from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
-
+from Core_layer.Answer_package.Classes import GptAnswer
 
 class AActionTwelve(IAction.IAction):
     """

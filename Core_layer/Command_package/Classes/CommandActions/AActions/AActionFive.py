@@ -1,14 +1,7 @@
 import logging
-from Core_layer.Answer_package.Classes import RandomAnswer
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.API_package.Classes.Finders import WikiFinder
-from Deep_layer.API_package.Classes.Finders import GoogleFinder
-from Deep_layer.API_package.Classes.Calculators import SympyCalculator
-from Deep_layer.API_package.Classes.Translators import MemoryTranslator
-from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
-
+from Core_layer.Answer_package.Classes import GptAnswer
 
 class AActionFive(IAction.IAction):
     """
@@ -17,9 +10,9 @@ class AActionFive(IAction.IAction):
     boto = None
     message = None
     message_text = None
-
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
+    _gpta = GptAnswer.GptAnswer()
 
     def __init__(self, message, message_text):
         AActionFive.message = message
@@ -31,7 +24,8 @@ class AActionFive(IAction.IAction):
 #       адъективироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('адъективируйся') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfive.first ' + str(e)))
 
@@ -41,7 +35,8 @@ class AActionFive(IAction.IAction):
 #       ажитировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('ажитируй') and cls.message_text.count('ажитируйся') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfive.second ' + str(e)))
 
@@ -51,7 +46,8 @@ class AActionFive(IAction.IAction):
 #       ажитироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('ажитируйся') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfive.third ' + str(e)))
 
@@ -61,7 +57,8 @@ class AActionFive(IAction.IAction):
 #       азартничать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('азартничай') and cls.message_text.count('азартничайся') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfive.fourth ' + str(e)))
 
@@ -71,7 +68,8 @@ class AActionFive(IAction.IAction):
 #       азотировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('азотируй') and cls.message_text.count('азотируйся') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfive.fifth ' + str(e)))
 
@@ -81,7 +79,8 @@ class AActionFive(IAction.IAction):
 #       азотироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('азотируйся') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfive.sixth ' + str(e)))
 
@@ -91,7 +90,8 @@ class AActionFive(IAction.IAction):
 #       айкай
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('айкай') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfive.seventh ' + str(e)))
 
@@ -101,7 +101,8 @@ class AActionFive(IAction.IAction):
 #       айкать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('айкай') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfive.eighth ' + str(e)))
 
@@ -111,7 +112,8 @@ class AActionFive(IAction.IAction):
 #       айкнуть
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('айкни') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfive.nineth ' + str(e)))
 
@@ -121,6 +123,7 @@ class AActionFive(IAction.IAction):
 #       акать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('акни') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionfive.tenth ' + str(e)))

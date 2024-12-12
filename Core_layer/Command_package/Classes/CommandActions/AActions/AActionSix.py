@@ -1,14 +1,7 @@
 import logging
-from Core_layer.Answer_package.Classes import RandomAnswer
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.API_package.Classes.Finders import WikiFinder
-from Deep_layer.API_package.Classes.Finders import GoogleFinder
-from Deep_layer.API_package.Classes.Calculators import SympyCalculator
-from Deep_layer.API_package.Classes.Translators import MemoryTranslator
-from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
-
+from Core_layer.Answer_package.Classes import GptAnswer
 
 class AActionSix(IAction.IAction):
     """
@@ -17,9 +10,9 @@ class AActionSix(IAction.IAction):
     boto = None
     message = None
     message_text = None
-
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
+    _gpta = GptAnswer.GptAnswer()
 
     def __init__(self, message, message_text):
         AActionSix.message = message
@@ -31,7 +24,8 @@ class AActionSix(IAction.IAction):
 #       акклиматизировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('акклиматизируй') > 0 and cls.message_text.count('акклиматизируйся') == 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionsix.first ' + str(e)))
 
@@ -41,7 +35,8 @@ class AActionSix(IAction.IAction):
 #       акклиматизироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('акклиматизируйся') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionsix.second ' + str(e)))
 
@@ -51,7 +46,8 @@ class AActionSix(IAction.IAction):
 #       аккомодировать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('аккомодируй') > 0 and cls.message_text.count('аккомодируйся') == 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionsix.third ' + str(e)))
 
@@ -61,7 +57,8 @@ class AActionSix(IAction.IAction):
 #       аккомодироваться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('аккомодироваться') > 0:
+                return cls._gpta.answer(cls.message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionsix.fourth ' + str(e)))
 

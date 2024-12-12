@@ -1,14 +1,7 @@
 import logging
-from Core_layer.Answer_package.Classes import RandomAnswer
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.API_package.Classes.Finders import WikiFinder
-from Deep_layer.API_package.Classes.Finders import GoogleFinder
-from Deep_layer.API_package.Classes.Calculators import SympyCalculator
-from Deep_layer.API_package.Classes.Translators import MemoryTranslator
-from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
-
+from Core_layer.Answer_package.Classes import GptAnswer
 
 class AActionEighteen(IAction.IAction):
     """
@@ -84,43 +77,3 @@ class AActionEighteen(IAction.IAction):
             pass
         except Exception as e:
             logging.exception(str('The exception in aactioneighteen.sixth ' + str(e)))
-
-    @classmethod
-    def seventh(cls):
-#
-#
-        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
-        try:
-            pass
-        except Exception as e:
-            logging.exception(str('The exception in aactioneighteen.seventh ' + str(e)))
-
-    @classmethod
-    def eighth(cls):
-#
-#
-        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
-        try:
-            pass
-        except Exception as e:
-            logging.exception(str('The exception in aactioneighteen.eighth ' + str(e)))
-
-    @classmethod
-    def nineth(cls):
-#
-#
-        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
-        try:
-            pass
-        except Exception as e:
-            logging.exception(str('The exception in aactioneighteen.nineth ' + str(e)))
-
-    @classmethod
-    def tenth(cls):
-#
-#
-        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
-        try:
-            pass
-        except Exception as e:
-            logging.exception(str('The exception in aactioneighteen.tenth ' + str(e)))
