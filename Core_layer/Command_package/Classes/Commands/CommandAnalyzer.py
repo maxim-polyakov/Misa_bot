@@ -526,7 +526,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                     for outmes in outlist:
                         outstr += str(outmes) + '\n'
             logging.info('The commandanalyzer.analyse is done')
-            if outstr == '':
+            if outstr == '\n':
                 return cls._gpta.answer(message_text)
             return outstr
         except Exception as e:
