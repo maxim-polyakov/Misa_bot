@@ -4,7 +4,7 @@ from Core_layer.Command_package.Classes.Commands import CommandAnalyzer
 from Core_layer.Test_package.Interfases import ITestCase
 
 
-class TestCase_API_package(ITestCase.ITestCase):
+class TestCase_Command_package(ITestCase.ITestCase):
     """
 
     This class is written for testing entityes of system
