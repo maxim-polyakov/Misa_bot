@@ -3,7 +3,7 @@ from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 from Core_layer.Answer_package.Classes import GptAnswer
 
-class AActionEighteen(IAction.IAction):
+class SCommandAction(IAction.IAction):
     """
     It is class for comand's actions started on symbol a
     """
@@ -15,105 +15,112 @@ class AActionEighteen(IAction.IAction):
     __pr = CommonPreprocessing.CommonPreprocessing()
 
     def __init__(self, message, message_text):
-        AActionEighteen.message = message
-        AActionEighteen.message_text = message_text
+        SCommandAction.message = message
+        SCommandAction.message_text = message_text
 
     @classmethod
     def first(cls):
 #
-#       аукнуть
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactioneighteen.first ' + str(e)))
+            logging.exception(str('The exception in aactionsixteen.first ' + str(e)))
 
     @classmethod
     def second(cls):
 #
-#       аукнуться
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactioneighteen.second ' + str(e)))
+            logging.exception(str('The exception in aactionsixteen.second ' + str(e)))
 
     @classmethod
     def third(cls):
 #
-#       афишировать
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactioneighteen.third ' + str(e)))
+            logging.exception(str('The exception in aactionsixteen.third ' + str(e)))
 
     @classmethod
     def fourth(cls):
 #
-#       афишироваться
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactioneighteen.fourth ' + str(e)))
+            logging.exception(str('The exception in aactionsixteen.fourth ' + str(e)))
 
     @classmethod
     def fifth(cls):
 #
-#       ахать
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactioneighteen.fifth ' + str(e)))
+            logging.exception(str('The exception in aactionsixteen.fifth ' + str(e)))
 
     @classmethod
     def sixth(cls):
 #
-#       ахнуть
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactioneighteen.sixth ' + str(e)))
+            logging.exception(str('The exception in aactionsixteen.sixth ' + str(e)))
 
     @classmethod
     def seventh(cls):
 #
-#
+#       атаковать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactioneleven.seventh ' + str(e)))
+            logging.exception(str('The exception in aactionsixteen.seventh ' + str(e)))
 
     @classmethod
     def eighth(cls):
 #
-#
+#       атаковаться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('атакуй') > 0 and cls.message_text.count('атакуйся') == 0:
+                Inputstr = cls.__pred.preprocess_text(cls.message_text)
+                Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
+                Inputarr = Inputstr.split(' ')
+                cls.command_flag = 1
+                Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
+                logging.info('The scommandaction.eighth is done')
+                return Inputstr + ' - пидор.'
         except Exception as e:
-            logging.exception(str('The exception in aactioneleven.eighth ' + str(e)))
+            logging.exception(str('The exception in scommandaction.eighth ' + str(e)))
 
     @classmethod
     def nineth(cls):
 #
-#
+#       атаковывать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactioneleven.nineth ' + str(e)))
+            logging.exception(str('The exception in aactionsixteen.nineth ' + str(e)))
 
     @classmethod
     def tenth(cls):
 #
-#
+#       атаковываться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactioneleven.tenth ' + str(e)))
+            logging.exception(str('The exception in aactionsixteen.tenth ' + str(e)))

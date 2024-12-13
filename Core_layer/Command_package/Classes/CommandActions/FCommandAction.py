@@ -5,7 +5,7 @@ from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 from Core_layer.Answer_package.Classes import GptAnswer
 
-class AActionOne(IAction.IAction):
+class FCommandAction(IAction.IAction):
     """
     It is class for comand's actions started on symbol a
     """
@@ -20,8 +20,8 @@ class AActionOne(IAction.IAction):
     _gpta = GptAnswer.GptAnswer()
 
     def __init__(self, message, message_text):
-        AActionOne.message = message
-        AActionOne.message_text = message_text
+        FCommandAction.message = message
+        FCommandAction.message_text = message_text
 
     @classmethod
     def first(cls):
@@ -77,87 +77,79 @@ class AActionOne(IAction.IAction):
     @classmethod
     def third(cls):
 #
-#       абсолютизировать
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('абсолютизируй') > 0 and cls.message_text.count('абсолютизируйся') == 0:
-                return cls._gpta.answer(cls.message_text)
+            pass
         except Exception as e:
             logging.exception(str('The exception in aactionone.third ' + str(e)))
 
     @classmethod
     def fourth(cls):
 #
-#       абсолютизироваться
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('абсолютизируйся') > 0:
-                return cls._gpta.answer(cls.message_text)
+            pass
         except Exception as e:
             logging.exception(str('The exception in aactionone.fourth ' + str(e)))
 
     @classmethod
     def fifth(cls):
 #
-#       абсолютировать
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('абсолютируй') > 0 and cls.message_text.count('абсолютируйся') == 0:
-                return cls._gpta.answer(cls.message_text)
+            pass
         except Exception as e:
             logging.exception(str('The exception in aactionone.fifth ' + str(e)))
 
     @classmethod
     def sixth(cls):
 #
-#       абсорбировать
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('абсорбируй') > 0 and cls.message_text.count('абсорбируйся') == 0:
-                return cls._gpta.answer(cls.message_text)
+            pass
         except Exception as e:
             logging.exception(str('The exception in aactionone.sixth ' + str(e)))
 
     @classmethod
     def seventh(cls):
 #
-#       абсорбироваться
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('абсорбируйся') > 0:
-                return cls._gpta.answer(cls.message_text)
+            pass
         except Exception as e:
             logging.exception(str('The exception in aactionone.seventh ' + str(e)))
 
     @classmethod
     def eighth(cls):
 #
-#       абстрагировать
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('абстрагируй') > 0 and cls.message_text.count('абстрагируйся') == 0:
-                return cls._gpta.answer(cls.message_text)
+            pass
         except Exception as e:
             logging.exception(str('The exception in aactionone.eighth ' + str(e)))
 
     @classmethod
     def nineth(cls):
 #
-#       абстрагироваться
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('абстрагируйся') > 0:
-                return cls._gpta.answer(cls.message_text)
+            pass
         except Exception as e:
             logging.exception(str('The exception in aactionone.nineth ' + str(e)))
 
     @classmethod
     def tenth(cls):
 #
-#       авансировать
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('авансируй') > 0 and cls.message_text.count('авансируйся') == 0:
-                return cls._gpta.answer(cls.message_text)
+            pass
         except Exception as e:
             logging.exception(str('The exception in aactionone.tenth ' + str(e)))
