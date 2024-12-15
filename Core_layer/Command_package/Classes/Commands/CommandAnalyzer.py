@@ -38,8 +38,8 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             info_dict = {
                 'абонировать': str(aone.first()),
                 'абонироваться': str(aone.second()),
+                'нарисовать':str(aone.third()),
                 'атаковать': str(asixteen.seventh()),
-                #
                 'фас': str(ac.first()),
                 'перевести': str(ac.second()),
                 'поссчитать': str(ac.nineth()),

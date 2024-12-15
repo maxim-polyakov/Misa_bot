@@ -3,6 +3,7 @@ import pandas as pd
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
+from Deep_layer.IOD_package.Classes import Dalle
 from Core_layer.Answer_package.Classes import GptAnswer
 
 class FCommandAction(IAction.IAction):
@@ -17,6 +18,7 @@ class FCommandAction(IAction.IAction):
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
     __dbc = DB_Communication.DB_Communication()
+    __dal = Dalle.Dalle()
     _gpta = GptAnswer.GptAnswer()
 
     def __init__(self, message, message_text):
@@ -77,10 +79,12 @@ class FCommandAction(IAction.IAction):
     @classmethod
     def third(cls):
 #
-#
+#       нарисуй
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            pass
+            if cls.message_text.count('нарисуй') > 0 and cls.message_text.count('нарисуйся') == 0:
+                message_text = (cls.message_text.strip(' ').replace('нарисуй ', ''))
+                return cls.__dal.generate(message_text)
         except Exception as e:
             logging.exception(str('The exception in aactionone.third ' + str(e)))
 
