@@ -38,7 +38,11 @@ async def on_message(message):
             if outstr != '' or outstr != '\n':
                 if(isCommand):
                     try:
-                        await message.channel.send(outstr)
+                        if message.content.lower().count('нарисуй') > 0:
+                            outstr = outstr.replace('\n', '')
+                            await message.channel.send(file=discord_bot.discord.File(outstr))
+                        else:
+                            await message.channel.send(outstr)
                     except Exception as e:
                         pass
                 else:

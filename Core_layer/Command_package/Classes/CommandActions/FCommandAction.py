@@ -1,4 +1,6 @@
 import logging
+import requests
+import os
 import pandas as pd
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Command_package.Interfaces import IAction
@@ -84,7 +86,15 @@ class FCommandAction(IAction.IAction):
         try:
             if cls.message_text.count('нарисуй') > 0 and cls.message_text.count('нарисуйся') == 0:
                 message_text = (cls.message_text.strip(' ').replace('нарисуй ', ''))
-                return cls.__dal.generate(message_text)
+                image_url = cls.__dal.generate(message_text)
+                p = requests.get(image_url)
+                if not os.path.exists('images'):
+                    os.makedirs('images')
+                filepath = 'images/misaimg.png'
+                out = open(filepath, 'wb')
+                out.write(p.content)
+                out.close()
+                return filepath
         except Exception as e:
             logging.exception(str('The exception in aactionone.third ' + str(e)))
 

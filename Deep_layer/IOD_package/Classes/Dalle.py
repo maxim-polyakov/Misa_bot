@@ -33,10 +33,10 @@ class Dalle(IGpt.IGpt):
                 model="dall-e-3",
                 prompt=input_text,
                 size="1024x1024",
-                quality="standard",
                 n=1,
             )
-            return response.data[0].url
+            image_url = response.data[0].url
+            return str(image_url)
 
         except Exception as e:
             logging.exception(str('The exception is in gpt.generate ' + str(e)))

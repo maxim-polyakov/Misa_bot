@@ -10,6 +10,11 @@ async def get_user_text(message):
     output = mon.monitor()
     if(output != '' or output != '\n'):
         try:
-            await telegram_bot.boto.send_message(message.chat.id, output, parse_mode='html')
+            if message.text.lower().count('нарисуй') > 0:
+                output = output.replace('\n', '')
+                photo = str(output)
+                await telegram_bot.boto.send_photo(message.chat.id, photo=open(photo, 'rb'))
+            else:
+                await telegram_bot.boto.send_message(message.chat.id, output, parse_mode='html')
         except Exception as e:
             pass
