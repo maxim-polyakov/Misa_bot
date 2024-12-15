@@ -8,8 +8,8 @@ class MessageMonitorVoice(MessageMonitor.MessageMonitor):
     This class describes object for monitoring messages from chats
 
     """
-    def __init__(self, message):
-        MessageMonitorVoice.__command = CommandAnalyzer.CommandAnalyzer(
+    def __init__(self, boto, message):
+        MessageMonitorVoice.__command = CommandAnalyzer.CommandAnalyzer(boto,
             message, 'audio')
         MessageMonitorVoice.__message = message
 

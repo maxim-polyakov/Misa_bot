@@ -15,7 +15,7 @@ class TestCase_API_package(ITestCase.ITestCase):
     """
     math = calc.SympyCalculator()
     found = find.WikiFinder()
-    traslated = trans.GoogleTranslator("ru")
+    traslated = trans.MemoryTranslator('russian')
 
     def test_calc(self):
         math = calc.SympyCalculator()

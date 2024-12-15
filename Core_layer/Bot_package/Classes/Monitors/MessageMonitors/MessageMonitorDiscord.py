@@ -8,8 +8,8 @@ class MessageMonitorDiscord(MessageMonitor.MessageMonitor):
     This class describes object for monitoring messages from chats
 
     """
-    def __init__(self, message):
-        MessageMonitorDiscord.__command = CommandAnalyzer.CommandAnalyzer(
+    def __init__(self, boto, message):
+        MessageMonitorDiscord.__command = CommandAnalyzer.CommandAnalyzer(boto,
             message, 'discord')
         MessageMonitorDiscord.__message = message
 

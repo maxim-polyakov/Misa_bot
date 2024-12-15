@@ -6,7 +6,7 @@ from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonit
 async def get_user_text(message):
 #
 #
-    mon = MessageMonitorTelegram.MessageMonitorTelegram(message)
+    mon = MessageMonitorTelegram.MessageMonitorTelegram(telegram_bot.boto, message)
     output = mon.monitor()
     if(output != '' or output != '\n'):
         try:

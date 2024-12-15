@@ -14,7 +14,7 @@ async def on_message(message):
 
     if message.author != discord_bot.bot.user:
         isCommand = False
-        mmon = MessageMonitorDiscord.MessageMonitorDiscord(message)
+        mmon = MessageMonitorDiscord.MessageMonitorDiscord(discord_bot.bot, message)
         pmon = PictureMonitorDiscord.PictureMonitorDiscord(message)
         tmon = TextMonitorDiscord.TextMonitorDiscord(message)
         voice_client = None

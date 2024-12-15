@@ -15,11 +15,13 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
     __cpr = CommandPreprocessing.CommandPreprocessing()
     __nothingflg = 0
     __cash = ''
+    __boto = None
     __message = None
     __mesentype = None
     _gpta = GptAnswer.GptAnswer()
 
-    def __init__(self, message, mesentype):
+    def __init__(self, boto, message, mesentype):
+        CommandAnalyzer.__boto = boto
         CommandAnalyzer.__message = message
         CommandAnalyzer.__mesentype = mesentype
 
