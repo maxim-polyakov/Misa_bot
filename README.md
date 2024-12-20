@@ -70,22 +70,8 @@ Misa_bot is a three-layer architecture python application.
     
        NLP_package contains the next entityes:
        
-          a) IDataShower
-          b) IGpt
-          c) IModel
-          d) IPredictor
-          e) ISaver
-          f) IPreprocessing
-          g) ITokenizer
-
-  and 2 folders
-  
-    1) models
-       models contains the text types of models
-          a) LSTM - the recurent model with a memory https://medium.com/mlearning-ai/the-classification-of-text-messages-using-lstm-bi-lstm-and-gru-f79b207f90ad
-          
-    2) tokenizers
-          a) The tokenizer for this LSTM model
+          a) IGpt
+          b) IPreprocessing
           
 Also architecture contains SistersMemory - general database which contains samples for models' trainings for all chat_bots which hosted in       https://console.neon.tech/.
  
