@@ -72,6 +72,7 @@ Misa_bot is a three-layer architecture python application.
        
           a) IGpt
           b) IPreprocessing
+          c) IDalle
           
 Also architecture contains SistersMemory - general database which contains samples for models' trainings for all chat_bots which hosted in       https://console.neon.tech/.
  
