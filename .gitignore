@@ -6,6 +6,7 @@ photos/*
 resphotos/*
 audios/*
 downloads/*
+images/*
 *.pt
 *.exe
 *.log
