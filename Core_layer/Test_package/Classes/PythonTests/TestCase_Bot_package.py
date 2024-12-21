@@ -9,7 +9,7 @@ class TestCase_ValidsetAlanizer(ITestCase.ITestCase):
     This class is written for testing entityes of system
 
     """
-    def test_bingfinder(self):
+    def test_drawer(self):
         dr = Drawer.Drawer("нож")
         return_arr = dr.draw()
         self.assertNotEqual(return_arr, None)
