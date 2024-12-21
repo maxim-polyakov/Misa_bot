@@ -5,7 +5,8 @@ import pandas as pd
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
-from Deep_layer.IOD_package.Classes import Dalle
+
+from Core_layer.Bot_package.Classes.Drawers import Drawer
 from Core_layer.Answer_package.Classes import GptAnswer
 
 class FCommandAction(IAction.IAction):
@@ -20,7 +21,6 @@ class FCommandAction(IAction.IAction):
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
     __dbc = DB_Communication.DB_Communication()
-    __dal = Dalle.Dalle()
     _gpta = GptAnswer.GptAnswer()
 
     def __init__(self, message, message_text):
@@ -86,14 +86,8 @@ class FCommandAction(IAction.IAction):
         try:
             if cls.message_text.count('нарисуй') > 0 and cls.message_text.count('нарисуйся') == 0:
                 message_text = (cls.message_text.strip(' ').replace('нарисуй ', ''))
-                image_url = cls.__dal.generate(message_text)
-                p = requests.get(image_url)
-                if not os.path.exists('images'):
-                    os.makedirs('images')
-                filepath = 'images/misaimg.png'
-                out = open(filepath, 'wb')
-                out.write(p.content)
-                out.close()
+                dal = Drawer.Drawer(message_text)
+                filepath = dal.draw()
                 return filepath
         except Exception as e:
             logging.exception(str('The exception in aactionone.third ' + str(e)))
