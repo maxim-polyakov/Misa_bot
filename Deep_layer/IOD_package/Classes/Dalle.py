@@ -6,7 +6,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import QuestionPreprocessi
 
 class Dalle(IGpt.IGpt):
     """
-    It is a gpt text generator
+    It is a dalle image generator
     """
     __dbc = DB_Communication.DB_Communication()
     __pr = QuestionPreprocessing.QuestionPreprocessing()
@@ -39,4 +39,4 @@ class Dalle(IGpt.IGpt):
             return str(image_url)
 
         except Exception as e:
-            logging.exception(str('The exception is in gpt.generate ' + str(e)))
+            logging.exception(str('The exception is in dalle.generate ' + str(e)))
