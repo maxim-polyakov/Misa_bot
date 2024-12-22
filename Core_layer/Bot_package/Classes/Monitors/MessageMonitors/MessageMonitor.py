@@ -54,7 +54,6 @@ class MessageMonitor(IMonitor.IMonitor):
     def monitor(cls, message, command, pltype):
 #
 #
-
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             text = []

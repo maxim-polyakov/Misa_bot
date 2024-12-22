@@ -2,14 +2,14 @@ from Deep_layer.NLP_package.Interfaces import IGpt
 from openai import OpenAI
 import logging
 from Deep_layer.DB_package.Classes import DB_Communication
-from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
+from Deep_layer.NLP_package.Classes.TextPreprocessers import QuestionPreprocessing
 
 class Dalle(IGpt.IGpt):
     """
     It is a gpt text generator
     """
     __dbc = DB_Communication.DB_Communication()
-    __pr = CommonPreprocessing.CommonPreprocessing()
+    __pr = QuestionPreprocessing.QuestionPreprocessing()
 
     @classmethod
     def generate(cls, text):
