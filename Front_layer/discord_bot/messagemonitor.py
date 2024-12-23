@@ -4,6 +4,7 @@ from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonit
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import TextMonitorDiscord
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import SongsMonitor
 
+global flag
 
 @discord_bot.bot.listen()
 async def on_message(message):
@@ -24,6 +25,7 @@ async def on_message(message):
             lowertext = message.content.lower()
             if lowertext.count('миса') > 0:
                 voice_client = await tmon.join(message)
+                flag = True
 
 
         photo = pmon.monitor()
@@ -46,7 +48,7 @@ async def on_message(message):
                     except Exception as e:
                         pass
                 else:
-                    if(voice_client != None):
+                    if(voice_client != None or flag):
                         await tmon.monitor(outstr)
                     else:
                         try:
