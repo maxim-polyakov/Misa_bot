@@ -89,6 +89,6 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             logging.info('The commandanalyzer.analyse is done')
             if outstr == '\n' or outstr == '\nNone\n' or outstr == 'none':
                 return cls._gpta.answer(message_text)
-            return outstr
+            return outstr.capitalize()
         except Exception as e:
             logging.exception(str('The exception in commandanalyzer.analyse ' + str(e)))

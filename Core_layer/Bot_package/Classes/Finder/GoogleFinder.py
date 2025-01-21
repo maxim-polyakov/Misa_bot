@@ -1,5 +1,5 @@
 import logging
-from Deep_layer.API_package.Classes.Finders import GoogleFinder
+from Deep_layer.API_package.Classes.Finders import GoogleFinder as gfinder
 from Core_layer.Bot_package.Interfaces import IFinder
 
 
@@ -10,7 +10,6 @@ class GoogleFinder(IFinder.IFinder):
 
     """
     message_text = None
-    __gfind = GoogleFinder.GoogleFinder()
     def __init__(self, message_text):
         GoogleFinder.message_text = message_text
     @classmethod
@@ -19,9 +18,9 @@ class GoogleFinder(IFinder.IFinder):
 #
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            gpif = GoogleFinder.GoogleFinder()
+            gpif = gfinder.GoogleFinder()
             finded_list = gpif.find(cls.message_text)
-            outstr = 'Ссылки по запросу:\n'
+            outstr = 'ссылки по запросу:\n'
             if (finded_list != None):
                 for outmes in finded_list:
                     outstr += outmes + ' \n '
