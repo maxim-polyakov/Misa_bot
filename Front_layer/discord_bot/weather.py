@@ -13,7 +13,7 @@ async def weather(message, city1 = '', city2 = ''):
         else:
             city = city1
 
-        cl = Weather.Weather(city)
+        cl = Weather.Weather(message_text=city)
         out = cl.predict()
         await message.channel.send(out)
     else:

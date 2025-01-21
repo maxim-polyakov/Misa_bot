@@ -12,15 +12,15 @@ class Weather(IWeather.IWeather):
 
     """
     message_text = None
-    def __init__(self, text):
-        Weather.message_text = text
+    def __init__(self, message_text):
+        Weather.message_text = message_text
     @classmethod
     def predict(cls):
 #
 #
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            wp = WeatherPredictor.WetherPredictor(cls.message_text)
+            wp = WeatherPredictor.WetherPredictor(message_text=cls.message_text)
             res = wp.predict()
             if res != None:
                 out = str(res[0] + '. ' + res[1])
