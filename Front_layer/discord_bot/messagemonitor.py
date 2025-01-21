@@ -4,15 +4,12 @@ from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonit
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import TextMonitorDiscord
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import SongsMonitor
 
-global flag
 
+global flag
 @discord_bot.bot.listen()
 async def on_message(message):
-
-    """
-    This function is for taking messages from a chat
-    """
-
+#
+#This function is for taking messages from a chat
     if message.author != discord_bot.bot.user:
         isCommand = False
         mmon = MessageMonitorDiscord.MessageMonitorDiscord(discord_bot.bot, message)

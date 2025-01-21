@@ -5,9 +5,6 @@ from aiogram import Bot, Dispatcher, executor
 from Core_layer.Bot_package.Classes.Token import Token
 
 
-# ______________________________________________________________________________
-
-
 tkn = Token.Token()
 df = tkn.get_token('select token from assistant_sets.tokens where botname = \'Misa\' and platformname = \'Telegram\'')
 API_TOKEN = df['token'][0]

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class IPreprocessing(ABC):
     """
-    Its is entyti of preprocessing of textes
+    Its is entity of preprocessing of textes
     """
     @abstractmethod
     def preprocess_text(self, text):

@@ -1,12 +1,14 @@
 import logging
-from Core_layer.Answer_package.Classes import RandomAnswer
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
+from Core_layer.Bot_package.Classes.Weather import Weather
+from Core_layer.Bot_package.Classes.Finder import GoogleFinder
+from Core_layer.Bot_package.Classes.Finder import WikiFinder
+from Core_layer.Bot_package.Classes.Translator import MemoryTranslator
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.API_package.Classes.Finders import WikiFinder
-from Deep_layer.API_package.Classes.Finders import GoogleFinder
+#from Deep_layer.API_package.Classes.Finders import WikiFinder
+#from Deep_layer.API_package.Classes.Finders import GoogleFinder
 from Deep_layer.API_package.Classes.Calculators import SympyCalculator
-from Deep_layer.API_package.Classes.Translators import MemoryTranslator
-from Deep_layer.API_package.Classes.WeatherPredictors import WeatherPredictor
+#from Deep_layer.API_package.Classes.Translators import MemoryTranslator
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 
 
@@ -88,15 +90,10 @@ class CommandAction(IAction.IAction):
                             return 'Не нашла'
                     else:
                         try:
-                            gpif = GoogleFinder.GoogleFinder()
-                            finded_list = gpif.find(message_text)
-                            outstr = 'Ссылки по запросу:\n'
-                            if (finded_list != None):
-                                for outmes in finded_list:
-                                    outstr += outmes + ' \n '
+
+                            gpif = GoogleFinder.GoogleFinder(message_text)
+                            outstr = gpif.find()
                             logging.info('The commandaction.find is done')
-                            if outstr == '':
-                                return 'Не нашла'
                             return outstr
                         except Exception as e:
                             logging.exception(str('The exception in commandaction.third ' + str(e)))
@@ -124,12 +121,9 @@ class CommandAction(IAction.IAction):
         try:
             if cls.message_text.count('погода') > 0:
                 message = cls.message_text.replace('погода ','')
-                wp = WeatherPredictor.WetherPredictor(message)
-                res = wp.predict()
-                if res != None:
-                    out = str(res[0] + '. ' + res[1])
-                    logging.info('The commandaction.fifth is done')
-                    return out
+                w = Weather.Weather(message)
+                out = w.predict()
+                return out
                 logging.info('The commandaction.fifth is done')
         except Exception as e:
             logging.exception(str('The exception in commandaction.fifth ' + str(e)))
@@ -138,12 +132,10 @@ class CommandAction(IAction.IAction):
     @classmethod
     def sixth(cls):
 #
-#       поздороваться
+#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('поздоровайся') > 0:
-                ra = RandomAnswer.RandomAnswer()
-                return str(ra.answer('hianswer')) + ' '
+            pass
         except Exception as e:
             logging.exception(str('The exception in commandaction.sixth ' + str(e)))
 

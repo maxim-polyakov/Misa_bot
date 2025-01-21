@@ -4,7 +4,7 @@ from abc import ABC
 
 class ITestCase(unittest.TestCase, ABC):
     """
-    It is test entyti
+    It is test entity
     """
 
     pass

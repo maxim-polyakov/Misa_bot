@@ -3,6 +3,8 @@ from Core_layer.Bot_package.Classes.Drawers import Drawer
 
 @telegram_bot.dp.message_handler(commands=['draw'])
 async def get_user_text(message):
+#
+#
     inpt = message.text.replace('/draw ', '')
     draw = Drawer.Drawer(inpt)
     outputder = draw.draw()

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 class IDB_Communication(ABC):
     """
 
-    It is entyti of communication with a data base
+    It is entity of communication with a data base
 
     """
     @abstractmethod

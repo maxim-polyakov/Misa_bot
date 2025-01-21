@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
-class IWeather(ABC):
+class IWeather:
     """
-    It is entity of weather service
+    It is entity of weather's predictions1
     """
     @abstractmethod
-    def predict(cls):
+    def predict(self):
         pass

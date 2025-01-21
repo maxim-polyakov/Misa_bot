@@ -4,6 +4,8 @@ from Core_layer.Command_package.Classes.CommandActions import CommandAction
 
 @discord_bot.bot.command(name='calculate', help='To play song')
 async def calculate(message, fsubject = 'x', ssubject = 'x'):
+#
+#
     name = message.message.author.name
     if (name == 'seraphim8341'):
         subject = fsubject + ' ' + ssubject

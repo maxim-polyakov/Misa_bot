@@ -46,7 +46,6 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'находить': str(ac.third()),
                 'сказать': str(ac.fourth()),
                 'погода': str(ac.fifth()),
-                'поздороваться': str(ac.sixth()),
                 'почистить': str(ac.seventh()),
                 'очистить': str(ac.seventh())
                 }

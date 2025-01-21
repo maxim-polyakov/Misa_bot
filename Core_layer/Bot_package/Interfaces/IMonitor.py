@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class IMonitor(ABC):
     """
-    It is entyti of monitoring
+    It is entity of monitoring
     """
     @abstractmethod
     def monitor(cls, message, pltype):

@@ -1,0 +1,1 @@
+from Deep_layer.API_package.Classes.Translators import MemoryTranslator

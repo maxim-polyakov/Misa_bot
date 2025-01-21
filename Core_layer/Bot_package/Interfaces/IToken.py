@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class IToken(ABC):
     """
-    It is entyti of tokens
+    It is entity of tokens
     """
     @abstractmethod
     def add_token(cls, token):

@@ -114,8 +114,8 @@ class TestCase_Command_package(ITestCase.ITestCase):
 
     def test_commandanalyzernine(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
-            'агитируй', 'test')
-        output = command.analyse(message_text='агитируй')
+            'погода', 'test')
+        output = command.analyse(message_text='погода')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzertwntn(self):

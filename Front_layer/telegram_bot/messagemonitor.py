@@ -5,7 +5,7 @@ from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonit
 @telegram_bot.dp.message_handler(content_types=['text'])
 async def get_user_text(message):
 #
-#
+#This function is for taking messages from a chat
     mon = MessageMonitorTelegram.MessageMonitorTelegram(telegram_bot.boto, message)
     output = mon.monitor()
     if(output != '' or output != '\n'):

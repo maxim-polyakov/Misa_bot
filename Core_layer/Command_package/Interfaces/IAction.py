@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class IAction(ABC):
     """
-    It is entyti of action
+    It is entity of action
     """
     @abstractmethod
     def first(cls):
