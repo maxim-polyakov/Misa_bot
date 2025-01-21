@@ -20,7 +20,7 @@ class Weather(IWeather.IWeather):
 #
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            wp = WeatherPredictor.WetherPredictor(message_text=cls.message_text)
+            wp = WeatherPredictor.WetherPredictor(city=cls.message_text)
             res = wp.predict()
             if res != None:
                 out = str(res[0] + '. ' + res[1])
