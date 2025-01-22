@@ -11,6 +11,6 @@ async def get_user_text(message):
         input = message.text.replace('/translate ', '')
         traslated = CommandAction.CommandAction(message, input)
         res = traslated.translate()
-        await telegram_bot.boto.send_message(message.chat.id, res, parse_mode='html')
+        await telegram_bot.boto.send_message(message.chat.id, res)
     else:
-        await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
+        await telegram_bot.boto.send_message(message.chat.id, '😊')

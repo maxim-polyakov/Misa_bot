@@ -10,6 +10,6 @@ async def get_user_text(message):
         inpt = message.text.replace('/calculate ', '')
         calc = CommandAction.CommandAction(message, inpt)
         outputder = calc.eighth()
-        await telegram_bot.boto.send_message(message.chat.id, outputder, parse_mode='html')
+        await telegram_bot.boto.send_message(message.chat.id, outputder)
     else:
-        await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
+        await telegram_bot.boto.send_message(message.chat.id, '😊')

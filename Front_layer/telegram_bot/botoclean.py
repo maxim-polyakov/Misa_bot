@@ -10,7 +10,7 @@ async def get_user_text(message):
         strr = message.text.replace('/clean ', '')
         cl = MemoryCleaner.MemoryCleaner(strr)
         cl.clean()
-        await telegram_bot.boto.send_message(message.chat.id, 'cleaned', parse_mode='html')
+        await telegram_bot.boto.send_message(message.chat.id, 'cleaned')
     else:
-        await telegram_bot.boto.send_message(message.chat.id, '😊', parse_mode='html')
+        await telegram_bot.boto.send_message(message.chat.id, '😊')
 
