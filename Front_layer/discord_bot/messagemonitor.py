@@ -1,3 +1,4 @@
+import os
 from Front_layer import discord_bot
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorDiscord
 from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonitorDiscord
@@ -41,7 +42,14 @@ async def on_message(message):
                             outstr = outstr.replace('\n', '')
                             await message.channel.send(file=discord_bot.discord.File(outstr))
                         else:
-                            await message.channel.send(outstr)
+                            if(len(outstr) > 2000):
+                                if not os.path.exists('txtfiles'):
+                                    os.makedirs('txtfiles')
+                                with open('txtfiles/message.txt', 'w+', encoding='utf-8') as file:
+                                    file.write(outstr)
+                                await message.channel.send(file=discord_bot.discord.File('txtfiles/message.txt'))
+                            else:
+                                await message.channel.send(outstr)
                     except Exception as e:
                         pass
                 else:

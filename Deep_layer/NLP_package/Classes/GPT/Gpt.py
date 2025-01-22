@@ -26,7 +26,7 @@ class Gpt(IGpt.IGpt):
                 project=OPENAI_API_PROJECT,
             )
             response = client.chat.completions.create(
-                model='gpt-4o-mini',
+                model='chatgpt-4o-latest',
                 messages=[{
                     "role": "user",
                     "content": text,
