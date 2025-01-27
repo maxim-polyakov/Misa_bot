@@ -87,7 +87,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                     for outmes in outlist:
                         outstr += str(outmes) + '\n'
             logging.info('The commandanalyzer.analyse is done')
-            if outstr == '\n' or outstr == '\nNone\n' or outstr == 'none':
+            if outstr == '\n\n' or outstr == '' or outstr == '\n' or outstr == '\nNone\n' or outstr == 'none':
                 return cls._gpta.answer(message_text)
             return outstr.capitalize()
         except Exception as e:
