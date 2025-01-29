@@ -11,7 +11,7 @@ class Gpt(IGpt.IGpt):
     @classmethod
     def generate(cls, text):
 #
-#
+#       its method for generating answers
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             fdf = cls.__dbc.get_data('select token from assistant_sets.tokens where botname = \'Misa\' and platformname = \'Gpt\'')

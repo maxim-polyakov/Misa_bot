@@ -10,7 +10,7 @@ class WikiFinder(IFinder.IFinder):
     @classmethod
     def find(cls, inptmes):
 #
-#
+#       its method of winding something in wikipedia
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             w.set_lang('ru')

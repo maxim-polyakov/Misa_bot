@@ -17,7 +17,7 @@ class MemoryCleaner(ICleaner.ICleaner):
     @classmethod
     def clean(cls):
 #
-#
+#       Its a method for data cleaning
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             df = DB_Communication.DB_Communication.get_data(

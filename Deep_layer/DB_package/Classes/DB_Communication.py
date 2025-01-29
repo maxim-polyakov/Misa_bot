@@ -16,7 +16,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @dispatch(object, object, object, object, object, object, object)
     def insert_to(cls, text, tablename, string, agenda, classification, classtype):
 #
-#
+#       Its a method for inserting data to a database
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             postgr_conn = Connections.PostgresConnection()
@@ -36,7 +36,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @dispatch(object, int, object, object, object)
     def insert_to(cls, idx, txt, insert, datatable):
 #
-#
+#       Its a method for inserting data to a database
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             postgr_conn = Connections.PostgresConnection()
@@ -55,7 +55,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @dispatch(object, object, object, object)
     def insert_to(cls, df, datatable, schema):
 #
-#
+#       Its a method for inserting data to a database
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             postgr_conn = Connections.PostgresConnection()
@@ -69,7 +69,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @dispatch(object, object, object)
     def insert_to(cls, df, datatable):
 #
-#
+#      Its a method for inserting data to a database
        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
        try:
             postgr_conn = Connections.PostgresConnection()
@@ -83,7 +83,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @dispatch(object, str, str)
     def insert_to(cls, string, datatable):
 #
-#
+#      Its a method for inserting data to a database
        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
        try:
             postgr_conn = Connections.PostgresConnection()
@@ -104,7 +104,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @dispatch(object, object)
     def insert_to(cls, lowertext):
 #
-#
+#       Its a method for inserting data to a database
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             postgr_conn = Connections.PostgresConnection()
@@ -130,7 +130,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @classmethod
     def get_data(cls, select):
 #
-#
+#       Its a method for getting data to a database
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             postgr_conn = Connections.PostgresConnection()
@@ -143,7 +143,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @classmethod
     def delete_data(cls, delete):
 #
-#
+#       Its a method for deleting data to a database
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             postgr_conn = Connections.PostgresConnection()
@@ -159,7 +159,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @classmethod
     def checkcommands(cls, input_string):
 #
-#
+#       Its a method for checking of commands in a database
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             postgr_conn = Connections.PostgresConnection()
@@ -180,7 +180,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @classmethod
     def check(cls, input_string, table):
 #
-#
+#       Its a method for checking of commands in a database
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pr = CommonPreprocessing.CommonPreprocessing()

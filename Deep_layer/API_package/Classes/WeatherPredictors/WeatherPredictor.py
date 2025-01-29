@@ -16,7 +16,7 @@ class WetherPredictor(IWeather.IWeather):
     @classmethod
     def predict(cls):
 #
-#
+#       Its a method for weather prediction
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             tkn = Token.Token()

@@ -11,8 +11,8 @@ class BingFinder(IFinder.IFinder):
     """
     @classmethod
     def find(cls, message_text):
-
-
+#
+#       Its method for finding simething in bing
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             url = f"https://www.bing.com/search?q={message_text}"

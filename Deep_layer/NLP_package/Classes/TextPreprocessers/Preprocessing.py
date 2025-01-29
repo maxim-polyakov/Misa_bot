@@ -11,7 +11,7 @@ class Preprocessing(IPreprocessing.IPreprocessing):
     @classmethod
     def preprocess_text(cls, text):
 #
-#
+#       Its a main method of text preprocessing
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             tokens = str(text)

@@ -18,7 +18,7 @@ class MemoryTranslator(ITranslator.ITranslator):
     @classmethod
     def _translate(cls, inputText):
 #
-#
+#       Its method for translate sentenses
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         translator = MyMemoryTranslator(source='english', target=cls.lang)
         translated = translator.translate(text=inputText)
@@ -29,7 +29,7 @@ class MemoryTranslator(ITranslator.ITranslator):
     @dispatch(object, object, object)
     def translate(cls, dataselect, insertdtname):
 #
-#
+#       its method for translating the tables
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             train = DB_Communication.DB_Communication.get_data(dataselect)
@@ -47,7 +47,7 @@ class MemoryTranslator(ITranslator.ITranslator):
     @dispatch(object, object)
     def translate(cls, inptmes):
 #
-#
+#       Its a base method for translating the sentences
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             tranlated = cls._translate(inptmes)

@@ -10,7 +10,8 @@ class GoogleFinder(IFinder.IFinder):
     """
     @classmethod
     def find(cls, message_text):
-
+#
+#       Its method for finding something in google
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             output = []

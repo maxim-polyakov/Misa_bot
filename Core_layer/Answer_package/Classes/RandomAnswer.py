@@ -13,7 +13,7 @@ class RandomAnswer(IAnswer.IAnswer):
     @classmethod
     def answer(cls, text):
 #
-#
+#       Its a method for random answers from database
         try:
             inpt = DB_Communication.DB_Communication.get_data(str('SELECT text FROM answer_sets.' + text))
             out = inpt['text'][random.randint(0, (len(inpt)-1))]

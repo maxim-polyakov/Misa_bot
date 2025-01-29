@@ -12,7 +12,7 @@ class QuestionPreprocessing(Preprocessing.Preprocessing):
     @classmethod
     def preprocess_text(cls, text):
 #
-#
+#       Its a method for text preprocessing
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             tokens = str(text).split(' ')

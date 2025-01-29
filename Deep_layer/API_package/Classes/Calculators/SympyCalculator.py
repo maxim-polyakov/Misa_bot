@@ -13,7 +13,7 @@ class SympyCalculator(ICalculator.ICalculator):
     @classmethod
     def deravative(cls, inptmes, dx):
 #
-#
+#       its class method for finding derevatives of  mathematical functions
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             inp = cls.__pr.preprocess_text(dx)

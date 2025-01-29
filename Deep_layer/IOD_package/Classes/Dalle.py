@@ -14,7 +14,7 @@ class Dalle(IGpt.IGpt):
     @classmethod
     def generate(cls, text):
 #
-#
+#       Its a method for generating url with pictures
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             fdf = cls.__dbc.get_data('select token from assistant_sets.tokens where botname = \'Misa\' and platformname = \'Gpt\'')

@@ -14,7 +14,8 @@ class GptAnswer(IAnswer.IAnswer):
 
     @classmethod
     def answer(cls, text):
-
+#
+#       Its a method for generating answers by gpt
         try:
             generated_text = cls.__gpt.generate(text)
             logging.info('The gptanswer.answer is done')
