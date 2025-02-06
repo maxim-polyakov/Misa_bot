@@ -3,12 +3,8 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Bot_package.Classes.Weather import Weather
 from Core_layer.Bot_package.Classes.Finder import GoogleFinder
 from Core_layer.Bot_package.Classes.Finder import WikiFinder
-from Core_layer.Bot_package.Classes.Translator import MemoryTranslator
 from Core_layer.Command_package.Interfaces import IAction
-#from Deep_layer.API_package.Classes.Finders import WikiFinder
-#from Deep_layer.API_package.Classes.Finders import GoogleFinder
 from Deep_layer.API_package.Classes.Calculators import SympyCalculator
-#from Deep_layer.API_package.Classes.Translators import MemoryTranslator
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 
 
@@ -50,17 +46,9 @@ class CommandAction(IAction.IAction):
 #       перевести
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('переведи') > 0:
-                message_text = (cls.message_text.strip(' ')
-                                .replace('переведи ', ''))
-                tr = MemoryTranslator.MemoryTranslator('russian')
-                translated = tr.translate(message_text)
-                logging.info('The commandaction.translate is done')
-                return translated
             pass
         except Exception as e:
             logging.exception(str('The exception in commandaction.second ' + str(e)))
-            return 'Проблемы с сервисом'
 
     @classmethod
     def third(cls):

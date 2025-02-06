@@ -9,14 +9,20 @@ class WikiFinder(IFinder.IFinder):
     """
     @classmethod
     def find(cls, inptmes):
-#
-#       its method of winding something in wikipedia
+#       Finding something in wikipedia
+#       Configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+#           Set wikipedia language to russian
             w.set_lang('ru')
+#           Create a list to store the search result
             return_list = []
+#           Get the summary of the input term from wikipedia
             return_list.append(w.summary(inptmes))
+#           Log successful completion of the search
             logging.info('The wikifinder is done')
+#           Return the first (and only) element of the list
             return return_list[0]
         except Exception as e:
+#           Log the exception with details
             logging.exception(str('The exception is in wikifinder.find ' + str(e)))
