@@ -10,21 +10,21 @@ class GoogleFinder(IFinder.IFinder):
     """
     @classmethod
     def find(cls, message_text):
-#       Finding something in google
-#       Configure logging settings
+        # finding something in google
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-#           List to store search results
+            # list to store search results
             output = []
-#           Performing a google search with specified parameters
+            # performing a google search with specified parameters
             outlist = search(message_text, tld="co.in", num=9, stop=9, pause=1)
-#           Collecting search results
+            # collecting search results
             for result in outlist:
                 output.append(result)
-#           Logging successful completion of the search
+            # logging successful completion of the search
             logging.info('The googlefinder.find is done')
-#           Returning unique search results as a set
+            # returning unique search results as a set
             return set(output)
         except Exception as e:
-#           Logging the exception with details
+            # logging the exception with details
             logging.exception(str('The exception is in googlefinder.find ' + str(e)))
