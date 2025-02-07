@@ -9,7 +9,7 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 
 class DB_Communication(IDB_Communication.IDB_Communication):
     """
-    It is class for communication with a data base
+    It is class for communication with a database
     """
     warnings.filterwarnings('ignore')
     @classmethod
