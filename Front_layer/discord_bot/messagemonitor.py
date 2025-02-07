@@ -15,15 +15,6 @@ async def on_message(message):
         isCommand = False
         mmon = MessageMonitorDiscord.MessageMonitorDiscord(discord_bot.bot, message)
         pmon = PictureMonitorDiscord.PictureMonitorDiscord(message)
-        tmon = TextMonitorDiscord.TextMonitorDiscord(message)
-        voice_client = None
-        if (mmon.check(message.content)):
-            isCommand = True
-        else:
-            lowertext = message.content.lower()
-            if lowertext.count('миса') > 0:
-                voice_client = await tmon.join(message)
-                flag = True
 
 
         photo = pmon.monitor()
@@ -53,13 +44,10 @@ async def on_message(message):
                     except Exception as e:
                         pass
                 else:
-                    if(voice_client != None or flag):
-                        await tmon.monitor(outstr)
-                    else:
-                        try:
-                            await message.channel.send(outstr)
-                        except Exception as e:
-                            pass
+                    try:
+                        await message.channel.send(outstr)
+                    except Exception as e:
+                        pass
 
 
 
