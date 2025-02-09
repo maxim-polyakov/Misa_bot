@@ -42,7 +42,9 @@ class Dalle(IGpt.IGpt):
             )
             # extracting the generated image url
             image_url = response.data[0].url
+            # log successful execution
+            logging.info('The dalle.generate method has completed successfully')
             return str(image_url)
         except Exception as e:
             # logging any exceptions that occur during execution
-            logging.exception(str('The exception is in dalle.generate ' + str(e)))
+            logging.exception('The exception occurred in dalle.generate: ' + str(e))

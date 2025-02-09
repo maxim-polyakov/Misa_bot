@@ -27,11 +27,11 @@ class SympyCalculator(ICalculator.ICalculator):
             # formatting the output to use '^' instead of '**' for exponentiation
             output = str(yprime).replace('**', '^')
             # logging successful completion of the integration process
-            logging.info('The sympyCalculator.deravative is done')
+            logging.info('The sympycalculator.deravative function has completed successfully')
             return output
         except Exception as e:
             # logging any exceptions that occur during execution
-            logging.exception(str('The exception in sympycalculator.deravative ' + str(e)))
+            logging.exception(str('The exception occurred in sympycalculator.deravative: ' + str(e)))
 
     @classmethod
     def integrate(cls, inptmes, dx):
@@ -50,9 +50,9 @@ class SympyCalculator(ICalculator.ICalculator):
             # formatting the output to use '^' instead of '**' for exponentiation
             output = str(yprime).replace('**', '^')
             # logging successful completion of the integration process
-            logging.info('The sympycalculator.integrate is done')
+            logging.info('The sympycalculator.integrate function has completed successfully')
             return output
         except Exception as e:
             # logging any exceptions that occur during execution
-            logging.exception(str('The exception in sympycalculator.integrate ' + str(e)))
+            logging.exception('The exception occurred in sympycalculator.integrate: ' + str(e))
 

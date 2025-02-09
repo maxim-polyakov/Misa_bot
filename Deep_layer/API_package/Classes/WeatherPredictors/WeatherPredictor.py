@@ -41,8 +41,8 @@ class WetherPredictor(IWeather.IWeather):
                     out.append(foutstr)
                     out.append(soutstr)
                     # log successful execution
-                    logging.info('The wetherpredictor.predict is done')
+                    logging.info('The wetherpredictor.predict method has completed successfully')
                     return out
         except Exception as e:
             # log any exceptions that occur during execution
-            logging.exception(str('The exception is in wetherpredictor.predict' + str(e)))
+            logging.exception('The exception occurred in wetherpredictor.predict: ' + str(e))

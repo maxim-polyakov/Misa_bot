@@ -22,9 +22,9 @@ class GoogleFinder(IFinder.IFinder):
             for result in outlist:
                 output.append(result)
             # logging successful completion of the search
-            logging.info('The googlefinder.find is done')
+            logging.info('The googlefinder.find method has completed successfully')
             # returning unique search results as a set
             return set(output)
         except Exception as e:
             # logging the exception with details
-            logging.exception(str('The exception is in googlefinder.find ' + str(e)))
+            logging.exception('The exception occurred in googlefinder.find: ' + str(e))

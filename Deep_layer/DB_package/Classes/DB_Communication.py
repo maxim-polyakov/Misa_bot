@@ -33,12 +33,12 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             # appending the new row to the dataframe
             df = df.append(new_row, ignore_index=True)
             # log that the insertion process is completed
-            logging.info('The db_communication.insert_to 1 is done')
+            logging.info('The db_communication.insert_to 1 method has completed successfully')
             # inserting the dataframe into the specified table in the database
             df.to_sql(tablename, con=postgr_conn.engine_remote,
                 schema='recognized_sets', index=False, if_exists='append')
         except Exception as e:
-            logging.exception(str('The exception is in db_communication.insert_to ' + str(e)))
+            logging.exception('The exception occurred in db_communication.insert_to 1: ' + str(e))
 
     @classmethod
     @dispatch(object, int, object, object, object)
@@ -60,13 +60,13 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             # append the new row to the dataframe
             df = df.append(new_row, ignore_index=True)
             # log that the insertion process is completed
-            logging.info('The db_communication.insert_to 2 is done')
+            logging.info('The db_communication.insert_to 2 method has completed successfully')
             # insert the dataframe into the specified database table
             df.to_sql(datatable, con=postgr_conn.engine_remote, schema='validation_sets',
                 index=False, if_exists='append')
         except Exception as e:
             # log any exceptions that occur during the process
-            logging.exception(str('The exception is in db_communication.insert_to ' + str(e)))
+            logging.exception('The exception occurred in db_communication.insert_to 2: ' + str(e))
 
     @classmethod
     @dispatch(object, object, object, object)
@@ -78,13 +78,13 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             # establish a connection to the postgresql database
             postgr_conn = Connections.PostgresConnection()
             # log that the insertion process is completed
-            logging.info('The db_communication.insert_to 3 is done')
+            logging.info('The db_communication.insert_to 3 method has completed successfully')
             # insert the dataframe into the specified database table
             df.to_sql(datatable, con=postgr_conn.engine_remote, schema=schema,
                 index=False, if_exists='append')
         except Exception as e:
             # log any exceptions that occur during execution
-            logging.exception(str('The exception is in db_communication.insert_to ' + str(e)))
+            logging.exception('The exception occurred in db_communication.insert_to 3: ' + str(e))
 
     @classmethod
     @dispatch(object, object, object)
@@ -96,12 +96,12 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             # establish a connection to the postgresql database
             postgr_conn = Connections.PostgresConnection()
             # log that the insertion process is completed
-            logging.info('The db_communication.insert_to 4 is done')
+            logging.info('The db_communication.insert_to 4 method has completed successfully')
             # insert the dataframe into the specified table in the database
             df.to_sql(datatable, con=postgr_conn.engine_remote, schema='assistant_sets',
                 index=False, if_exists='append')
         except Exception as e:
-            logging.exception(str('The exception is in db_communication.insert_to ' + str(e)))
+            logging.exception('The exception occurred in db_communication.insert_to 4: ' + str(e))
 
     @classmethod
     @dispatch(object, str, str)
@@ -126,13 +126,13 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             # append the new row to the dataframe
             df = df.append(new_row, ignore_index=True)
             # log that the insertion process is completed
-            logging.info('The db_communication.insert_to 5 is done')
+            logging.info('The db_communication.insert_to 5 method has completed successfully')
             # insert the dataframe into the specified table in the database
             df.to_sql(datatable, con=postgr_conn.engine_remote, schema='assistant_sets',
                         index=False, if_exists='append')
         except Exception as e:
             # log any exceptions that occur during the process
-            logging.exception(str('The exception is in db_communication.insert_to ' + str(e)))
+            logging.exception('The exception occurred in db_communication.insert_to 5: ' + str(e))
 
     @classmethod
     @dispatch(object, object)
@@ -151,7 +151,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
                     new_row = pd.Series(data)
                     df = df.append(new_row, ignore_index=True)
                     # log that the insertion process is completed
-                    logging.info('The db_communication.insert_to 6 is done')
+                    logging.info('The db_communication.insert_to 6 method has completed successfully')
                     # inserting the dataframe into the database table
                     df.to_sql(table, con=postgr_conn.engine_remote, schema=schema,
                         index=False, if_exists='append')
@@ -168,7 +168,7 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             insert('storage', counts, text, 'messtorage')
         except Exception as e:
             # logging any exceptions that occur during execution
-            logging.exception(str('The exception is in db_communication.get_data ' + str(e)))
+            logging.exception('The exception occurred in db_communication.insert_to 6: ' + str(e))
 
     @classmethod
     def get_data(cls, select):
@@ -181,11 +181,11 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             # execute the sql query and store the result in a dataframe
             df = pd.read_sql(select, postgr_conn.conn_remote)
             # log a success message
-            logging.info('The db_communication.get_data is done')
+            logging.info('The db_communication.get_data method has completed successfully')
             return df
         except Exception as e:
             # log an error message if an exception occurs
-            logging.exception(str('The exception is in db_communication.get_data ' + str(e)))
+            logging.exception('The exception occurred in db_communication.get_data: ' + str(e))
 
     @classmethod
     def delete_data(cls, delete):
@@ -202,12 +202,12 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             # committing the transaction to apply changes
             postgr_conn.conn_remote.commit()
             # logging successful execution
-            logging.info('The db_communication.delete_data is done')
+            logging.info('The db_communication.delete_data method has completed successfully')
             # closing the cursor
             cur.close()
         except Exception as e:
             # logging any exceptions that occur during execution
-            logging.exception(str('The exception is in db_communication.delete_data ' + str(e)))
+            logging.exception('The exception occurred in db_communication.delete_data: ' + str(e))
 
     @classmethod
     def checkcommands(cls, input_string):
@@ -228,14 +228,14 @@ class DB_Communication(IDB_Communication.IDB_Communication):
                 for item in input_array:
                     if(cdictvalue == item):
                         # logging and returning true if a match is found
-                        logging.info('The db_communication.checkcommands is done')
+                        logging.info('The db_communication.checkcommands method has completed successfully')
                         return True
             # logging and returning false if no match is found
-            logging.info('The db_communication.checkcommands is done')
+            logging.info('The db_communication.checkcommands method has completed successfully')
             return False
         except Exception as e:
             # logging any exceptions that occur during execution
-            logging.exception(str('The exception is in db_communication.checkcommands ' + str(e)))
+            logging.exception('The exception occurred in db_communication.checkcommands: ' + str(e))
 
     @classmethod
     def check(cls, input_string, table):
@@ -256,11 +256,11 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             for cdictvalue in Cdict.values():
                 if (cdictvalue in inpt):
                     # logging and returning true if a match is found
-                    logging.info('The db_communication.check is done')
+                    logging.info('The db_communication.check method has completed successfully')
                     return True
             # logging and returning false if no match is found
-            logging.info(str('The db_communication.check is done'))
+            logging.info('The db_communication.check method has completed successfully')
             return False
         except Exception as e:
             # logging any exceptions that occur during execution
-            logging.exception(str('The exception is in db_communication.check ' + str(e)))
+            logging.exception('The exception occurred in db_communication.check: ' + str(e))
