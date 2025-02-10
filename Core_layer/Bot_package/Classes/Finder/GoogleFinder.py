@@ -14,20 +14,26 @@ class GoogleFinder(IFinder.IFinder):
         GoogleFinder.message_text = message_text
     @classmethod
     def find(cls):
-#
-#
+        # finding by google funder
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # create an instance of googlefinder
             gpif = gfinder.GoogleFinder()
+            # perform a search using googlefinder
             finded_list = gpif.find(cls.message_text)
+            # prepare the output string
             outstr = 'ссылки по запросу:\n'
+            # check if any results were found
             if (finded_list != None):
                 for outmes in finded_list:
                     outstr += outmes + ' \n '
-            logging.info('The googlefinder.find is done')
+            # log that the search operation was completed successfully
+            logging.info('The googlefinder.find process is completed successfully')
+            # if no results were found, return a message indicating that
             if outstr == '':
                 return 'Не нашла'
             return outstr
-
         except Exception as e:
-            logging.exception(str('The exception in googlefinder.find ' + str(e)))
+            # log any exceptions that occur during the search process
+            logging.exception('The exception occurred in googlefinder.find: ' + str(e))

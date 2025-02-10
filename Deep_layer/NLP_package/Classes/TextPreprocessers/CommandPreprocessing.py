@@ -45,7 +45,7 @@ class CommandPreprocessing(Preprocessing.Preprocessing):
             # join the tokens into a single string and remove trailing newline characters
             text = ' '.join(tokens).rstrip('\n')
             # log successful completion of the function
-            logging.info('The commandpreprocessing.reversepreprocess_text is done')
+            logging.info('The commandpreprocessing.reversepreprocess_text method has completed successfully')
             return text
         except Exception as e:
             # log any exceptions that occur during execution

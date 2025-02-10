@@ -14,11 +14,15 @@ class GptAnswer(IAnswer.IAnswer):
 
     @classmethod
     def answer(cls, text):
-#
-#       Its a method for generating answers by gpt
+        # generating answers by gpt
+        # configure logging to write logs to a file
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # generate an answer using the gpt model
             generated_text = cls.__gpt.generate(text)
-            logging.info('The gptanswer.answer is done')
+            # log successful completion of the answer generation
+            logging.info('The gptanswer.answer process is completed successfully')
             return generated_text
         except Exception as e:
-            logging.exception(str('The exception in questionanswer.answer ' + str(e)))
+            # log the exception if an error occurs during answer generation
+            logging.exception('The exception occurred in questionanswer.answer: ' + str(e))

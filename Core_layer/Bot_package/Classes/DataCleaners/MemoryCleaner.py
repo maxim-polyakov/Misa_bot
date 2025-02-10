@@ -16,17 +16,21 @@ class MemoryCleaner(ICleaner.ICleaner):
 
     @classmethod
     def clean(cls):
-#
-#       Its a method for data cleaning
+        # data cleaning
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # retrieve data from the database
             df = DB_Communication.DB_Communication.get_data(
                 'SELECT * from train_sets.' + cls.dbname)
+            # apply text preprocessing to the 'text' column
             df['text'] = df['text'].apply(cls.__pr.preprocess_text)
             #print(df['text'])
+            # delete existing data from the database table
             DB_Communication.DB_Communication.delete_data('DELETE FROM train_sets.' + cls.dbname)
-
+            # insert the cleaned data back into the database
             DB_Communication.DB_Communication.insert_to(df, cls.dbname, 'train_sets')
-            logging.info('The memorycleaner.clean is done')
+            # log successful completion of the cleaning process
+            logging.info('The memorycleaner.clean process is completed successfully')
         except Exception as e:
-            logging.exception(str('The exception in memorycleaner.clean ' + str(e)))
+            logging.exception('The exception occurred in memorycleaner.clean: ' + str(e))
