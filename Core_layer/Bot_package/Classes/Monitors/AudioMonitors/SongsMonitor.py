@@ -99,6 +99,7 @@ class SongsMonitor(IMonitor.IMonitor):
             logging.info('The songsmonitor.queue method has completed successfully')
             return out
         except Exception as e:
+            # log any exceptions that occur
             logging.exception('The exception occurred in songsmonitor.queue: ' + str(e))
 
     @classmethod
@@ -122,24 +123,29 @@ class SongsMonitor(IMonitor.IMonitor):
 
     @classmethod
     async def pause(cls):
-#
-#
+        # pause the currently playing song
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # get the voice client for the current guild
             voice_client = cls.message.message.guild.voice_client
+            # check if the bot is currently playing audio
             if voice_client.is_playing():
+                # pause the playback
                 await voice_client.pause()
             else:
+                # inform the user that nothing is currently playing
                 await cls.message.send("The bot is not playing anything at the moment.")
-            logging.info('The songsmonitor.pause is done')
+            # log successful execution of the pause method
+            logging.info('The songsmonitor.pause method has completed successfully')
         except Exception as e:
-            logging.exception('The exception in songsmonitor.pause ' + str(e))
+            # log any exceptions that occur during execution
+            logging.exception('The exception occurred in songsmonitor.pause ' + str(e))
 
 
     @classmethod
     async def resume(cls):
-#
-#
+        # resume currently playing song
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             cls.voice_clients[cls.message.guild.id].resume()
