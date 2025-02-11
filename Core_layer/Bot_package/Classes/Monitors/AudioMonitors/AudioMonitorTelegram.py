@@ -27,4 +27,4 @@ class AudioMonitorTelegram(AudioMonitor.AudioMonitor):
             return super().monitor(file_path)
         except Exception as e:
             # log any exceptions that occur during the process
-            logging.exception('The exception in audiomonitortelegram.monitor ' + str(e))
+            logging.exception('The exception in audiomonitortelegram.monitor: ' + str(e))

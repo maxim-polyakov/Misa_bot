@@ -30,73 +30,95 @@ class SongsMonitor(IMonitor.IMonitor):
 
     @classmethod
     async def __play_next(cls, message):
-#
-#
+        # play next song
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # check if there are songs in the queue for the guild
             if cls.queues[message.guild.id] != []:
+                # get the next song link from the queue
                 link = cls.queues[message.guild.id].pop(0)
+                # create an instance of songsmonitor
                 sm = SongsMonitor(cls.bot, message)
-                logging.info('The songsmonitor.__play_next is done')
+                # log that the play_next function is executed
+                logging.info('The songsmonitor.__play_next process is completed successfully')
+                # start monitoring the song
                 await sm.monitor(link)
         except Exception as e:
-            logging.exception(str('The exception in songsmonitor.__play_next ' + str(e)))
+            # log any exceptions that occur during execution
+            logging.exception('The exception occurred in songsmonitor.__play_next: ' + str(e))
 
 
     @classmethod
     async def join(cls):
-#
-#
+        # join to the channel
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # connect to the voice channel of the message author
             voice_client = await cls.message.author.voice.channel.connect()
+            # store the voice client instance in the dictionary with the guild id as the key
             cls.voice_clients[voice_client.guild.id] = voice_client
-            logging.info('The songsmonitor.join is done')
+            # log successful connection
+            logging.info('The songsmonitor.join method has completed successfully')
         except Exception as e:
-            logging.exception(str('The exception in songsmonitor.join ' + str(e)))
+            # log any exceptions that occur during the connection process
+            logging.exception('The exception occurred in songsmonitor.join: ' + str(e))
 
     @classmethod
     async def leave(cls):
-#
-#
+        # leave from the channel
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # get the server (guild) from the message
             server = cls.message.message.guild
+            # get the voice client associated with the server
             voice_client = server.voice_client
+            # disconnect the bot from the voice channel
             await voice_client.disconnect()
-            logging.info('The songsmonitor.leave is done')
+            # log successful disconnection
+            logging.info('The songsmonitor.leave method has completed successfully')
         except Exception as e:
-            logging.exception(str('The exception in songsmonitor.leave ' + str(e)))
+            # log the exception with details
+            logging.exception('The exception occurred in songsmonitor.leave: ' + str(e))
 
     @classmethod
     async def queue(cls, url):
-#
-#
+        # add song to the queue
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # check if the guild (server) has an existing queue
             if cls.message.guild.id not in cls.queues:
                 cls.queues[cls.message.guild.id] = []
+            # add the song url to the queue
             cls.queues[cls.message.guild.id].append(url)
             out = "Added to queue!"
-            logging.info('The songsmonitor.queue is done')
+            # log successful queue addition
+            logging.info('The songsmonitor.queue method has completed successfully')
             return out
         except Exception as e:
-            logging.exception(str('The exception in songsmonitor.queue ' + str(e)))
+            logging.exception('The exception occurred in songsmonitor.queue: ' + str(e))
 
     @classmethod
     async def stop(cls):
-#
-#
+        # stop playing song
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # get the voice client for the current guild
             voice_client = cls.message.message.guild.voice_client
+            # check if the bot is currently playing audio
             if voice_client.is_playing():
                 await voice_client.stop()
             else:
                 await cls.message.send("The bot is not playing anything at the moment.")
-            logging.info('The songsmonitor.stop is done')
+            # log successful execution
+            logging.info('The songsmonitor.stop method has completed successfully')
         except Exception as e:
-            logging.exception(str('The exception in songsmonitor.queue ' + str(e)))
+            # log any exceptions that occur
+            logging.exception('The exception occurred in songsmonitor.stop: ' + str(e))
 
     @classmethod
     async def pause(cls):
@@ -111,7 +133,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 await cls.message.send("The bot is not playing anything at the moment.")
             logging.info('The songsmonitor.pause is done')
         except Exception as e:
-            logging.exception(str('The exception in songsmonitor.pause ' + str(e)))
+            logging.exception('The exception in songsmonitor.pause ' + str(e))
 
 
     @classmethod
@@ -123,7 +145,7 @@ class SongsMonitor(IMonitor.IMonitor):
             cls.voice_clients[cls.message.guild.id].resume()
             logging.info('The songsmonitor.resume is done')
         except Exception as e:
-            logging.exception(str('The exception in songsmonitor.resume ' + str(e)))
+            logging.exception('The exception in songsmonitor.resume ' + str(e))
 
     @classmethod
     async def monitor(cls, url):
@@ -155,4 +177,4 @@ class SongsMonitor(IMonitor.IMonitor):
                                                                                     cls.bot.loop))
             logging.info('The songsmonitor.monitor is done')
         except Exception as e:
-            logging.exception(str('The exception in songsmonitor.monitor ' + str(e)))
+            logging.exception('The exception in songsmonitor.monitor ' + str(e))

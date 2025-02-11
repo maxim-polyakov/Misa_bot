@@ -64,7 +64,7 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
             logging.info('The audiomonitordiscord.__finished_callback process is completed successfully')
         except Exception as e:
             # log any exceptions that occur during execution
-            logging.exception('The exception in audiomonitordiscord.__finished_callback ' + str(e))
+            logging.exception('The exception in audiomonitordiscord.__finished_callback: ' + str(e))
 
     @classmethod
     async def stop(cls):
@@ -85,7 +85,7 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
             logging.info('The audiomonitordiscord.stop process is completed successfully')
         except Exception as e:
             # log any exceptions that occur during the stop process
-            logging.exception('The exception occurred in audiomonitordiscord.stop ' + str(e))
+            logging.exception('The exception occurred in audiomonitordiscord.stop: ' + str(e))
 
 
     @classmethod
@@ -117,4 +117,4 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
             logging.info('The audiomonitordiscord.monitor process is completed successfully')
         except Exception as e:
             # log any exceptions that occur during execution
-            logging.exception('The exception occurred in audiomonitordiscord.monitor ' + str(e))
+            logging.exception('The exception occurred in audiomonitordiscord.monitor: ' + str(e))

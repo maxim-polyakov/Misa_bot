@@ -47,4 +47,4 @@ class AudioMonitor(IMonitor.IMonitor):
             return out
         except Exception as e:
             # log any exceptions that occur during processing
-            logging.exception('The exception occurred in audiomonitor.monitor ' + str(e))
+            logging.exception('The exception occurred in audiomonitor.monitor: ' + str(e))
