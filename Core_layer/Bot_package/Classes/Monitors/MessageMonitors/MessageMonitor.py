@@ -1,7 +1,7 @@
 import logging
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Bot_package.Interfaces import IMonitor
-from Core_layer.Answer_package.Classes import GptAnswer, RandomAnswer
+from Core_layer.Answer_package.Classes import GptAnswer
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 
 
@@ -27,7 +27,7 @@ class MessageMonitor(IMonitor.IMonitor):
             res = cls._gpta.answer(text_message)
             outlist.append(res)
             outlist.append('' + emotion)
-            logging.info('The messagemonitor.__decision is done')
+            logging.info('The messagemonitor.__decision process is completed successfully')
             return outlist
         except Exception as e:
             logging.exception(str('The exception in messagemonitor.__decision ' + str(e)))
@@ -38,7 +38,7 @@ class MessageMonitor(IMonitor.IMonitor):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             emotion = ''
-            logging.info('The messagemonitor._neurodesc is done')
+            logging.info('The messagemonitor._neurodesc process is completed successfully')
             return cls.__decision(text_message,
                                 emotion,
                                 command)
@@ -86,10 +86,10 @@ class MessageMonitor(IMonitor.IMonitor):
                 if (outlist != None):
                     for outmes in outlist:
                         outstr += str(outmes)
-                logging.info('The messagemonitor.monitor is done')
+                logging.info('The messagemonitor.monitor process is completed successfully')
                 return outstr.capitalize()
             else:
-                logging.info('The messagemonitor.monitor is done')
+                logging.info('The messagemonitor.monitor process is completed successfully')
                 return outstr.capitalize()
         except Exception as e:
-            logging.exception(str('The exception in messagemonitor.monitor ' + str(e)))
+            logging.exception('The exception occurred in messagemonitor.monitor: ' + str(e))
