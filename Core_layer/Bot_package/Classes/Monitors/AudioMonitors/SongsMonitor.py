@@ -140,47 +140,58 @@ class SongsMonitor(IMonitor.IMonitor):
             logging.info('The songsmonitor.pause method has completed successfully')
         except Exception as e:
             # log any exceptions that occur during execution
-            logging.exception('The exception occurred in songsmonitor.pause ' + str(e))
+            logging.exception('The exception occurred in songsmonitor.pause: ' + str(e))
 
 
     @classmethod
     async def resume(cls):
         # resume currently playing song
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # resume playback for the voice client associated with the guild
             cls.voice_clients[cls.message.guild.id].resume()
-            logging.info('The songsmonitor.resume is done')
+            logging.info('The songsmonitor.resume method has completed successfully')
         except Exception as e:
-            logging.exception('The exception in songsmonitor.resume ' + str(e))
+            # log any exceptions that occur during execution
+            logging.exception('The exception occurred in songsmonitor.resume: ' + str(e))
 
     @classmethod
     async def monitor(cls, url):
-#
-#
+        # playing songs
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # check if the provided url is not a direct youtube link
             if cls.youtube_base_url not in url:
+                # convert the search query into a url-encoded format
                 query_string = urllib.parse.urlencode({
                     'search_query': url
                 })
-
+                # fetch search results from youtube
                 content = urllib.request.urlopen(
                     cls.youtube_results_url + query_string
                 )
-
+                # extract video ids from the search results
                 search_results = re.findall(r'/watch\?v=(.{11})', content.read().decode())
-
+                # construct the full youtube video url
                 cls.url = cls.youtube_watch_url + search_results[0]
-
+            # get the current event loop
             loop = asyncio.get_event_loop()
+            # run the youtube downloader in an executor (non-blocking)
             data = await loop.run_in_executor(None, lambda: cls.ytdl.extract_info(url, download=False))
-
+            # extract the direct audio url from the downloaded data
             song = data['url']
+            # create an ffmpeg audio player for discord
             player = discord.FFmpegOpusAudio(song, **cls.ffmpeg_options)
+            # get the guild (server) id
             id = cls.message.guild.id
+            # play the audio in the corresponding voice client
             cls.voice_clients[id].play(player,
                                    after=lambda e: asyncio.run_coroutine_threadsafe(cls.__play_next(cls.message),
                                                                                     cls.bot.loop))
-            logging.info('The songsmonitor.monitor is done')
+            # log successful execution
+            logging.info('The songsmonitor.monitor method has completed successfully')
         except Exception as e:
-            logging.exception('The exception in songsmonitor.monitor ' + str(e))
+            # log any exceptions that occur
+            logging.exception('The exception occurred in songsmonitor.monitor: ' + str(e))

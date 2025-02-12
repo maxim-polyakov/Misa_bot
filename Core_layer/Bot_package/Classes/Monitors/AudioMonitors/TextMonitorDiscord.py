@@ -12,4 +12,5 @@ class TextMonitorDiscord(TextMonitor.TextMonitor):
 
     @classmethod
     def monitor(cls, outstr):
+        # calls the parent class's 'monitor' method with specific parameters
         return super().monitor(cls.__message,'discord', outstr)
