@@ -16,15 +16,20 @@ class Weather(IWeather.IWeather):
         Weather.message_text = message_text
     @classmethod
     def predict(cls):
-#
-#
+        # weather predict
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # create an instance of weatherpredictor with the given city name
             wp = WeatherPredictor.WetherPredictor(city=cls.message_text)
+            # get the weather prediction result
             res = wp.predict()
+            # if the result is not none, format and return it
             if res != None:
                 out = str(res[0] + '. ' + res[1])
-                logging.info('The drawer.predict is done')
+                # log successful completion of the prediction process
+                logging.info('The drawer.predict process has completed successfully')
                 return out
         except Exception as e:
-            logging.exception(str('The exception in drawer.predict ' + str(e)))
+            # log any exceptions that occur during the prediction process
+            logging.exception(str('The exception occurred in drawer.predict: ' + str(e)))

@@ -27,18 +27,19 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
     @classmethod
     def __action_step(cls, chosen_item, message_text):
-#
-#
+        # step of action
+        # configure logging settings
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # create instances of different command action classes
             aone = FCommandAction.FCommandAction(cls.__message, message_text)
             asixteen = SCommandAction.SCommandAction(cls.__message, message_text)
-
-
             ac = CommandAction.CommandAction(cls.__message, message_text)
+            # create a dictionary mapping command words to their corresponding method results
             info_dict = {
                 'абонировать': str(aone.first()),
                 'абонироваться': str(aone.second()),
-                'нарисовать':str(aone.third()),
+                'нарисовать': str(aone.third()),
                 'атаковать': str(asixteen.seventh()),
                 'фас': str(ac.first()),
                 'поссчитать': str(ac.nineth()),
@@ -48,46 +49,62 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'почистить': str(ac.seventh()),
                 'очистить': str(ac.seventh())
                 }
+            # log successful completion of the process
+            logging.info('The commandanalyzer.__action_step process has completed successfully')
+            # return the corresponding value from the dictionary
             return info_dict[chosen_item]
         except Exception as e:
+            # log successful completion of the process
+            logging.info('The commandanalyzer.__action_step process has completed successfully')
             return ''
 
     @classmethod
     def __action(cls, message_text):
-#
-#
+        # action of command
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # initialize an empty list to store processed words
             outlist = []
+            # split the input text into words
             array_of_message_text = message_text.split(' ')
+            # process each word in the message text
             for word in array_of_message_text:
                 outlist.append(cls.__action_step(cls.__pr.preprocess_text(word), message_text))
+            # remove duplicate elements from the list
             outlist = list(set(outlist))
-            logging.info('The commandanalyzer.__action is done')
+            # log successful completion of the method
+            logging.info('The commandanalyzer.__action process has completed successfully')
+            # return the processed list
             return outlist
         except Exception as e:
-            logging.exception(str('The exception in commandanalyzer.__action ' + str(e)))
+            # log the exception if an error occurs
+            logging.exception('The exception occurred in commandanalyzer.__action: ' + str(e))
 
     @classmethod
     def analyse(cls, message_text):
-#
-#
+        # analise commands
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             outstr = ''
-
+            # check if the message contains periods (.) to determine sentence splitting
             if (message_text.count('.') > 0):
                 word_arr = message_text.split('. ')
             else:
                 word_arr = message_text.split(', ')
+            # process each word or phrase in the array
             for word in word_arr:
                 outlist = cls.__action(word)
                 if (outlist != None):
                     for outmes in outlist:
                         outstr += str(outmes) + '\n'
-            logging.info('The commandanalyzer.analyse is done')
+            # log successful completion of the analysis process
+            logging.info('The commandanalyzer.analyse process has completed successfully')
+            # check if the output string is empty or contains only "none"
             if outstr == '\n\n' or outstr == '' or outstr == '\n' or outstr == '\nNone\n' or outstr == 'none':
                 return cls._gpta.answer(message_text)
             return outstr.capitalize()
         except Exception as e:
-            logging.exception(str('The exception in commandanalyzer.analyse ' + str(e)))
+            # log any exceptions that occur during execution
+            logging.exception('The exception occurred in commandanalyzer.analyse: ' + str(e))

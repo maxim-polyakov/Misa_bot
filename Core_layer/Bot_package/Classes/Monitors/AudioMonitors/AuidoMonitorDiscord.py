@@ -61,7 +61,7 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
                 files=files,
             )
             # log successful completion of the function
-            logging.info('The audiomonitordiscord.__finished_callback process is completed successfully')
+            logging.info('The audiomonitordiscord.__finished_callback process has completed successfully')
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception in audiomonitordiscord.__finished_callback: ' + str(e))
@@ -82,7 +82,7 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
             # notify the user that the recording has stopped
             await cls.message.respond("The recording has stopped!")
             # log the successful stop of the recording
-            logging.info('The audiomonitordiscord.stop process is completed successfully')
+            logging.info('The audiomonitordiscord.stop process has completed successfully')
         except Exception as e:
             # log any exceptions that occur during the stop process
             logging.exception('The exception occurred in audiomonitordiscord.stop: ' + str(e))
@@ -114,7 +114,7 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
                 sync_start=True,  # WARNING: This feature is very unstable and may break at any time.
             )
             # log that the monitoring function has started successfully
-            logging.info('The audiomonitordiscord.monitor process is completed successfully')
+            logging.info('The audiomonitordiscord.monitor process has completed successfully')
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in audiomonitordiscord.monitor: ' + str(e))

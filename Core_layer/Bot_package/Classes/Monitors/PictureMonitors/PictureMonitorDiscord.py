@@ -15,13 +15,14 @@ class PictureMonitorDiscord(PictureMonitor.PictureMonitor):
 
     @classmethod
     def monitor(cls):
-#
-#
+        # picture monitor for discord
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # check if there are any attachments in the message
             if len(cls.message.attachments) > 0:
                 attachment = cls.message.attachments[0]
-
+                # check if the attachment is an image file (supported formats: jpg, jpeg, png, webp, gif)
                 if (
                         attachment.filename.endswith(".jpg")
                         or attachment.filename.endswith(".jpeg")
@@ -29,19 +30,25 @@ class PictureMonitorDiscord(PictureMonitor.PictureMonitor):
                         or attachment.filename.endswith(".webp")
                         or attachment.filename.endswith(".gif")
                 ):
+                    # create a directory named "photos" if it does not exist
                     if not os.path.isdir("photos"):
                         os.mkdir("photos")
-
+                    # get the list of files in the "photos" directory
                     total_con = os.listdir('photos')
-
+                    # count the number of existing files to generate a unique filename
                     count = len(total_con)
-
+                    # download the image from the attachment url
                     img_data = requests.get(attachment.url).content
+                    # define the file path and temporary file name
                     file = "photos/file_" + str(count) + ".jpg"
                     tmp = "file_" + str(count) + ".jpg"
+                    # save the downloaded image to the specified file
                     with open(file, "wb") as handler:
                         handler.write(img_data)
-                    logging.info('The picturemonitordiscord.monitor is done')
+                    # log successful completion of the process
+                    logging.info('The picturemonitordiscord.monitor process has completed successfully')
+                    # call the parent class's monitor method with the file path and temporary file name
                     return super().monitor(file, tmp)
         except Exception as e:
-            logging.exception(str('The exception in picturemonitordiscord.monitor ' + str(e)))
+            # log any exceptions that occur during execution
+            logging.exception(str('The exception occurred in picturemonitordiscord.monitor: ' + str(e)))

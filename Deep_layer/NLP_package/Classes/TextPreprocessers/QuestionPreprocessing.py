@@ -30,7 +30,7 @@ class QuestionPreprocessing(Preprocessing.Preprocessing):
             # ensure proper spacing around question marks
             text = text.replace(' ? ', '?')
             # log that the preprocessing was successfully completed
-            logging.info('The questionpreprocessing.preprocess_text is done')
+            logging.info('The questionpreprocessing.preprocess_text method has completed successfully')
             return text
         except Exception as e:
             # log any exceptions that occur during preprocessing
@@ -53,8 +53,8 @@ class QuestionPreprocessing(Preprocessing.Preprocessing):
             # replace double spaces with a single space
             text = re.sub('  ', ' ', text)
             # log that the preprocessing function has completed successfully
-            logging.info('The questionpreprocessing.reversepreprocess_text is done')
+            logging.info('The questionpreprocessing.reversepreprocess_text method has completed successfully')
             return text
         except Exception as e:
             # log any exceptions that occur during preprocessing
-            logging.exception(str('The exception is in preprocessing.reversepreprocess_text: ' + str(e)))
+            logging.exception('The exception is in preprocessing.reversepreprocess_text: ' + str(e))

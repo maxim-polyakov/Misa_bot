@@ -31,6 +31,6 @@ class MemoryCleaner(ICleaner.ICleaner):
             # insert the cleaned data back into the database
             DB_Communication.DB_Communication.insert_to(df, cls.dbname, 'train_sets')
             # log successful completion of the cleaning process
-            logging.info('The memorycleaner.clean process is completed successfully')
+            logging.info('The memorycleaner.clean process has completed successfully')
         except Exception as e:
             logging.exception('The exception occurred in memorycleaner.clean: ' + str(e))

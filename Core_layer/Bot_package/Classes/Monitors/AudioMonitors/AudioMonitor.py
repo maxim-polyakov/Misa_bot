@@ -43,7 +43,7 @@ class AudioMonitor(IMonitor.IMonitor):
             output = json.loads(rec.FinalResult())
             out = output["text"]
             # log that the monitoring process is complete
-            logging.info('The audiomonitor.monitor process is completed successfully')
+            logging.info('The audiomonitor.monitor process has completed successfully')
             return out
         except Exception as e:
             # log any exceptions that occur during processing

@@ -35,7 +35,7 @@ class Drawer(IDrawer.IDrawer):
             out.write(p.content)
             out.close()
             # log successful completion of the draw process
-            logging.info('The drawer.draw process is completed successfully')
+            logging.info('The drawer.draw process has completed successfully')
             # return the file path of the saved image
             return filepath
         except Exception as e:

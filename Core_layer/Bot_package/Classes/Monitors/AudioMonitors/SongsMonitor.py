@@ -41,7 +41,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 # create an instance of songsmonitor
                 sm = SongsMonitor(cls.bot, message)
                 # log that the play_next function is executed
-                logging.info('The songsmonitor.__play_next process is completed successfully')
+                logging.info('The songsmonitor.__play_next process has completed successfully')
                 # start monitoring the song
                 await sm.monitor(link)
         except Exception as e:

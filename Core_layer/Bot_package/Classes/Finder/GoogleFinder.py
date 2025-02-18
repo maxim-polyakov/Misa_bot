@@ -29,7 +29,7 @@ class GoogleFinder(IFinder.IFinder):
                 for outmes in finded_list:
                     outstr += outmes + ' \n '
             # log that the search operation was completed successfully
-            logging.info('The googlefinder.find process is completed successfully')
+            logging.info('The googlefinder.find process has completed successfully')
             # if no results were found, return a message indicating that
             if outstr == '':
                 return 'Не нашла'

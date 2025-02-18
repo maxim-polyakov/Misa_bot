@@ -31,7 +31,7 @@ class MessageMonitor(IMonitor.IMonitor):
             # append the emotion to the output list
             outlist.append('' + emotion)
             # log successful completion of the process
-            logging.info('The messagemonitor.__decision process is completed successfully')
+            logging.info('The messagemonitor.__decision process has completed successfully')
             return outlist
         except Exception as e:
             # log any exceptions that occur during execution
@@ -46,7 +46,7 @@ class MessageMonitor(IMonitor.IMonitor):
             # initialize an empty emotion variable
             emotion = ''
             # log successful execution of the method
-            logging.info('The messagemonitor._neurodesc process is completed successfully')
+            logging.info('The messagemonitor._neurodesc process has completed successfully')
             # call the __decision method with the provided parameters
             return cls.__decision(text_message,
                                 emotion,
@@ -63,10 +63,10 @@ class MessageMonitor(IMonitor.IMonitor):
         try:
             # check if the given text_message matches any command in the database
             if (cls._dbc.checkcommands(text_message)):
-                logging.info('The messagemonitor.check process is completed successfully')
+                logging.info('The messagemonitor.check process has completed successfully')
                 return True
             else:
-                logging.info('The messagemonitor.check process is completed successfully')
+                logging.info('The messagemonitor.check process has completed successfully')
                 return False
         except Exception as e:
             # log the exception if an error occurs during execution
@@ -113,11 +113,11 @@ class MessageMonitor(IMonitor.IMonitor):
                     for outmes in outlist:
                         outstr += str(outmes)
                 # log successful completion of the process
-                logging.info('The messagemonitor.monitor process is completed successfully')
+                logging.info('The messagemonitor.monitor process has completed successfully')
                 return outstr.capitalize()
             else:
                 # log successful completion even if no keywords were found
-                logging.info('The messagemonitor.monitor process is completed successfully')
+                logging.info('The messagemonitor.monitor process has completed successfully')
                 return outstr.capitalize()
         except Exception as e:
             # log any exceptions that occur during execution

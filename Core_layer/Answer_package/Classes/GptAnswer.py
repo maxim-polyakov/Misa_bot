@@ -21,7 +21,7 @@ class GptAnswer(IAnswer.IAnswer):
             # generate an answer using the gpt model
             generated_text = cls.__gpt.generate(text)
             # log successful completion of the answer generation
-            logging.info('The gptanswer.answer process is completed successfully')
+            logging.info('The gptanswer.answer process has completed successfully')
             return generated_text
         except Exception as e:
             # log the exception if an error occurs during answer generation

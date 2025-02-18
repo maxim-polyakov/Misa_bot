@@ -22,7 +22,7 @@ class AudioMonitorTelegram(AudioMonitor.AudioMonitor):
             # write the audio file back (this operation seems redundant)
             soundfile.write(file_path, data, samplerate)
             # log that the monitoring process has completed successfully
-            logging.info('The audiomonitortelegram.monitor process is completed successfully')
+            logging.info('The audiomonitortelegram.monitor process has completed successfully')
             # call the parent class's monitor method with the file path
             return super().monitor(file_path)
         except Exception as e:
