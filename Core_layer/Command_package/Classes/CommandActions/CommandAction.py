@@ -67,7 +67,7 @@ class CommandAction(IAction.IAction):
                 if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
                     message_text = cls.__calculate()
                     cls.command_flag = 1
-                    logging.info('The commandaction.third is done')
+                    logging.info('The commandaction.find process has completed successfully')
                     return message_text
                 else:
                     if (message_text.count('википедии') > 0):
