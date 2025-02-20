@@ -2,6 +2,7 @@ import logging
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Bot_package.Classes.Weather import Weather
 from Core_layer.Bot_package.Classes.Finder import GoogleFinder
+from Core_layer.Bot_package.Classes.Finder import WikiFinder
 from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.API_package.Classes.Calculators import SympyCalculator
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
@@ -61,36 +62,45 @@ class CommandAction(IAction.IAction):
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # check if the message contains "найди" but not "найдись"
             if cls.message_text.count('найди') > 0 and cls.message_text.count('найдись') == 0:
+                # remove unnecessary spaces and "найди" from the message
                 message_text = (cls.message_text.strip(' ')
                                 .replace('найди ', ''))
+                # check if the message is related to mathematical operations
                 if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
                     message_text = cls.__calculate()
                     cls.command_flag = 1
                     logging.info('The commandaction.find process has completed successfully')
                     return message_text
                 else:
+                    # check if the message is related to wikipedia search
                     if (message_text.count('википедии') > 0):
                         message_text = (message_text.strip(' ')
                                         .replace('википедии ', ''))
                         try:
-                            #apif = WikiFinder.WikiFinder()
-                            #finded_list = apif.find(cls.__pr.preprocess_text(message_text))
+                            # perform a wikipedia search
+                            apif = WikiFinder.WikiFinder(cls.__pr.preprocess_text(message_text))
+                            finded_list = apif.find()
                             logging.info('The commandaction.find process has completed successfully')
-                            #return str(finded_list)
+                            return str(finded_list)
                         except Exception as e:
+                            # log any exceptions that occur during the wikipedia
                             logging.exception('The exception occurred in commandaction.third: ' + str(e))
                             return 'Не нашла'
                     else:
                         try:
+                            # perform a google search
                             gpif = GoogleFinder.GoogleFinder(message_text)
                             outstr = gpif.find()
                             logging.info('The commandaction.third process has completed successfully')
                             return outstr
                         except Exception as e:
+                            # log any exceptions that occur during the google search
                             logging.exception('The exception occurred in commandaction.third: ' + str(e))
                             return 'Не нашла'
         except Exception as e:
+            # log any general exceptions that occur in the method
             logging.exception('The exception occurred in commandaction.third: ' + str(e))
 
     @classmethod
@@ -134,8 +144,6 @@ class CommandAction(IAction.IAction):
 
     @classmethod
     def sixth(cls):
-#
-#
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             pass
@@ -163,35 +171,44 @@ class CommandAction(IAction.IAction):
     @classmethod
     def __calculate(cls):
         # calculate
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-
+            # preprocess the input message
             message_text = (cls.message_text.strip(' ')
                             .replace('поссчитай ', ''))
+            # split the message into an array of words
             Inputarr = message_text.split(' ')
+            # create an instance of the sympycalculator class
             c = SympyCalculator.SympyCalculator()
+            # check if the command is to calculate a derivative
             if Inputarr[0] == 'производную':
                 output = c.deravative(Inputarr[1], Inputarr[3])
                 logging.info('The commandaction.eighth is done')
                 return output
+            # check if the command is to calculate an integral
             elif Inputarr[0] == 'интеграл':
                 output = c.integrate(Inputarr[1], Inputarr[3])
                 logging.info('The commandaction.eighth is done')
                 return output
+            # if the command is neither, calculate both derivative and integral
             else:
                 outputone = c.deravative(Inputarr[1], Inputarr[3])
                 outputtwo = c.integrate(Inputarr[1], Inputarr[3])
                 output = 'производная ' + outputone + ', ' + 'интеграл ' + outputtwo
                 logging.info('The commandaction.eighth is done')
                 return output
+            # clean up the message text by removing processed parts
             message_text = cls.message_text.replace(Inputarr[1].rstrip(), '')
             message_text = message_text.replace(Inputarr[2], '').replace(Inputarr[0], '')
             message_text = message_text.strip(' ')
+            # set a command flag
             cls.command_flag = 1
             logging.info('The commandaction.eighth is done')
             return message_text
         except Exception as e:
-            logging.exception(str('The exception in commandaction.eighth ' + str(e)))
+            # handle exceptions and log errors
+            logging.exception('The exception in commandaction.eighth ' + str(e))
 
     @classmethod
     def eighth(cls):
@@ -224,12 +241,18 @@ class CommandAction(IAction.IAction):
     @classmethod
     def tenth(cls):
         # clean
+        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            # check if the message contains the word "очисти" but not "очисться"
             if cls.message_text.count('очисти') > 0 and cls.message_text.count('очисться') == 0:
+                # remove "очисти " from the message text
                 message_text = (cls.message_text.replace('почисти ', '')
                                 .replace('очисти', ''))
+                # create an instance of the common preprocessing class
                 pr = CommonPreprocessing.CommonPreprocessing()
+                # preprocess the cleaned message text and return the result
                 return pr.preprocess_text(message_text)
         except Exception as e:
+            # log any exceptions that occur during execution
             logging.exception(str('The exception in commandaction.seventh ' + str(e)))
