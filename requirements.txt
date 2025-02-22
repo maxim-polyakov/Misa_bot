@@ -38,7 +38,6 @@ google==3.0.0
 google-auth==2.16.1
 google-auth-oauthlib==0.4.6
 google-pasta==0.2.0
-googletrans==3.1.0a0
 greenlet==2.0.2
 grpcio==1.51.3
 gTTS==2.5.3
@@ -88,7 +87,7 @@ pip==23.0.1
 preshed==3.0.8
 protobuf==3.19.6
 psycopg2-binary==2.9.5
-py-cord==2.6.0
+py-cord
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.22
@@ -128,17 +127,10 @@ sympy==1.11.1
 tensorboard==2.11.2
 tensorboard-data-server==0.6.1
 tensorboard-plugin-wit==1.8.1
-tensorflow-cpu==2.11.0
-tensorflow-estimator==2.11.0
-tensorflow-intel==2.11.0
-tensorflow-io-gcs-filesystem==0.30.0
 termcolor==2.2.0
 thinc==8.1.7
 threadpoolctl==3.1.0
 tokenizers==0.13.2
-torch==2.4.1
-torchaudio==0.13.1
-torchvision==0.14.1
 tqdm==4.64.1
 transformers==4.26.1
 typer==0.7.0
