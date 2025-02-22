@@ -9,14 +9,14 @@ def remove_all_files(dir):
     for f in os.listdir(dir):
         os.remove(os.path.join(dir, f))
 
-@discord_bot.bot.command(name='join', help='Tells the bot to join the voice channel')
+@discord_bot.bot.slash_command(name='join', help='Подключится к каналу')
 async def join(message):
 #
 #
     sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
     await sm.join()
 
-@discord_bot.bot.command(name='leave', help='To make the bot leave the voice channel')
+@discord_bot.bot.slash_command(name='leave', help='Выйти из канала')
 async def leave(message):
 #
 #

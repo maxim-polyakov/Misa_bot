@@ -29,8 +29,7 @@ class FCommandAction(IAction.IAction):
 
     @classmethod
     def first(cls):
-#
-#       абонировать
+        # first subscribe
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('абонируй') > 0 and cls.message_text.count('абонируйся') == 0:
@@ -51,12 +50,11 @@ class FCommandAction(IAction.IAction):
                     cls.__hashone == None
                     return 'Уже добавляла'
         except Exception as e:
-            logging.exception(str('The exception in aactionone.first ' + str(e)))
+            logging.exception('The exception in aactionone.first ' + str(e))
 
     @classmethod
     def second(cls):
-#
-#       абонироваться
+        # second subscribe
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             if cls.message_text.count('абонируйся') > 0:
@@ -76,7 +74,7 @@ class FCommandAction(IAction.IAction):
                     cls.__hashtwo == None
                     return 'Уже добавляла'
         except Exception as e:
-            logging.exception(str('The exception in aactionone.second ' + str(e)))
+            logging.exception('The exception in aactionone.second ' + str(e))
 
     @classmethod
     def third(cls):
@@ -90,7 +88,7 @@ class FCommandAction(IAction.IAction):
                 filepath = dal.draw()
                 return filepath
         except Exception as e:
-            logging.exception(str('The exception in aactionone.third ' + str(e)))
+            logging.exception('The exception in aactionone.third ' + str(e))
 
     @classmethod
     def fourth(cls):
@@ -100,7 +98,7 @@ class FCommandAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionone.fourth ' + str(e)))
+            logging.exception('The exception in aactionone.fourth ' + str(e))
 
     @classmethod
     def fifth(cls):
@@ -110,7 +108,7 @@ class FCommandAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionone.fifth ' + str(e)))
+            logging.exception('The exception in aactionone.fifth ' + str(e))
 
     @classmethod
     def sixth(cls):
@@ -120,7 +118,7 @@ class FCommandAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionone.sixth ' + str(e)))
+            logging.exception('The exception in aactionone.sixth ' + str(e))
 
     @classmethod
     def seventh(cls):
@@ -130,7 +128,7 @@ class FCommandAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionone.seventh ' + str(e)))
+            logging.exception('The exception in aactionone.seventh ' + str(e))
 
     @classmethod
     def eighth(cls):
@@ -140,7 +138,7 @@ class FCommandAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionone.eighth ' + str(e)))
+            logging.exception('The exception in aactionone.eighth ' + str(e))
 
     @classmethod
     def nineth(cls):
@@ -150,7 +148,7 @@ class FCommandAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionone.nineth ' + str(e)))
+            logging.exception('The exception in aactionone.nineth ' + str(e))
 
     @classmethod
     def tenth(cls):
@@ -160,4 +158,4 @@ class FCommandAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in aactionone.tenth ' + str(e)))
+            logging.exception('The exception in aactionone.tenth ' + str(e))

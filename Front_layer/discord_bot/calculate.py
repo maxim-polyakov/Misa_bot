@@ -2,7 +2,7 @@ from Front_layer import discord_bot
 from Core_layer.Command_package.Classes.CommandActions import CommandAction
 
 
-@discord_bot.bot.command(name='calculate', help='To play song')
+@discord_bot.bot.slash_command(name='calculate', help='Вычислить производную')
 async def calculate(message, fsubject = 'x', ssubject = 'x'):
 #
 #

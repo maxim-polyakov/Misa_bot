@@ -54,7 +54,7 @@ class CommandAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception('The exception in commandaction.second ' + str(e))
+            logging.exception('The exception occurred in commandaction.second: ' + str(e))
 
     @classmethod
     def third(cls):
@@ -148,7 +148,7 @@ class CommandAction(IAction.IAction):
         try:
             pass
         except Exception as e:
-            logging.exception(str('The exception in commandaction.sixth ' + str(e)))
+            logging.exception(str('The exception occurred in commandaction.sixth: ' + str(e)))
 
     @classmethod
     def seventh(cls):
@@ -162,6 +162,8 @@ class CommandAction(IAction.IAction):
                 message_text = (cls.message_text.replace('почисти ', ''))
                 # create an instance of the common preprocessing class
                 pr = CommonPreprocessing.CommonPreprocessing()
+                # log successful execution
+                logging.info('The commandaction.seventh process has completed successfully')
                 # preprocess the cleaned message text and return the result
                 return pr.preprocess_text(message_text)
         except Exception as e:
@@ -251,8 +253,10 @@ class CommandAction(IAction.IAction):
                                 .replace('очисти', ''))
                 # create an instance of the common preprocessing class
                 pr = CommonPreprocessing.CommonPreprocessing()
+                # log successful execution of the method
+                logging.info('The commandaction.seventh process has completed successfully')
                 # preprocess the cleaned message text and return the result
                 return pr.preprocess_text(message_text)
         except Exception as e:
             # log any exceptions that occur during execution
-            logging.exception(str('The exception in commandaction.seventh ' + str(e)))
+            logging.exception(str('The exception occurred in commandaction.seventh: ' + str(e)))

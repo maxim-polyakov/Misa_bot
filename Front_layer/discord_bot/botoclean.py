@@ -2,7 +2,7 @@ from Front_layer import discord_bot
 from Core_layer.Bot_package.Classes.DataCleaners import MemoryCleaner
 
 
-@discord_bot.bot.command(name='clean', help='To play song')
+@discord_bot.bot.slash_command(name='clean', help='Леманатизировать таблицу в баз данных по имени')
 async def clean(message, table):
 #
 #
