@@ -31,7 +31,7 @@ async def on_message(message):
                     try:
                         if message.content.lower().count('нарисуй') > 0:
                             outstr = outstr.replace('\n', '')
-                            await message.channel.send(file=discord_bot.discord.File(outstr))
+                            await message.channel.send(file=discord_bot.disnake.File(outstr))
                         else:
                             if(len(outstr) > 2000):
                                 if not os.path.exists('txtfiles'):
