@@ -1,17 +1,17 @@
-import discord
 import flask
+import disnake
 from multiprocessing import Process
-from discord.ext import commands
+from disnake.ext import commands
 from Core_layer.Bot_package.Classes.Token import Token
 import nest_asyncio
 
 
 config = {
     'prefix': '/',
-    'intents': discord.Intents.all()
+    'intents': disnake.Intents.all()
 }
 config['intents'].message_content = True
-bot = discord.Bot(command_prefix=config['prefix'], intents=config['intents'])
+bot = commands.Bot(command_prefix=config['prefix'], intents=config['intents'])
 tkn = Token.Token()
 df = tkn.get_token('select token from assistant_sets.tokens where botname = \'Misa\' and platformname = \'Discord\'')
 token = df['token'][0]
