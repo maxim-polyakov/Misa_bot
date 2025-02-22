@@ -7,6 +7,6 @@ async def on_ready():
 #
 #
     await discord_bot.bot.change_presence(
-        status=discord_bot.discord.Status.online,
-        activity=discord_bot.discord.CustomActivity("Смотрит за сервером"))
+        status=discord_bot.disnake.Status.online,
+        activity=discord_bot.disnake.CustomActivity("Смотрит за сервером"))
     await sleep(1)
