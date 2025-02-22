@@ -11,7 +11,7 @@ config = {
     'intents': discord.Intents.all()
 }
 config['intents'].message_content = True
-bot = commands.Bot(command_prefix=config['prefix'], intents=config['intents'])
+bot = discord.Bot(command_prefix=config['prefix'], intents=config['intents'])
 tkn = Token.Token()
 df = tkn.get_token('select token from assistant_sets.tokens where botname = \'Misa\' and platformname = \'Discord\'')
 token = df['token'][0]
