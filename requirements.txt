@@ -87,7 +87,7 @@ pip==23.0.1
 preshed==3.0.8
 protobuf==3.19.6
 psycopg2-binary==2.9.5
-py-cord
+py-cord==2.6.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.22
