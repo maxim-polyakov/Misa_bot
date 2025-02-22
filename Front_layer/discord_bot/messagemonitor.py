@@ -38,7 +38,7 @@ async def on_message(message):
                                     os.makedirs('txtfiles')
                                 with open('txtfiles/message.txt', 'w+', encoding='utf-8') as file:
                                     file.write(outstr)
-                                await message.channel.send(file=discord_bot.discord.File('txtfiles/message.txt'))
+                                await message.channel.send(file=discord_bot.disnake.File('txtfiles/message.txt'))
                             else:
                                 await message.channel.send(outstr)
                     except Exception as e:
