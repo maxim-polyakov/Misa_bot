@@ -16,10 +16,11 @@ async def on_message(message):
         mmon = MessageMonitorDiscord.MessageMonitorDiscord(discord_bot.bot, message)
         pmon = PictureMonitorDiscord.PictureMonitorDiscord(message)
 
+        if (mmon.check(message.content)):
+            isCommand = True
 
         photo = pmon.monitor()
         outstr = mmon.monitor()
-
 
         if photo != None:
             lowertext = message.content.lower()
