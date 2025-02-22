@@ -6,8 +6,9 @@ from Core_layer.Bot_package.Classes.Finder import GoogleFinder
 async def find(message, subject):
 #
 #
-    if message.author != discord_bot.bot.user:
-        name = message.message.author.name
-        cl = GoogleFinder.GoogleFinder(subject)
-        out = cl.find()
-        await message.channel.send(out)
+    await message.channel.send('Выполняется команда')
+    name = message.message.author.name
+    cl = GoogleFinder.GoogleFinder(subject)
+    out = cl.find()
+    await message.channel.send(out)
+    await message.channel.send('Готово')

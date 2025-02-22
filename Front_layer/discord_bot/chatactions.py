@@ -13,12 +13,16 @@ def remove_all_files(dir):
 async def join(message):
 #
 #
+    await message.channel.send('Выполняется команда')
     sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
     await sm.join()
+    await message.channel.send('Готово')
 
 @discord_bot.bot.slash_command(name='leave', description='Выйти из канала')
 async def leave(message):
 #
 #
+    await message.channel.send('Выполняется команда')
     sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
     await sm.leave()
+    await message.channel.send('Готово')

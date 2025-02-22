@@ -6,11 +6,10 @@ from Core_layer.Command_package.Classes.CommandActions import CommandAction
 async def calculate(message, fsubject = 'x', ssubject = 'x'):
 #
 #
+    await message.channel.send('Выполняется команда')
     name = message.message.author.name
-    if (name == 'seraphim8341'):
-        subject = fsubject + ' ' + ssubject
-        calc = CommandAction.CommandAction(message, subject)
-        outputder = calc.eighth()
-        await message.channel.send(outputder)
-    else:
-        await message.channel.send('😊')
+    subject = fsubject + ' ' + ssubject
+    calc = CommandAction.CommandAction(message, subject)
+    outputder = calc.eighth()
+    await message.channel.send(outputder)
+    await message.channel.send('Готово')
