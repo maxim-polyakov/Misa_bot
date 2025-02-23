@@ -7,7 +7,6 @@ async def find(message, subject):
 #
 #
     await message.response.defer(ephemeral=True)
-    name = message.message.author.name
     cl = GoogleFinder.GoogleFinder(subject)
     out = cl.find()
     await message.channel.send(out)
