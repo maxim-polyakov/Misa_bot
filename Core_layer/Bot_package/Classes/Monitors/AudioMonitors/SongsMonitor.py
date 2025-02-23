@@ -180,9 +180,9 @@ class SongsMonitor(IMonitor.IMonitor):
             # get the current event loop
             loop = asyncio.get_event_loop()
             # run the youtube downloader in an executor (non-blocking)
-            data = await loop.run_in_executor(None, lambda: cls.ytdl.extract_info(url, download=False))
+            #data = await loop.run_in_executor(None, lambda: cls.ytdl.extract_info(url, download=False))
             # extract the direct audio url from the downloaded data
-            song = data['url']
+            song = url
             # create an ffmpeg audio player for discord
             player = disnake.FFmpegOpusAudio(song, **cls.ffmpeg_options)
             # get the guild (server) id
