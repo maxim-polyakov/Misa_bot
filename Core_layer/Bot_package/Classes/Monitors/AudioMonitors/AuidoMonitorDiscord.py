@@ -1,4 +1,4 @@
-import discord
+import disnake
 import wave
 import json
 import pydub
@@ -14,7 +14,7 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
     It is a child of audio monitor for discord
 
     """
-
+    message = None
     def __init__(self, message):
         AudioMonitorDiscord.message = message
     @classmethod
@@ -28,7 +28,7 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
             # list to store audio segments
             audio_segs: list[pydub.AudioSegment] = []
             # list to store discord file objects
-            files: list[discord.File] = []
+            files: list[disnake.File] = []
             # variable to store the longest audio segment
             longest = pydub.AudioSegment.empty()
             # variable to store the final file path
@@ -46,7 +46,7 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
                     audio_segs.append(seg)
                 # reset file pointer and create a discord file object
                 audio.file.seek(0)
-                file = discord.File(audio.file, filename=f"{user_id}.wav")
+                file = disnake.File(audio.file, filename=f"{user_id}.wav")
                 files.append(file)
                 # define the file path for saving the audio
                 file_path = "audios/" + str(user_id) + ".wav"
@@ -73,14 +73,17 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # get the voice client from the message context
-            vc: discord.VoiceClient = cls.message.voice_client
+            vc: disnake.VoiceClient = cls.message.guild.voice_client
+
             # check if there is an active voice client
             if not vc:
-                return await cls.message.respond("There's no recording going on right now")
+                return await cls.message.followup.send(
+                    "Я не в войс канале сейчас"
+                )
             # stop the recording
             vc.stop_recording()
             # notify the user that the recording has stopped
-            await cls.message.respond("The recording has stopped!")
+            await cls.message.followup.send("Запись была остановлена")
             # log the successful stop of the recording
             logging.info('The audiomonitordiscord.stop process has completed successfully')
         except Exception as e:
@@ -98,13 +101,13 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
             voice = cls.message.author.voice
             # check if the user is in a voice channel
             if not voice:
-                return await cls.message.respond("You're not in a vc right now")
+                return await cls.message.followup.send("Вы не в войс канале сейчас")
             # get the bot's voice client
-            vc: discord.VoiceClient = cls.message.voice_client
+            vc: disnake.VoiceClient = cls.message.guild.voice_client
             # check if the bot is connected to a voice channel
             if not vc:
-                return await cls.message.respond(
-                    "I'm not in a vc right now. Use `/join` to make me join!"
+                return await cls.message.followup.send(
+                    "Я не в войс канале сейчас"
                 )
             # start recording the voice channel
             vc.start_recording(

@@ -6,9 +6,9 @@ from Core_layer.Bot_package.Classes.Finder import GoogleFinder
 async def find(message, subject):
 #
 #
-    await message.channel.send('Выполняется команда')
+    await message.response.defer(ephemeral=True)
     name = message.message.author.name
     cl = GoogleFinder.GoogleFinder(subject)
     out = cl.find()
     await message.channel.send(out)
-    await message.channel.send('Готово')
+    await message.followup.send('Готово')

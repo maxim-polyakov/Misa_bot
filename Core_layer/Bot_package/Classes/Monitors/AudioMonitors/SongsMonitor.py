@@ -1,6 +1,6 @@
 import yt_dlp
 import asyncio
-import discord
+import disnake
 import logging
 import urllib.parse, urllib.request, re
 from Core_layer.Bot_package.Interfaces import IMonitor
@@ -22,7 +22,8 @@ class SongsMonitor(IMonitor.IMonitor):
                       'options': '-vn -filter:a "volume=0.25"'}
     yt_dl_options = {"format": "bestaudio/best"}
     ytdl = yt_dlp.YoutubeDL(yt_dl_options)
-
+    message = None
+    bot = None
 
     def __init__(self, bot, message):
         SongsMonitor.bot = bot
@@ -72,7 +73,7 @@ class SongsMonitor(IMonitor.IMonitor):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # get the server (guild) from the message
-            server = cls.message.message.guild
+            server = cls.message.guild
             # get the voice client associated with the server
             voice_client = server.voice_client
             # disconnect the bot from the voice channel
@@ -94,7 +95,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 cls.queues[cls.message.guild.id] = []
             # add the song url to the queue
             cls.queues[cls.message.guild.id].append(url)
-            out = "Added to queue!"
+            out = "Добавлено в очередь!"
             # log successful queue addition
             logging.info('The songsmonitor.queue method has completed successfully')
             return out
@@ -114,7 +115,7 @@ class SongsMonitor(IMonitor.IMonitor):
             if voice_client.is_playing():
                 await voice_client.stop()
             else:
-                await cls.message.send("The bot is not playing anything at the moment.")
+                await cls.message.send("Бот ничего не проигрывает в данный момент.")
             # log successful execution
             logging.info('The songsmonitor.stop method has completed successfully')
         except Exception as e:
@@ -135,7 +136,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 await voice_client.pause()
             else:
                 # inform the user that nothing is currently playing
-                await cls.message.send("The bot is not playing anything at the moment.")
+                await cls.message.send("Бот ничего не проигрывает в данный момент.")
             # log successful execution of the pause method
             logging.info('The songsmonitor.pause method has completed successfully')
         except Exception as e:
@@ -183,7 +184,7 @@ class SongsMonitor(IMonitor.IMonitor):
             # extract the direct audio url from the downloaded data
             song = data['url']
             # create an ffmpeg audio player for discord
-            player = discord.FFmpegOpusAudio(song, **cls.ffmpeg_options)
+            player = disnake.FFmpegOpusAudio(song, **cls.ffmpeg_options)
             # get the guild (server) id
             id = cls.message.guild.id
             # play the audio in the corresponding voice client

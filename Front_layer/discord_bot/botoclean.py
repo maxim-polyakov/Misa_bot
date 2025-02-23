@@ -6,9 +6,9 @@ from Core_layer.Bot_package.Classes.DataCleaners import MemoryCleaner
 async def clean(message, tablename):
 #
 #
-    await message.channel.send('Выполняется команда')
+    await message.response.defer(ephemeral=True)
     name = message.message.author.name
     strr = tablename
     cl = MemoryCleaner.MemoryCleaner(strr)
     cl.clean()
-    await message.channel.send('Готово')
+    await message.followup.send('Готово')
