@@ -6,7 +6,7 @@ from Core_layer.Bot_package.Classes.Weather import Weather
 async def weather(message, city1 = '', city2 = ''):
 #
 #
-    await message.channel.send('Выполняется команда')
+    await message.response.defer(ephemeral=True)
     name = message.message.author.name
     if city2 != '':
         city = city1 + ' ' + city2
@@ -14,5 +14,4 @@ async def weather(message, city1 = '', city2 = ''):
         city = city1
     cl = Weather.Weather(message_text=city)
     out = cl.predict()
-    await message.channel.send(out)
-    await message.channel.send('Готово')
+    await message.followup.send(out)
