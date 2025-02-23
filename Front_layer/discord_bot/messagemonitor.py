@@ -1,4 +1,5 @@
 import os
+import logging
 from Front_layer import discord_bot
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorDiscord
 from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonitorDiscord
@@ -43,12 +44,12 @@ async def on_message(message):
                             else:
                                 await message.channel.send(outstr)
                     except Exception as e:
-                        pass
+                        logging.exception('The exception occurred in on_message ' + str(e))
                 else:
                     try:
                         await message.channel.send(outstr)
                     except Exception as e:
-                        pass
+                        logging.exception('The exception occurred in on_message ' + str(e))
 
 
 
