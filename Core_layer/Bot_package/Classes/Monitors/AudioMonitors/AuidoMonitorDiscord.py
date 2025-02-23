@@ -1,4 +1,5 @@
 import disnake
+import discord
 import wave
 import json
 import pydub
@@ -73,7 +74,7 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # get the voice client from the message context
-            vc: disnake.VoiceClient = cls.message.guild.voice_client
+            vc: discord.VoiceClient = cls.message.guild.voice_client
 
             # check if there is an active voice client
             if not vc:
@@ -103,7 +104,7 @@ class AudioMonitorDiscord(AudioMonitor.AudioMonitor):
             if not voice:
                 return await cls.message.followup.send("Вы не в войс канале сейчас")
             # get the bot's voice client
-            vc: disnake.VoiceClient = cls.message.guild.voice_client
+            vc: discord.VoiceClient = cls.message.guild.voice_client
             # check if the bot is connected to a voice channel
             if not vc:
                 return await cls.message.followup.send(
