@@ -4,7 +4,6 @@ from Core_layer.Bot_package.Classes.Weather import Weather
 from Core_layer.Bot_package.Classes.Finder import GoogleFinder
 from Core_layer.Bot_package.Classes.Finder import WikiFinder
 from Core_layer.Command_package.Interfaces import IAction
-from Deep_layer.API_package.Classes.Calculators import SympyCalculator
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 
 
@@ -69,10 +68,8 @@ class CommandAction(IAction.IAction):
                                 .replace('найди ', ''))
                 # check if the message is related to mathematical operations
                 if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
-                    message_text = cls.__calculate()
-                    cls.command_flag = 1
                     logging.info('The commandaction.find process has completed successfully')
-                    return message_text
+                    return ''
                 else:
                     # check if the message is related to wikipedia search
                     if (message_text.count('википедии') > 0):
@@ -170,47 +167,6 @@ class CommandAction(IAction.IAction):
             # log any exceptions that occur during execution
             logging.exception(str('The exception in commandaction.seventh ' + str(e)))
 
-    @classmethod
-    def __calculate(cls):
-        # calculate
-        # configure logging settings
-        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
-        try:
-            # preprocess the input message
-            message_text = (cls.message_text.strip(' ')
-                            .replace('поссчитай ', ''))
-            # split the message into an array of words
-            Inputarr = message_text.split(' ')
-            # create an instance of the sympycalculator class
-            c = SympyCalculator.SympyCalculator()
-            # check if the command is to calculate a derivative
-            if Inputarr[0] == 'производную':
-                output = c.deravative(Inputarr[1], Inputarr[3])
-                logging.info('The commandaction.eighth is done')
-                return output
-            # check if the command is to calculate an integral
-            elif Inputarr[0] == 'интеграл':
-                output = c.integrate(Inputarr[1], Inputarr[3])
-                logging.info('The commandaction.eighth is done')
-                return output
-            # if the command is neither, calculate both derivative and integral
-            else:
-                outputone = c.deravative(Inputarr[1], Inputarr[3])
-                outputtwo = c.integrate(Inputarr[1], Inputarr[3])
-                output = 'производная ' + outputone + ', ' + 'интеграл ' + outputtwo
-                logging.info('The commandaction.eighth is done')
-                return output
-            # clean up the message text by removing processed parts
-            message_text = cls.message_text.replace(Inputarr[1].rstrip(), '')
-            message_text = message_text.replace(Inputarr[2], '').replace(Inputarr[0], '')
-            message_text = message_text.strip(' ')
-            # set a command flag
-            cls.command_flag = 1
-            logging.info('The commandaction.eighth is done')
-            return message_text
-        except Exception as e:
-            # handle exceptions and log errors
-            logging.exception('The exception in commandaction.eighth ' + str(e))
 
     @classmethod
     def eighth(cls):
@@ -222,20 +178,7 @@ class CommandAction(IAction.IAction):
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # check if the message contains the word 'поссчитай' but not 'поссчитайся'
-            if cls.message_text.count('поссчитай') > 0 and cls.message_text.count('поссчитайся') == 0:
-                # remove leading/trailing spaces and replace 'поссчитай ' with an empty string
-                message_text = (cls.message_text.strip(' ')
-                            .replace('поссчитай ', ''))
-                # check if the message contains 'производную' (derivative) or 'интеграл' (integral)
-                if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
-                    # perform the calculation
-                    message_text = cls.__calculate()
-                    # set a flag indicating that a command was executed
-                    cls.command_flag = 1
-                    # log successful execution
-                    logging.info('The commandaction.nineth is done')
-                    return message_text
+           pass
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in commandaction.nineth: ' + str(e))

@@ -42,7 +42,6 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'нарисовать': str(aone.third()),
                 'атаковать': str(asixteen.seventh()),
                 'фас': str(ac.first()),
-                'поссчитать': str(ac.nineth()),
                 'находить': str(ac.third()),
                 'сказать': str(ac.fourth()),
                 'погода': str(ac.fifth()),
