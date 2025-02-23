@@ -110,7 +110,7 @@ class SongsMonitor(IMonitor.IMonitor):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # get the voice client for the current guild
-            voice_client = cls.message.message.guild.voice_client
+            voice_client = cls.message.guild.voice_client
             # check if the bot is currently playing audio
             if voice_client.is_playing():
                 await voice_client.stop()
@@ -129,7 +129,7 @@ class SongsMonitor(IMonitor.IMonitor):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # get the voice client for the current guild
-            voice_client = cls.message.message.guild.voice_client
+            voice_client = cls.message.guild.voice_client
             # check if the bot is currently playing audio
             if voice_client.is_playing():
                 # pause the playback
