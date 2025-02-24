@@ -10,7 +10,6 @@ async def draw(message, what_to_draw):
     draw = Drawer.Drawer(what_to_draw)
     outputder = draw.draw()
     photo = str(outputder)
-    await message.channel.send(file=discord_bot.disnake.File(photo))
-    await message.followup.send('Готово')
+    await message.followup.send(file=discord_bot.disnake.File(photo))
 
 
