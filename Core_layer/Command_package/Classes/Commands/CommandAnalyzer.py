@@ -46,7 +46,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 'сказать': str(ac.fourth()),
                 'погода': str(ac.fifth()),
                 'почистить': str(ac.seventh()),
-                'очистить': str(ac.seventh())
+                'очищать': str(ac.tenth())
                 }
             # log successful completion of the process
             logging.info('The commandanalyzer.__action_step process has completed successfully')
