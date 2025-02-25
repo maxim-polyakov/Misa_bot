@@ -46,3 +46,4 @@ class WetherPredictor(IWeather.IWeather):
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in wetherpredictor.predict: ' + str(e))
+            return 'проблемы с сервисом'

@@ -26,3 +26,4 @@ class WikiFinder(IFinder.IFinder):
         except Exception as e:
             # log the exception with details
             logging.exception('The exception occurred in wikifinder.find: ' + str(e))
+            return 'проблемы с сервисом, возможно объект не найден'

@@ -30,6 +30,8 @@ class Weather(IWeather.IWeather):
                 # log successful completion of the prediction process
                 logging.info('The drawer.predict process has completed successfully')
                 return out
+            else:
+                return 'проблемы с сервисом, возможно город не найден'
         except Exception as e:
             # log any exceptions that occur during the prediction process
             logging.exception(str('The exception occurred in drawer.predict: ' + str(e)))
