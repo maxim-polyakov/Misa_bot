@@ -9,6 +9,7 @@ from Front_layer.discord_bot import weather
 from Front_layer.discord_bot import chatactions
 from Front_layer.discord_bot import songsmonitor
 from Front_layer.discord_bot import online
+from Front_layer.discord_bot import wikifind
 from Front_layer.discord_bot import messagemonitor
 
 # ______________________________________________________________________________

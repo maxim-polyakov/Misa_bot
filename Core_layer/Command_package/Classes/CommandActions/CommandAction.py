@@ -72,9 +72,9 @@ class CommandAction(IAction.IAction):
                     return ''
                 else:
                     # check if the message is related to wikipedia search
-                    if (message_text.count('википедии') > 0):
+                    if (message_text.count('в википедии') > 0):
                         message_text = (message_text.strip(' ')
-                                        .replace('википедии ', ''))
+                                        .replace('в википедии ', ''))
                         try:
                             # perform a wikipedia search
                             apif = WikiFinder.WikiFinder(cls.__pr.preprocess_text(message_text))

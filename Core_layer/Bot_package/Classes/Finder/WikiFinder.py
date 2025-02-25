@@ -1,5 +1,5 @@
 import logging
-from Deep_layer.API_package.Classes.Finders import WikiFinder as wfinder
+from Deep_layer.API_package.Classes.Finders import WikiFinder as wfind
 from Core_layer.Bot_package.Interfaces import IFinder
 
 
@@ -19,7 +19,10 @@ class WikiFinder(IFinder.IFinder):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # log that the search operation was completed successfully
+            wFind = wfind.WikiFinder()
+            out = wFind.find(cls.message_text)
             logging.info('The wikifinder.find process has completed successfully')
+            return out
         except Exception as e:
             # log any exceptions that occur during the search process
             logging.exception('The exception occurred in wikifinder.find: ' + str(e))
