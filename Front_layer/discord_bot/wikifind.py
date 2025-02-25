@@ -9,4 +9,4 @@ async def wikifind(message, subject):
     await message.response.defer(ephemeral=True)
     cl = WikiFinder.WikiFinder(subject)
     out = cl.find()
-    await message.followup.send(out)
+    await message.followup.send(out.lower())

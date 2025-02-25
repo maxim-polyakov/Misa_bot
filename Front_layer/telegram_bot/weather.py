@@ -9,4 +9,4 @@ async def get_user_text(message):
     city = message.text.replace('/weather ', '')
     wp = Weather.Weather(message_text=city)
     res = wp.predict()
-    await telegram_bot.boto.send_message(message.chat.id, res)
+    await telegram_bot.boto.send_message(message.chat.id, res.lower())

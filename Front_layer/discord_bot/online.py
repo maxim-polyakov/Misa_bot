@@ -12,7 +12,7 @@ async def online(message):
     idle = len(list(filter(lambda x: x.status == discord_bot.disnake.Status.idle, mbrs)))
     offline = len(list(filter(lambda x: x.status == discord_bot.disnake.Status.offline, mbrs)))
     dnd = len(list(filter(lambda x: x.status == discord_bot.disnake.Status.dnd, mbrs)))
-    out = 'Онлайн: ' + str(online) + '\n' + 'Отошёл: ' + str(idle) + '\n' + 'Не беспокоить: ' + str(dnd) + '\n' + 'Офлайн: ' + str(offline)
+    out = 'онлайн: ' + str(online) + '\n' + 'отошёл: ' + str(idle) + '\n' + 'не беспокоить: ' + str(dnd) + '\n' + 'офлайн: ' + str(offline)
     await message.followup.send(out)
 
 

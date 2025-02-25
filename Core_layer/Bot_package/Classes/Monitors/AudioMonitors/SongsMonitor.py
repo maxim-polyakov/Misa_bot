@@ -95,7 +95,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 cls.queues[cls.message.guild.id] = []
             # add the song url to the queue
             cls.queues[cls.message.guild.id].append(url)
-            out = "Добавлено в очередь!"
+            out = "добавлено в очередь!"
             # log successful queue addition
             logging.info('The songsmonitor.queue method has completed successfully')
             return out

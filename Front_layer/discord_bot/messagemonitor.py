@@ -42,12 +42,12 @@ async def on_message(message):
                                     file.write(outstr)
                                 await message.channel.send(file=discord_bot.disnake.File('txtfiles/message.txt'))
                             else:
-                                await message.channel.send(outstr.capitalize())
+                                await message.channel.send(outstr.lower())
                     except Exception as e:
                         logging.exception('The exception occurred in on_message ' + str(e))
                 else:
                     try:
-                        await message.channel.send(outstr.capitalize())
+                        await message.channel.send(outstr.lower())
                     except Exception as e:
                         logging.exception('The exception occurred in on_message ' + str(e))
 

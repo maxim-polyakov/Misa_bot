@@ -23,6 +23,6 @@ async def get_user_text(message):
                         file.write(output)
                     await telegram_bot.boto.send_document(message.chat.id, open('txtfiles/message.txt', 'r+', encoding='utf-8'))
                 else:
-                    await telegram_bot.boto.send_message(message.chat.id, output)
+                    await telegram_bot.boto.send_message(message.chat.id, output.lower())
         except Exception as e:
             pass

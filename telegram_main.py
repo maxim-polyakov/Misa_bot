@@ -6,6 +6,7 @@ from Front_layer.telegram_bot import find
 from Front_layer.telegram_bot import voicemonitor
 from Front_layer.telegram_bot import picturemonitor
 from Front_layer.telegram_bot import draw
+from Front_layer.telegram_bot import wikifind
 from Front_layer.telegram_bot import messagemonitor
 
 
