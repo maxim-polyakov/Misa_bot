@@ -91,7 +91,7 @@ class MessageMonitor(IMonitor.IMonitor):
             outstr = ''
             # check if the message contains specific keywords
             if (lowertext.count('миса') > 0
-                or lowertext.lower().count('misa')
+                or lowertext.lower().count('misa') > 0
                 or lowertext.count('миша') > 0
                 or lowertext.count('misha') > 0
                 or lowertext.count('миса,')>0
