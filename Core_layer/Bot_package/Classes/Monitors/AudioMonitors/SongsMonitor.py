@@ -117,18 +117,20 @@ class SongsMonitor(IMonitor.IMonitor):
             # get the voice client for the current guild
             voice_client = cls.message.guild.voice_client
             # check if the bot is currently playing audio
-            if voice_client.is_playing():
-                await cls.voice_clients[voice_client.guild.id].stop()
-                return 'готово'
-            else:
+            if voice_client == None:
                 return 'бот ничего не проигрывает в данный момент.'
+            else:
+                if voice_client.is_playing():
+                    await voice_client.stop()
+                    return 'готово'
+                else:
+                    return 'бот ничего не проигрывает в данный момент.'
             # log successful execution
             logging.info('The songsmonitor.stop method has completed successfully')
         except Exception as e:
             # log any exceptions that occur
             logging.exception('The exception occurred in songsmonitor.stop: ' + str(e))
             #return 'бот ничего не проигрывает в данный момент.'
-            return e
 
     @classmethod
     async def pause(cls):
