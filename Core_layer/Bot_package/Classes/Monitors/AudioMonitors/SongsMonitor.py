@@ -45,6 +45,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 logging.info('The songsmonitor.__play_next process has completed successfully')
                 # start monitoring the song
                 await sm.monitor(link)
+                return 'готово'
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in songsmonitor.__play_next: ' + str(e))
@@ -62,9 +63,11 @@ class SongsMonitor(IMonitor.IMonitor):
             cls.voice_clients[voice_client.guild.id] = voice_client
             # log successful connection
             logging.info('The songsmonitor.join method has completed successfully')
+            return 'подключился к голосовому каналу'
         except Exception as e:
             # log any exceptions that occur during the connection process
             logging.exception('The exception occurred in songsmonitor.join: ' + str(e))
+            return 'вы не подключены к голосовому каналу'
 
     @classmethod
     async def leave(cls):
@@ -80,9 +83,11 @@ class SongsMonitor(IMonitor.IMonitor):
             await voice_client.disconnect()
             # log successful disconnection
             logging.info('The songsmonitor.leave method has completed successfully')
+            return 'отключился от голосового канала'
         except Exception as e:
             # log the exception with details
             logging.exception('The exception occurred in songsmonitor.leave: ' + str(e))
+            return 'бот не подключен к голосовому каналу'
 
     @classmethod
     async def queue(cls, url):
@@ -95,7 +100,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 cls.queues[cls.message.guild.id] = []
             # add the song url to the queue
             cls.queues[cls.message.guild.id].append(url)
-            out = "добавлено в очередь!"
+            out = 'добавлено в очередь!'
             # log successful queue addition
             logging.info('The songsmonitor.queue method has completed successfully')
             return out
@@ -114,13 +119,15 @@ class SongsMonitor(IMonitor.IMonitor):
             # check if the bot is currently playing audio
             if voice_client.is_playing():
                 await voice_client.stop()
+                return 'готово'
             else:
-                await cls.message.send("Бот ничего не проигрывает в данный момент.")
+                return 'бот ничего не проигрывает в данный момент.'
             # log successful execution
             logging.info('The songsmonitor.stop method has completed successfully')
         except Exception as e:
             # log any exceptions that occur
             logging.exception('The exception occurred in songsmonitor.stop: ' + str(e))
+            return 'бот ничего не проигрывает в данный момент.'
 
     @classmethod
     async def pause(cls):
@@ -134,14 +141,16 @@ class SongsMonitor(IMonitor.IMonitor):
             if voice_client.is_playing():
                 # pause the playback
                 await voice_client.pause()
+                return 'готово'
             else:
                 # inform the user that nothing is currently playing
-                await cls.message.send("Бот ничего не проигрывает в данный момент.")
+                return 'бот ничего не проигрывает в данный момент.'
             # log successful execution of the pause method
             logging.info('The songsmonitor.pause method has completed successfully')
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in songsmonitor.pause: ' + str(e))
+            return 'бот ничего не проигрывает в данный момент.'
 
 
     @classmethod
@@ -152,10 +161,12 @@ class SongsMonitor(IMonitor.IMonitor):
         try:
             # resume playback for the voice client associated with the guild
             cls.voice_clients[cls.message.guild.id].resume()
+            return 'бот возобновил проигрывание музыки'
             logging.info('The songsmonitor.resume method has completed successfully')
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in songsmonitor.resume: ' + str(e))
+            return 'бот ничего не проигрывает в данный момент.'
 
     @classmethod
     async def monitor(cls, url):
@@ -191,6 +202,7 @@ class SongsMonitor(IMonitor.IMonitor):
             cls.voice_clients[id].play(player,
                                    after=lambda e: asyncio.run_coroutine_threadsafe(cls.__play_next(cls.message),
                                                                                     cls.bot.loop))
+            return 'готово'
             # log successful execution
             logging.info('The songsmonitor.monitor method has completed successfully')
         except Exception as e:

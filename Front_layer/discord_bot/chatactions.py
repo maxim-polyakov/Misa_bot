@@ -15,8 +15,8 @@ async def join(message):
 #
     await message.response.defer(ephemeral=True)
     sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
-    await sm.join()
-    await message.followup.send('готово')
+    out = await sm.join()
+    await message.followup.send(out)
 
 @discord_bot.bot.slash_command(name='leave', description='Выйти из канала')
 async def leave(message):
@@ -24,5 +24,5 @@ async def leave(message):
 #
     await message.response.defer(ephemeral=True)
     sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
-    await sm.leave()
-    await message.followup.send('готово')
+    out = await sm.leave()
+    await message.followup.send(out)

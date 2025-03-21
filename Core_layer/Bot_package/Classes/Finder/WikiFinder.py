@@ -22,7 +22,7 @@ class WikiFinder(IFinder.IFinder):
             wFind = wfind.WikiFinder()
             out = wFind.find(cls.message_text)
             logging.info('The wikifinder.find process has completed successfully')
-            return out
+            return out.lower()
         except Exception as e:
             # log any exceptions that occur during the search process
             logging.exception('The exception occurred in wikifinder.find: ' + str(e))
