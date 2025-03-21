@@ -118,7 +118,7 @@ class SongsMonitor(IMonitor.IMonitor):
             voice_client = cls.message.guild.voice_client
             # check if the bot is currently playing audio
             if voice_client.is_playing():
-                await voice_client.stop()
+                await cls.voice_clients[voice_client.guild.id].stop()
                 return 'готово'
             else:
                 return 'бот ничего не проигрывает в данный момент.'
