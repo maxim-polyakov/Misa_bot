@@ -127,7 +127,8 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur
             logging.exception('The exception occurred in songsmonitor.stop: ' + str(e))
-            return 'бот ничего не проигрывает в данный момент.'
+            #return 'бот ничего не проигрывает в данный момент.'
+            return e
 
     @classmethod
     async def pause(cls):
