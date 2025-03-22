@@ -1,16 +1,19 @@
 from Front_layer import discord_bot
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import SongsMonitor
-
+import validators
 
 @discord_bot.bot.slash_command(name='play_song', description='Проиграть музыку')
 async def play(message, *, url):
 #
 #
     await message.response.defer(ephemeral=True)
-    sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
-    out = await sm.join()
-    if out != 'вы не подключены к голосовому каналу':
-        out = await sm.monitor(url)
+    if validators.url(url):
+        sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
+        out = await sm.join()
+        if out != 'вы не подключены к голосовому каналу':
+            out = await sm.monitor(url)
+    else:
+        out = 'некорректный url'
     await message.followup.send(out)
 
 @discord_bot.bot.slash_command(name='pause', description='Ставит на паузу проигрывание музыки')
