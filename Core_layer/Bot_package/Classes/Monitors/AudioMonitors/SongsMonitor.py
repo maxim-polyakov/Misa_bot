@@ -83,6 +83,8 @@ class SongsMonitor(IMonitor.IMonitor):
             server = cls.message.guild
             # get the voice client associated with the server
             voice_client = server.voice_client
+            if voice_client == None:
+                return 'бот не подключен к голосовому каналу'
             # disconnect the bot from the voice channel
             await voice_client.disconnect()
             cls.voice_clients.pop(cls.message.guild.id)
@@ -92,7 +94,7 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log the exception with details
             logging.exception('The exception occurred in songsmonitor.leave: ' + str(e))
-            return 'бот не подключен к голосовому каналу'
+            return e
 
     @classmethod
     async def queue(cls, url):
@@ -112,6 +114,7 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur
             logging.exception('The exception occurred in songsmonitor.queue: ' + str(e))
+            return e
 
     @classmethod
     async def stop(cls):
@@ -126,7 +129,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 return 'бот ничего не проигрывает в данный момент.'
             else:
                 if voice_client.is_playing():
-                    voice_client.stop()
+                    cls.voice_clients[cls.message.guild.id].stop()
                     return 'готово'
                 else:
                     return 'бот ничего не проигрывает в данный момент.'
@@ -135,7 +138,7 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur
             logging.exception('The exception occurred in songsmonitor.stop: ' + str(e))
-            return 'бот ничего не проигрывает в данный момент.'
+            return e
 
     @classmethod
     async def pause(cls):
@@ -151,7 +154,7 @@ class SongsMonitor(IMonitor.IMonitor):
             else:
                 if voice_client.is_playing():
                     # pause the playback
-                    voice_client.pause()
+                    cls.voice_clients[cls.message.guild.id].pause()
                     # log successful execution of the pause method
                     logging.info('The songsmonitor.pause method has completed successfully')
                     return 'готово'
@@ -163,7 +166,7 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in songsmonitor.pause: ' + str(e))
-            return 'бот ничего не проигрывает в данный момент.'
+            return e
 
 
     @classmethod
@@ -179,7 +182,7 @@ class SongsMonitor(IMonitor.IMonitor):
             else:
                 if voice_client.is_playing():
                     # resume playback for the voice client associated with the guild
-                    voice_client.resume()
+                    cls.voice_clients[cls.message.guild.id].resume()
                     logging.info('The songsmonitor.resume method has completed successfully')
                     return 'бот возобновил проигрывание музыки'
                 else:
@@ -188,7 +191,7 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in songsmonitor.resume: ' + str(e))
-            return 'бот ничего не проигрывает в данный момент.'
+            return e
 
     @classmethod
     async def monitor(cls, url):
@@ -196,7 +199,6 @@ class SongsMonitor(IMonitor.IMonitor):
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            voice_client = cls.message.guild.voice_client
             # check if the provided url is not a direct youtube link
             if cls.youtube_base_url not in url:
                 # convert the search query into a url-encoded format
@@ -219,8 +221,10 @@ class SongsMonitor(IMonitor.IMonitor):
             song = data['url']
             # create an ffmpeg audio player for discord
             player = disnake.FFmpegOpusAudio(song, **cls.ffmpeg_options)
+            # get the guild (server) id
+            id = cls.message.guild.id
             # play the audio in the corresponding voice client
-            voice_client.play(player,
+            cls.voice_clients[id].play(player,
                                    after=lambda e: asyncio.run_coroutine_threadsafe(cls.__play_next(cls.message),
                                                                                     cls.bot.loop))
             return 'готово'
@@ -229,3 +233,4 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur
             logging.exception('The exception occurred in songsmonitor.monitor: ' + str(e))
+            return e
