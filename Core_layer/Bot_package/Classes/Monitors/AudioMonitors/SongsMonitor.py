@@ -121,7 +121,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 return 'бот ничего не проигрывает в данный момент.'
             else:
                 if voice_client.is_playing():
-                    await voice_client.stop()
+                    cls.voice_clients[cls.message.guild.id].stop()
                     return 'готово'
                 else:
                     return 'бот ничего не проигрывает в данный момент.'
@@ -141,15 +141,20 @@ class SongsMonitor(IMonitor.IMonitor):
             # get the voice client for the current guild
             voice_client = cls.message.guild.voice_client
             # check if the bot is currently playing audio
-            if voice_client.is_playing():
-                # pause the playback
-                await voice_client.pause()
-                return 'готово'
-            else:
-                # inform the user that nothing is currently playing
+            if voice_client == None:
                 return 'бот ничего не проигрывает в данный момент.'
-            # log successful execution of the pause method
-            logging.info('The songsmonitor.pause method has completed successfully')
+            else:
+                if voice_client.is_playing():
+                    # pause the playback
+                    await voice_client.pause()
+                    # log successful execution of the pause method
+                    logging.info('The songsmonitor.pause method has completed successfully')
+                    return 'готово'
+                else:
+                    # inform the user that nothing is currently playing
+                    # log successful execution of the pause method
+                    logging.info('The songsmonitor.pause method has completed successfully')
+                    return 'бот ничего не проигрывает в данный момент.'
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in songsmonitor.pause: ' + str(e))
@@ -162,9 +167,14 @@ class SongsMonitor(IMonitor.IMonitor):
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # resume playback for the voice client associated with the guild
-            cls.voice_clients[cls.message.guild.id].resume()
-            return 'бот возобновил проигрывание музыки'
+            # get the voice client for the current guild
+            voice_client = cls.message.guild.voice_client
+            if voice_client == None:
+                return 'бот ничего не проигрывает в данный момент.'
+            else:
+                # resume playback for the voice client associated with the guild
+                cls.voice_clients[cls.message.guild.id].resume()
+                return 'бот возобновил проигрывание музыки'
             logging.info('The songsmonitor.resume method has completed successfully')
         except Exception as e:
             # log any exceptions that occur during execution
