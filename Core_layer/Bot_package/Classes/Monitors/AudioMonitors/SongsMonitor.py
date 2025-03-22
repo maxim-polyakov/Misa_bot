@@ -60,7 +60,7 @@ class SongsMonitor(IMonitor.IMonitor):
             # connect to the voice channel of the message author
             voice_client = await cls.message.author.voice.channel.connect()
             # store the voice client instance in the dictionary with the guild id as the key
-            cls.voice_clients[voice_client.guild.id] = voice_client
+            return 'бот уже подключен к голосовому каналу'
             # log successful connection
             logging.info('The songsmonitor.join method has completed successfully')
             return 'подключился к голосовому каналу'
@@ -121,7 +121,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 return 'бот ничего не проигрывает в данный момент.'
             else:
                 if voice_client.is_playing():
-                    cls.voice_clients[cls.message.guild.id].stop()
+                    voice_client.stop()
                     return 'готово'
                 else:
                     return 'бот ничего не проигрывает в данный момент.'
@@ -130,7 +130,7 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur
             logging.exception('The exception occurred in songsmonitor.stop: ' + str(e))
-            return e
+            return 'бот ничего не проигрывает в данный момент.'
 
     @classmethod
     async def pause(cls):
@@ -146,7 +146,7 @@ class SongsMonitor(IMonitor.IMonitor):
             else:
                 if voice_client.is_playing():
                     # pause the playback
-                    await voice_client.pause()
+                    voice_client.pause()
                     # log successful execution of the pause method
                     logging.info('The songsmonitor.pause method has completed successfully')
                     return 'готово'
@@ -172,10 +172,14 @@ class SongsMonitor(IMonitor.IMonitor):
             if voice_client == None:
                 return 'бот ничего не проигрывает в данный момент.'
             else:
-                # resume playback for the voice client associated with the guild
-                cls.voice_clients[cls.message.guild.id].resume()
-                return 'бот возобновил проигрывание музыки'
-            logging.info('The songsmonitor.resume method has completed successfully')
+                if voice_client.is_playing():
+                    # resume playback for the voice client associated with the guild
+                    voice_client.resume()
+                    logging.info('The songsmonitor.resume method has completed successfully')
+                    return 'бот возобновил проигрывание музыки'
+                else:
+                    logging.info('The songsmonitor.resume method has completed successfully')
+                    return 'бот ничего не проигрывает в данный момент.'
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in songsmonitor.resume: ' + str(e))
@@ -187,6 +191,7 @@ class SongsMonitor(IMonitor.IMonitor):
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            voice_client = cls.message.guild.voice_client
             # check if the provided url is not a direct youtube link
             if cls.youtube_base_url not in url:
                 # convert the search query into a url-encoded format
@@ -209,10 +214,8 @@ class SongsMonitor(IMonitor.IMonitor):
             song = data['url']
             # create an ffmpeg audio player for discord
             player = disnake.FFmpegOpusAudio(song, **cls.ffmpeg_options)
-            # get the guild (server) id
-            id = cls.message.guild.id
             # play the audio in the corresponding voice client
-            cls.voice_clients[id].play(player,
+            voice_client.play(player,
                                    after=lambda e: asyncio.run_coroutine_threadsafe(cls.__play_next(cls.message),
                                                                                     cls.bot.loop))
             return 'готово'
