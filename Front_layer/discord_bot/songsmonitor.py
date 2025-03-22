@@ -8,7 +8,7 @@ async def play(message, *, url):
 #
     await message.response.defer(ephemeral=True)
     if validators.url(url):
-        if url.contains('youtube'):
+        if url.count('youtube'):
             sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
             out = await sm.join()
             if out != 'вы не подключены к голосовому каналу':
