@@ -130,7 +130,7 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur
             logging.exception('The exception occurred in songsmonitor.stop: ' + str(e))
-            return 'готово'
+            return e
 
     @classmethod
     async def pause(cls):
