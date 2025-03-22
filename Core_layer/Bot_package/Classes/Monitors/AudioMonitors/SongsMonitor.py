@@ -57,15 +57,21 @@ class SongsMonitor(IMonitor.IMonitor):
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # connect to the voice channel of the message author
-            voice_client = await cls.message.author.voice.channel.connect()
-            # log successful connection
-            logging.info('The songsmonitor.join method has completed successfully')
-            return 'подключился к голосовому каналу'
+            if cls.message.author.voice != None:
+                # connect to the voice channel of the message author
+                if cls.message.guild.id in cls.voice_clients:
+                    return 'бот уже подключен к голосовому каналу'
+                voice_client = await cls.message.author.voice.channel.connect()
+                cls.voice_clients[voice_client.guild.id] = voice_client
+                # log successful connection
+                logging.info('The songsmonitor.join method has completed successfully')
+                return 'подключился к голосовому каналу'
+            else:
+                return 'вы не подключены к глосовому каналу'
         except Exception as e:
             # log any exceptions that occur during the connection process
             logging.exception('The exception occurred in songsmonitor.join: ' + str(e))
-            return 'вы не подключены к голосовому каналу'
+            return e
 
     @classmethod
     async def leave(cls):
@@ -79,6 +85,7 @@ class SongsMonitor(IMonitor.IMonitor):
             voice_client = server.voice_client
             # disconnect the bot from the voice channel
             await voice_client.disconnect()
+            cls.voice_clients.pop(cls.message.guild.id)
             # log successful disconnection
             logging.info('The songsmonitor.leave method has completed successfully')
             return 'отключился от голосового канала'

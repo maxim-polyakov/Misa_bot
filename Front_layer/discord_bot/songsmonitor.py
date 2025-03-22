@@ -9,10 +9,9 @@ async def play(message, *, url):
     await message.response.defer(ephemeral=True)
     sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
     out = await sm.join()
-    await message.followup.send(out)
     if out != 'вы не подключены к голосовому каналу':
         out = await sm.monitor(url)
-        await message.followup.send(out)
+    await message.followup.send(out)
 
 @discord_bot.bot.slash_command(name='pause', description='Ставит на паузу проигрывание музыки')
 async def pause(message):
