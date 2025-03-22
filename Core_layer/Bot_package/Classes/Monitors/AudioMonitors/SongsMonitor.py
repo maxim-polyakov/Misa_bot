@@ -59,8 +59,6 @@ class SongsMonitor(IMonitor.IMonitor):
         try:
             # connect to the voice channel of the message author
             voice_client = await cls.message.author.voice.channel.connect()
-            # store the voice client instance in the dictionary with the guild id as the key
-            return 'бот уже подключен к голосовому каналу'
             # log successful connection
             logging.info('The songsmonitor.join method has completed successfully')
             return 'подключился к голосовому каналу'
