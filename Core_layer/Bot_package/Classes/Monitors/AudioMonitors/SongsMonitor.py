@@ -239,4 +239,7 @@ class SongsMonitor(IMonitor.IMonitor):
             if str(e) == 'Already playing audio.':
                 return 'бот уже проигрывает музыку.'
             else:
-                return e
+                if str(e) == cls.message.guild.id:
+                    return 'id гильдии не найден в списке, бот не подключен к голосовому каналу'
+                else:
+                    return e
