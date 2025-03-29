@@ -42,8 +42,14 @@ async def queue(message, *, url):
 #
 #
     await message.response.defer(ephemeral=True)
-    sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
-    out = await sm.queue(url)
+    if validators.url(url):
+        if url.count('youtube'):
+            sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
+            out = await sm.queue(url)
+        else:
+            out = 'проигрывается только youtube'
+    else:
+        out = 'некорректный url'
     await message.followup.send(out)
 
 @discord_bot.bot.slash_command(name='resume', description='Возобновляет проигрывание музыки')

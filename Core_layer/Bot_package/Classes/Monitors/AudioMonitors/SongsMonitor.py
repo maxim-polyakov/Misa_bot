@@ -71,7 +71,10 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur during the connection process
             logging.exception('The exception occurred in songsmonitor.join: ' + str(e))
-            return e
+            if e == 'Already connected to a voice channel.':
+                return 'бот уже подключен к голосовому каналу'
+            else:
+                return e
 
     @classmethod
     async def leave(cls):
@@ -233,4 +236,6 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur
             logging.exception('The exception occurred in songsmonitor.monitor: ' + str(e))
+            if e == 'Already playing audio.':
+                return 'бот уже проигрывает музыку.'
             return e
