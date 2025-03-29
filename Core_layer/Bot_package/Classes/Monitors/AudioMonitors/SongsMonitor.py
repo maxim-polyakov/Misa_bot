@@ -238,4 +238,5 @@ class SongsMonitor(IMonitor.IMonitor):
             logging.exception('The exception occurred in songsmonitor.monitor: ' + str(e))
             if e == 'Already playing audio.':
                 return 'бот уже проигрывает музыку.'
-            return e
+            else:
+                return e
