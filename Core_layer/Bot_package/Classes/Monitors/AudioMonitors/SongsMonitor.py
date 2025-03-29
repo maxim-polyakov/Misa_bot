@@ -71,7 +71,7 @@ class SongsMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur during the connection process
             logging.exception('The exception occurred in songsmonitor.join: ' + str(e))
-            if e == 'Already connected to a voice channel.':
+            if str(e) == 'Already connected to a voice channel.':
                 return 'бот уже подключен к голосовому каналу'
             else:
                 return e
