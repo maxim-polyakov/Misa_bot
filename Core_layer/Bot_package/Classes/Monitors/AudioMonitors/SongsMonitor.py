@@ -61,6 +61,9 @@ class SongsMonitor(IMonitor.IMonitor):
                 # connect to the voice channel of the message author
                 if cls.message.guild.id in cls.voice_clients:
                     return 'бот уже подключен к голосовому каналу'
+                permissions = cls.message.author.voice.channel.permissions_for(cls.message.author.voice.channel.guild.me)
+                if permissions.connect == False:
+                    return 'невозможно подключится к данному каналу'
                 voice_client = await cls.message.author.voice.channel.connect()
                 cls.voice_clients[voice_client.guild.id] = voice_client
                 # log successful connection
@@ -248,4 +251,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 if str(e) == cls.message.guild.id:
                     return 'id гильдии не найден в списке, бот не подключен к голосовому каналу'
                 else:
-                    return e
+                    if str(e) == 'Not connected to voice.':
+                        return "бот не подлючён к голосовому каналу"
+                    else:
+                        return e
