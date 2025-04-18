@@ -59,8 +59,6 @@ class SongsMonitor(IMonitor.IMonitor):
         try:
             if cls.message.author.voice != None:
                 # connect to the voice channel of the message author
-                if cls.message.guild.id in cls.voice_clients:
-                    return 'бот уже подключен к голосовому каналу'
                 permissions = cls.message.author.voice.channel.permissions_for(cls.message.author.voice.channel.guild.me)
                 if permissions.connect == False:
                     return 'невозможно подключится к данному каналу'
