@@ -131,7 +131,17 @@ class SongsMonitor(IMonitor.IMonitor):
             if voice_client == None:
                 return 'бот ничего не проигрывает в данный момент.'
             else:
-                cls.voice_clients[cls.message.guild.id].stop()
+                if voice_client.is_playing():
+                    # pause the playback
+                    cls.voice_clients[cls.message.guild.id].stop()
+                    # log successful execution of the pause method
+                    logging.info('The songsmonitor.pause method has completed successfully')
+                    return 'готово'
+                else:
+                    # inform the user that nothing is currently playing
+                    # log successful execution of the pause method
+                    logging.info('The songsmonitor.pause method has completed successfully')
+                    return 'бот ничего не проигрывает в данный момент.'
                 return 'готово'
             # log successful execution
             logging.info('The songsmonitor.stop method has completed successfully')
