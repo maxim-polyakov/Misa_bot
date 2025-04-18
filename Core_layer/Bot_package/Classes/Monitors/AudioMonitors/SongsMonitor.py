@@ -180,17 +180,14 @@ class SongsMonitor(IMonitor.IMonitor):
         try:
             # get the voice client for the current guild
             voice_client = cls.message.guild.voice_client
-            if voice_client == None:
-                return 'бот ничего не проигрывает в данный момент.'
+            if voice_client.is_playing():
+                # resume playback for the voice client associated with the guild
+                cls.voice_clients[cls.message.guild.id].resume()
+                logging.info('The songsmonitor.resume method has completed successfully')
+                return 'бот возобновил проигрывание музыки'
             else:
-                if voice_client.is_playing():
-                    # resume playback for the voice client associated with the guild
-                    cls.voice_clients[cls.message.guild.id].resume()
-                    logging.info('The songsmonitor.resume method has completed successfully')
-                    return 'бот возобновил проигрывание музыки'
-                else:
-                    logging.info('The songsmonitor.resume method has completed successfully')
-                    return 'бот ничего не проигрывает в данный момент.'
+                logging.info('The songsmonitor.resume method has completed successfully')
+                return 'бот ничего не проигрывает в данный момент.'
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in songsmonitor.resume: ' + str(e))
