@@ -226,6 +226,8 @@ class SongsMonitor(IMonitor.IMonitor):
             player = disnake.FFmpegOpusAudio(song, **cls.ffmpeg_options)
             # get the guild (server) id
             id = cls.message.guild.id
+            if id not in cls.voice_clients:
+                return 'id гильдии не найден в списке, бот не подключен к голосовому каналу'
             # play the audio in the corresponding voice client
             cls.voice_clients[id].play(player,
                                    after=lambda e: asyncio.run_coroutine_threadsafe(cls.__play_next(cls.message),
