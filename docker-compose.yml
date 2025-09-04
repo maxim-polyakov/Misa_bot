@@ -13,3 +13,5 @@ services:
       dockerfile: ./server/Dockerfile
     container_name: misa_server
     restart: unless-stopped
+    ports:
+      - "5001:8001"

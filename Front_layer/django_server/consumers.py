@@ -32,11 +32,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # Обрабатываем сообщение через ваш MessageMonitor
             response = await self.process_message(message)
 
+            # Отправляем ответ в правильном формате
             await self.send(text_data=json.dumps({
                 'type': 'chat_message',
                 'message': response,
                 'user': 'Misa'
-            }))
+            }, ensure_ascii=False))  # Важно: ensure_ascii=False
 
         except Exception as e:
             logger.error(f"Error processing message: {str(e)}")
@@ -46,7 +47,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }))
 
     async def process_message(self, message):
-        # Используем ваш существующий MessageMonitor
         message_monitor = MessageMonitorServer.MessageMonitorServer(message=message)
         response = message_monitor.monitor()
 
