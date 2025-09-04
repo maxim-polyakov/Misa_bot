@@ -1,2 +1,2 @@
-python server/main.py
+python main.py
 wait
