@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  misa:
+    build:
+      context: .
+      dockerfile: ./bots/Dockerfile
+    container_name: misa_bot
+    restart: unless-stopped
