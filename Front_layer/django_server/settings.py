@@ -4,8 +4,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'channels',
-    'server',  # ваше приложение
+    'channels'
 ]
 ROOT_URLCONF = 'Front_layer.django_server.urls'
 ASGI_APPLICATION = 'Front_layer.django_server.asgi.application'
