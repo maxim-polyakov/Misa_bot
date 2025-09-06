@@ -48,7 +48,7 @@ async def on_message(message):
                         logging.exception('The exception occurred in on_message ' + str(e))
                 else:
                     try:
-                        await message.channel.send(outstr.lower())
+                        await message.channel.send(outstr)
                     except Exception as e:
                         logging.exception('The exception occurred in on_message ' + str(e))
 

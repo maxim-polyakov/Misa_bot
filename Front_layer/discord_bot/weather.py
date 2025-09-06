@@ -9,4 +9,4 @@ async def weather(message, city):
     await message.response.defer(ephemeral=True)
     cl = Weather.Weather(message_text=city)
     out = cl.predict()
-    await message.followup.send(out.lower())
+    await message.followup.send(out)

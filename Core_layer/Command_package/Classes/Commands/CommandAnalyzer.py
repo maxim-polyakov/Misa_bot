@@ -54,7 +54,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             return info_dict[chosen_item]
         except Exception as e:
             # log successful completion of the process
-            logging.info('The commandanalyzer.__action_step process has completed successfully')
+            logging.info('The commandanalyzer.__action_step process has not completed successfully')
             return ''
 
     @classmethod
@@ -103,7 +103,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             # check if the output string is empty or contains only "none"
             if outstr == '\n\n' or outstr == '' or outstr == '\n' or outstr == '\nNone\n' or outstr == 'none':
                 return cls._gpta.answer(message_text)
-            return outstr.capitalize()
+            return outstr
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in commandanalyzer.analyse: ' + str(e))
