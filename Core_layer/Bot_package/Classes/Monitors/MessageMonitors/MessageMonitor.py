@@ -95,7 +95,7 @@ class MessageMonitor(IMonitor.IMonitor):
                 or lowertext.count('миша') > 0
                 or lowertext.count('misha') > 0
                 or lowertext.count('миса,')>0
-                or lowertext.count('иса')>0):
+                or lowertext.count('иса')>0 and pltype != 'server'):
                 # perform text replacements (currently empty replacements)
                 lowertext = (lowertext.replace('миса ', '')
                             .replace('misa ', '')
@@ -116,6 +116,26 @@ class MessageMonitor(IMonitor.IMonitor):
                 logging.info('The messagemonitor.monitor process has completed successfully')
                 return outstr
             else:
+                if pltype == 'server':
+                    # perform text replacements (currently empty replacements)
+                    lowertext = (lowertext.replace('миса ', '')
+                                 .replace('misa ', '')
+                                 .replace('миса,', '')
+                                 .replace('misa,', '')
+                                 .replace('миша', '')
+                                 .replace('misha', '')
+                                 .replace('иса', ''))
+                    # add processed text to the list
+                    text.append(lowertext)
+                    # process the text using a neural network function
+                    outlist = cls._neurodesc(text, lowertext, command)
+                    # if the function returns a result, format it into a string
+                    if (outlist != None):
+                        for outmes in outlist:
+                            outstr += str(outmes)
+                    # log successful completion of the process
+                    logging.info('The messagemonitor.monitor process has completed successfully')
+                    return outstr
                 # log successful completion even if no keywords were found
                 logging.info('The messagemonitor.monitor process has completed successfully')
                 return outstr
