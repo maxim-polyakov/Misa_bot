@@ -48,8 +48,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not response:
             return "Я не понял ваш запрос"
 
-
-
         if self.is_file_path(response):
             return self.convert_file_path_to_url(response)
 
@@ -75,24 +73,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
             abs_file_path = os.path.abspath(cleaned_path)
             images_dir = os.path.join(settings.BASE_DIR, 'images')
 
+            # Получаем API_URL из настроек Django
+            api_url = getattr(settings, 'API_URL', '')
+
             # Если файл в папке images
             if abs_file_path.startswith(images_dir):
                 relative_path = os.path.relpath(abs_file_path, images_dir)
                 encoded_path = quote(relative_path.replace('\\', '/'))
-                return f"/images/{encoded_path}"
+                return f"{api_url}/images/{encoded_path}" if api_url else f"/images/{encoded_path}"
 
             # Если файл в других статических директориях
             for static_dir in settings.STATICFILES_DIRS:
                 if abs_file_path.startswith(static_dir):
                     relative_path = os.path.relpath(abs_file_path, static_dir)
                     encoded_path = quote(relative_path.replace('\\', '/'))
-                    return f"/{encoded_path}"
+                    return f"{api_url}/{encoded_path}" if api_url else f"/{encoded_path}"
 
             # Если файл в корне проекта
             if abs_file_path.startswith(str(settings.BASE_DIR)):
                 relative_path = os.path.relpath(abs_file_path, settings.BASE_DIR)
                 encoded_path = quote(relative_path.replace('\\', '/'))
-                return f"/{encoded_path}"
+                return f"{api_url}/{encoded_path}" if api_url else f"/{encoded_path}"
 
             return cleaned_path
 

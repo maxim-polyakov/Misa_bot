@@ -10,6 +10,9 @@ INSTALLED_APPS = [
     'channels'
 ]
 
+# API URL из переменных окружения
+API_URL = os.getenv('API_URL', '')
+
 # Предполагаем, что BASE_DIR это корень проекта (где manage.py)
 BASE_DIR = Path(__file__).resolve().parent.parent.parent  # Или подстройте под вашу структуру
 
