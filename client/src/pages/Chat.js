@@ -32,6 +32,12 @@ const Chat = observer(() => {
         }
     };
 
+    const handleClearHistory = () => {
+        if (window.confirm("Очистить всю историю сообщений?")) {
+            chatStore.clearMessages();
+        }
+    };
+
     const renderMessage = (msg) => {
         // Проверяем, является ли сообщение относительным путем к изображению
         const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(msg.content);
@@ -94,8 +100,19 @@ const Chat = observer(() => {
         <div className="chat-container">
             <div className="chat-header">
                 <h1>Misa AI Чат</h1>
-                <div className="chat-status">
-                    {getConnectionStatus()}
+                <div className="chat-header-controls">
+                    <div className="chat-status">
+                        {getConnectionStatus()}
+                    </div>
+                    {chatStore.messages.length > 0 && (
+                        <button
+                            onClick={handleClearHistory}
+                            className="clear-history-button"
+                            title="Очистить историю"
+                        >
+                            🗑️
+                        </button>
+                    )}
                 </div>
             </div>
 

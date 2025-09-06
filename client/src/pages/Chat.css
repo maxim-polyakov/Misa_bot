@@ -23,31 +23,30 @@ body {
     position: relative;
 }
 
-/* Стиль для заголовка Misa AI Чат с выравниванием слева */
+/* Стиль для заголовка чата */
 .chat-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    text-align: left; /* Выравнивание по левому краю */
-    position: relative;
-    flex-shrink: 0;
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
 }
 
 .chat-header h1 {
-    font-size: 1.8em;
-    font-weight: 700;
     margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
     background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     letter-spacing: 0.5px;
-    flex: 1; /* Занимает доступное пространство */
 }
 
 /* Иконка перед текстом */
@@ -58,14 +57,65 @@ body {
     vertical-align: middle;
 }
 
-/* Статус выравнивается по правому краю */
-.chat-status {
-    position: static; /* Убираем абсолютное позиционирование */
-    transform: none;
-    margin-left: 20px; /* Отступ от заголовка */
+/* Контейнер для элементов управления в заголовке */
+.chat-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
-/* Минималистичная версия с выравниванием слева */
+/* Кнопка очистки истории */
+.clear-history-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 6px;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    color: white;
+}
+
+.clear-history-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.clear-history-button:active {
+    transform: scale(0.95);
+}
+
+/* Статус подключения */
+.chat-status {
+    font-size: 12px;
+}
+
+.connection-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-connected {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4caf50;
+}
+
+.status-connecting {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ff9800;
+}
+
+.status-disconnected {
+    background: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+}
+
+/* Минималистичная версия заголовка */
 .chat-header.minimal {
     background: #ffffff;
     border-bottom: 1px solid #eaeaea;
@@ -100,47 +150,6 @@ body {
 .chat-header h1 {
     background-size: 200% 200%;
     animation: gradientShift 3s ease infinite;
-}
-
-/* Адаптивность для мобильных устройств */
-@media (max-width: 768px) {
-    .chat-header {
-        padding: 16px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .chat-header h1 {
-        font-size: 1.4em;
-    }
-
-    .chat-status {
-        margin-left: 0;
-        align-self: flex-end;
-    }
-
-    .chat-header.minimal h1 {
-        font-size: 1.3em;
-    }
-
-    .chat-header h1::before {
-        margin-right: 8px;
-        font-size: 0.8em;
-    }
-}
-
-/* Эффект при наведении */
-.chat-header h1:hover {
-    transform: translateX(5px);
-    transition: transform 0.2s ease;
-}
-.chat-status {
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    font-size: 12px;
 }
 
 /* Контейнер сообщений */
@@ -433,32 +442,6 @@ body {
     transform: translateY(0);
 }
 
-/* Стили для статусов подключения */
-.connection-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.status-connected {
-    background: rgba(76, 175, 80, 0.15);
-    color: #4caf50;
-}
-
-.status-connecting {
-    background: rgba(255, 152, 0, 0.15);
-    color: #ff9800;
-}
-
-.status-disconnected {
-    background: rgba(244, 67, 54, 0.15);
-    color: #f44336;
-}
-
 /* Кастомный скроллбар */
 .messages-container::-webkit-scrollbar {
     width: 8px;
@@ -476,42 +459,6 @@ body {
 
 .messages-container::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
-}
-
-/* Адаптивность для мобильных устройств */
-@media (max-width: 768px) {
-    .chat-container {
-        height: 100vh;
-        width: 100vw;
-    }
-
-    .chat-header {
-        padding: 14px 16px;
-    }
-
-    .chat-header h1 {
-        font-size: 1.2em;
-    }
-
-    .messages-container {
-        padding: 16px;
-    }
-
-    .message-content {
-        max-width: 82%;
-        padding: 14px 16px;
-    }
-
-    .input-container {
-        padding: 16px;
-    }
-
-    .message-avatar {
-        width: 32px;
-        height: 32px;
-        font-size: 14px;
-        margin: 0 10px;
-    }
 }
 
 /* Эффекты для кнопок и интерактивных элементов */
@@ -559,4 +506,53 @@ button:active {
 
 .user-message .message-content code {
     background: rgba(255, 255, 255, 0.2);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .chat-container {
+        height: 100vh;
+        width: 100vw;
+    }
+
+    .chat-header {
+        padding: 14px 16px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .chat-header h1 {
+        font-size: 1.3rem;
+    }
+
+    .chat-header-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .messages-container {
+        padding: 16px;
+    }
+
+    .message-content {
+        max-width: 82%;
+        padding: 14px 16px;
+    }
+
+    .input-container {
+        padding: 16px;
+    }
+
+    .message-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+        margin: 0 10px;
+    }
+}
+
+/* Эффект при наведении на заголовок */
+.chat-header h1:hover {
+    transform: translateX(5px);
+    transition: transform 0.2s ease;
 }

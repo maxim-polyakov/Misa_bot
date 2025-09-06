@@ -13,8 +13,44 @@ class ChatStore {
 
     constructor() {
         makeAutoObservable(this);
+        this.loadMessages(); // Загружаем сообщения при инициализации
         this.connect();
     }
+
+    // Загрузка сообщений из localStorage
+    loadMessages = () => {
+        try {
+            const savedMessages = localStorage.getItem('chatMessages');
+            if (savedMessages) {
+                const parsedMessages = JSON.parse(savedMessages);
+                // Восстанавливаем объекты Date из строк
+                this.messages = parsedMessages.map(msg => ({
+                    ...msg,
+                    timestamp: new Date(msg.timestamp)
+                }));
+                console.log("Сообщения загружены из localStorage:", this.messages.length);
+            }
+        } catch (error) {
+            console.error("Ошибка при загрузке сообщений:", error);
+            // Очищаем поврежденные данные
+            localStorage.removeItem('chatMessages');
+        }
+    };
+
+    // Сохранение сообщений в localStorage
+    saveMessages = () => {
+        try {
+            localStorage.setItem('chatMessages', JSON.stringify(this.messages));
+        } catch (error) {
+            console.error("Ошибка при сохранении сообщений:", error);
+        }
+    };
+
+    // Очистка истории сообщений
+    clearMessages = () => {
+        this.messages = [];
+        localStorage.removeItem('chatMessages');
+    };
 
     connect = () => {
         if (this.isConnecting || this.isConnected) return;
@@ -23,9 +59,7 @@ class ChatStore {
         this.error = null;
 
         try {
-            // Используем WSS для безопасного соединения
             const wsUrl = process.env.REACT_APP_API_WSS;
-
             console.log("Подключаемся к:", wsUrl);
             this.socket = new WebSocket(wsUrl);
 
@@ -49,14 +83,12 @@ class ChatStore {
             this.socket.onclose = (event) => {
                 this.isConnected = false;
                 this.isConnecting = false;
-
                 console.log("WebSocket соединение закрыто", event.code, event.reason);
 
                 if (event.code === 1006) {
                     this.error = "Ошибка подключения (1006). Проверьте консоль для деталей.";
                 }
 
-                // Автопереподключение
                 if (this.reconnectAttempts < this.maxReconnectAttempts) {
                     setTimeout(() => {
                         this.reconnectAttempts++;
@@ -73,7 +105,6 @@ class ChatStore {
                 console.error("WebSocket ошибка:", error);
             };
 
-            // Таймаут подключения
             setTimeout(() => {
                 if (!this.isConnected && this.isConnecting) {
                     this.socket?.close();
@@ -101,6 +132,7 @@ class ChatStore {
 
             this.messages.push(botMessage);
             this.isLoading = false;
+            this.saveMessages(); // Сохраняем после добавления нового сообщения
         }
         else if (data.type === 'error') {
             this.error = data.message || "Произошла ошибка";
@@ -131,6 +163,7 @@ class ChatStore {
         };
 
         this.messages.push(userMessage);
+        this.saveMessages(); // Сохраняем после добавления сообщения пользователя
 
         try {
             this.socket.send(JSON.stringify({
