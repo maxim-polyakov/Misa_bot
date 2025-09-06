@@ -114,11 +114,11 @@ class MessageMonitor(IMonitor.IMonitor):
                         outstr += str(outmes)
                 # log successful completion of the process
                 logging.info('The messagemonitor.monitor process has completed successfully')
-                return outstr.capitalize()
+                return outstr
             else:
                 # log successful completion even if no keywords were found
                 logging.info('The messagemonitor.monitor process has completed successfully')
-                return outstr.capitalize()
+                return outstr
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in messagemonitor.monitor: ' + str(e))
