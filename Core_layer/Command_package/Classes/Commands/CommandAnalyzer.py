@@ -64,7 +64,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             # Проверяем, является ли сообщение кодом (CSS, JS, HTML и т.д.)
             if cls.__is_code_message(message_text):
                 # Для кода возвращаем специальный маркер, пропускаем NLP обработку
-                return 'none'
+                return ''
 
             # Обычная обработка только для текстовых сообщений
             outlist = []
