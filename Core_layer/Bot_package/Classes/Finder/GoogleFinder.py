@@ -23,7 +23,7 @@ class GoogleFinder(IFinder.IFinder):
             # perform a search using googlefinder
             finded_list = gpif.find(cls.message_text)
             # prepare the output string
-            outstr = 'ссылки по запросу:\n'
+            outstr = 'Ссылки по запросу:\n'
             # check if any results were found
             if (finded_list != None):
                 for outmes in finded_list:
