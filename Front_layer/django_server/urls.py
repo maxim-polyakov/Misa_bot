@@ -1,10 +1,52 @@
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, re_path
 from django.http import HttpResponse
+from django.conf import settings
+from django.conf.urls.static import static
+from django.views.static import serve
+import os
+
 
 def home_view(request):
     return HttpResponse("Django server is working!")
 
+
 urlpatterns = [
     path('', home_view),
 ]
+
+# Для production: обслуживание статических файлов через Django (не рекомендуется для высоконагруженных проектов)
+if not settings.DEBUG:
+    # Явно обслуживаем папку images
+    urlpatterns += [
+        re_path(r'^images/(?P<path>.*)$', serve, {
+            'document_root': os.path.join(settings.BASE_DIR, 'images'),
+        }),
+    ]
+
+    # Обслуживаем другие статические директории
+    for static_dir in settings.STATICFILES_DIRS:
+        urlpatterns += [
+            re_path(r'^(?P<path>.*)$', serve, {
+                'document_root': static_dir,
+            }),
+        ]
+
+    # Fallback для любых файлов в корне проекта
+    urlpatterns += [
+        re_path(r'^(?P<path>.*)$', serve, {
+            'document_root': settings.BASE_DIR,
+        }),
+    ]
+else:
+    # Для development
+    urlpatterns += static(
+        '/images/',
+        document_root=os.path.join(settings.BASE_DIR, 'images')
+    )
+
+    for static_dir in settings.STATICFILES_DIRS:
+        urlpatterns += static(
+            settings.STATIC_URL,
+            document_root=static_dir,
+            show_indexes=True
+        )
