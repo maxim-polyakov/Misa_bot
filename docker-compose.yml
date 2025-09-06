@@ -1,27 +1,27 @@
 version: '3.8'
 
 services:
-#  misa:
-#    build:
-#      context: .
-#      dockerfile: ./bots/Dockerfile
-#    container_name: misa_bot
-#    restart: unless-stopped
-#  server:
-#    build:
-#      context: .
-#      dockerfile: ./server/Dockerfile
-#    container_name: misa_server
-#    restart: unless-stopped
-#    ports:
-#      - "5001:8001"
-#    env_file:
-#      - ./server/.env
+  misa:
+    build:
+      context: .
+      dockerfile: ./bots/Dockerfile
+    container_name: misa_bot
+    restart: unless-stopped
+  server:
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
+    container_name: misa_server
+    restart: unless-stopped
+    ports:
+      - "5001:8001"
+    env_file:
+      - ./server/.env
   client:
     container_name: misa_client
     build:
-      dockerfile: ./client/Dockerfile
-      context: .
+      dockerfile: Dockerfile
+      context: ./client/
     env_file:
       - ./client/.env
     ports:

@@ -1,7 +1,7 @@
 FROM node:24-alpine
 
 COPY package*.json .
-COPY client/yarn.lock .
+COPY yarn.lock .
 
 RUN yarn --frozen-lockfile
 
