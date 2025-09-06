@@ -9,4 +9,4 @@ async def find(message, subject):
     await message.response.defer(ephemeral=True)
     cl = GoogleFinder.GoogleFinder(subject)
     out = cl.find()
-    await message.followup.send(out.lower())
+    await message.followup.send(out)
