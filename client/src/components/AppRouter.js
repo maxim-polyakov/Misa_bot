@@ -24,8 +24,8 @@ const AppRouter = observer(() => {
                 <Route key={path} path={path} element={<Component />} />
             )}
 
-            {/* Дефолтный маршрут - можно оставить или изменить */}
-            <Route path="*" element={<div>Страница не найдена</div>} />
+            {/* Редирект всех остальных маршрутов на чат */}
+            <Route path="*" element={<Navigate to="/chat" replace />} />
         </Routes>
     );
 });
