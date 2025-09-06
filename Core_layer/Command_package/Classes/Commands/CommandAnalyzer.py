@@ -59,26 +59,47 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
     @classmethod
     def __action(cls, message_text):
-        # action of command
-        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # initialize an empty list to store processed words
+            # Проверяем, является ли сообщение кодом (CSS, JS, HTML и т.д.)
+            if cls.__is_code_message(message_text):
+                # Для кода возвращаем специальный маркер, пропускаем NLP обработку
+                return 'none'
+
+            # Обычная обработка только для текстовых сообщений
             outlist = []
-            # split the input text into words
-            array_of_message_text = message_text.split(' ')
-            # process each word in the message text
+            # Берем только первые 10 слов для анализа (оптимизация)
+            array_of_message_text = message_text.split(' ')[:10]
+
             for word in array_of_message_text:
-                outlist.append(cls.__action_step(cls.__pr.preprocess_text(word), message_text))
-            # remove duplicate elements from the list
+                processed_word = cls.__action_step(cls.__pr.preprocess_text(word), message_text)
+                if processed_word:
+                    outlist.append(processed_word)
+
             outlist = list(set(outlist))
-            # log successful completion of the method
-            logging.info('The commandanalyzer.__action process has completed successfully')
-            # return the processed list
-            return outlist
+            logging.info('Commandanalyzer.__action process completed successfully')
+            return outlist if outlist else ['general_query']
+
         except Exception as e:
-            # log the exception if an error occurs
-            logging.exception('The exception occurred in commandanalyzer.__action: ' + str(e))
+            logging.exception('Exception in commandanalyzer.__action: ' + str(e))
+
+    @classmethod
+    def __is_code_message(cls, text):
+        """Быстрая проверка на код (CSS, JS, HTML, XML и т.д.)"""
+        if len(text) > 2000:  # Длинные сообщения вероятно код
+            return True
+
+        code_indicators = [
+            '{', '}', ':', ';', '=', '<', '>', '/',
+            'function', 'var', 'const', 'let', 'class', 'import',
+            'margin', 'padding', 'font', 'color', 'background',
+            '<?php', '<html', '<div', '<script', '<style'
+        ]
+
+        # Быстрая проверка по первым 200 символам
+        preview = text[:200]
+        indicator_count = sum(1 for indicator in code_indicators if indicator in preview)
+        return indicator_count >= 2
 
     @classmethod
     def analyse(cls, message_text):
