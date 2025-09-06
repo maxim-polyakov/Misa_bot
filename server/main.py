@@ -12,11 +12,9 @@ from hypercorn.config import Config
 # ______________________________________________________________________________
 
 if __name__ == "__main__":
+    nltk.download('stopwords')
     # Устанавливаем настройки Django с правильным путем
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Front_layer.django_server.settings')
-
-
-
     # Инициализируем Django
     django.setup()
 
