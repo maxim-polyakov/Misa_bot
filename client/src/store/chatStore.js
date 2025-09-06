@@ -24,7 +24,7 @@ class ChatStore {
 
         try {
             // Используем WSS для безопасного соединения
-            const wsUrl = "wss://misaapi.baxic.ru/ws/chat/misa/";
+            const wsUrl = process.env.REACT_APP_API_WSS;
 
             console.log("Подключаемся к:", wsUrl);
             this.socket = new WebSocket(wsUrl);

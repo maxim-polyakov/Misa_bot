@@ -38,7 +38,7 @@ const Chat = observer(() => {
 
         // Если это относительный путь, преобразуем в абсолютный URL
         const imageUrl = isRelativeImagePath
-            ? `https://misaapi.baxic.ru${msg.content}`
+            ? `${process.env.REACT_APP_API_URL}${msg.content}`
             : msg.content;
 
         // Проверяем, является ли содержимое URL изображения
