@@ -24,9 +24,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         try:
-            text_data_json = json.loads(text_data)
-            message = text_data_json['message']
-            response = await self.process_message(message)
+            response = await self.process_message(text_data)
 
             await self.send(text_data=json.dumps({
                 'type': 'chat_message',
@@ -39,7 +37,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                 'type': 'error',
                 'message': 'Произошла ошибка при обработке сообщения'
-            }))
+            }, ensure_ascii=False))
 
     async def process_message(self, message):
         message_monitor = MessageMonitorServer.MessageMonitorServer(message=message)
