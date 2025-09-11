@@ -1,16 +1,10 @@
 version: '3.8'
 
 services:
-  misa:
-    build:
-      context: .
-      dockerfile: ./bots/Dockerfile
-    container_name: misa_bot
-    restart: unless-stopped
   server:
     build:
-      context: .
-      dockerfile: ./server/Dockerfile
+      context: ./server/
+      dockerfile: Dockerfile
     container_name: misa_server
     restart: unless-stopped
     ports:
