@@ -22,6 +22,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Копируем и делаем исполняемым run.sh
-COPY ./bots/run.sh /run.sh
+COPY run.sh /run.sh
 
 ENTRYPOINT ["/bin/sh", "/run.sh"]
