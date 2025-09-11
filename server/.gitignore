@@ -1,0 +1,15 @@
+*.wav
+*.pyc
+.idea/*
+venv/*
+photos/*
+resphotos/*
+audios/*
+downloads/*
+images/*
+*.pt
+*.exe
+*.log
+*.csv
+*.google-cookie
+*.csv#
