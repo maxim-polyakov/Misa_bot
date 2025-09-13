@@ -12,9 +12,7 @@ RUN apt update && apt install -y \
     libfontconfig1 \
     libxrender1 \
     libgl1 \
-    libglx-mesa0 \
-    && apt clean \
-    && rm -rf /var/lib/apt/lists/*
+    libglx-mesa0
 
 RUN pip install --no-cache-dir -r requirements.txt
 
