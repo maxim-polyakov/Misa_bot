@@ -28,7 +28,6 @@ class WetherPredictor(IWeather.IWeather):
             url = 'https://api.openweathermap.org/data/2.5/weather?q=' + cls.city + '&units=metric&lang=ru&appid=' + api
             # send request to the weather api and get the response in json format
             response = requests.get(url, timeout=10).json()
-            response.raise_for_status()
             weather_data = response.json()
             # check if the response contains valid weather data
             if weather_data != None:
