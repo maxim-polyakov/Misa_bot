@@ -27,8 +27,7 @@ class WetherPredictor(IWeather.IWeather):
             # construct the api request url
             url = 'https://api.openweathermap.org/data/2.5/weather?q=' + cls.city + '&units=metric&lang=ru&appid=' + api
             # send request to the weather api and get the response in json format
-            response = requests.get(url, timeout=10).json()
-            weather_data = response.json()
+            weather_data = requests.get(url, timeout=10).json()
             # check if the response contains valid weather data
             if weather_data != None:
                 if 'city not found' not in weather_data.values():
