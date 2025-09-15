@@ -167,7 +167,6 @@ class ChatStore {
 
         try {
             this.socket.send(content);
-            console.log(content)
             return true;
         } catch (error) {
             this.error = "Ошибка при отправке сообщения";
