@@ -103,28 +103,47 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
     @classmethod
     def analyse(cls, message_text):
-        # analise commands
-        # configure logging settings
-        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        # Простое логирование в консоль
+        def log(message, level='info'):
+            print(f"{level.upper()} - {message}")
+
         try:
+            log(f'🚀 Starting analysis of message: "{message_text}"')
+
             outstr = ''
-            # check if the message contains periods (.) to determine sentence splitting
-            if (message_text.count('.') > 0):
+
+            dot_count = message_text.count('.')
+            if dot_count > 0:
                 word_arr = message_text.split('. ')
+                log(f'📝 Split by periods. Got {len(word_arr)} parts')
             else:
                 word_arr = message_text.split(', ')
-            # process each word or phrase in the array
-            for word in word_arr:
+                log(f'📝 Split by commas. Got {len(word_arr)} parts')
+
+            processed_count = 0
+            for i, word in enumerate(word_arr):
+                log(f'🔍 Processing part {i}: "{word}"', 'debug')
+
                 outlist = cls.__action(word)
-                if (outlist != None):
+
+                if outlist is not None:
+                    processed_count += 1
                     for outmes in outlist:
                         outstr += str(outmes) + '\n'
-            # log successful completion of the analysis process
-            logging.info('The commandanalyzer.analyse process has completed successfully')
-            # check if the output string is empty or contains only "none"
-            if outstr == '\n\n' or outstr == '' or outstr == '\n' or outstr == '\nNone\n' or outstr == 'none':
-                return cls._gpta.answer(message_text)
+                    log(f'✅ Added output from part {i}')
+
+            log(f'📊 Processed {processed_count}/{len(word_arr)} parts with results')
+
+            empty_patterns = ['\n\n', '', '\n', '\nNone\n', 'none']
+            if outstr in empty_patterns:
+                log('⚠️ Output' + outstr + ' is empty, falling back to GPT answer', 'warning')
+                gpt_response = cls._gpta.answer(message_text)
+                log(f'🤖 GPT response received')
+                return gpt_response
+
+            log(f'🎯 Returning processed output')
             return outstr
+
         except Exception as e:
-            # log any exceptions that occur during execution
-            logging.exception('The exception occurred in commandanalyzer.analyse: ' + str(e))
+            log(f'❌ Exception: {str(e)}', 'error')
+            raise
