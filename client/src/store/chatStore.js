@@ -166,9 +166,7 @@ class ChatStore {
         this.saveMessages(); // Сохраняем после добавления сообщения пользователя
 
         try {
-            this.socket.send(JSON.stringify({
-                message: content
-            }));
+            this.socket.send(content);
             return true;
         } catch (error) {
             this.error = "Ошибка при отправке сообщения";
