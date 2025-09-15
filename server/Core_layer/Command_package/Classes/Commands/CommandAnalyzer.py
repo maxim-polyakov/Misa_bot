@@ -122,7 +122,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             # log successful completion of the analysis process
             logging.info('The commandanalyzer.analyse process has completed successfully')
             # check if the output string is empty or contains only "none"
-            print(outstr)
+            logging.debug('outstr ' + outstr)
             if outstr == '\n\n' or outstr == '' or outstr == '\n' or outstr == '\nNone\n' or outstr == 'none':
                 return cls._gpta.answer(message_text)
             return outstr
