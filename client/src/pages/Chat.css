@@ -502,55 +502,275 @@ button:active {
 }
 
 /* Адаптивность для мобильных устройств */
+/* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
     .chat-container {
-        height: 100vh;
+        height: 100vh; /* На всякий случай явно указываем */
         width: 100vw;
     }
 
     .chat-header {
-        padding: 14px 16px;
+        padding: 12px 16px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
     }
 
     .chat-header h1 {
         font-size: 1.1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 60vw;
+    }
+
+    .chat-header-controls {
+        gap: 8px;
+    }
+
+    .clear-history-button {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .connection-status {
+        font-size: 10px;
+        padding: 4px 8px;
     }
 
     .messages-container {
-        padding: 16px;
+        padding: 12px 16px 12px 12px; /* Меньший правый отступ для скроллбара */
     }
 
-    .message-content {
-        max-width: 85%;
-        padding: 14px 16px;
-    }
-
-    .input-container {
-        padding: 16px;
+    .message {
+        margin-bottom: 16px;
     }
 
     .message-avatar {
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
         font-size: 12px;
-        margin: 0 10px;
+        margin: 0 8px 0 0; /* Убираем отступ справа для миса-сообщений */
+    }
+
+    .user-message .message-avatar {
+        margin: 0 0 0 8px; /* Убираем отступ слева для пользователя */
+    }
+
+    .message-content {
+        max-width: 85%; /* Чуть больше места для контента */
+        padding: 12px 14px;
+    }
+
+    .message-sender {
+        font-size: 11px;
+    }
+
+    .message-text {
+        font-size: 15px; /* Чуть крупнее текст на мобильных */
+        line-height: 1.5;
+    }
+
+    .message-time {
+        font-size: 10px;
+    }
+
+    .input-container {
+        padding: 12px 16px;
+        position: sticky;
+        bottom: 0;
+        background: #1a1d28;
+        border-top: 1px solid #2a2e3e;
+        z-index: 100;
     }
 
     .message-textarea {
-        padding: 12px 16px;
-        font-size: 16px; /* Увеличиваем для мобильных */
-        min-height: 48px;
+        padding: 12px 14px;
+        font-size: 16px; /* Предотвращает zoom при фокусе на iOS */
+        min-height: 44px;
+        line-height: 1.4;
     }
 
     .send-button {
         width: 40px;
         height: 40px;
         font-size: 14px;
+        border-radius: 8px;
     }
 
-    /* Улучшаем отображение textarea на мобильных */
+    /* Улучшения для пустого состояния */
+    .empty-chat {
+        padding: 40px 20px;
+    }
+
+    .empty-icon {
+        font-size: 36px;
+    }
+
+    /* Улучшения для индикатора набора */
+    .typing-indicator {
+        margin: 10px 0;
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+
+    /* Скрываем скроллбар в сообщениях на мобильных для экономии места */
+    .messages-container::-webkit-scrollbar {
+        width: 3px;
+    }
+
+    /* Улучшаем отображение кода на маленьких экранах */
+    .message-content pre {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .message-content code {
+        font-size: 12px;
+        padding: 1px 4px;
+    }
+}
+
+/* Дополнительные стили для очень маленьких устройств (например, iPhone SE) */
+@media (max-width: 375px) {
+    .chat-header h1 {
+        font-size: 1rem;
+        max-width: 50vw;
+    }
+
+    .messages-container {
+        padding: 10px 12px 10px 10px;
+    }
+
+    .message-avatar {
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+        margin: 0 6px 0 0;
+    }
+
+    .user-message .message-avatar {
+        margin: 0 0 0 6px;
+    }
+
+    .message-content {
+        max-width: 82%;
+        padding: 10px 12px;
+    }
+
+    .message-text {
+        font-size: 14px;
+    }
+
+    .input-container {
+        padding: 10px 12px;
+    }
+
     .message-textarea {
-        font-size: 16px; /* Предотвращает zoom при фокусе на iOS */
+        padding: 10px 12px;
+        min-height: 40px;
+    }
+
+    .send-button {
+        width: 36px;
+        height: 36px;
+    }
+
+    /* Еще более компактные сообщения об ошибках */
+    .error-message {
+        margin: 8px 0;
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+}
+
+/* Предотвращение изменения размера шрифта на iOS при повороте */
+@media (max-height: 500px) and (max-width: 768px) {
+    .chat-header {
+        padding: 8px 12px;
+    }
+
+    .messages-container {
+        padding: 8px 10px;
+    }
+
+    .input-container {
+        padding: 8px 12px;
+    }
+}
+
+/* Стили для landscape-режима на мобильных */
+@media (max-height: 500px) and (orientation: landscape) {
+    .chat-header {
+        padding: 8px 16px;
+    }
+
+    .messages-container {
+        padding: 8px 16px;
+    }
+
+    .message {
+        margin-bottom: 12px;
+    }
+
+    .input-container {
+        padding: 8px 16px;
+    }
+
+    .message-textarea {
+        min-height: 36px;
+        max-height: 80px;
+    }
+}
+
+/* Улучшение для очень высоких устройств */
+@media (min-height: 1000px) {
+    .message-content {
+        max-width: 70%;
+    }
+}
+
+/* Оптимизация для планшетов (портретный режим) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .message-content {
+        max-width: 70%;
+    }
+
+    .messages-container {
+        padding: 24px;
+    }
+}
+
+/* Предотвращение выделения при тапе на кнопки (для лучшего UX) */
+button {
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+}
+
+/* Улучшение для устройств с "бензельком" (notch) */
+@supports(padding: max(0px)) {
+    .chat-header,
+    .input-container {
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+    }
+
+    .messages-container {
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+    }
+
+    .input-container {
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Улучшение анимаций для мобильных устройств */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
 
