@@ -21,6 +21,55 @@ body {
     background: #0f1117;
     margin: 0 auto;
     position: relative;
+    overflow: auto;
+    /* Адаптивный max-height */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Контейнер для сообщений с прокруткой */
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Стилизация скроллбара для Webkit-браузеров */
+.messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Для Firefox */
+.messages-container {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* Внутренний контейнер для сообщений */
+.messages-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-height: min-content;
 }
 
 /* Стиль для заголовка чата */
@@ -108,15 +157,6 @@ body {
 .status-disconnected {
     background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
-}
-
-/* Контейнер сообщений */
-.messages-container {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    background: #0f1117;
-    scroll-behavior: smooth;
 }
 
 /* Стили для пустого чата */
@@ -468,25 +508,6 @@ body {
     transform: translateY(0);
 }
 
-/* Кастомный скроллбар */
-.messages-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.messages-container::-webkit-scrollbar-track {
-    background: #1a1d28;
-    border-radius: 3px;
-}
-
-.messages-container::-webkit-scrollbar-thumb {
-    background: #4b5563;
-    border-radius: 3px;
-}
-
-.messages-container::-webkit-scrollbar-thumb:hover {
-    background: #6b7280;
-}
-
 /* Эффекты для кнопок и интерактивных элементов */
 button {
     transition: all 0.2s ease;
@@ -537,6 +558,35 @@ button:active {
     .chat-container {
         height: 100vh;
         width: 100vw;
+        /* Добавляем прокрутку */
+        overflow: auto;
+        -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
+        scroll-behavior: smooth;
+    }
+
+    /* Стилизация скроллбара для мобильных */
+    .chat-container::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .chat-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Для Firefox */
+    .chat-container {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
     }
 
     .chat-header {
@@ -544,6 +594,10 @@ button:active {
         position: sticky;
         top: 0;
         z-index: 100;
+        /* Фон для липкого заголовка */
+        background: #1a1d28;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
 
     .chat-header h1 {
@@ -570,6 +624,13 @@ button:active {
 
     .messages-container {
         padding: 12px 16px 12px 12px;
+        /* Убираем внутреннюю прокрутку, так как теперь скроллится весь контейнер */
+        overflow: visible;
+        flex: 1;
+    }
+
+    .messages-container::-webkit-scrollbar {
+        width: 4px;
     }
 
     .message {
@@ -590,7 +651,7 @@ button:active {
     .message-content {
         max-width: 85%;
         padding: 12px 14px;
-        max-height: 300px;
+        max-height: none; /* Убираем ограничение высоты */
     }
 
     .message-content::-webkit-scrollbar {
@@ -617,6 +678,9 @@ button:active {
         background: #1a1d28;
         border-top: 1px solid #2a2e3e;
         z-index: 100;
+        /* Фон для липкого input-контейнера */
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
 
     .message-textarea {
@@ -647,10 +711,6 @@ button:active {
         font-size: 12px;
     }
 
-    .messages-container::-webkit-scrollbar {
-        width: 3px;
-    }
-
     .message-content pre {
         padding: 10px;
         font-size: 12px;
@@ -660,9 +720,107 @@ button:active {
         font-size: 12px;
         padding: 1px 4px;
     }
+
+    /* Дополнительные стили для безопасных зон на iOS */
+    @supports(padding: max(0px)) {
+        .chat-container {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .chat-header {
+            padding-top: max(12px, env(safe-area-inset-top));
+            padding-bottom: max(12px, env(safe-area-inset-top));
+        }
+
+        .input-container {
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+        }
+    }
+
+    /* Предотвращение скачков контента при появлении/скрытии клавиатуры */
+    .chat-container {
+        height: 100dvh; /* Используем динамическую высоту viewport */
+    }
+
+    /* Оптимизация для устройств с маленькой высотой */
+    @media (max-height: 600px) {
+        .chat-container {
+            height: 100svh; /* Small Viewport Height */
+        }
+
+        .message {
+            margin-bottom: 12px;
+        }
+
+        .message-content {
+            padding: 10px 12px;
+        }
+
+        .empty-chat {
+            padding: 20px 15px;
+        }
+    }
+
+    /* Ландшафтная ориентация */
+    @media (orientation: landscape) and (max-height: 500px) {
+        .chat-container {
+            height: 100lvw; /* Landscape Viewport Width */
+            max-height: 100vh;
+        }
+
+        .chat-header {
+            position: static; /* Убираем sticky в ландшафте */
+        }
+
+        .input-container {
+            position: static;
+        }
+    }
 }
 
 @media (max-width: 375px) {
+    .chat-container {
+        /* Прокрутка для маленьких устройств */
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+
+    /* Стилизация скроллбара для маленьких экранов */
+    .chat-container::-webkit-scrollbar {
+        width: 2px;
+    }
+
+    .chat-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 1px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 1px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Для Firefox */
+    .chat-container {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.03);
+    }
+
+    .chat-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: #1a1d28;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
     .chat-header h1 {
         font-size: 1rem;
         max-width: 50vw;
@@ -670,6 +828,13 @@ button:active {
 
     .messages-container {
         padding: 10px 12px 10px 10px;
+        /* Убираем внутреннюю прокрутку */
+        overflow: visible;
+        flex: 1;
+    }
+
+    .messages-container::-webkit-scrollbar {
+        width: 3px;
     }
 
     .message-avatar {
@@ -686,7 +851,8 @@ button:active {
     .message-content {
         max-width: 82%;
         padding: 10px 12px;
-        max-height: 250px;
+        /* Убираем ограничение высоты, так как скроллится весь контейнер */
+        max-height: none;
     }
 
     .message-text {
@@ -695,6 +861,13 @@ button:active {
 
     .input-container {
         padding: 10px 12px;
+        position: sticky;
+        bottom: 0;
+        background: #1a1d28;
+        border-top: 1px solid #2a2e3e;
+        z-index: 100;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
     }
 
     .message-textarea {
@@ -712,29 +885,333 @@ button:active {
         padding: 10px 12px;
         font-size: 12px;
     }
+
+    /* Безопасные зоны для очень маленьких устройств */
+    @supports(padding: max(0px)) {
+        .chat-container {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        .chat-header {
+            padding-left: max(12px, env(safe-area-inset-left));
+            padding-right: max(12px, env(safe-area-inset-right));
+            padding-top: max(10px, env(safe-area-inset-top));
+        }
+
+        .messages-container {
+            padding-left: max(10px, env(safe-area-inset-left));
+            padding-right: max(10px, env(safe-area-inset-right));
+        }
+
+        .input-container {
+            padding-left: max(10px, env(safe-area-inset-left));
+            padding-right: max(10px, env(safe-area-inset-right));
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+        }
+    }
+
+    /* Оптимизация для устройств с очень маленькой высотой */
+    @media (max-height: 600px) {
+        .chat-container {
+            height: 100svh;
+        }
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .message-content {
+            padding: 8px 10px;
+        }
+
+        .message-avatar {
+            width: 22px;
+            height: 22px;
+            font-size: 10px;
+        }
+
+        .empty-chat {
+            padding: 20px 10px;
+        }
+
+        .empty-icon {
+            font-size: 28px;
+        }
+    }
+
+    /* Предотвращение масштабирования при фокусе на iOS */
+    .message-textarea {
+        font-size: 16px; /* Предотвращает зум на iOS */
+    }
+
+    /* Улучшенная поддержка клавиатуры */
+    .input-container {
+        transition: transform 0.3s ease;
+    }
+
+    /* Уменьшаем отступы для ultra-compact устройств */
+    @media (max-width: 320px) {
+        .messages-container {
+            padding: 8px 10px 8px 8px;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 8px 10px;
+        }
+
+        .input-container {
+            padding: 8px 10px;
+        }
+
+        .message-textarea {
+            padding: 8px 10px;
+            min-height: 36px;
+        }
+
+        .send-button {
+            width: 32px;
+            height: 32px;
+            font-size: 12px;
+        }
+    }
 }
 
 @media (max-height: 500px) and (max-width: 768px) {
+    .chat-container {
+        /* Прокрутка для ландшафтного режима */
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        height: 100vh;
+    }
+
+    /* Тонкий скроллбар для ландшафтного режима */
+    .chat-container::-webkit-scrollbar {
+        width: 2px;
+    }
+
+    .chat-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 1px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 1px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Для Firefox */
+    .chat-container {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+    }
+
     .chat-header {
         padding: 8px 12px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: #1a1d28;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
     }
 
     .messages-container {
         padding: 8px 10px;
+        /* Убираем внутреннюю прокрутку */
+        overflow: visible;
+        flex: 1;
     }
 
     .input-container {
         padding: 8px 12px;
+        position: sticky;
+        bottom: 0;
+        background: #1a1d28;
+        border-top: 1px solid #2a2e3e;
+        z-index: 100;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+
+    /* Оптимизация для ландшафтного режима */
+    .message {
+        margin-bottom: 10px;
+    }
+
+    .message-avatar {
+        width: 22px;
+        height: 22px;
+        font-size: 10px;
+    }
+
+    .message-content {
+        padding: 8px 10px;
+        max-height: none; /* Убираем ограничение высоты */
+    }
+
+    .message-text {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .message-time {
+        font-size: 9px;
+    }
+
+    .message-textarea {
+        min-height: 36px;
+        max-height: 80px;
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    .send-button {
+        width: 34px;
+        height: 34px;
+        font-size: 12px;
+    }
+
+    /* Безопасные зоны для ландшафтного режима */
+    @supports(padding: max(0px)) {
+        .chat-container {
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        .chat-header {
+            padding-left: max(8px, env(safe-area-inset-left));
+            padding-right: max(8px, env(safe-area-inset-right));
+        }
+
+        .messages-container {
+            padding-left: max(8px, env(safe-area-inset-left));
+            padding-right: max(8px, env(safe-area-inset-right));
+        }
+
+        .input-container {
+            padding-left: max(8px, env(safe-area-inset-left));
+            padding-right: max(8px, env(safe-area-inset-right));
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+        }
+    }
+
+    /* Дополнительная оптимизация для очень низких экранов */
+    @media (max-height: 400px) {
+        .chat-header {
+            padding: 6px 10px;
+        }
+
+        .messages-container {
+            padding: 6px 8px;
+        }
+
+        .input-container {
+            padding: 6px 10px;
+        }
+
+        .message {
+            margin-bottom: 8px;
+        }
+
+        .message-content {
+            padding: 6px 8px;
+        }
+
+        .message-textarea {
+            min-height: 32px;
+            padding: 6px 10px;
+        }
+
+        .send-button {
+            width: 30px;
+            height: 30px;
+        }
+    }
+
+    /* Оптимизация для узких ландшафтных экранов */
+    @media (max-height: 500px) and (max-width: 600px) {
+        .message-content {
+            max-width: 78%;
+        }
+
+        .message-avatar {
+            margin: 0 4px 0 0;
+        }
+
+        .user-message .message-avatar {
+            margin: 0 0 0 4px;
+        }
+    }
+
+    /* Улучшенная поддержка клавиатуры в ландшафтном режиме */
+    .input-container {
+        transition: transform 0.25s ease;
+    }
+
+    /* Предотвращение скачков при появлении клавиатуры */
+    .chat-container {
+        height: 100dvh;
     }
 }
 
 @media (max-height: 500px) and (orientation: landscape) {
+    .chat-container {
+        /* Прокрутка для ландшафтного режима */
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        height: 100vh;
+    }
+
+    /* Стилизация скроллбара для ландшафтного режима */
+    .chat-container::-webkit-scrollbar {
+        width: 3px;
+    }
+
+    .chat-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 2px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.25);
+        border-radius: 2px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Для Firefox */
+    .chat-container {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.25) rgba(255, 255, 255, 0.08);
+    }
+
     .chat-header {
         padding: 8px 16px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: #1a1d28;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
     }
 
     .messages-container {
         padding: 8px 16px;
+        /* Убираем внутреннюю прокрутку */
+        overflow: visible;
+        flex: 1;
     }
 
     .message {
@@ -743,6 +1220,13 @@ button:active {
 
     .input-container {
         padding: 8px 16px;
+        position: sticky;
+        bottom: 0;
+        background: #1a1d28;
+        border-top: 1px solid #2a2e3e;
+        z-index: 100;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
     }
 
     .message-textarea {
@@ -751,7 +1235,123 @@ button:active {
     }
 
     .message-content {
-        max-height: 200px;
+        /* Убираем фиксированную высоту, так как скроллится весь контейнер */
+        max-height: none;
+    }
+
+    /* Оптимизация для ландшафтного режима */
+    .message-avatar {
+        width: 26px;
+        height: 26px;
+        font-size: 11px;
+    }
+
+    .message-text {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .message-time {
+        font-size: 10px;
+    }
+
+    /* Безопасные зоны для ландшафтного режима */
+    @supports(padding: max(0px)) {
+        .chat-container {
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .chat-header {
+            padding-left: max(8px, env(safe-area-inset-left));
+            padding-right: max(8px, env(safe-area-inset-right));
+            padding-top: max(8px, env(safe-area-inset-top));
+        }
+
+        .messages-container {
+            padding-left: max(8px, env(safe-area-inset-left));
+            padding-right: max(8px, env(safe-area-inset-right));
+        }
+
+        .input-container {
+            padding-left: max(8px, env(safe-area-inset-left));
+            padding-right: max(8px, env(safe-area-inset-right));
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+        }
+    }
+
+    /* Дополнительная оптимизация для очень низких ландшафтных экранов */
+    @media (max-height: 400px) and (orientation: landscape) {
+        .chat-header {
+            padding: 6px 12px;
+        }
+
+        .messages-container {
+            padding: 6px 12px;
+        }
+
+        .input-container {
+            padding: 6px 12px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .message-content {
+            padding: 10px 12px;
+        }
+
+        .message-textarea {
+            min-height: 32px;
+            max-height: 70px;
+        }
+
+        .send-button {
+            width: 32px;
+            height: 32px;
+            font-size: 12px;
+        }
+    }
+
+    /* Оптимизация для широких ландшафтных экранов */
+    @media (min-width: 800px) and (max-height: 500px) and (orientation: landscape) {
+        .message-content {
+            max-width: 70%;
+        }
+
+        .messages-container {
+            padding: 8px 20px;
+        }
+    }
+
+    /* Предотвращение масштабирования на iOS в ландшафте */
+    .message-textarea {
+        font-size: 16px;
+    }
+
+    /* Плавная анимация появления клавиатуры */
+    .input-container {
+        transition: all 0.3s ease;
+    }
+
+    /* Улучшенная поддержка клавиатуры в ландшафте */
+    .chat-container {
+        height: 100dvh;
+    }
+
+    /* Специальные стили для планшетов в ландшафте */
+    @media (min-width: 1024px) and (max-height: 500px) and (orientation: landscape) {
+        .chat-container {
+            max-width: 90vw;
+            margin: 0 auto;
+        }
+
+        .message-content {
+            max-width: 65%;
+        }
     }
 }
 

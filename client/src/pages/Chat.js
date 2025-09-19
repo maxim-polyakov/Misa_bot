@@ -8,9 +8,12 @@ const Chat = observer(() => {
     const [message, setMessage] = useState("");
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
+    const messagesContainerRef = useRef(null);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+        }
     };
 
     useEffect(() => {
@@ -135,17 +138,20 @@ const Chat = observer(() => {
                 </div>
             </div>
 
-            <div className="messages-container">
-                {chatStore.messages.length === 0 ? (
-                    <div className="empty-chat">
-                        <div className="empty-icon">💬</div>
-                        <p>Начните общение с Misa AI</p>
-                        <small>Задайте вопрос или поделитесь мыслями</small>
-                    </div>
-                ) : (
-                    chatStore.messages.map(renderMessage)
-                )}
-                <div ref={messagesEndRef} />
+            {/* Контейнер для сообщений с прокруткой */}
+            <div className="messages-container" ref={messagesContainerRef}>
+                <div className="messages-content">
+                    {chatStore.messages.length === 0 ? (
+                        <div className="empty-chat">
+                            <div className="empty-icon">💬</div>
+                            <p>Начните общение с Misa AI</p>
+                            <small>Задайте вопрос или поделитесь мыслями</small>
+                        </div>
+                    ) : (
+                        chatStore.messages.map(renderMessage)
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
             </div>
 
             {chatStore.isLoading && (
