@@ -88,6 +88,7 @@ const Chat = observer(() => {
                                 e.currentTarget.style.display = 'none';
                                 const textElement = document.createElement('div');
                                 textElement.className = 'message-text';
+                                textElement.style.whiteSpace = 'pre-line';
                                 textElement.textContent = msg.content;
                                 e.currentTarget.parentNode.appendChild(textElement);
                             }}
@@ -97,7 +98,9 @@ const Chat = observer(() => {
                             }}
                         />
                     ) : (
-                        <div className="message-text">{msg.content}</div>
+                        <div className="message-text" style={{ whiteSpace: 'pre-line' }}>
+                            {msg.content}
+                        </div>
                     )}
                     <div className="message-time">
                         {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
