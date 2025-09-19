@@ -60,17 +60,15 @@ const Chat = observer(() => {
     };
 
     const renderMessage = (msg) => {
-        // Проверяем, является ли сообщение относительным путем к изображению
-        const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(msg.content);
+        // Проверяем, было ли сообщение изначально изображением
+        const wasImage = msg.isImage ||
+            /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(msg.content);
 
-        // Если это относительный путь, преобразуем в абсолютный URL
+        // Если это относительный путь к изображению, преобразуем в абсолютный URL
+        const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(msg.content);
         const imageUrl = isRelativeImagePath
             ? `${process.env.REACT_APP_API_URL}${msg.content}`
             : msg.content;
-
-        // Проверяем, является ли содержимое URL изображения
-        const isImage = isRelativeImagePath ||
-            /^https?:\/\/.+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(msg.content);
 
         return (
             <div key={msg.id} className={`message ${msg.user === "Misa" ? "misa-message" : "user-message"}`}>
@@ -79,22 +77,19 @@ const Chat = observer(() => {
                 </div>
                 <div className="message-content">
                     <div className="message-sender">{msg.user}</div>
-                    {isImage ? (
+                    {wasImage ? (
                         <img
                             src={imageUrl}
                             alt="Изображение от Misa"
                             className="message-image"
                             onError={(e) => {
+                                // Если изображение не загружается, показываем текст
                                 e.currentTarget.style.display = 'none';
                                 const textElement = document.createElement('div');
                                 textElement.className = 'message-text';
                                 textElement.style.whiteSpace = 'pre-line';
                                 textElement.textContent = msg.content;
                                 e.currentTarget.parentNode.appendChild(textElement);
-                            }}
-                            onLoad={() => {
-                                // Прокрутка к новому изображению после загрузки
-                                setTimeout(scrollToBottom, 100);
                             }}
                         />
                     ) : (

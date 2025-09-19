@@ -44,45 +44,6 @@ class ChatStore {
         }
     };
 
-    // Вспомогательный метод для компонента - обработка клавиш
-    handleKeyPress = (event, inputRef, sendCallback) => {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            const message = inputRef.current?.value?.trim();
-            if (message) {
-                sendCallback(message);
-                if (inputRef.current) {
-                    inputRef.current.value = '';
-                    if (inputRef.current.style) {
-                        inputRef.current.style.height = 'auto';
-                    }
-                }
-            }
-        }
-    };
-
-    handleTextareaKeyPress = (event, textareaRef, sendCallback) => {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            const message = textareaRef.current?.value?.trim();
-            if (message) {
-                sendCallback(message);
-                if (textareaRef.current) {
-                    textareaRef.current.value = '';
-                    textareaRef.current.style.height = 'auto';
-                }
-            }
-        }
-    };
-
-    // Метод для автоматического изменения высоты textarea
-    adjustTextareaHeight = (textareaRef) => {
-        if (textareaRef.current) {
-            textareaRef.current.style.height = 'auto';
-            textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 150) + 'px';
-        }
-    };
-
     // Очистка истории сообщений
     clearMessages = () => {
         this.messages = [];
