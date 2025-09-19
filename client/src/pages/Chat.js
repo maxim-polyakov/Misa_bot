@@ -7,7 +7,7 @@ const Chat = observer(() => {
     const { chatStore } = useStores();
     const [message, setMessage] = useState("");
     const messagesEndRef = useRef(null);
-    const inputRef = useRef(null);
+    const textareaRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -17,11 +17,27 @@ const Chat = observer(() => {
         scrollToBottom();
     }, [chatStore.messages]);
 
+    // Функция для автоматического изменения высоты textarea
+    const adjustTextareaHeight = () => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 150) + 'px';
+        }
+    };
+
+    useEffect(() => {
+        adjustTextareaHeight();
+    }, [message]);
+
     const handleSendMessage = async () => {
         if (message.trim()) {
-            await chatStore.sendMessage(message.trim());
+            await chatStore.sendMessage(message);
             setMessage("");
-            inputRef.current?.focus();
+            textareaRef.current?.focus();
+            // Сбрасываем высоту textarea после отправки
+            if (textareaRef.current) {
+                textareaRef.current.style.height = 'auto';
+            }
         }
     };
 
@@ -30,6 +46,11 @@ const Chat = observer(() => {
             e.preventDefault();
             handleSendMessage();
         }
+        // Shift+Enter - автоматически переносит строку
+    };
+
+    const handleInputChange = (e) => {
+        setMessage(e.target.value);
     };
 
     const handleClearHistory = () => {
@@ -141,15 +162,28 @@ const Chat = observer(() => {
             )}
 
             <div className="input-container">
-                <input
-                    ref={inputRef}
-                    type="text"
+                <textarea
+                    ref={textareaRef}
                     value={message}
-                    onChange={(e) => setMessage(e.target.value)}
+                    onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
-                    placeholder="Введите ваше сообщение..."
+                    placeholder="Введите ваше сообщение... (Shift+Enter для переноса строки)"
+                    rows={1}
+                    style={{
+                        minHeight: '40px',
+                        maxHeight: '150px',
+                        resize: 'none',
+                        padding: '12px',
+                        border: '1px solid #ddd',
+                        borderRadius: '20px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        transition: 'border-color 0.3s ease',
+                        fontFamily: 'inherit',
+                        lineHeight: '1.4'
+                    }}
                     disabled={chatStore.isLoading || !chatStore.isConnected}
-                    className="message-input"
+                    className="message-textarea"
                 />
                 <button
                     onClick={handleSendMessage}

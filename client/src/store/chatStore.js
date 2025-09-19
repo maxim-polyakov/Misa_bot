@@ -37,12 +37,57 @@ class ChatStore {
         }
     };
 
+
     // Сохранение сообщений в localStorage
     saveMessages = () => {
         try {
             localStorage.setItem('chatMessages', JSON.stringify(this.messages));
         } catch (error) {
             console.error("Ошибка при сохранении сообщений:", error);
+        }
+    };
+
+    // Вспомогательный метод для компонента - обработка клавиш
+    handleKeyPress = (event, inputRef, sendCallback) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            const message = inputRef.current?.value?.trim();
+            if (message) {
+                sendCallback(message);
+                // Очищаем поле ввода
+                if (inputRef.current) {
+                    inputRef.current.value = '';
+                    // Сбрасываем высоту textarea если используется
+                    if (inputRef.current.style) {
+                        inputRef.current.style.height = 'auto';
+                    }
+                }
+            }
+        }
+        // Shift+Enter - стандартное поведение (перенос строки)
+    };
+
+    handleTextareaKeyPress = (event, textareaRef, sendCallback) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            const message = textareaRef.current?.value?.trim();
+            if (message) {
+                sendCallback(message);
+                // Очищаем поле ввода и сбрасываем высоту
+                if (textareaRef.current) {
+                    textareaRef.current.value = '';
+                    textareaRef.current.style.height = 'auto';
+                }
+            }
+        }
+        // Shift+Enter - автоматически переносит строку
+    };
+
+    // Метод для автоматического изменения высоты textarea
+    adjustTextareaHeight = (textareaRef) => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 150) + 'px';
         }
     };
 
@@ -146,9 +191,15 @@ class ChatStore {
         }
     };
 
+    // Новый метод для обработки отправки сообщения с поддержкой многострочного ввода
     sendMessage = async (content) => {
         if (!this.isConnected || !this.socket) {
             this.error = "Нет соединения с сервером";
+            return false;
+        }
+
+        // Если сообщение пустое или состоит только из пробелов/переносов
+        if (!content.trim()) {
             return false;
         }
 
@@ -157,16 +208,17 @@ class ChatStore {
 
         const userMessage = {
             id: Date.now().toString(),
-            content,
+            content: content.trim(), // Убираем лишние пробелы
             user: "Вы",
             timestamp: new Date(),
         };
 
         this.messages.push(userMessage);
-        this.saveMessages(); // Сохраняем после добавления сообщения пользователя
+        this.saveMessages();
 
         try {
-            this.socket.send(content);
+            // Отправляем очищенное сообщение (без лишних пробелов)
+            this.socket.send(content.trim());
             return true;
         } catch (error) {
             this.error = "Ошибка при отправке сообщения";
