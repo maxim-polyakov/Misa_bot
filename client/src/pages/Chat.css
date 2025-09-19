@@ -310,7 +310,7 @@ body {
     min-height: 44px;
     max-height: 150px;
     resize: none;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 .message-textarea:focus {
