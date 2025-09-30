@@ -41,7 +41,7 @@ const MainLayout = ({ children }) => {
                 {user?.isAuth && (
                     <div
                         className={`sidebar-wrapper ${isSidebarOpen ? 'mobile-open' : ''}`}
-                        aria-hidden={!isSidebarOpen}
+                        inert={!isSidebarOpen ? "" : undefined} // Apply inert when sidebar is closed
                     >
                         <Sidebar />
                     </div>

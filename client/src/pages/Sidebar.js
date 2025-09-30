@@ -1,17 +1,16 @@
-// Sidebar.jsx
 import { useContext } from "react";
 import { Context } from "../index.js";
 import Navbar from "react-bootstrap/Navbar";
 import { Button, Nav } from "react-bootstrap";
 import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router-dom";
-import { useMenuToggle } from "./MainLayout"; // Импортируем хук
+import { useMenuToggle } from "./MainLayout"; // Добавьте этот импорт
 import "./Sidebar.css";
 
-const Sidebar = observer(({ onClose } ) => {
+const Sidebar = observer(() => {
     const { user } = useContext(Context);
     const navigate = useNavigate();
-    const { closeSidebar } = useMenuToggle(); // Получаем функцию закрытия
+    const { isSidebarOpen, closeSidebar } = useMenuToggle(); // Получите состояние и функцию
 
     const logOut = () => {
         user?.setUser({});
@@ -27,17 +26,11 @@ const Sidebar = observer(({ onClose } ) => {
     return (
         <>
             {/* Оверлей для мобильных */}
-            <div className="sidebar-overlay" onClick={closeSidebar} />
+            <div className="sidebar-overlay mobile-open" />
 
             <Navbar className="sidebar" bg="dark" data-bs-theme="dark">
                 <div className="sidebar-content">
-                    {/* Заголовок с кнопкой закрытия */}
-                    <div className="sidebar-header">
-                        <Navbar.Brand href="/">Ваш Логотип</Navbar.Brand>
-                        <button onClick={onClose} className="sidebar-close" title="Закрыть меню">
-                            ×
-                        </button>
-                    </div>
+
                     {/* Кнопка выхода внизу */}
                     <div className="sidebar-footer">
                         <Button
