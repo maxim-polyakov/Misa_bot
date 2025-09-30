@@ -6,7 +6,6 @@ import { useContext, useEffect, useState } from 'react';
 import { observer } from "mobx-react-lite";
 import { Context } from "./index.js";
 import { check } from "./http/userApi.js";
-import MainLayout from "./components/MainLayout";
 import AppRouter from "./components/AppRouter";
 
 const App = observer(() => {

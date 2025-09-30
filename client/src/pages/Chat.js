@@ -121,6 +121,7 @@ const Chat = observer(({ onMenuToggle }) => {
     return (
         <div className="chat-container">
             <div className="chat-header">
+                <h1>Misa AI Чат</h1>
                 {/* Добавленная кнопка меню */}
                 <button
                     onClick={onMenuToggle}
@@ -129,8 +130,6 @@ const Chat = observer(({ onMenuToggle }) => {
                 >
                     ☰
                 </button>
-
-                <h1>Misa AI Чат</h1>
                 <div className="chat-header-controls">
                     <div className="chat-status">
                         {getConnectionStatus()}

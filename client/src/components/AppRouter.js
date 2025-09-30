@@ -3,12 +3,24 @@ import { useContext, useState, useEffect } from "react";
 import { Route, Routes, Navigate, Outlet } from "react-router-dom";
 import { authRoutes, publicRoutes } from "../Routes.js";
 import { observer } from "mobx-react-lite";
-import MainLayout from "./MainLayout";
+import MainLayout from "../pages/MainLayout";
 import { LOGIN_ROUTE } from "../utils/consts.js";
 
 const AppRouter = observer(() => {
     const { user } = useContext(Context);
     const [isAuth, setIsAuth] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); // Add loading state
+
+    useEffect(() => {
+        const savedAuth = localStorage.getItem('userIsAuth');
+        if (savedAuth === 'true') {
+            user.setIsAuth(true);
+            setIsAuth(true);
+        } else {
+            setIsAuth(false);
+        }
+        setIsLoading(false); // Authentication check complete
+    }, [user]);
 
     useEffect(() => {
         if (user?.isAuth !== undefined) {
@@ -17,27 +29,29 @@ const AppRouter = observer(() => {
         }
     }, [user?.isAuth]);
 
-    useEffect(() => {
-        const savedAuth = localStorage.getItem('userIsAuth');
-        if (savedAuth === 'true') {
-            user.setIsAuth(true);
-        }
-    }, [user]);
-
-    // Защищенный лейаут - только для авторизованных
+    // Protected layout with loading check
     const ProtectedLayout = () => {
+        if (isLoading) {
+            return <div>Loading...</div>; // Or your custom loader
+        }
+
         return isAuth ? (
             <MainLayout>
-                <Outlet /> {/* Сюда будут рендериться защищенные роуты */}
+                <Outlet />
             </MainLayout>
         ) : (
             <Navigate to={LOGIN_ROUTE} replace />
         );
     };
 
+    // Show loading during authentication check
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <Routes>
-            {/* Защищенные маршруты внутри MainLayout */}
+            {/* Protected routes inside MainLayout */}
             <Route element={<ProtectedLayout />}>
                 {authRoutes.map(({ path, Component }) => (
                     <Route
@@ -49,7 +63,7 @@ const AppRouter = observer(() => {
                 <Route path="/" element={<Navigate to="/chat" replace />} />
             </Route>
 
-            {/* Публичные маршруты - без MainLayout */}
+            {/* Public routes - without MainLayout */}
             {publicRoutes.map(({ path, Component }) => (
                 <Route
                     key={path}
@@ -58,7 +72,7 @@ const AppRouter = observer(() => {
                 />
             ))}
 
-            {/* Fallback маршруты */}
+            {/* Fallback routes */}
             <Route
                 path="*"
                 element={
