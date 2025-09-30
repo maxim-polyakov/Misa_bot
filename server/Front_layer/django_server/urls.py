@@ -15,6 +15,7 @@ urlpatterns = [
     # Аутентификация
     path('', home_view),
     path('auth/register/', views.register, name='register'),
+    path('auth/login/', views.login_view, name='login'),
 ]
 
 # Для production: обслуживание статических файлов через Django (не рекомендуется для высоконагруженных проектов)

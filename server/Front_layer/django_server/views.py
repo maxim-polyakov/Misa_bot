@@ -24,53 +24,13 @@ def register(request):
     return ctrlr.register(request)
 
 
-# # Контроллер авторизации
-# @csrf_exempt
-# @require_http_methods(["POST"])
-# def login_view(request):
-#     """Авторизация пользователя"""
-#     try:
-#         data = json.loads(request.body)
-#
-#         # Валидация обязательных полей
-#         if not data.get('username') or not data.get('password'):
-#             return error_response("Username and password are required", 400)
-#
-#         username = data.get('username').strip()
-#         password = data.get('password')
-#
-#         # Аутентификация пользователя
-#         user = authenticate(request, username=username, password=password)
-#
-#         if user is not None:
-#             if user.is_active:
-#                 # Генерация JWT токена
-#                 token = generate_jwt_token(user.id, user.username)
-#
-#                 user_data = {
-#                     'id': user.id,
-#                     'username': user.username,
-#                     'email': user.email,
-#                     'first_name': user.first_name,
-#                     'last_name': user.last_name,
-#                     'is_staff': user.is_staff,
-#                     'is_superuser': user.is_superuser
-#                 }
-#
-#                 return success_response({
-#                     'user': user_data,
-#                     'token': token,
-#                     'expires_in': f"{JWT_EXPIRATION_DAYS} days"
-#                 }, "Login successful")
-#             else:
-#                 return error_response("Account is disabled", 403)
-#         else:
-#             return error_response("Invalid username or password", 401)
-#
-#     except json.JSONDecodeError:
-#         return error_response("Invalid JSON data", 400)
-#     except Exception as e:
-#         return error_response(f"Login error: {str(e)}", 500)
+# Контроллер авторизации
+@csrf_exempt
+@require_http_methods(["POST"])
+def login_view(request):
+    ctrlr = Controller.Controller()
+    return ctrlr.login_view(request)
+
 #
 #
 # # Контроллер выхода

@@ -6,6 +6,7 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
 from Deep_layer.DB_package.Classes import DB_Communication
 import json
 import pandas as pd
@@ -313,3 +314,58 @@ class Controller:
         except Exception as e:
             logging.error(f"Registration error: {str(e)}")
             return cls.error_response(f"Registration error: {str(e)}", 500)
+
+    @classmethod
+    def login_view(cls, request):
+        """Авторизация пользователя по email"""
+        try:
+            data = json.loads(request.body)
+
+            # Валидация обязательных полей
+            if not data.get('email') or not data.get('password'):
+                return cls.error_response("Email and password are required", 400)
+
+            email = data.get('email').strip().lower()
+            password = data.get('password')
+
+            # Сначала находим пользователя по email через DB_Communication
+            user_query = f"SELECT * FROM auth.users WHERE email = '{email}'"
+            user_df = cls.__dbc.get_data(user_query)
+
+            if user_df is None or user_df.empty:
+                return cls.error_response("Invalid email or password", 401)
+
+            # Получаем данные пользователя
+            user_data = user_df.iloc[0]
+            user_id = int(user_data['id'].item()) if hasattr(user_data['id'], 'item') else int(user_data['id'])
+            user_email = str(user_data['email'])
+            hashed_password = str(user_data['password'])
+            is_active = bool(user_data.get('is_active', True))
+
+            # Проверяем активность аккаунта
+            if not is_active:
+                return cls.error_response("Account is disabled", 403)
+
+            # Проверяем пароль вручную
+            if check_password(password, hashed_password):
+                # Генерация JWT токена
+                token = cls.generate_jwt_token(user_id, user_email)
+
+                user_response_data = {
+                    'id': user_id,
+                    'email': user_email,
+                }
+
+                return cls.success_response({
+                    'user': user_response_data,
+                    'token': token,
+                    'expires_in': f"{cls.JWT_EXPIRATION_DAYS} days"
+                }, "Login successful")
+            else:
+                return cls.error_response("Invalid email or password", 401)
+
+        except json.JSONDecodeError:
+            return cls.error_response("Invalid JSON data", 400)
+        except Exception as e:
+            logging.error(f"Login error: {str(e)}")
+            return cls.error_response(f"Login error: {str(e)}", 500)
