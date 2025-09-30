@@ -123,23 +123,18 @@ class Controller:
     @classmethod
     def generate_jwt_token(cls, user_id, email):
         try:
+            # Use UTC explicitly
             current_time = datetime.datetime.utcnow()
             expiration_time = current_time + datetime.timedelta(days=cls.JWT_EXPIRATION_DAYS)
 
             payload = {
-                'user_id': int(user_id),  # Убеждаемся, что ID - целое число
-                'email': str(email),  # Убеждаемся, что email - строка
-                'exp': int(expiration_time.timestamp()),  # UNIX timestamp
-                'iat': int(current_time.timestamp())  # UNIX timestamp
+                'user_id': int(user_id),
+                'email': str(email),
+                'exp': expiration_time,  # jwt.encode will handle conversion to timestamp
+                'iat': current_time
             }
 
-            # Кодируем токен
             token = jwt.encode(payload, cls.JWT_SECRET, algorithm=cls.JWT_ALGORITHM)
-
-            # Если token bytes - декодируем в строку
-            if isinstance(token, bytes):
-                token = token.decode('utf-8')
-
             return token
 
         except Exception as e:

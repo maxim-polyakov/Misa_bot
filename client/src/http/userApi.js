@@ -1,4 +1,4 @@
-import { $host, $authhost } from ".";
+import { $host} from ".";
 import { jwtDecode } from "jwt-decode";
 
 export const registration = async (email, password) => {
@@ -37,7 +37,8 @@ export const login = async (email, password) => {
             password,
         });
         console.log(data);
-        localStorage.setItem("token", data.data.token);
+        const token = data.data.token.toString();
+        localStorage.setItem("token", token);
         return jwtDecode(data.data.token);
     } catch (error) {
         console.log("Login error:", error);
@@ -87,12 +88,16 @@ export const check = async () => {
     try {
         // Проверяем наличие токена в localStorage перед запросом
         const token = localStorage.getItem("token");
+        console.log(token);
         if (!token) {
             return null;
         }
 
-        // Отправляем запрос через $authhost (токен добавится автоматически)
-        const { data } = await $authhost.get("auth/");
+        const { data } = await $host.get("auth/check/", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
 
         console.log("Полный ответ сервера:", data);
 
@@ -111,10 +116,9 @@ export const check = async () => {
 
     } catch (error) {
         console.log("Ошибка проверки авторизации:", error.message);
-
-        // Очищаем токен при ошибке авторизации
-        localStorage.removeItem("token");
-
+        if (error.response?.status === 401) {
+            localStorage.removeItem("token");
+        }
         return null;
     }
 };
