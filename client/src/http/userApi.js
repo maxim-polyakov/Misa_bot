@@ -1,4 +1,4 @@
-import { $host} from ".";
+import { $host, $authhost} from ".";
 import { jwtDecode } from "jwt-decode";
 
 export const registration = async (email, password) => {
@@ -88,23 +88,14 @@ export const check = async () => {
     try {
         // Проверяем наличие токена в localStorage перед запросом
         const token = localStorage.getItem("token");
-        console.log(token);
         if (!token) {
             return null;
         }
-
-        const { data } = await $host.get("auth/check/", {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-
-        console.log("Полный ответ сервера:", data);
+        const { data } = await $authhost.get("auth/check/");
 
         // Исправляем путь к данным - теперь токен в data.token
         if (data.data && data.data.token) {
             const newToken = data.data.token;
-            console.log("Новый токен получен:", newToken);
             localStorage.setItem("token", newToken);
 
             // Декодируем и возвращаем новый токен
