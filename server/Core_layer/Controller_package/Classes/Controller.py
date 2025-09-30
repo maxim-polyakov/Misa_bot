@@ -369,3 +369,24 @@ class Controller:
         except Exception as e:
             logging.error(f"Login error: {str(e)}")
             return cls.error_response(f"Login error: {str(e)}", 500)
+    @classmethod
+    def check(cls, request):
+        """Проверка аутентификации пользователя (/auth endpoint)"""
+        try:
+            # Пользователь уже должен быть добавлен middleware
+            if not hasattr(request, 'user') or not request.user.is_authenticated:
+                return cls.error_response("Authentication required", 401)
+
+            user_data = {
+                'id': request.user.id,
+                'email': request.user.email,
+            }
+
+            return cls.success_response({
+                'user': user_data,
+                'authenticated': True
+            }, "User is authenticated")
+
+        except Exception as e:
+            logging.error(f"Auth check error: {str(e)}")
+            return cls.error_response("Authentication check failed", 500)
