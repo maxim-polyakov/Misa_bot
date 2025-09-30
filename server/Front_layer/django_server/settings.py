@@ -7,6 +7,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'channels'
 ]
 
@@ -34,6 +35,7 @@ CHANNEL_LAYERS = {
     },
 }
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
 
     # Ваш кастомный middleware из Core_layer
     'Core_layer.Middleware_package.Classes.Middleware.Middleware',

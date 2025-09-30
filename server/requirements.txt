@@ -124,6 +124,7 @@ spacy==3.5.0
 spacy-legacy==3.0.12
 spacy-loggers==1.0.4
 SQLAlchemy==2.0.4
+django-cors-headers==4.9.0
 PyJWT==2.10.1
 srsly==2.4.5
 srt==3.5.3

@@ -4,28 +4,54 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import { authRoutes, publicRoutes } from "../Routes.js";
 import { observer } from "mobx-react-lite";
 import Chat from "../pages/Chat.js";
+import { LOGIN_ROUTE} from "../utils/consts.js";
 
 const AppRouter = observer(() => {
+    const { user } = useContext(Context);
+    const isAuth = user?.isAuth;
+
+    console.log("User auth status:", user?.isAuth);
+
     return (
         <Routes>
-            {/* Редирект с корневой страницы на чат */}
-            <Route path="/" element={<Navigate to="/chat" replace />} />
+            {/* Защищенные маршруты - только для авторизованных */}
+            {isAuth &&
+                authRoutes.map(({ path, Component }) => (
+                    <Route
+                        key={path}
+                        path={path}
+                        element={<Component />}
+                    />
+                ))}
 
-            {/* Только этот маршрут ведет в чат */}
-            <Route path="/chat" element={<Chat />} />
+            {/* Публичные маршруты - доступны всем */}
+            {publicRoutes.map(({ path, Component }) => (
+                <Route
+                    key={path}
+                    path={path}
+                    element={<Component />}
+                />
+            ))}
 
-            {/* Все остальные маршруты (если они есть в ваших routes.js) */}
-            {publicRoutes.map(({path, Component}) =>
-                <Route key={path} path={path} element={<Component />} />
-            )}
+            {/* КОРНЕВОЙ ПУТЬ: Если авторизован - в /chat, если нет - в /login */}
+            <Route
+                path="/"
+                element={
+                    isAuth ?
+                        <Navigate to="/chat" replace /> :
+                        <Navigate to={LOGIN_ROUTE} replace />
+                }
+            />
 
-            {/* Защищенные маршруты (если нужно) */}
-            {authRoutes.map(({path, Component}) =>
-                <Route key={path} path={path} element={<Component />} />
-            )}
-
-            {/* Редирект всех остальных маршрутов на чат */}
-            <Route path="*" element={<Navigate to="/chat" replace />} />
+            {/* Для всех других путей: если авторизован - галерея, если нет - логин */}
+            <Route
+                path="*"
+                element={
+                    isAuth ?
+                        <Chat /> :
+                        <Navigate to={LOGIN_ROUTE} replace />
+                }
+            />
         </Routes>
     );
 });
