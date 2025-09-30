@@ -190,8 +190,8 @@ class Controller:
             user_id = payload['user_id']
 
             # Используем DB_Communication для получения пользователя
-            query = f"SELECT * FROM auth_user WHERE id = {user_id}"
-            user_df = DB_Communication.get_data(query)
+            query = f"SELECT * FROM auth.users WHERE id = {user_id}"
+            user_df = cls.__dbc.get_data(query)
 
             # Проверяем, что данные получены и не пустые
             if user_df is None or user_df.empty:
@@ -204,7 +204,6 @@ class Controller:
             # Создаем объект пользователя Django
             user = User(
                 id=user_data['id'],
-                username=user_data['username'],
                 email=user_data['email']
             )
 
@@ -369,23 +368,30 @@ class Controller:
         except Exception as e:
             logging.error(f"Login error: {str(e)}")
             return cls.error_response(f"Login error: {str(e)}", 500)
+
     @classmethod
     def check(cls, request):
-        """Проверка аутентификации пользователя (/auth endpoint)"""
+        """Проверка аутентификации пользователя с обновлением токена"""
         try:
-            # Пользователь уже должен быть добавлен middleware
-            if not hasattr(request, 'user') or not request.user.is_authenticated:
+            # Получаем пользователя из токена (используем существующий метод)
+            user = cls.get_user_from_token(request)
+
+            if user is None:
                 return cls.error_response("Authentication required", 401)
 
+            # Генерируем НОВЫЙ токен для пользователя
+            new_token = cls.generate_jwt_token(user.id, user.email)
+
             user_data = {
-                'id': request.user.id,
-                'email': request.user.email,
+                'id': user.id,
+                'email': user.email,
             }
 
             return cls.success_response({
                 'user': user_data,
+                'token': new_token,  # Возвращаем новый токен
                 'authenticated': True
-            }, "User is authenticated")
+            }, "User is authenticated, new token generated")
 
         except Exception as e:
             logging.error(f"Auth check error: {str(e)}")

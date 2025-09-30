@@ -7,8 +7,8 @@ export const registration = async (email, password) => {
             email,
             password,
         });
-        localStorage.setItem("token", data.token);
-        return jwtDecode(data.token);
+        localStorage.setItem("token", data.data.token);
+        return jwtDecode(data.data.token);
     } catch (error) {
         console.log("Registration error:", error);
 
@@ -37,8 +37,8 @@ export const login = async (email, password) => {
             password,
         });
         console.log(data);
-        localStorage.setItem("token", data.token);
-        return jwtDecode(data.token);
+        localStorage.setItem("token", data.data.token);
+        return jwtDecode(data.data.token);
     } catch (error) {
         console.log("Login error:", error);
 
@@ -92,7 +92,12 @@ export const check = async () => {
             return null;
         }
 
-        const { data } = await $authhost.get("/auth/");
+        // Добавляем токен в заголовок Authorization
+        const { data } = await $authhost.get("/auth/", {
+            headers: {
+                'Authorization': `Bearer ${token}` // Добавляем Bearer token в заголовок
+            }
+        });
 
         // Обновляем токен, если сервер вернул новый
         if (data.token) {
