@@ -15,6 +15,7 @@ const App = observer(() => {
         const checkAuth = async () => {
             try {
                 const userData = await check();
+                console.log(userData);
                 if (userData) {
                     user.setUser(userData);
                     user.setIsAuth(true);

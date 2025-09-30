@@ -88,30 +88,33 @@ export const check = async () => {
         // Проверяем наличие токена в localStorage перед запросом
         const token = localStorage.getItem("token");
         if (!token) {
-            // Не выбрасываем ошибку, просто возвращаем null или false
             return null;
         }
 
-        // Добавляем токен в заголовок Authorization
-        const { data } = await $authhost.get("/auth/", {
-            headers: {
-                'Authorization': `Bearer ${token}` // Добавляем Bearer token в заголовок
-            }
-        });
+        // Отправляем запрос через $authhost (токен добавится автоматически)
+        const { data } = await $authhost.get("auth/");
 
-        // Обновляем токен, если сервер вернул новый
-        if (data.token) {
-            localStorage.setItem("token", data.token);
+        console.log("Полный ответ сервера:", data);
+
+        // Исправляем путь к данным - теперь токен в data.token
+        if (data.data && data.data.token) {
+            const newToken = data.data.token;
+            console.log("Новый токен получен:", newToken);
+            localStorage.setItem("token", newToken);
+
+            // Декодируем и возвращаем новый токен
+            return jwtDecode(newToken);
+        } else {
+            console.log("Токен не найден в ответе сервера");
+            return null;
         }
 
-        return jwtDecode(data.token);
     } catch (error) {
         console.log("Ошибка проверки авторизации:", error.message);
 
         // Очищаем токен при ошибке авторизации
         localStorage.removeItem("token");
 
-        // Не выбрасываем ошибку, просто возвращаем null
         return null;
     }
 };

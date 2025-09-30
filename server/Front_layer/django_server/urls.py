@@ -19,7 +19,7 @@ urlpatterns = [
     path('', home_view),
     path('auth/register/', views.register, name='register'),
     path('auth/login/', views.login_view, name='login'),
-    path('auth/', views.check, name="check")
+    path('auth/check/', views.check, name="check")
 ]
 
 # Для production: обслуживание статических файлов через Django (не рекомендуется для высоконагруженных проектов)
