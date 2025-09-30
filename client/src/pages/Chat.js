@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useStores } from "../store/rootStoreContext";
 import "./Chat.css";
 
-const Chat = observer(() => {
+const Chat = observer(({ onMenuToggle }) => {
     const { chatStore } = useStores();
     const [message, setMessage] = useState("");
     const messagesEndRef = useRef(null);
@@ -121,6 +121,15 @@ const Chat = observer(() => {
     return (
         <div className="chat-container">
             <div className="chat-header">
+                {/* Добавленная кнопка меню */}
+                <button
+                    onClick={onMenuToggle}
+                    className="menu-toggle"
+                    title="Открыть меню"
+                >
+                    ☰
+                </button>
+
                 <h1>Misa AI Чат</h1>
                 <div className="chat-header-controls">
                     <div className="chat-status">

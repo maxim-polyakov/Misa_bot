@@ -1,4 +1,4 @@
-// Routes.js
+// routes.js
 import Chat from "./pages/Chat";
 import Auth from "./pages/Auth";
 import {

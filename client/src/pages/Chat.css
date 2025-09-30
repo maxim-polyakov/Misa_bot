@@ -1438,3 +1438,60 @@ button {
     outline: 2px solid #10a37f;
     outline-offset: 2px;
 }
+
+.chat-container-with-sidebar {
+    margin-left: 250px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #0f1117;
+}
+
+@media (max-width: 768px) {
+    .chat-container-with-sidebar {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+/* Кнопка меню для мобильных */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 8px;
+    margin-right: 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.menu-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+}
+
+/* Оверлей для мобильного меню */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+@media (max-width: 768px) {
+    .sidebar-overlay.mobile-open {
+        display: block;
+    }
+}

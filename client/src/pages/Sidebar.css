@@ -1,0 +1,86 @@
+/* Sidebar.css */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 250px;
+    z-index: 1000;
+    background-color: #1a1d28;
+    border-right: 1px solid #2a2e3e;
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1rem;
+}
+
+.sidebar-brand {
+    padding: 1rem 0;
+    border-bottom: 1px solid #2a2e3e;
+    margin-bottom: 1rem;
+}
+
+.sidebar-brand .navbar-brand {
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.sidebar-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.75rem 1rem;
+    margin: 0.25rem 0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: block;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.sidebar-link:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid #2a2e3e;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 280px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+}
+
+/* Стили для основного контента когда есть сайдбар */
+.main-content-with-sidebar {
+    margin-left: 250px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 768px) {
+    .main-content-with-sidebar {
+        margin-left: 0;
+        width: 100%;
+    }
+}
