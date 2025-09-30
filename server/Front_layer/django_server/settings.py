@@ -33,3 +33,8 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
+MIDDLEWARE = [
+
+    # Ваш кастомный middleware из Core_layer
+    'Core_layer.Middleware_package.Classes.Middleware.Middleware',
+]
