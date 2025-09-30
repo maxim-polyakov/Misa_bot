@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
+from . import views
 import os
 
 
@@ -11,7 +12,9 @@ def home_view(request):
 
 
 urlpatterns = [
+    # Аутентификация
     path('', home_view),
+    path('auth/register/', views.register, name='register'),
 ]
 
 # Для production: обслуживание статических файлов через Django (не рекомендуется для высоконагруженных проектов)
