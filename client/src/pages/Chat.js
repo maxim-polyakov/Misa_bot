@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import { useState, useRef, useEffect } from "react";
 import { useStores } from "../store/rootStoreContext";
-import "./Chat.css";
+import "./Styles.css";
 
 const Chat = observer(({ onMenuToggle }) => {
     const { chatStore } = useStores();

@@ -5,7 +5,7 @@ import { Button, Nav } from "react-bootstrap";
 import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router-dom";
 import { useMenuToggle } from "./MainLayout"; // Добавьте этот импорт
-import "./Sidebar.css";
+import "./Styles.css";
 
 const Sidebar = observer(() => {
     const { user } = useContext(Context);

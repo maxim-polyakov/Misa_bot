@@ -1,7 +1,7 @@
 import { useState, useContext, createContext, useMemo, useCallback } from "react";
 import { Context } from "../index";
 import Sidebar from "../pages/Sidebar";
-import "./MainLayout.css";
+import "./Styles.css";
 
 // Create context for menu toggle
 export const MenuToggleContext = createContext();
