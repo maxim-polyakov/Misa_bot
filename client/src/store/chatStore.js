@@ -58,6 +58,10 @@ class ChatStore {
 
         try {
             const wsUrl = process.env.REACT_APP_API_WSS;
+            if (this.socket) {
+                this.socket.close(1000, "Reconnecting");
+                this.socket = null;
+            }
             console.log("Подключаемся к:", wsUrl);
             this.socket = new WebSocket(wsUrl);
 
