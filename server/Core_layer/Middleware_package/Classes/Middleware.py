@@ -2,10 +2,11 @@ import jwt
 import logging
 from django.http import JsonResponse
 from Deep_layer.DB_package.Classes import DB_Communication
+from Core_layer.Middleware_package.Interfaces import IMiddleware
 import pandas as pd
 
 
-class Middleware:
+class Middleware(IMiddleware.IMiddleware):
     JWT_SECRET = "your-secret-key-here-change-in-production"
     JWT_ALGORITHM = 'HS256'
 
@@ -30,7 +31,7 @@ class Middleware:
                 }, status=401)
 
             token = auth_header.split(' ')[1]
-            user = self._verify_token_and_get_user(token)
+            user = self.verify_token_and_get_user(token)
 
             if user is None:
                 return JsonResponse({
@@ -51,7 +52,7 @@ class Middleware:
                 'message': 'Internal server error'
             }, status=500)
 
-    def _verify_token_and_get_user(self, token):
+    def verify_token_and_get_user(self, token):
         """Синхронная верификация JWT токена"""
         try:
             # Декодируем JWT токен синхронно

@@ -1,26 +1,22 @@
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from django.contrib.auth import authenticate, login
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from Deep_layer.DB_package.Classes import DB_Communication
+from Core_layer.Controller_package.Interfaces import IController
 import json
 import pandas as pd
-import numpy as np
 import jwt
 import logging
 import datetime
-from django.conf import settings
 
 
 
 
 
-class Controller:
+class Controller(IController.IController):
     # Настройки JWT
     JWT_SECRET = 'your-secret-key-here-change-in-production'
     JWT_ALGORITHM = 'HS256'
