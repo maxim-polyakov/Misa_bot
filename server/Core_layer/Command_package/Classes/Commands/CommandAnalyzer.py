@@ -78,7 +78,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
             outlist = list(set(outlist))
             logging.info('Commandanalyzer.__action process completed successfully')
-            return outlist if outlist else ['general_query']
+            return outlist
 
         except Exception as e:
             logging.exception('Exception in commandanalyzer.__action: ' + str(e))
