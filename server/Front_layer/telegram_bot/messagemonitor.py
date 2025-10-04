@@ -12,9 +12,14 @@ async def get_user_text(message):
     if(output != '' or output != '\n'):
         try:
             if message.text.lower().count('нарисуй') > 0:
-                output = output.replace('\n', '')
-                photo = str(output)
-                await telegram_bot.boto.send_photo(message.chat.id, photo=open(photo, 'rb'))
+                outarr = output.split('\n')
+                outarr = [word for word in outarr if word != '']
+                for el in outarr:
+                    if (el.count('.png')> 0):
+                        photo = str(el)
+                        await telegram_bot.boto.send_photo(message.chat.id, photo=open(photo, 'rb'))
+                    else:
+                        await telegram_bot.boto.send_message(message.chat.id, el)
             else:
                 if (len(output) > 4096):
                     if not os.path.exists('txtfiles'):
