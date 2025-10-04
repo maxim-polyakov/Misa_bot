@@ -19,7 +19,6 @@ const MessageItem = observer(({ msg }) => {
         if (isRelativeImagePath && !imageBlobUrl && !imageError) {
             getImage(msg.content)
                 .then(blob => {
-                    // Создаем URL из blob
                     const blobUrl = URL.createObjectURL(blob);
                     setImageBlobUrl(blobUrl);
                 })
@@ -28,14 +27,7 @@ const MessageItem = observer(({ msg }) => {
                     setImageError(true);
                 });
         }
-
-        // Очистка при размонтировании компонента
-        return () => {
-            if (imageBlobUrl) {
-                URL.revokeObjectURL(imageBlobUrl);
-            }
-        };
-    }, [isRelativeImagePath, msg.content, imageBlobUrl, imageError]);
+    }, [isRelativeImagePath, msg.content]);
 
     return (
         <div className={`message ${msg.user === "Misa" ? "misa-message" : "user-message"}`}>
