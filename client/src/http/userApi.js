@@ -113,3 +113,29 @@ export const check = async () => {
         return null;
     }
 };
+
+export const getImage = async (imagePath) => {
+    try {
+        // Проверяем, что это действительно путь к изображению
+        const isImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(imagePath);
+
+        if (!isImagePath) {
+            throw new Error("Not an image path");
+        }
+
+        // Формируем полный URL
+        const fullUrl = `${process.env.REACT_APP_API_URL}${imagePath}`;
+
+        // Получаем изображение как blob
+        const response = await $authhost.get(fullUrl, {
+            responseType: 'blob'
+        });
+
+        console.log('Blob received:', response.data);
+        return response.data; // Возвращаем blob
+
+    } catch (error) {
+        console.log("Get image error:", error);
+        throw error;
+    }
+};

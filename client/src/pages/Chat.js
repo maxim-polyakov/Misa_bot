@@ -1,7 +1,76 @@
 import { observer } from "mobx-react-lite";
 import { useState, useRef, useEffect } from "react";
 import { useStores } from "../store/rootStoreContext";
+import { getImage } from "../http/userApi"
 import "./Styles.css";
+// Создайте отдельный компонент для сообщения
+const MessageItem = observer(({ msg }) => {
+    const [imageBlobUrl, setImageBlobUrl] = useState(null);
+    const [imageError, setImageError] = useState(false);
+
+    // Проверяем, было ли сообщение изначально изображением
+    const wasImage = msg.isImage ||
+        /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(msg.content);
+
+    const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(msg.content);
+
+    // useEffect теперь вызывается в правильном месте - внутри React компонента
+    useEffect(() => {
+        if (isRelativeImagePath && !imageBlobUrl && !imageError) {
+            getImage(msg.content)
+                .then(blob => {
+                    // Создаем URL из blob
+                    const blobUrl = URL.createObjectURL(blob);
+                    setImageBlobUrl(blobUrl);
+                })
+                .catch(error => {
+                    console.error('Failed to load image:', error);
+                    setImageError(true);
+                });
+        }
+
+        // Очистка при размонтировании компонента
+        return () => {
+            if (imageBlobUrl) {
+                URL.revokeObjectURL(imageBlobUrl);
+            }
+        };
+    }, [isRelativeImagePath, msg.content, imageBlobUrl, imageError]);
+
+    return (
+        <div className={`message ${msg.user === "Misa" ? "misa-message" : "user-message"}`}>
+            <div className="message-avatar">
+                {msg.user === "Misa" ? "M" : "👤"}
+            </div>
+            <div className="message-content">
+                <div className="message-sender">{msg.user}</div>
+                {wasImage && imageBlobUrl ? (
+                    <img
+                        src={imageBlobUrl}
+                        alt="Изображение от Misa"
+                        className="message-image"
+                        onError={(e) => {
+                            console.error('Image load error');
+                            setImageError(true);
+                        }}
+                    />
+                ) : (
+                    <div className="message-text" style={{ whiteSpace: 'pre-line' }}>
+                        {msg.content}
+                    </div>
+                )}
+                {wasImage && imageError && (
+                    <div className="message-text error">
+                        Не удалось загрузить изображение: {msg.content}
+                    </div>
+                )}
+                <div className="message-time">
+                    {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </div>
+            </div>
+        </div>
+    );
+});
 
 const Chat = observer(({ onMenuToggle }) => {
     const { chatStore } = useStores();
@@ -62,51 +131,6 @@ const Chat = observer(({ onMenuToggle }) => {
         }
     };
 
-    const renderMessage = (msg) => {
-        // Проверяем, было ли сообщение изначально изображением
-        const wasImage = msg.isImage ||
-            /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(msg.content);
-
-        // Если это относительный путь к изображению, преобразуем в абсолютный URL
-        const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(msg.content);
-        const imageUrl = isRelativeImagePath
-            ? `${process.env.REACT_APP_API_URL}${msg.content}`
-            : msg.content;
-
-        return (
-            <div key={msg.id} className={`message ${msg.user === "Misa" ? "misa-message" : "user-message"}`}>
-                <div className="message-avatar">
-                    {msg.user === "Misa" ? "M" : "👤"}
-                </div>
-                <div className="message-content">
-                    <div className="message-sender">{msg.user}</div>
-                    {wasImage ? (
-                        <img
-                            src={imageUrl}
-                            alt="Изображение от Misa"
-                            className="message-image"
-                            onError={(e) => {
-                                // Если изображение не загружается, показываем текст
-                                e.currentTarget.style.display = 'none';
-                                const textElement = document.createElement('div');
-                                textElement.className = 'message-text';
-                                textElement.style.whiteSpace = 'pre-line';
-                                textElement.textContent = msg.content;
-                                e.currentTarget.parentNode.appendChild(textElement);
-                            }}
-                        />
-                    ) : (
-                        <div className="message-text" style={{ whiteSpace: 'pre-line' }}>
-                            {msg.content}
-                        </div>
-                    )}
-                    <div className="message-time">
-                        {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                    </div>
-                </div>
-            </div>
-        );
-    };
 
     const getConnectionStatus = () => {
         if (chatStore.isConnected) {
@@ -149,7 +173,9 @@ const Chat = observer(({ onMenuToggle }) => {
                             <small>Задайте вопрос или поделитесь мыслями</small>
                         </div>
                     ) : (
-                        chatStore.messages.map(renderMessage)
+                        chatStore.messages.map(msg => (
+                            <MessageItem key={msg.id} msg={msg} />
+                        ))
                     )}
                     <div ref={messagesEndRef} />
                 </div>
