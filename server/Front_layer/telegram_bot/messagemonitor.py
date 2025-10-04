@@ -2,6 +2,18 @@ import os
 from Front_layer import telegram_bot
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorTelegram
 
+def is_file_path(self, response):
+    if not isinstance(response, str):
+        return False
+
+    cleaned_path = response.strip().replace('\n', '')
+
+    if os.path.exists(cleaned_path) and os.path.isfile(cleaned_path):
+        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
+        file_ext = os.path.splitext(cleaned_path)[1].lower()
+        return file_ext in image_extensions
+
+    return False
 
 @telegram_bot.dp.message_handler(content_types=['text'])
 async def get_user_text(message):
@@ -15,7 +27,7 @@ async def get_user_text(message):
                 outarr = output.split('\n')
                 outarr = [word for word in outarr if word != '']
                 for el in outarr:
-                    if (el.count('.png')> 0):
+                    if (is_file_path(el)):
                         photo = str(el)
                         await telegram_bot.boto.send_photo(message.chat.id, photo=open(photo, 'rb'))
                     else:

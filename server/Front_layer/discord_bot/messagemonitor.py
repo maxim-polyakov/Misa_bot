@@ -8,6 +8,19 @@ from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import TextMonitorDis
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import SongsMonitor
 
 
+def is_file_path(self, response):
+    if not isinstance(response, str):
+        return False
+
+    cleaned_path = response.strip().replace('\n', '')
+
+    if os.path.exists(cleaned_path) and os.path.isfile(cleaned_path):
+        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
+        file_ext = os.path.splitext(cleaned_path)[1].lower()
+        return file_ext in image_extensions
+
+    return False
+
 global flag
 @discord_bot.bot.listen()
 async def on_message(message):
@@ -36,7 +49,7 @@ async def on_message(message):
                             outarr = outstr.split('\n')
                             outarr = [word for word in outarr if word != '']
                             for el in outarr:
-                                if (el.count('.png')>0):
+                                if (is_file_path(el)):
                                     await message.channel.send(file=discord_bot.disnake.File(el))
                                 else:
                                     await message.channel.send(el)
