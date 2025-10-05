@@ -190,10 +190,10 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "очисти" but not "очисться"
-            if cls.message_text.count('очисти') > 0 and cls.message_text.count('очисться') == 0:
+            if cls.message_text.count('#очисти') > 0 and cls.message_text.count('#очисться') == 0:
                 # remove "очисти " from the message text
-                message_text = (cls.message_text.replace('почисти ', '')
-                                .replace('очисти', ''))
+                message_text = (cls.message_text.replace('#почисти ', '')
+                                .replace('#очисти', ''))
                 # create an instance of the common preprocessing class
                 pr = CommonPreprocessing.CommonPreprocessing()
                 # log successful execution of the method

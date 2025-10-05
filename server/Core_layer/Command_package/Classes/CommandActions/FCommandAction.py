@@ -32,9 +32,9 @@ class FCommandAction(IAction.IAction):
         # first subscribe
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('абонируй') > 0 and cls.message_text.count('абонируйся') == 0:
+            if cls.message_text.count('#абонируй') > 0 and cls.message_text.count('#абонируйся') == 0:
                 message_text = (cls.message_text.strip(' ')
-                                .replace('абонируй ', ''))
+                                .replace('#абонируй ', ''))
                 dfc = cls.__dbc.get_data('select count(subscriber) from assistant_sets.subscribetable')
                 counts = dfc['count'][0]
                 dbc = DB_Communication.DB_Communication()
@@ -57,7 +57,7 @@ class FCommandAction(IAction.IAction):
         # second subscribe
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('абонируйся') > 0:
+            if cls.message_text.count('#абонируйся') > 0:
                 message_text = 'миса'
                 dfc = cls.__dbc.get_data('select count(subscriber) from assistant_sets.subscribetable')
                 counts = dfc['count'][0]
@@ -82,8 +82,8 @@ class FCommandAction(IAction.IAction):
 #       нарисуй
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('нарисуй') > 0 and cls.message_text.count('нарисуйся') == 0:
-                message_text = (cls.message_text.strip(' ').replace('нарисуй ', ''))
+            if cls.message_text.count('#нарисуй') > 0 and cls.message_text.count('#нарисуйся') == 0:
+                message_text = (cls.message_text.strip(' ').replace('#нарисуй ', ''))
                 dal = Drawer.Drawer(message_text)
                 filepath = dal.draw()
                 return filepath
