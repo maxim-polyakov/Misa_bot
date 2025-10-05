@@ -108,17 +108,28 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             outstr = ''
-            # check if the message contains periods (.) to determine sentence splitting
-            if (message_text.count('.') > 0):
-                word_arr = message_text.split('. ')
-            else:
-                word_arr = message_text.split(', ')
-            # process each word or phrase in the array
-            for word in word_arr:
-                outlist = cls.__action(word)
-                if (outlist != None):
-                    for outmes in outlist:
-                        outstr += str(outmes) + '|\n'
+
+            # Сначала проверяем весь текст целиком на наличие команд
+            outlist = cls.__action(message_text)
+            if outlist:
+                for outmes in outlist:
+                    outstr += str(outmes) + '|\n'
+
+            # Если в целом тексте не найдено команд, пробуем разбить на предложения
+            if not outstr:
+                # check if the message contains periods (.) to determine sentence splitting
+                if (message_text.count('.') > 0):
+                    word_arr = message_text.split('. ')
+                else:
+                    word_arr = message_text.split(', ')
+
+                # process each word or phrase in the array
+                for word in word_arr:
+                    outlist = cls.__action(word)
+                    if outlist:
+                        for outmes in outlist:
+                            outstr += str(outmes) + '|\n'
+
             # log successful completion of the analysis process
             logging.info('The commandanalyzer.analyse process has completed successfully')
             # check if the output string is empty or contains only "none"
