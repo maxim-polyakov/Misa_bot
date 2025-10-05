@@ -100,6 +100,22 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         return indicator_count >= 2
 
     @classmethod
+    def __has_additional_text_for_gpt(cls, message_text, command_words):
+        """Проверяет, есть ли в сообщении дополнительный текст для GPT"""
+        # Убираем команды из текста для анализа
+        clean_text = message_text.lower()
+        for command in command_words:
+            clean_text = clean_text.replace(command, '')
+
+        # Убираем специальные символы и лишние пробелы
+        import re
+        clean_text = re.sub(r'[^\w\s]', ' ', clean_text)
+        clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+
+        # Если после удаления команд осталось достаточно текста - нужен GPT
+        return len(clean_text) > 50  # Настроить порог при необходимости
+
+    @classmethod
     def analyse(cls, message_text):
         # analise commands
         # configure logging settings
@@ -107,6 +123,8 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         try:
             outstr = ''
             command_executed = False  # Флаг для отслеживания выполнения команды
+            known_commands = ['#абонируй', '#абонируйся', '#нарисуй', '#атакуй',
+                              '#фас', '#найди', '#скажи', '#погода', '#почисти', '#очисти']
 
             # Сначала проверяем весь текст целиком на наличие команд
             outlist = cls.__action(message_text)
@@ -135,11 +153,18 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             logging.info('The commandanalyzer.analyse process has completed successfully')
 
             # Если команда выполнена, возвращаем результат команды + GPT-ответ
+            # Если команда выполнена
             if command_executed:
-                gpt_response = cls._gpta.answer(message_text)
-                # Комбинируем результат команды и GPT-ответ
-                combined_response = f"{outstr}" + "|\n" + f"{gpt_response}"
-                return combined_response
+                # Проверяем, есть ли в сообщении дополнительный текст для GPT
+                needs_gpt = cls.__has_additional_text_for_gpt(message_text, known_commands)
+
+                if needs_gpt:
+                    gpt_response = cls._gpta.answer(message_text)
+                    combined_response = f"{outstr}" + "|\n" + f"{gpt_response}"
+                    return combined_response
+                else:
+                    # Только команда без дополнительного текста
+                    return outstr
 
             # Если команд не найдено, возвращаем только GPT-ответ
             logging.debug('outstr ' + outstr)
