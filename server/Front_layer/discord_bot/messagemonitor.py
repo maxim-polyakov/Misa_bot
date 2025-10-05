@@ -8,7 +8,7 @@ from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import TextMonitorDis
 from Core_layer.Bot_package.Classes.Monitors.AudioMonitors import SongsMonitor
 
 
-def is_file_path(self, response):
+def is_file_path(response):
     if not isinstance(response, str):
         return False
 
