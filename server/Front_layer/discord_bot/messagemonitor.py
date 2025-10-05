@@ -26,6 +26,15 @@ global flag
 async def on_message(message):
 #
 #This function is for taking messages from a chat
+    async def processing_large_messages(outstr):
+        if (len(outstr) > 2000):
+            if not os.path.exists('txtfiles'):
+                os.makedirs('txtfiles')
+            with open('txtfiles/message.txt', 'w+', encoding='utf-8') as file:
+                file.write(outstr)
+            await message.channel.send(file=discord_bot.disnake.File('txtfiles/message.txt'))
+        else:
+            await message.channel.send(outstr)
     if message.author != discord_bot.bot.user:
         isCommand = False
         mmon = MessageMonitorDiscord.MessageMonitorDiscord(discord_bot.bot, message)
@@ -52,16 +61,10 @@ async def on_message(message):
                                 if (is_file_path(el)):
                                     await message.channel.send(file=discord_bot.disnake.File(el))
                                 else:
-                                    await message.channel.send(el)
+                                    await processing_large_messages(el)
                         else:
-                            if(len(outstr) > 2000):
-                                if not os.path.exists('txtfiles'):
-                                    os.makedirs('txtfiles')
-                                with open('txtfiles/message.txt', 'w+', encoding='utf-8') as file:
-                                    file.write(outstr)
-                                await message.channel.send(file=discord_bot.disnake.File('txtfiles/message.txt'))
-                            else:
-                                await message.channel.send(outstr)
+                            await processing_large_messages(outstr)
+
                     except Exception as e:
                         logging.exception('The exception occurred in on_message ' + str(e))
                 else:
