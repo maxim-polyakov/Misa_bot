@@ -25,22 +25,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             response = await self.process_message(text_data)
-            if (text_data.count('нарисуй')>0):
-                outarr = response.split('\n')
-                outarr = [word for word in outarr if word != '']
-                for el in outarr:
-                    if self.is_file_path(el):
-                        el = self.convert_file_path_to_url(el)
+            outarr = response.split('|\n')
+            outarr = [word for word in outarr if word != '']
+            for el in outarr:
+                if self.is_file_path(el):
+                    el = self.convert_file_path_to_url(el)
 
-                    await self.send(text_data=json.dumps({
-                        'type': 'chat_message',
-                        'message': el,
-                        'user': 'Misa'
-                    }, ensure_ascii=False))
-            else:
                 await self.send(text_data=json.dumps({
                     'type': 'chat_message',
-                    'message': response,
+                    'message': el,
                     'user': 'Misa'
                 }, ensure_ascii=False))
 

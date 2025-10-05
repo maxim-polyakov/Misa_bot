@@ -118,7 +118,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 outlist = cls.__action(word)
                 if (outlist != None):
                     for outmes in outlist:
-                        outstr += str(outmes) + '\n'
+                        outstr += str(outmes) + '|\n'
             # log successful completion of the analysis process
             logging.info('The commandanalyzer.analyse process has completed successfully')
             # check if the output string is empty or contains only "none"
