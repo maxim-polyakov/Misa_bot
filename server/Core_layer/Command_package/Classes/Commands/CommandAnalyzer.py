@@ -86,8 +86,6 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
     @classmethod
     def __is_code_message(cls, text):
         """Быстрая проверка на код (CSS, JS, HTML, XML и т.д.)"""
-        if len(text) > 2000:  # Длинные сообщения вероятно код
-            return True
 
         code_indicators = [
             '{', '}', ':', ';', '=', '<', '>', '/',
