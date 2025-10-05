@@ -5,7 +5,7 @@ from Core_layer.Bot_package.Classes.Finder import GoogleFinder
 from Core_layer.Bot_package.Classes.Finder import WikiFinder
 from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
-
+import re
 
 class CommandAction(IAction.IAction):
     """
@@ -126,8 +126,9 @@ class CommandAction(IAction.IAction):
         try:
             # check if the message contains the word "погода" (weather)
             if cls.message_text.count('#погода') > 0:
-                # remove the word "погода" from the message to extract the location
-                message = cls.message_text.replace('#погода ','')
+                # remove all words starting with '#' from the message
+
+                message = re.sub(r'#\w+\s*', '', cls.message_text).strip()
                 # get weather information for the specified location
                 w = Weather.Weather(message)
                 out = w.predict()
@@ -156,7 +157,7 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "почисти" but not "почистись"
-            if cls.message_text.count('почисти') > 0 and cls.message_text.count('почистись') == 0:
+            if cls.message_text.count('#почисти') > 0 and cls.message_text.count('#почистись') == 0:
                 # remove "почисти " from the message text
                 message_text = (cls.message_text.replace('почисти ', ''))
                 # create an instance of the common preprocessing class
