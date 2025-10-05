@@ -106,12 +106,14 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             outstr = ''
+            command_executed = False  # Флаг для отслеживания выполнения команды
 
             # Сначала проверяем весь текст целиком на наличие команд
             outlist = cls.__action(message_text)
             if outlist:
                 for outmes in outlist:
                     outstr += str(outmes) + '|\n'
+                command_executed = True
 
             # Если в целом тексте не найдено команд, пробуем разбить на предложения
             if not outstr:
@@ -127,14 +129,24 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                     if outlist:
                         for outmes in outlist:
                             outstr += str(outmes) + '|\n'
+                        command_executed = True
 
             # log successful completion of the analysis process
             logging.info('The commandanalyzer.analyse process has completed successfully')
-            # check if the output string is empty or contains only "none"
+
+            # Если команда выполнена, возвращаем результат команды + GPT-ответ
+            if command_executed:
+                gpt_response = cls._gpta.answer(message_text)
+                # Комбинируем результат команды и GPT-ответ
+                combined_response = f"{outstr}\n\n{gpt_response}"
+                return combined_response
+
+            # Если команд не найдено, возвращаем только GPT-ответ
             logging.debug('outstr ' + outstr)
             if outstr == '\n\n' or outstr == '' or outstr == '\n' or outstr == '\nNone\n' or outstr == 'none':
                 return cls._gpta.answer(message_text)
             return outstr
+
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in commandanalyzer.analyse: ' + str(e))
