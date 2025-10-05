@@ -107,9 +107,9 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "скажи" (which means "say" in russian)
-            if cls.message_text.lower().count('скажи') > 0:
+            if cls.message_text.lower().count('#скажи') > 0:
                 # remove "скажи " from the message text
-                message_text = cls.message_text.replace('скажи ', '').replace(' скажи', '')
+                message_text = cls.message_text.replace('#скажи ', '').replace(' #скажи', '')
                 # log successful execution of the method
                 logging.info('The commandaction.fourth process has completed successfully')
                 # return the modified message text
