@@ -5,6 +5,7 @@ from Core_layer.Command_package.Classes.CommandActions import FCommandAction
 from Core_layer.Command_package.Classes.CommandActions import SCommandAction
 from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
 from Core_layer.Answer_package.Classes import GptAnswer
+import re
 
 class CommandAnalyzer(IAnalyzer.IAnalyzer):
     """
@@ -102,9 +103,8 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
     @classmethod
     def __has_unknown_commands(cls, message_text, known_commands):
         """Проверяет, есть ли в сообщении неизвестные команды (с #)"""
-        import re
-        # Ищем все хештеги в сообщении
-        all_hashtags = re.findall(r'#(\w+)', message_text.lower())
+        # Ищем все хештеги в сообщении (с решеткой)
+        all_hashtags = re.findall(r'#\w+', message_text.lower())
 
         # Проверяем, есть ли хештеги, которых нет в known_commands
         known_commands_set = set(known_commands)
