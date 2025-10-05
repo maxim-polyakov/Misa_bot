@@ -138,7 +138,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             if command_executed:
                 gpt_response = cls._gpta.answer(message_text)
                 # Комбинируем результат команды и GPT-ответ
-                combined_response = f"{outstr}\n|\n{gpt_response}"
+                combined_response = f"{outstr}" + "|\n" + f"{gpt_response}"
                 return combined_response
 
             # Если команд не найдено, возвращаем только GPT-ответ
