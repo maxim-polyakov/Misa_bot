@@ -81,11 +81,11 @@ class MessageMonitor(IMonitor.IMonitor):
             text = []
             # determine the message content based on the platform type
             if(pltype == 'discord'):
-                lowertext = message.content.lower()
+                lowertext = message.content
             elif (pltype=='telegram'):
-                lowertext = message.text.lower()
+                lowertext = message.text
             else:
-                lowertext = message.lower()
+                lowertext = message
             # insert the processed text into the database
             cls._dbc.insert_to(lowertext)
             outstr = ''
