@@ -42,6 +42,7 @@ async def get_user_text(message):
                     else:
                         await processing_large_messages(el)
             else:
+                output = output.replace('|\n', '')
                 await processing_large_messages(output)
 
         except Exception as e:
