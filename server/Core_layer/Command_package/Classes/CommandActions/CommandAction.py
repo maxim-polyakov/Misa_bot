@@ -133,6 +133,8 @@ class CommandAction(IAction.IAction):
                 out = w.predict()
                 # log successful execution
                 logging.info('The commandaction.fifth process has completed successfully')
+                if (out == "п. р"):
+                    return "Город не найден"
                 return out
         except Exception as e:
             # log any exceptions that occur
