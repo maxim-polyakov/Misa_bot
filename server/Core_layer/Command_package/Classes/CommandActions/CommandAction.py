@@ -125,9 +125,9 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "погода" (weather)
-            if cls.message_text.count('погода') > 0:
+            if cls.message_text.count('#погода') > 0:
                 # remove the word "погода" from the message to extract the location
-                message = cls.message_text.replace('погода ','')
+                message = cls.message_text.replace('#погода ','')
                 # get weather information for the specified location
                 w = Weather.Weather(message)
                 out = w.predict()
