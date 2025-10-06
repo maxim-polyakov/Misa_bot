@@ -38,16 +38,16 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             ac = CommandAction.CommandAction(cls.__message, message_text)
             # create a dictionary mapping command words to their corresponding method results
             info_dict = {
-                'абонировать': str(aone.first()),
-                'абонироваться': str(aone.second()),
-                'нарисовать': str(aone.third()),
-                'атаковать': str(asixteen.seventh()),
-                'фас': str(ac.first()),
-                'находить': str(ac.third()),
-                'сказать': str(ac.fourth()),
-                'погода': str(ac.fifth()),
-                'почистить': str(ac.seventh()),
-                'очищать': str(ac.tenth())
+                '1': str(aone.first()),
+                '2': str(aone.second()),
+                '3': str(aone.third()),
+                '4': str(asixteen.seventh()),
+                '5': str(ac.first()),
+                '6': str(ac.third()),
+                '7': str(ac.fourth()),
+                '8': str(ac.fifth()),
+                '9': str(ac.seventh()),
+                '10': str(ac.tenth())
                 }
             # log successful completion of the process
             logging.info('The commandanalyzer.__action_step process has completed successfully')
@@ -57,6 +57,25 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             # log successful completion of the process
             logging.info('The commandanalyzer.__action_step process has not completed successfully')
             return ''
+
+    @classmethod
+    def neurocheck(cls, message_text):
+        input = "Команда: " + message_text + '. ' + \
+        'Список команд: ' + \
+        '1 абонировать, ' + \
+        '2 абонироваться, ' + \
+        '3 нарисовать, ' + \
+        '4 атаковать, ' + \
+        '5 фас, ' + \
+        '6 находить, ' + \
+        '7 сказать, ' + \
+        '8 погода, ' + \
+        '9 почистить, ' + \
+        '10 очищать, ' + \
+        '11 команды нет в списке. ' + \
+        'Найди команду(ы) в списке. Верни только номер(а) варианта(ов) из списка через запятую. Может быть ситуация когда одной команды нет в списке.'
+        gpt_response = cls._gpta.answer(input)
+        return gpt_response
 
     @classmethod
     def __action(cls, message_text):
@@ -70,10 +89,11 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             # Обычная обработка только для текстовых сообщений
             outlist = []
             # Берем только первые 10 слов для анализа (оптимизация)
-            array_of_message_text = message_text.split(' ')[:10]
+            check = cls.neurocheck(message_text)
+            array_of_message_text = check.split(',')
 
             for word in array_of_message_text:
-                processed_word = cls.__action_step(cls.__pr.preprocess_text(word), message_text)
+                processed_word = cls.__action_step(word, message_text)
                 if processed_word:
                     outlist.append(processed_word)
 
@@ -120,8 +140,8 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         try:
             outstr = ''
             command_executed = False  # Флаг для отслеживания выполнения команды
-            known_commands = ['#абонируй', '#абонируйся', '#нарисуй', '#атакуй',
-                              '#фас', '#найди', '#скажи', '#погода', '#почисти', '#очисти']
+            known_commands = ['абонируй', 'абонируйся', 'нарисуй', 'атакуй',
+                              'фас', 'найди', 'скажи', '#погода', 'почисти', 'очисти']
 
             # Сначала проверяем весь текст целиком на наличие команд
             outlist = cls.__action(message_text)

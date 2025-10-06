@@ -107,9 +107,9 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "скажи" (which means "say" in russian)
-            if cls.message_text.lower().count('#скажи') > 0:
+            if cls.message_text.lower().count('скажи') > 0:
                 # remove "скажи " from the message text
-                message_text = cls.message_text.replace('#скажи ', '').replace(' #скажи', '')
+                message_text = cls.message_text.replace('скажи ', '').replace(' скажи', '')
                 # log successful execution of the method
                 logging.info('The commandaction.fourth process has completed successfully')
                 # return the modified message text
@@ -125,7 +125,7 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "погода" (weather)
-            if cls.message_text.count('#погода') > 0:
+            if cls.message_text.count('погода') > 0:
                 # remove all words starting with '#' from the message
 
                 message = re.sub(r'#\w+\s*', '', cls.message_text).strip()
@@ -157,7 +157,7 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "почисти" but not "почистись"
-            if cls.message_text.count('#почисти') > 0 and cls.message_text.count('#почистись') == 0:
+            if cls.message_text.count('почисти') > 0 and cls.message_text.count('почистись') == 0:
                 # remove "почисти " from the message text
                 message_text = (cls.message_text.replace('почисти ', ''))
                 # create an instance of the common preprocessing class
@@ -193,10 +193,10 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "очисти" but not "очисться"
-            if cls.message_text.count('#очисти') > 0 and cls.message_text.count('#очисться') == 0:
+            if cls.message_text.count('очисти') > 0 and cls.message_text.count('очисться') == 0:
                 # remove "очисти " from the message text
-                message_text = (cls.message_text.replace('#почисти ', '')
-                                .replace('#очисти', ''))
+                message_text = (cls.message_text.replace('почисти ', '')
+                                .replace('очисти', ''))
                 # create an instance of the common preprocessing class
                 pr = CommonPreprocessing.CommonPreprocessing()
                 # log successful execution of the method
