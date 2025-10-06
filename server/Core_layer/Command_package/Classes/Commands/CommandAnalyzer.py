@@ -125,9 +125,9 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
     @classmethod
     def __has_unknown_commands(cls, message_text, known_commands):
-        """Проверяет, есть ли в сообщении неизвестные команды (с #)"""
-        # Ищем все хештеги в сообщении (с решеткой)
-        all_hashtags = re.findall(r'#\w+', message_text.lower())
+        """Проверяет, есть ли в сообщении неизвестные команды (без #)"""
+        # Ищем все хештеги в сообщении (без решетки)
+        all_hashtags = re.findall(r'#(\w+)', message_text.lower())
 
         # Проверяем, есть ли хештеги, которых нет в known_commands
         known_commands_set = set(known_commands)
