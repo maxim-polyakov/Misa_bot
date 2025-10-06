@@ -55,7 +55,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         except Exception as e:
             # log successful completion of the process
             logging.info('The commandanalyzer.__action_step process has not completed successfully')
-            return ''
+            return 'команды нет в списке'
 
     @classmethod
     def neurocheck(cls, message_text):
@@ -145,6 +145,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         try:
             outstr = ''
             command_executed = False  # Флаг для отслеживания выполнения команды
+            has_unknown_command_response = False  # Флаг для "команды нет в списке"
             known_commands = ['абонируй', 'абонируйся', 'нарисуй', 'атакуй',
                               'фас', 'найди', 'погода', 'почисти', 'очисти']
 
@@ -153,7 +154,11 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             if outlist:
                 for outmes in outlist:
                     outstr += str(outmes) + '|\n'
-                command_executed = True
+                    # Проверяем, есть ли среди результатов "команды нет в списке"
+                    if 'команды нет в списке' in str(outmes):
+                        has_unknown_command_response = True
+                    else:
+                        command_executed = True
 
             # Если в целом тексте не найдено команд, пробуем разбить на предложения
             if not outstr:
@@ -169,24 +174,28 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                     if outlist:
                         for outmes in outlist:
                             outstr += str(outmes) + '|\n'
-                        command_executed = True
+                            # Проверяем, есть ли среди результатов "команды нет в списке"
+                            if 'команды нет в списке' in str(outmes):
+                                has_unknown_command_response = True
+                            else:
+                                command_executed = True
 
             # log successful completion of the analysis process
             logging.info('The commandanalyzer.analyse process has completed successfully')
 
-            # Проверяем, есть ли неизвестные команды
+            # Проверяем, есть ли неизвестные команды (хештеги)
             has_unknown_commands = cls.__has_unknown_commands(message_text, known_commands)
 
             # Логика ответа:
-            if command_executed and not has_unknown_commands:
+            if command_executed and not has_unknown_command_response and not has_unknown_commands:
                 # Только известные команды - возвращаем только результат команды
                 return outstr
-            elif command_executed and has_unknown_commands:
-                # Есть и известные и неизвестные команды - результат команды + GPT
+            elif command_executed and (has_unknown_command_response or has_unknown_commands):
+                # Есть известные команды + неизвестные команды или "команды нет в списке"
                 gpt_response = cls._gpta.answer(message_text)
                 return f"{outstr}" + "|\n" + f"{gpt_response}"
-            elif not command_executed and has_unknown_commands:
-                # Только неизвестные команды - только GPT
+            elif not command_executed and (has_unknown_command_response or has_unknown_commands):
+                # Только неизвестные команды или "команды нет в списке" - только GPT
                 return cls._gpta.answer(message_text)
             else:
                 # Нет команд вообще - только GPT
