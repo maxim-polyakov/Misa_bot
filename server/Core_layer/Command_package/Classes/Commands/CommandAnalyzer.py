@@ -206,7 +206,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 # Только известные команды - возвращаем только результат команды
                 logging.info('Case 1: Only known commands')
                 return outstr
-            elif command_executed and (has_unknown_command_response or has_unknown_commands):
+            elif command_executed and (has_unknown_commands):
                 # Есть и известные и неизвестные команды - результат команды + GPT
                 logging.info('Case 2: Mixed commands - command + GPT')
                 gpt_response = cls._gpta.answer(message_text)
