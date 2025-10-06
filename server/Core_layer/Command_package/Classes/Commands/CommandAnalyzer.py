@@ -192,7 +192,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             if command_executed and not has_unknown_commands:
                 # Только известные команды - возвращаем только результат команды
                 return outstr
-            elif command_executed and has_unknown_commands:
+            elif command_executed and (has_unknown_command_response or has_unknown_commands):
                 # Есть и известные и неизвестные команды - результат команды + GPT
                 gpt_response = cls._gpta.answer(message_text)
                 return f"{outstr}" + "|\n" + f"{gpt_response}"
