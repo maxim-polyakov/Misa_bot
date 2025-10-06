@@ -82,7 +82,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             "Верни все номера через запятую.\n"
             "Формат ответа: только цифры, без дополнительного текста."
         )
-        gpt_response = cls._gpta.answer(input)
+        gpt_response = cls._gpta.answer(input, is_command_check=True)
         return gpt_response
 
     @classmethod

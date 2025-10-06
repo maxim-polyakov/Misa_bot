@@ -69,7 +69,7 @@ class MessageMonitor(IMonitor.IMonitor):
                     "Верни True, если это команда, или False, если нет.\n"
                     "Формат ответа: только True или False, без дополнительного текста."
             )
-            res = cls._gpta.answer(input)
+            res = cls._gpta.answer(input, is_command_check=True)
 
             if res.count("True") > 0:
                 logging.info('The messagemonitor.check process has completed successfully')
