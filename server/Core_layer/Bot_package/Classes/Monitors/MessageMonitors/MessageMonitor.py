@@ -57,22 +57,21 @@ class MessageMonitor(IMonitor.IMonitor):
 
     @classmethod
     def check(cls, text_message):
-        # check of commands
-        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            input = ('Сообщение: ' + text_message +
-                     '. Определи команда или нет. Верни только True если команда или False если нет')
+            input = ("Новый запрос. Не учитывай предыдущие сообщения.\n\n" +
+                     "Сообщение: " + text_message + "\n" +
+                     "Задача: Определи, является ли это командой. Верни ТОЛЬКО True если команда или False если нет.\n" +
+                     "Формат ответа: только True или False, без дополнительного текста.")
             res = cls._gpta.answer(input)
-            # check if the given text_message matches any command in the database
-            if (res.count("True")>0):
+
+            if res.count("True") > 0:
                 logging.info('The messagemonitor.check process has completed successfully')
                 return True
             else:
                 logging.info('The messagemonitor.check process has completed successfully')
                 return False
         except Exception as e:
-            # log the exception if an error occurs during execution
             logging.exception('The exception occurred in messagemonitor.check: ' + str(e))
 
     @classmethod
