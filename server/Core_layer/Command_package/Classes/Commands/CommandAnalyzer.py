@@ -153,15 +153,16 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             outlist = cls.__action(message_text)
             if outlist:
                 for outmes in outlist:
-                    outstr += str(outmes) + '|\n'
-                    # Проверяем, есть ли среди результатов "команды нет в списке"
+                    # Проверяем, является ли результат "команды нет в списке"
                     if 'команды нет в списке' in str(outmes):
                         has_unknown_command_response = True
                     else:
+                        # Добавляем только валидные команды
+                        outstr += str(outmes) + '|\n'
                         command_executed = True
 
             # Если в целом тексте не найдено команд, пробуем разбить на предложения
-            if not outstr:
+            if not outstr and not command_executed:
                 # check if the message contains periods (.) to determine sentence splitting
                 if (message_text.count('.') > 0):
                     word_arr = message_text.split('. ')
@@ -173,11 +174,12 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                     outlist = cls.__action(word)
                     if outlist:
                         for outmes in outlist:
-                            outstr += str(outmes) + '|\n'
-                            # Проверяем, есть ли среди результатов "команды нет в списке"
+                            # Проверяем, является ли результат "команды нет в списке"
                             if 'команды нет в списке' in str(outmes):
                                 has_unknown_command_response = True
                             else:
+                                # Добавляем только валидные команды
+                                outstr += str(outmes) + '|\n'
                                 command_executed = True
 
             # log successful completion of the analysis process
@@ -187,14 +189,14 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             has_unknown_commands = cls.__has_unknown_commands(message_text, known_commands)
 
             # Логика ответа:
-            if command_executed and not has_unknown_command_response and not has_unknown_commands:
+            if command_executed and not has_unknown_commands:
                 # Только известные команды - возвращаем только результат команды
                 return outstr
-            elif command_executed and (has_unknown_command_response or has_unknown_commands):
-                # Есть известные команды + неизвестные команды или "команды нет в списке"
+            elif command_executed and has_unknown_commands:
+                # Есть и известные и неизвестные команды - результат команды + GPT
                 gpt_response = cls._gpta.answer(message_text)
                 return f"{outstr}" + "|\n" + f"{gpt_response}"
-            elif not command_executed and (has_unknown_command_response or has_unknown_commands):
+            elif has_unknown_command_response or has_unknown_commands:
                 # Только неизвестные команды или "команды нет в списке" - только GPT
                 return cls._gpta.answer(message_text)
             else:
