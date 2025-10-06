@@ -100,8 +100,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
             for word in array_of_message_text:
                 processed_word = cls.__action_step(word, message_text)
-                if processed_word:
-                    outlist.append(processed_word)
+                outlist.append(processed_word)
 
             outlist = list(set(outlist))
             logging.info('Commandanalyzer.__action process completed successfully')
