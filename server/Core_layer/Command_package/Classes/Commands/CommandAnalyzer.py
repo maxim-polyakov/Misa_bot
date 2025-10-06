@@ -127,13 +127,19 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
     @classmethod
     def __has_unknown_commands(cls, message_text, known_commands):
-        """Проверяет, есть ли в сообщении неизвестные команды (без #)"""
+        """Проверяет, есть ли в сообщении неизвестные команды (включая команды без #)"""
         # Ищем все хештеги в сообщении (без решетки)
         all_hashtags = re.findall(r'#(\w+)', message_text.lower())
 
-        # Проверяем, есть ли хештеги, которых нет в known_commands
+        # Также ищем слова, которые могут быть командами (слова, за которыми идет пробел или конец строки)
+        potential_commands = re.findall(r'(\w+)(?:\s|$)', message_text.lower())
+
+        # Объединяем все потенциальные команды
+        all_potential_commands = set(all_hashtags + potential_commands)
+
+        # Проверяем, есть ли команды, которых нет в known_commands
         known_commands_set = set(known_commands)
-        unknown_commands = [tag for tag in all_hashtags if tag not in known_commands_set]
+        unknown_commands = [cmd for cmd in all_potential_commands if cmd not in known_commands_set and len(cmd) > 2]
 
         return len(unknown_commands) > 0
 
@@ -188,19 +194,29 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             # Проверяем, есть ли неизвестные команды (хештеги)
             has_unknown_commands = cls.__has_unknown_commands(message_text, known_commands)
 
+            # ДОБАВИМ ОТЛАДОЧНУЮ ИНФОРМАЦИЮ
+            logging.info(f'command_executed: {command_executed}')
+            logging.info(f'has_unknown_command_response: {has_unknown_command_response}')
+            logging.info(f'has_unknown_commands: {has_unknown_commands}')
+            logging.info(f'outstr: {outstr}')
+
             # Логика ответа:
-            if command_executed and not has_unknown_commands:
+            if command_executed and not has_unknown_commands and not has_unknown_command_response:
                 # Только известные команды - возвращаем только результат команды
+                logging.info('Case 1: Only known commands')
                 return outstr
             elif command_executed and (has_unknown_command_response or has_unknown_commands):
                 # Есть и известные и неизвестные команды - результат команды + GPT
+                logging.info('Case 2: Mixed commands - command + GPT')
                 gpt_response = cls._gpta.answer(message_text)
                 return f"{outstr}" + "|\n" + f"{gpt_response}"
             elif has_unknown_command_response or has_unknown_commands:
                 # Только неизвестные команды или "команды нет в списке" - только GPT
+                logging.info('Case 3: Only unknown commands - GPT only')
                 return cls._gpta.answer(message_text)
             else:
                 # Нет команд вообще - только GPT
+                logging.info('Case 4: No commands - GPT only')
                 return cls._gpta.answer(message_text)
 
         except Exception as e:
