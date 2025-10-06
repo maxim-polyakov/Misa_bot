@@ -54,7 +54,7 @@ async def on_message(message):
             if outstr != '' or outstr != '\n':
                 if(isCommand):
                     try:
-                        if message.content.lower().count('#нарисуй') > 0:
+                        if message.content.lower().count('нарисуй') > 0:
                             outarr = outstr.split('|\n')
                             outarr = [word for word in outarr if word != '']
                             for el in outarr:
