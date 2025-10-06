@@ -19,10 +19,10 @@ class GoogleFinder(IFinder.IFinder):
             # performing a google search with specified parameters
             outlist = search(
                 message_text,
-                num=9,
-                stop=9,
-                pause=2,  # Увеличиваем паузу
-                tld='co.in'  # Домен (можно попробовать 'co.in' и др.)
+                num_results=9,  # вместо num=
+                # stop= и pause= больше не нужны
+                lang='ru',
+                timeout=10
             )
             # collecting search results
             for result in outlist:
