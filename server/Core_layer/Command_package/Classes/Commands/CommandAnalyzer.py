@@ -44,10 +44,9 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 '4': str(asixteen.seventh()),
                 '5': str(ac.first()),
                 '6': str(ac.third()),
-                '7': str(ac.fourth()),
-                '8': str(ac.fifth()),
-                '9': str(ac.seventh()),
-                '10': str(ac.tenth())
+                '7': str(ac.fifth()),
+                '8': str(ac.seventh()),
+                '9': str(ac.tenth())
                 }
             # log successful completion of the process
             logging.info('The commandanalyzer.__action_step process has completed successfully')
@@ -70,16 +69,15 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             "4 - атаковать\n"
             "5 - фас\n"
             "6 - находить\n"
-            "7 - сказать\n"
-            "8 - погода\n"
-            "9 - почистить\n"
-            "10 - очищать\n"
-            "11 - команды нет в списке\n\n"
+            "7 - погода\n"
+            "8 - почистить\n"
+            "9 - очищать\n"
+            "10 - команды нет в списке\n\n"
             "Задача: Найди команду(ы) в списке. **Строго учитывай контекст**: "
             "Если фраза является советом, описанием, размышлением или эмоциональным высказыванием, "
             "она не считается командой, даже если есть глаголы в повелительном наклонении. "
             "Только прямое побуждение к действию считается командой. "
-            "Верни номер(а) команды через запятую, или 11, если команды нет.\n"
+            "Верни номер(а) команды через запятую, или 10 если команды нет.\n"
             "Формат ответа: только цифры, без дополнительного текста."
         )
         gpt_response = cls._gpta.answer(input)
@@ -149,7 +147,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             outstr = ''
             command_executed = False  # Флаг для отслеживания выполнения команды
             known_commands = ['абонируй', 'абонируйся', 'нарисуй', 'атакуй',
-                              'фас', 'найди', 'скажи', 'погода', 'почисти', 'очисти']
+                              'фас', 'найди', 'погода', 'почисти', 'очисти']
 
             # Сначала проверяем весь текст целиком на наличие команд
             outlist = cls.__action(message_text)
