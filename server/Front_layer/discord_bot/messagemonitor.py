@@ -63,7 +63,7 @@ async def on_message(message):
                                 else:
                                     await processing_large_messages(el)
                         else:
-                            outstr = outstr.replace('|\n', '')
+                            outstr = outstr.replace('|command|\n', '')
                             await processing_large_messages(outstr)
 
                     except Exception as e:
