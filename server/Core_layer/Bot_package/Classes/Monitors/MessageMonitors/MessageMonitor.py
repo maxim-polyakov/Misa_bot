@@ -26,7 +26,7 @@ class MessageMonitor(IMonitor.IMonitor):
                 outlist.append(commands.analyse(text_message))
                 return outlist
             # get a response from gpt
-            res = cls._gpta.answer(text_message)
+            res = cls._gpta.answer(text_message, False)
             outlist.append(res)
             # append the emotion to the output list
             outlist.append('' + emotion)
@@ -69,7 +69,7 @@ class MessageMonitor(IMonitor.IMonitor):
                     "Верни True, если это команда, или False, если нет.\n"
                     "Формат ответа: только True или False, без дополнительного текста."
             )
-            res = cls._gpta.answer(input, is_command_check=True)
+            res = cls._gpta.answer(input, True)
 
             if res.count("True") > 0:
                 logging.info('The messagemonitor.check process has completed successfully')

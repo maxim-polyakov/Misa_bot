@@ -82,7 +82,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             "Верни все номера через запятую.\n"
             "Формат ответа: только цифры, без дополнительного текста."
         )
-        gpt_response = cls._gpta.answer(input, is_command_check=True)
+        gpt_response = cls._gpta.answer(input, True)
         return gpt_response
 
     @classmethod
@@ -189,16 +189,16 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             elif command_executed and (has_unknown_command_response):
                 # Есть и известные и неизвестные команды - результат команды + GPT
                 logging.info('Case 2: Mixed commands - command + GPT')
-                gpt_response = cls._gpta.answer(message_text)
+                gpt_response = cls._gpta.answer(message_text, False)
                 return f"{outstr}" + "|command|\n" + f"{gpt_response}"
             elif has_unknown_command_response:
                 # Только неизвестные команды или "команды нет в списке" - только GPT
                 logging.info('Case 3: Only unknown commands - GPT only')
-                return cls._gpta.answer(message_text)
+                return cls._gpta.answer(message_text, False)
             else:
                 # Нет команд вообще - только GPT
                 logging.info('Case 4: No commands - GPT only')
-                return cls._gpta.answer(message_text)
+                return cls._gpta.answer(message_text, False)
 
         except Exception as e:
             # log any exceptions that occur during execution

@@ -12,12 +12,13 @@ class Gpt(IGpt.IGpt):
     __dbc = DB_Communication.DB_Communication()
 
     @classmethod
-    def generate(cls, text, max_history=100, is_command_check=False):
+    def generate(cls, text, is_command_check=False):
         # generating answers with conversation context
         # configuring logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
 
         try:
+            max_history = 100
             # Initialize conversation history storage if not exists
             if not hasattr(cls, '_conversation_history'):
                 cls._conversation_history = []
