@@ -21,7 +21,7 @@ class MessageMonitor(IMonitor.IMonitor):
         try:
             outlist = []
             # check if the message contains a command
-            if (cls._dbc.checkcommands(text_message)):
+            if (cls.check(text_message)):
                 # analyze the command and add the result to the output list
                 outlist.append(commands.analyse(text_message))
                 return outlist
@@ -61,8 +61,11 @@ class MessageMonitor(IMonitor.IMonitor):
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            input = ('Сообщение: ' + text_message +
+                     '. Определи команда или нет. Верни только True если команда или False если нет')
+            res = cls._gpta.answer(input)
             # check if the given text_message matches any command in the database
-            if (cls._dbc.checkcommands(text_message)):
+            if (res.count("True")>0):
                 logging.info('The messagemonitor.check process has completed successfully')
                 return True
             else:
