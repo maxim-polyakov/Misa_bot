@@ -33,7 +33,7 @@ async def get_user_text(message):
     if(output != '' or output != '\n'):
         try:
             if message.text.lower().count('нарисуй') > 0:
-                outarr = output.split('|\n')
+                outarr = output.split('|command|\n')
                 outarr = [word for word in outarr if word != '']
                 for el in outarr:
                     if (is_file_path(el)):

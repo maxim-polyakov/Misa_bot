@@ -55,7 +55,7 @@ async def on_message(message):
                 if(isCommand):
                     try:
                         if message.content.lower().count('нарисуй') > 0:
-                            outarr = outstr.split('|\n')
+                            outarr = outstr.split('|command|\n')
                             outarr = [word for word in outarr if word != '']
                             for el in outarr:
                                 if (is_file_path(el)):

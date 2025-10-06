@@ -169,7 +169,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                                 has_unknown_command_response = True
                             else:
                                 # Добавляем только валидные команды
-                                outstr += str(outmes) + '|\n'
+                                outstr += str(outmes) + '|command|\n'
                                 command_executed = True
 
             # log successful completion of the analysis process

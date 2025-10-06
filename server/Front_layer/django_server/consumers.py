@@ -25,7 +25,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             response = await self.process_message(text_data)
-            outarr = response.split('|\n')
+            outarr = response.split('|command|\n')
             outarr = [word for word in outarr if word != '']
             for el in outarr:
                 if self.is_file_path(el):
