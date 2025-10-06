@@ -1,9 +1,9 @@
 import logging
-from Deep_layer.API_package.Classes.Finders import GoogleFinder as gfinder
+from Deep_layer.API_package.Classes.Finders import DuckduckgoFinder as gfinder
 from Core_layer.Bot_package.Interfaces import IFinder
 
 
-class GoogleFinder(IFinder.IFinder):
+class DuckduckgoFinder(IFinder.IFinder):
     """
 
     That's a class drawer. It describes an image drawing algorithm.
@@ -12,7 +12,7 @@ class GoogleFinder(IFinder.IFinder):
     message_text = None
 
     def __init__(self, message_text):
-        GoogleFinder.message_text = message_text
+        DuckduckgoFinder.message_text = message_text
 
     @classmethod
     def find(cls):
@@ -21,7 +21,7 @@ class GoogleFinder(IFinder.IFinder):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # create an instance of googlefinder
-            gpif = gfinder.GoogleFinder()
+            gpif = gfinder.DuckduckgoFinder()
             # perform a search using googlefinder
             finded_list = gpif.find(cls.message_text)
             # prepare the output string with proper capitalization

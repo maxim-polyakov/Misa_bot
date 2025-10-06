@@ -1,7 +1,7 @@
 import logging
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Core_layer.Bot_package.Classes.Weather import Weather
-from Core_layer.Bot_package.Classes.Finder import GoogleFinder
+from Core_layer.Bot_package.Classes.Finder import DuckduckgoFinder
 from Core_layer.Bot_package.Classes.Finder import WikiFinder
 from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
@@ -88,7 +88,7 @@ class CommandAction(IAction.IAction):
                     else:
                         try:
                             # perform a google search
-                            gpif = GoogleFinder.GoogleFinder(message_text)
+                            gpif = DuckduckgoFinder.DuckduckgoFinder(message_text)
                             outstr = gpif.find()
                             logging.info('The commandaction.third process has completed successfully')
                             return outstr
