@@ -74,7 +74,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         '10 очищать, ' + \
         '11 команды нет в списке. ' + \
         'Найди команду(ы) в списке. Верни только номер(а) варианта(ов) из списка через запятую. Может быть ситуация когда одной команды нет в списке.'
-        gpt_response = cls._gpta.answer(input)
+        gpt_response = cls._gpta.answer(input).replace('\n', '')
         return gpt_response
 
     @classmethod
