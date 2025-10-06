@@ -17,7 +17,7 @@ class GoogleFinder(IFinder.IFinder):
             # list to store search results
             output = []
             # performing a google search with specified parameters
-            outlist = search(message_text, tld="co.in", num=9, stop=9, pause=1)
+            outlist = search(message_text, num=9, stop=9, pause=1)
             # collecting search results
             for result in outlist:
                 output.append(result)
