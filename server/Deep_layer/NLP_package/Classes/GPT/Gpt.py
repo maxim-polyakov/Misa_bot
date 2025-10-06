@@ -87,11 +87,7 @@ class Gpt(IGpt.IGpt):
                 f'The gpt.generate method has completed successfully. History length: {len(conversation_history)}, Command check: {is_command_check}')
 
             # returning the generated response
-            return {
-                "response": assistant_response,
-                "history_length": len(conversation_history) if not is_command_check else 0,
-                "is_command_check": is_command_check
-            }
+            return assistant_response
 
         except Exception as e:
             # logging any exceptions that occur during execution
