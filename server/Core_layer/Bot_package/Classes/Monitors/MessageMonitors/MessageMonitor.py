@@ -23,7 +23,7 @@ class MessageMonitor(IMonitor.IMonitor):
             # check if the message contains a command
             if (cls.check(text_message, user)):
                 # analyze the command and add the result to the output list
-                outlist.append(commands.analyse(text_message))
+                outlist.append(commands.analyse(text_message, user))
                 return outlist
             # get a response from gpt
             res = cls._gpta.answer(text_message, user, False)

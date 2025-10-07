@@ -151,30 +151,6 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                         outstr += str(outmes) + '|command|\n'
                         command_executed = True
 
-            # Если в целом тексте не найдено команд, пробуем разбить на предложения
-            if not outstr and not command_executed:
-                # check if the message contains periods (.) to determine sentence splitting
-                if (message_text.count('.') > 0):
-                    word_arr = message_text.split('. ')
-                else:
-                    word_arr = message_text.split(', ')
-
-                # process each word or phrase in the array
-                for word in word_arr:
-                    outlist = cls.__action(word)
-                    if outlist:
-                        for outmes in outlist:
-                            # Проверяем, является ли результат "команды нет в списке"
-                            if 'команды нет в списке' in str(outmes):
-                                has_unknown_command_response = True
-                            else:
-                                # Добавляем только валидные команды
-                                outstr += str(outmes) + '|command|\n'
-                                command_executed = True
-
-            # log successful completion of the analysis process
-            logging.info('The commandanalyzer.analyse process has completed successfully')
-
 
             # ДОБАВИМ ОТЛАДОЧНУЮ ИНФОРМАЦИЮ
             logging.info(f'command_executed: {command_executed}')
@@ -198,7 +174,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             else:
                 # Нет команд вообще - только GPT
                 logging.info('Case 4: No commands - GPT only')
-                return cls._gpta.answer(message_text, False)
+                return cls._gpta.answer(message_text,user, False)
 
         except Exception as e:
             # log any exceptions that occur during execution
