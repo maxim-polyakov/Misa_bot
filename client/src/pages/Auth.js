@@ -5,9 +5,11 @@ import { CHAT_ROUTE, LOGIN_ROUTE, REGISTRATION_ROUTE } from "../utils/consts.js"
 import { login, registration } from "../http/userApi.js";
 import { observer } from "mobx-react-lite";
 import { Context } from "../index.js";
+import { useStores } from "../store/rootStoreContext";
 
 const Auth = observer(() => {
     const { user } = useContext(Context);
+    const { chatStore } = useStores();
     const location = useLocation();
     const isLogin = location.pathname === LOGIN_ROUTE && true;
     const navigate = useNavigate();
@@ -54,6 +56,7 @@ const Auth = observer(() => {
 
             user.setUser(data);
             user.setIsAuth(true);
+            chatStore.connect();
 
             setEmail("");
             setPassword("");

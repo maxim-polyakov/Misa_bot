@@ -14,7 +14,6 @@ class ChatStore {
     constructor() {
         makeAutoObservable(this);
         this.loadMessages();
-        this.connect();
     }
 
     // Загрузка сообщений из localStorage

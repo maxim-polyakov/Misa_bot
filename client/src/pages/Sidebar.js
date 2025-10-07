@@ -5,14 +5,18 @@ import { Button, Nav } from "react-bootstrap";
 import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router-dom";
 import "./Styles.css";
+import { useStores } from "../store/rootStoreContext";
 
 const Sidebar = observer(() => {
     const { user } = useContext(Context);
+    const { chatStore } = useStores();
     const navigate = useNavigate();
 
     const logOut = () => {
         user?.setUser({});
         user?.setIsAuth(false);
+        chatStore.disconnect();
+        console.log("disconnect");
         localStorage.removeItem("token");
         navigate("/login", { replace: true });
     };
