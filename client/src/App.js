@@ -7,9 +7,11 @@ import { observer } from "mobx-react-lite";
 import { Context } from "./index.js";
 import { check } from "./http/userApi.js";
 import AppRouter from "./components/AppRouter";
+import { useStores } from "./store/rootStoreContext";
 
 const App = observer(() => {
     const { user } = useContext(Context);
+    const { chatStore } = useStores();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -20,6 +22,7 @@ const App = observer(() => {
                 if (userData) {
                     user.setUser(userData);
                     user.setIsAuth(true);
+                    chatStore.connect();
                 } else {
                     user.setIsAuth(false);
                     user.setUser({});
