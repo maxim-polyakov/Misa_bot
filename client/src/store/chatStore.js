@@ -253,12 +253,14 @@ class ChatStore {
                 }
 
                 if (this.reconnectAttempts < this.maxReconnectAttempts) {
-                    setTimeout(() => {
-                        this.reconnectAttempts++;
-                        this.reconnectDelay = Math.min(this.reconnectDelay * 1.5, 30000);
-                        console.log(`Попытка переподключения #${this.reconnectAttempts} через ${this.reconnectDelay}ms`);
-                        this.connect();
-                    }, this.reconnectDelay);
+                    if(event.code != 1000) {
+                        setTimeout(() => {
+                            this.reconnectAttempts++;
+                            this.reconnectDelay = Math.min(this.reconnectDelay * 1.5, 30000);
+                            console.log(`Попытка переподключения #${this.reconnectAttempts} через ${this.reconnectDelay}ms`);
+                            this.connect();
+                        }, this.reconnectDelay);
+                    }
                 }
             };
 
