@@ -48,9 +48,7 @@ class MessageMonitor(IMonitor.IMonitor):
             # log successful execution of the method
             logging.info('The messagemonitor._neurodesc process has completed successfully')
             # call the __decision method with the provided parameters
-            return cls.__decision(text_message, user,
-                                emotion,
-                                command)
+            return cls.__decision(text_message, user, emotion, command)
         except Exception as e:
             # log the exception if an error occurs
             logging.exception('The exception occurred in messagemonitor._neurodesc: ' + str(e))
@@ -115,7 +113,7 @@ class MessageMonitor(IMonitor.IMonitor):
                 # add processed text to the list
                 text.append(lowertext)
                 # process the text using a neural network function
-                outlist = cls._neurodesc(text, lowertext, user, command)
+                outlist = cls._neurodesc(text, user, lowertext, command)
                 # if the function returns a result, format it into a string
                 if (outlist != None):
                     for outmes in outlist:
