@@ -5,29 +5,41 @@ import time
 import threading
 from Deep_layer.DB_package.Classes import DB_Communication
 
+
 class Gpt(IGpt.IGpt):
     """
     It is a gpt text generator
     """
     __dbc = DB_Communication.DB_Communication()
 
+    # Используем словарь для хранения истории диалогов для каждого пользователя
+    _user_conversations = {}  # Key: user_id, Value: {'history': list, 'start_time': float}
+    _cleanup_lock = threading.Lock()
+
     @classmethod
-    def generate(cls, text, is_command_check=False):
+    def generate(cls, text, user, is_command_check=False):
         # generating answers with conversation context
         # configuring logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
 
         try:
             max_history = 100
-            # Initialize conversation history storage if not exists
-            if not hasattr(cls, '_conversation_history'):
-                cls._conversation_history = []
-                cls._conversation_start_time = time.time()
-                # Start cleanup thread
-                cls._start_cleanup_thread()
 
-            # Retrieve conversation history
-            conversation_history = cls._conversation_history
+            # Инициализируем или получаем историю диалога для конкретного пользователя
+            with cls._cleanup_lock:
+                if user not in cls._user_conversations:
+                    cls._user_conversations[user] = {
+                        'history': [],
+                        'start_time': time.time()
+                    }
+
+                user_data = cls._user_conversations[user]
+                conversation_history = user_data['history']
+
+            # Start cleanup thread if not already running
+            if not hasattr(cls, '_cleanup_thread_started'):
+                cls._start_cleanup_thread()
+                cls._cleanup_thread_started = True
 
             # Only add to history if this is NOT a command check
             if not is_command_check:
@@ -40,6 +52,7 @@ class Gpt(IGpt.IGpt):
                 # Limit history length to prevent token overflow
                 if len(conversation_history) > max_history * 2:
                     conversation_history = conversation_history[-(max_history * 2):]
+                    user_data['history'] = conversation_history
 
             # retrieving api tokens from the database
             fdf = cls.__dbc.get_data(
@@ -80,12 +93,9 @@ class Gpt(IGpt.IGpt):
                     "content": assistant_response,
                 })
 
-                # Update stored history
-                cls._conversation_history = conversation_history
-
             # logging successful completion of the method
             logging.info(
-                f'The gpt.generate method has completed successfully. History length: {len(conversation_history)}, Command check: {is_command_check}')
+                f'The gpt.generate method has completed successfully. User: {user}, History length: {len(conversation_history)}, Command check: {is_command_check}')
 
             # returning the generated response
             return assistant_response
@@ -100,44 +110,84 @@ class Gpt(IGpt.IGpt):
 
     @classmethod
     def _start_cleanup_thread(cls):
-        """Start background thread for automatic cleanup"""
+        """Start background thread for automatic cleanup of all user conversations"""
 
         def cleanup_old_conversations():
             while True:
                 time.sleep(3600)  # Check every hour
                 current_time = time.time()
 
-                # Check if conversation is older than 3 hours
-                if (hasattr(cls, '_conversation_start_time') and
-                        hasattr(cls, '_conversation_history') and
-                        cls._conversation_history and
-                        current_time - cls._conversation_start_time > 10800):  # 3 hours in seconds
+                with cls._cleanup_lock:
+                    users_to_remove = []
+                    for user_id, user_data in cls._user_conversations.items():
+                        # Check if conversation is older than 3 hours
+                        if (user_data['history'] and
+                                current_time - user_data['start_time'] > 10800):  # 3 hours in seconds
 
-                    old_length = len(cls._conversation_history)
-                    cls._conversation_history = []
-                    cls._conversation_start_time = current_time
-                    logging.info(f'Automatically cleaned up conversation history. Removed {old_length} messages.')
+                            old_length = len(user_data['history'])
+                            user_data['history'] = []
+                            user_data['start_time'] = current_time
+                            logging.info(
+                                f'Automatically cleaned up conversation history for user {user_id}. Removed {old_length} messages.')
+
+                        # Optional: Remove user data entirely if history is empty for too long
+                        # This prevents memory leaks from inactive users
+                        if not user_data['history'] and current_time - user_data['start_time'] > 86400:  # 24 hours
+                            users_to_remove.append(user_id)
+
+                    # Remove inactive users
+                    for user_id in users_to_remove:
+                        del cls._user_conversations[user_id]
+                        logging.info(f'Removed inactive user data for: {user_id}')
 
         # Start the cleanup thread as daemon so it doesn't block program exit
         cleanup_thread = threading.Thread(target=cleanup_old_conversations, daemon=True)
         cleanup_thread.start()
 
     @classmethod
-    def clear_conversation_history(cls):
-        """Clear conversation history"""
-        if hasattr(cls, '_conversation_history'):
-            old_length = len(cls._conversation_history)
-            cls._conversation_history = []
-            cls._conversation_start_time = time.time()
-            logging.info(f'Manually cleared conversation history. Removed {old_length} messages.')
-            return {"status": f"cleared {old_length} messages from history"}
-        else:
-            return {"status": "no history to clear"}
+    def clear_conversation_history(cls, user=None):
+        """Clear conversation history for specific user or all users"""
+        with cls._cleanup_lock:
+            if user:
+                # Clear history for specific user
+                if user in cls._user_conversations:
+                    old_length = len(cls._user_conversations[user]['history'])
+                    cls._user_conversations[user]['history'] = []
+                    cls._user_conversations[user]['start_time'] = time.time()
+                    logging.info(
+                        f'Manually cleared conversation history for user {user}. Removed {old_length} messages.')
+                    return {"status": f"cleared {old_length} messages from history for user {user}"}
+                else:
+                    return {"status": f"no history to clear for user {user}"}
+            else:
+                # Clear history for all users
+                total_messages = 0
+                total_users = len(cls._user_conversations)
+                for user_data in cls._user_conversations.values():
+                    total_messages += len(user_data['history'])
+                    user_data['history'] = []
+                    user_data['start_time'] = time.time()
+
+                logging.info(
+                    f'Manually cleared conversation history for all {total_users} users. Removed {total_messages} total messages.')
+                return {"status": f"cleared {total_messages} messages from {total_users} users"}
 
     @classmethod
-    def get_conversation_history(cls):
-        """Get current conversation history"""
-        if not hasattr(cls, '_conversation_history'):
-            return []
+    def get_conversation_history(cls, user=None):
+        """Get current conversation history for specific user or all users"""
+        with cls._cleanup_lock:
+            if user:
+                # Get history for specific user
+                if user in cls._user_conversations:
+                    return cls._user_conversations[user]['history']
+                else:
+                    return []
+            else:
+                # Return all users' history
+                return {user_id: data['history'] for user_id, data in cls._user_conversations.items()}
 
-        return cls._conversation_history
+    @classmethod
+    def get_active_users(cls):
+        """Get list of active users with conversation history"""
+        with cls._cleanup_lock:
+            return list(cls._user_conversations.keys())

@@ -13,13 +13,13 @@ class GptAnswer(IAnswer.IAnswer):
     __gpt = Gpt.Gpt()
 
     @classmethod
-    def answer(cls, text, is_command_check):
+    def answer(cls, text, user, is_command_check):
         # generating answers by gpt
         # configure logging to write logs to a file
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # generate an answer using the gpt model
-            generated_text = cls.__gpt.generate(text, is_command_check)
+            generated_text = cls.__gpt.generate(text, user, is_command_check)
             # log successful completion of the answer generation
             logging.info('The gptanswer.answer process has completed successfully')
             return generated_text

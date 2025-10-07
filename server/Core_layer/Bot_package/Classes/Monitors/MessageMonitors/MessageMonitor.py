@@ -14,19 +14,19 @@ class MessageMonitor(IMonitor.IMonitor):
     _gpta = GptAnswer.GptAnswer()
 
     @classmethod
-    def __decision(cls, text_message, emotion, commands):
+    def __decision(cls, text_message, user, emotion, commands):
         # call gpt to get an answer and check commands
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             outlist = []
             # check if the message contains a command
-            if (cls.check(text_message)):
+            if (cls.check(text_message, user)):
                 # analyze the command and add the result to the output list
                 outlist.append(commands.analyse(text_message))
                 return outlist
             # get a response from gpt
-            res = cls._gpta.answer(text_message, False)
+            res = cls._gpta.answer(text_message, user, False)
             outlist.append(res)
             # append the emotion to the output list
             outlist.append('' + emotion)
@@ -38,7 +38,7 @@ class MessageMonitor(IMonitor.IMonitor):
             logging.exception('The exception occurred in messagemonitor.__decision: ' + str(e))
 
     @classmethod
-    def _neurodesc(cls, text, text_message, command):
+    def _neurodesc(cls, text, user, text_message, command):
         # calling the decision with emotion
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
@@ -48,7 +48,7 @@ class MessageMonitor(IMonitor.IMonitor):
             # log successful execution of the method
             logging.info('The messagemonitor._neurodesc process has completed successfully')
             # call the __decision method with the provided parameters
-            return cls.__decision(text_message,
+            return cls.__decision(text_message, user,
                                 emotion,
                                 command)
         except Exception as e:
@@ -56,7 +56,7 @@ class MessageMonitor(IMonitor.IMonitor):
             logging.exception('The exception occurred in messagemonitor._neurodesc: ' + str(e))
 
     @classmethod
-    def check(cls, text_message):
+    def check(cls, text_message, user):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             input = (
@@ -69,7 +69,7 @@ class MessageMonitor(IMonitor.IMonitor):
                     "Верни True, если это команда, или False, если нет.\n"
                     "Формат ответа: только True или False, без дополнительного текста."
             )
-            res = cls._gpta.answer(input, True)
+            res = cls._gpta.answer(input, user, True)
 
             if res.count("True") > 0:
                 logging.info('The messagemonitor.check process has completed successfully')
@@ -81,7 +81,7 @@ class MessageMonitor(IMonitor.IMonitor):
             logging.exception('The exception occurred in messagemonitor.check: ' + str(e))
 
     @classmethod
-    def monitor(cls, message, command, pltype):
+    def monitor(cls, message, user, command, pltype):
         # main monitor for calculating messages
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
@@ -136,7 +136,7 @@ class MessageMonitor(IMonitor.IMonitor):
                     # add processed text to the list
                     text.append(lowertext)
                     # process the text using a neural network function
-                    outlist = cls._neurodesc(text, lowertext, command)
+                    outlist = cls._neurodesc(text, user, lowertext, command)
                     # if the function returns a result, format it into a string
                     if (outlist != None):
                         for outmes in outlist:

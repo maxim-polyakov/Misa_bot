@@ -46,7 +46,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }, ensure_ascii=False))
 
     async def process_message(self, message):
-        message_monitor = MessageMonitorServer.MessageMonitorServer(message=message)
+        message = message.split('|message|')
+        message_monitor = MessageMonitorServer.MessageMonitorServer(user=message[0],message=message[1])
         response = message_monitor.monitor()
 
         if not response:

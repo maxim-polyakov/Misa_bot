@@ -37,7 +37,7 @@ async def on_message(message):
             await message.channel.send(outstr)
     if message.author != discord_bot.bot.user:
         isCommand = False
-        mmon = MessageMonitorDiscord.MessageMonitorDiscord(discord_bot.bot, message)
+        mmon = MessageMonitorDiscord.MessageMonitorDiscord(discord_bot.bot, message.author.display_name, message)
         pmon = PictureMonitorDiscord.PictureMonitorDiscord(message)
 
         if (mmon.check(message.content)):

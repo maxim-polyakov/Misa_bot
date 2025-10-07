@@ -28,7 +28,7 @@ async def get_user_text(message):
             await telegram_bot.boto.send_document(message.chat.id, open('txtfiles/message.txt', 'r+', encoding='utf-8'))
         else:
             await telegram_bot.boto.send_message(message.chat.id, output)
-    mon = MessageMonitorTelegram.MessageMonitorTelegram(telegram_bot.boto, message)
+    mon = MessageMonitorTelegram.MessageMonitorTelegram(telegram_bot.boto, message.from_user.username, message)
     output = mon.monitor()
     if(output != '' or output != '\n'):
         try:

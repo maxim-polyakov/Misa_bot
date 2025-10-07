@@ -8,11 +8,12 @@ class MessageMonitorVoice(MessageMonitor.MessageMonitor):
     This class describes object for monitoring messages from chats
 
     """
-    def __init__(self, boto, message):
+    def __init__(self, boto, message, user):
         MessageMonitorVoice.__command = CommandAnalyzer.CommandAnalyzer(boto,
             message, 'audio')
         MessageMonitorVoice.__message = message
+        MessageMonitorVoice.__user = user
 
     @classmethod
     def monitor(cls):
-        return super().monitor(cls.__message, cls.__command,'voice')
+        return super().monitor(cls.__message, cls.__user, cls.__command,'voice')
