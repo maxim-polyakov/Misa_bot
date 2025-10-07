@@ -12,7 +12,7 @@ class MessageMonitorDiscord(MessageMonitor.MessageMonitor):
         MessageMonitorDiscord.__command = CommandAnalyzer.CommandAnalyzer(boto,
             message, 'discord')
         MessageMonitorDiscord.__message = message
-        MessageMonitorDiscord.__user = message
+        MessageMonitorDiscord.__user = user
 
     @classmethod
     def monitor(cls):

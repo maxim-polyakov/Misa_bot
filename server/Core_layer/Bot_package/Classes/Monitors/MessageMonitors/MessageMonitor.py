@@ -115,7 +115,7 @@ class MessageMonitor(IMonitor.IMonitor):
                 # add processed text to the list
                 text.append(lowertext)
                 # process the text using a neural network function
-                outlist = cls._neurodesc(text, lowertext, command)
+                outlist = cls._neurodesc(text, lowertext, user, command)
                 # if the function returns a result, format it into a string
                 if (outlist != None):
                     for outmes in outlist:

@@ -40,7 +40,7 @@ async def on_message(message):
         mmon = MessageMonitorDiscord.MessageMonitorDiscord(discord_bot.bot, message.author.display_name, message)
         pmon = PictureMonitorDiscord.PictureMonitorDiscord(message)
 
-        if (mmon.check(message.content)):
+        if (mmon.check(message.content, message.author.display_name)):
             isCommand = True
 
         photo = pmon.monitor()
