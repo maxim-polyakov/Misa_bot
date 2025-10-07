@@ -91,10 +91,7 @@ export const check = async () => {
             return null;
         }
 
-        console.log("Токен перед запросом check:", token); // для отладки
-
         const { data } = await $authhost.get("auth/check/");
-        console.log("Ответ от сервера check:", data); // для отладки
 
         // В зависимости от структуры ответа вашего сервера:
 
