@@ -87,26 +87,33 @@ export const check = async () => {
         // Проверяем наличие токена в localStorage перед запросом
         const token = localStorage.getItem("token");
         if (!token) {
+            console.log("Токен не найден в localStorage");
             return null;
         }
-        const { data } = await $authhost.get("auth/check/");
 
-        // Исправляем путь к данным - теперь токен в data.token
-        if (data.data && data.data.token) {
+        console.log("Токен перед запросом check:", token); // для отладки
+
+        const { data } = await $authhost.get("auth/check/");
+        console.log("Ответ от сервера check:", data); // для отладки
+
+        // В зависимости от структуры ответа вашего сервера:
+
+        // Вариант 1: если сервер возвращает обновленный токен
+        if (data.data.token) {
             const newToken = data.data.token;
             localStorage.setItem("token", newToken);
-
-            // Декодируем и возвращаем новый токен
-            return jwtDecode(newToken);
-        } else {
-            console.log("Токен не найден в ответе сервера");
-            return null;
+            const decoded = jwtDecode(newToken);
+            console.log("Новый токен установлен:", decoded);
+            return decoded;
         }
 
     } catch (error) {
-        console.log("Ошибка проверки авторизации:", error.message);
+        console.log("Ошибка проверки авторизации:", error.response?.data || error.message);
         if (error.response?.status === 401) {
+            console.log("Удаляем невалидный токен");
             localStorage.removeItem("token");
+            localStorage.removeItem("currentUser");
+            localStorage.removeItem("currentUserId");
         }
         return null;
     }

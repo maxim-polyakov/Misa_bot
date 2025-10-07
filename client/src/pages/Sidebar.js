@@ -13,12 +13,13 @@ const Sidebar = observer(() => {
     const navigate = useNavigate();
 
     const logOut = () => {
+        chatStore.clearUserFromStorage();
+        chatStore.logout();
+
         user?.setUser({});
         user?.setIsAuth(false);
-        chatStore.logout();
-        localStorage.removeItem("token");
-        localStorage.removeItem("currentUser");
-        localStorage.removeItem("currentUserId");
+
+
         navigate("/login", { replace: true });
     };
 

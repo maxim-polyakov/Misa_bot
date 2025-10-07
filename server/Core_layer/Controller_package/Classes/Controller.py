@@ -246,20 +246,24 @@ class Controller(IController.IController):
             # Хеширование пароля
             hashed_password = make_password(password)
 
-            # Получаем следующий ID для пользователя
+            # Получаем следующий ID для пользователя - ИСПРАВЛЕННАЯ ЧАСТЬ
             max_id_query = "SELECT COALESCE(MAX(id), 0) as max_id FROM auth.users"
             max_id_df = cls.__dbc.get_data(max_id_query)
 
             # Безопасное преобразование max_id
             if max_id_df is not None and not max_id_df.empty:
                 max_id = max_id_df.iloc[0]['max_id']
-                next_id = int(max_id.item()) if hasattr(max_id, 'item') else int(max_id) + 1
+                # Исправляем преобразование для случая, когда таблица пуста
+                if max_id is None or pd.isna(max_id):
+                    next_id = 1
+                else:
+                    next_id = int(max_id) + 1
             else:
                 next_id = 1
 
             # Создание пользователя через DB_Communication
             user_data = {
-                'id': next_id,
+                'id': next_id,  # Явно указываем ID
                 'email': email,
                 'password': hashed_password,
             }
@@ -280,12 +284,11 @@ class Controller(IController.IController):
             user_data_from_db = user_confirm_df.iloc[0]
 
             # Преобразуем pandas типы в нативные Python типы
-            user_id = int(user_data_from_db['id'].item()) if hasattr(user_data_from_db['id'], 'item') else int(
-                user_data_from_db['id'])
+            user_id = int(user_data_from_db['id'])
             user_email = str(user_data_from_db['email'])
 
-            # Генерация JWT токена - используем преобразованные значения!
-            token = cls.generate_jwt_token(user_id, user_email)  # ← ИСПРАВЛЕНО ЗДЕСЬ
+            # Генерация JWT токена
+            token = cls.generate_jwt_token(user_id, user_email)
 
             user_response_data = {
                 'id': user_id,

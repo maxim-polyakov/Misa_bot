@@ -65,6 +65,7 @@ class ChatStore {
     clearUserFromStorage() {
         localStorage.removeItem('currentUser');
         localStorage.removeItem('token');
+        localStorage.removeItem('currentUserId');
         console.log("Данные пользователя очищены");
     };
 
