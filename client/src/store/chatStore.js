@@ -339,10 +339,10 @@ class ChatStore {
 
         this.isLoading = true;
         this.error = null;
-
+        console.log(this.user);
         const userMessage = {
             id: Date.now().toString(),
-            content: content,
+            content: this.user + '|message|' +content,
             user: "Вы",
             timestamp: new Date(),
             userId: this.getCurrentUserId() // Привязываем к пользователю

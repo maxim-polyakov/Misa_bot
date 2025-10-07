@@ -45,6 +45,17 @@ const Chat = observer(({ onMenuToggle }) => {
         }
     };
 
+    const parseMessageContent = (content) => {
+        // Парсим формат user|message|content
+        const parts = content.split('|');
+        if (parts.length >= 3) {
+            return {
+                user: parts[0],
+                content: parts[1]
+            };
+        }
+    };
+
     const handleKeyPress = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -74,27 +85,35 @@ const Chat = observer(({ onMenuToggle }) => {
         }
     };
     const renderMessage = (msg) => {
+        // Парсим содержимое сообщения
+        const parsed = parseMessageContent(msg.content);
+
+        // Используем распарсенные данные
+        const messageUser = parsed.user;
+        const messageContent = parsed.content;
+        console.log(messageUser);
+
         // Проверяем, было ли сообщение изначально изображением
         const wasImage = msg.isImage ||
-            /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(msg.content);
+            /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(messageContent);
 
         // Если это относительный путь к изображению, преобразуем в абсолютный URL
-        const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(msg.content);
+        const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(messageContent);
         const imageUrl = isRelativeImagePath
-            ? `${process.env.REACT_APP_API_URL}${msg.content}`
-            : msg.content;
+            ? `${process.env.REACT_APP_API_URL}${messageContent}`
+            : messageContent;
 
         return (
-            <div key={msg.id} className={`message ${msg.user === "Misa" ? "misa-message" : "user-message"}`}>
+            <div key={msg.id} className={`message ${messageUser === "Misa" ? "misa-message" : "user-message"}`}>
                 <div className="message-avatar">
-                    {msg.user === "Misa" ? "M" : "👤"}
+                    {messageUser === "Misa" ? "M" : "👤"}
                 </div>
                 <div className="message-content">
-                    <div className="message-sender">{msg.user}</div>
+                    <div className="message-sender">{messageUser}</div>
                     {wasImage ? (
                         <img
                             src={imageUrl}
-                            alt="Изображение от Misa"
+                            alt={`Изображение от ${messageUser}`}
                             className="message-image"
                             onError={(e) => {
                                 // Если изображение не загружается, показываем текст
@@ -102,13 +121,13 @@ const Chat = observer(({ onMenuToggle }) => {
                                 const textElement = document.createElement('div');
                                 textElement.className = 'message-text';
                                 textElement.style.whiteSpace = 'pre-line';
-                                textElement.textContent = msg.content;
+                                textElement.textContent = messageContent;
                                 e.currentTarget.parentNode.appendChild(textElement);
                             }}
                         />
                     ) : (
                         <div className="message-text" style={{ whiteSpace: 'pre-line' }}>
-                            {msg.content}
+                            {messageContent}
                         </div>
                     )}
                     <div className="message-time">
@@ -118,6 +137,7 @@ const Chat = observer(({ onMenuToggle }) => {
             </div>
         );
     };
+
 
     return (
         <div className="chat-container">
