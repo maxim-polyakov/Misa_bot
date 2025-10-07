@@ -14,14 +14,15 @@ class ChatStore {
     isAuth = false;
 
     constructor(rootStore) {
+
+        this.rootStore = rootStore;
         makeAutoObservable(this);
-        this.rootStore = rootStore; // Сохраняем ссылку на rootStore
         this.loadUserFromStorage();
         this.loadMessages();
     }
 
     // Получение ID текущего пользователя
-    getCurrentUserId = () => {
+    getCurrentUserId() {
         // Пробуем получить из rootStore.user, если есть
         if (this.rootStore?.user?.getCurrentUserId) {
             return this.rootStore.user.getCurrentUserId();
@@ -31,14 +32,14 @@ class ChatStore {
     };
 
     // Загрузка пользователя из localStorage
-    loadUserFromStorage = () => {
+    loadUserFromStorage() {
         try {
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
-                const userData = JSON.parse(savedUser);
+                const userData = savedUser;
                 this.user = userData;
                 this.isAuth = true;
-                console.log("Пользователь загружен из localStorage");
+                console.log("Пользователь загружен из localStorage", this.user);
             }
         } catch (error) {
             console.error("Ошибка загрузки пользователя:", error);
@@ -47,7 +48,7 @@ class ChatStore {
     };
 
     // Сохранение пользователя в localStorage
-    saveUserToStorage = () => {
+    saveUserToStorage() {
         if (this.user && this.isAuth) {
             try {
                 localStorage.setItem('currentUser', JSON.stringify(this.user));
@@ -59,7 +60,7 @@ class ChatStore {
     };
 
     // Очистка данных пользователя
-    clearUserFromStorage = () => {
+    clearUserFromStorage() {
         localStorage.removeItem('currentUser');
         localStorage.removeItem('token');
         console.log("Данные пользователя очищены");
@@ -89,7 +90,7 @@ class ChatStore {
     };
 
     // Загрузка сообщений из localStorage для текущего пользователя
-    loadMessages = () => {
+    loadMessages(){
         try {
             const userId = this.getCurrentUserId();
 
@@ -122,7 +123,7 @@ class ChatStore {
     };
 
     // Сохранение сообщений в localStorage для текущего пользователя
-    saveMessages = () => {
+    saveMessages() {
         const userId = this.getCurrentUserId();
         if (userId && this.messages.length > 0) {
             try {
@@ -135,7 +136,7 @@ class ChatStore {
     };
 
     // Очистка истории сообщений для текущего пользователя
-    clearMessages = () => {
+    clearMessages() {
         const userId = this.getCurrentUserId();
         if (userId) {
             localStorage.removeItem(`chatMessages_${userId}`);
@@ -144,28 +145,8 @@ class ChatStore {
         console.log("Сообщения очищены");
     };
 
-    // Очистка ВСЕХ сообщений (для админских целей)
-    clearAllMessages = () => {
-        // Очищаем все возможные ключи сообщений
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('chatMessages_')) {
-                keysToRemove.push(key);
-            }
-        }
-
-        keysToRemove.forEach(key => {
-            localStorage.removeItem(key);
-            console.log(`Удалены сообщения: ${key}`);
-        });
-
-        this.messages = [];
-        console.log("Все сообщения очищены");
-    };
-
     // Получение сообщений другого пользователя (для админских целей)
-    getUserMessages = (userId) => {
+    getUserMessages(userId) {
         try {
             const savedMessages = localStorage.getItem(`chatMessages_${userId}`);
             if (savedMessages) {
@@ -183,7 +164,7 @@ class ChatStore {
     };
 
     // Миграция сообщений со старого формата на новый (при смене системы хранения)
-    migrateMessagesToUser = (userId) => {
+    migrateMessagesToUser(userId) {
         try {
             // Проверяем есть ли сообщения в старом формате
             const oldMessages = localStorage.getItem('chatMessages');
@@ -205,7 +186,7 @@ class ChatStore {
     };
 
     // Проверка наличия сообщений у пользователя
-    hasUserMessages = (userId = null) => {
+    hasUserMessages(userId = null) {
         const targetUserId = userId || this.getCurrentUserId();
         if (!targetUserId) return false;
 
@@ -227,7 +208,7 @@ class ChatStore {
         };
     };
 
-    connect = () => {
+    connect() {
         if (this.isConnecting || this.isConnected) return;
 
         this.isConnecting = true;
@@ -300,7 +281,7 @@ class ChatStore {
         }
     };
 
-    handleIncomingMessage = (data) => {
+    handleIncomingMessage(data) {
         if (data.type === 'chat_message') {
             const botMessage = {
                 id: Date.now().toString(),
@@ -327,7 +308,7 @@ class ChatStore {
     };
 
     // Отправка сообщения с привязкой к пользователю
-    sendMessage = async (content) => {
+    async sendMessage (content) {
         if (!this.isConnected || !this.socket) {
             this.error = "Нет соединения с сервером";
             return false;
@@ -362,7 +343,7 @@ class ChatStore {
         }
     };
 
-    disconnect = () => {
+    disconnect() {
         if (this.socket) {
             this.socket.close(1000, "Пользователь закрыл соединение");
             this.socket = null;
@@ -371,11 +352,11 @@ class ChatStore {
         this.isConnecting = false;
     };
 
-    clearError = () => {
+    clearError() {
         this.error = null;
     };
 
-    cleanup = () => {
+    cleanup() {
         this.disconnect();
     };
 }

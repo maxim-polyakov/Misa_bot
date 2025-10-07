@@ -224,6 +224,8 @@ body {
 
 .misa-message {
     flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
 }
 
 .user-message {
