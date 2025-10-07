@@ -52,10 +52,12 @@ const Auth = observer(() => {
                 data = await login(email, password);
                 console.log(data);
                 localStorage.setItem('currentUser', data.email);
+                localStorage.setItem('currentUserId', data.id);
             } else {
                 data = await registration(email, password);
                 console.log(data);
                 localStorage.setItem('currentUser', data.email);
+                localStorage.setItem('currentUserId', data.id);
             }
 
             user.setUser(data);

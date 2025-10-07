@@ -23,6 +23,7 @@ const App = observer(() => {
                     user.setUser(userData);
                     user.setIsAuth(true);
                     localStorage.setItem('currentUser', userData.email);
+                    localStorage.setItem('currentUserId', userData.id);
                     chatStore.connect();
                 } else {
                     user.setIsAuth(false);

@@ -76,21 +76,11 @@ const Chat = observer(({ onMenuToggle }) => {
         }
     };
 
-    const parseMessageContent = (content) => {
-        // Парсим формат user|message|content
-        const parts = content.split('|message|');
-        return {
-            user: parts[0],
-            content: parts[1]
-        };
-    };
-
     const renderMessage = (msg) => {
         // Парсим содержимое сообщения
-        const parsed = parseMessageContent(msg.content);
         // Используем распарсенные данные
-        const messageUser = parsed.user;
-        const messageContent = parsed.content;
+        const messageUser = msg.user;
+        const messageContent = msg.content;
         console.log(messageContent);
 
         // Проверяем, было ли сообщение изначально изображением

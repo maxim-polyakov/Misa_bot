@@ -323,8 +323,8 @@ class ChatStore {
         console.log(this.user);
         const userMessage = {
             id: Date.now().toString(),
-            content: this.user + '|message|' +content,
-            user: "Вы",
+            content: content,
+            user: this.user,
             timestamp: new Date(),
             userId: this.getCurrentUserId() // Привязываем к пользователю
         };
@@ -333,7 +333,7 @@ class ChatStore {
         this.saveMessages();
 
         try {
-            this.socket.send(content);
+            this.socket.send(this.user + '|message|' +content);
             return true;
         } catch (error) {
             this.error = "Ошибка при отправке сообщения";
