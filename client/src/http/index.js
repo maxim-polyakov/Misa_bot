@@ -9,8 +9,11 @@ const $authhost = axios.create({
 });
 
 const authInterceptor = (config) => {
-    config.headers.authorization = `Bearer ${localStorage.getItem("token")}`;
-
+    const token = localStorage.getItem("token");
+    // Добавляем токен только если он есть
+    if (token) {
+        config.headers.authorization = `Bearer ${token}`;
+    }
     return config;
 };
 

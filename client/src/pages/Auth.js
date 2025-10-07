@@ -50,14 +50,12 @@ const Auth = observer(() => {
             let data;
             if (isLogin) {
                 data = await login(email, password);
-                console.log(data);
-                localStorage.setItem('currentUser', data.email);
-                localStorage.setItem('currentUserId', data.id);
+                chatStore.setUser(data.email, data.id);
+
             } else {
                 data = await registration(email, password);
-                console.log(data);
-                localStorage.setItem('currentUser', data.email);
-                localStorage.setItem('currentUserId', data.id);
+                chatStore.setUser(data.email);
+
             }
 
             user.setUser(data);

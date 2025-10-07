@@ -48,10 +48,12 @@ class ChatStore {
     };
 
     // Сохранение пользователя в localStorage
-    saveUserToStorage() {
+    saveUserToStorage(id) {
         if (this.user && this.isAuth) {
             try {
-                localStorage.setItem('currentUser', JSON.stringify(this.user));
+                console.log(this.user);
+                localStorage.setItem('currentUser', this.user);
+                localStorage.setItem('currentUserId', id);
                 console.log("Пользователь сохранен в localStorage");
             } catch (error) {
                 console.error("Ошибка сохранения пользователя:", error);
@@ -67,9 +69,9 @@ class ChatStore {
     };
 
     // Установка пользователя
-    setUser = (user) => {
+    setUser = (user, id) => {
         this.user = user;
-        this.saveUserToStorage();
+        this.saveUserToStorage(id);
     };
 
     // Установка статуса авторизации
@@ -320,7 +322,6 @@ class ChatStore {
 
         this.isLoading = true;
         this.error = null;
-        console.log(this.user);
         const userMessage = {
             id: Date.now().toString(),
             content: content,
@@ -333,6 +334,9 @@ class ChatStore {
         this.saveMessages();
 
         try {
+
+
+            console.log(this.user)
             this.socket.send(this.user + '|message|' +content);
             return true;
         } catch (error) {

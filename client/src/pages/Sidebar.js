@@ -17,6 +17,8 @@ const Sidebar = observer(() => {
         user?.setIsAuth(false);
         chatStore.logout();
         localStorage.removeItem("token");
+        localStorage.removeItem("currentUser");
+        localStorage.removeItem("currentUserId");
         navigate("/login", { replace: true });
     };
 

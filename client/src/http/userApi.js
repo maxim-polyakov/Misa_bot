@@ -31,12 +31,10 @@ export const registration = async (email, password) => {
 
 export const login = async (email, password) => {
     try {
-        console.log($host)
         const { data } = await $host.post("auth/login/", {
             email,
             password,
         });
-        console.log(data);
         const token = data.data.token.toString();
         localStorage.setItem("token", token);
         return jwtDecode(data.data.token);
