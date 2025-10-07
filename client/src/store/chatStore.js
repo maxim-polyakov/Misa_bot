@@ -10,43 +10,221 @@ class ChatStore {
     reconnectAttempts = 0;
     maxReconnectAttempts = 8;
     reconnectDelay = 1000;
+    user = null; // Добавляем поле для пользователя
+    isAuth = false;
 
-    constructor() {
+    constructor(rootStore) {
         makeAutoObservable(this);
+        this.rootStore = rootStore; // Сохраняем ссылку на rootStore
+        this.loadUserFromStorage();
         this.loadMessages();
     }
 
-    // Загрузка сообщений из localStorage
+    // Получение ID текущего пользователя
+    getCurrentUserId = () => {
+        // Пробуем получить из rootStore.user, если есть
+        if (this.rootStore?.user?.getCurrentUserId) {
+            return this.rootStore.user.getCurrentUserId();
+        }
+        // Или из локального состояния
+        return this.user?.id || localStorage.getItem('currentUserId');
+    };
+
+    // Загрузка пользователя из localStorage
+    loadUserFromStorage = () => {
+        try {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                const userData = JSON.parse(savedUser);
+                this.user = userData;
+                this.isAuth = true;
+                console.log("Пользователь загружен из localStorage");
+            }
+        } catch (error) {
+            console.error("Ошибка загрузки пользователя:", error);
+            this.clearUserFromStorage();
+        }
+    };
+
+    // Сохранение пользователя в localStorage
+    saveUserToStorage = () => {
+        if (this.user && this.isAuth) {
+            try {
+                localStorage.setItem('currentUser', JSON.stringify(this.user));
+                console.log("Пользователь сохранен в localStorage");
+            } catch (error) {
+                console.error("Ошибка сохранения пользователя:", error);
+            }
+        }
+    };
+
+    // Очистка данных пользователя
+    clearUserFromStorage = () => {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('token');
+        console.log("Данные пользователя очищены");
+    };
+
+    // Установка пользователя
+    setUser = (user) => {
+        this.user = user;
+        this.saveUserToStorage();
+    };
+
+    // Установка статуса авторизации
+    setIsAuth = (bool) => {
+        this.isAuth = bool;
+        if (!bool) {
+            this.logout();
+        }
+    };
+
+    // Выход из системы
+    logout = () => {
+        this.user = null;
+        this.isAuth = false;
+        this.clearUserFromStorage();
+        this.clearMessages();
+        this.disconnect();
+    };
+
+    // Загрузка сообщений из localStorage для текущего пользователя
     loadMessages = () => {
         try {
-            const savedMessages = localStorage.getItem('chatMessages');
+            const userId = this.getCurrentUserId();
+
+            if (!userId) {
+                console.log("Пользователь не авторизован, сообщения не загружены");
+                this.messages = [];
+                return;
+            }
+
+            const savedMessages = localStorage.getItem(`chatMessages_${userId}`);
             if (savedMessages) {
                 const parsedMessages = JSON.parse(savedMessages);
                 this.messages = parsedMessages.map(msg => ({
                     ...msg,
                     timestamp: new Date(msg.timestamp)
                 }));
-                console.log("Сообщения загружены из localStorage:", this.messages.length);
+                console.log(`Сообщения загружены для пользователя ${userId}:`, this.messages.length);
+            } else {
+                this.messages = [];
+                console.log("Нет сохраненных сообщений для пользователя");
             }
         } catch (error) {
             console.error("Ошибка при загрузке сообщений:", error);
-            localStorage.removeItem('chatMessages');
+            const userId = this.getCurrentUserId();
+            if (userId) {
+                localStorage.removeItem(`chatMessages_${userId}`);
+            }
+            this.messages = [];
         }
     };
 
-    // Сохранение сообщений в localStorage
+    // Сохранение сообщений в localStorage для текущего пользователя
     saveMessages = () => {
-        try {
-            localStorage.setItem('chatMessages', JSON.stringify(this.messages));
-        } catch (error) {
-            console.error("Ошибка при сохранении сообщений:", error);
+        const userId = this.getCurrentUserId();
+        if (userId && this.messages.length > 0) {
+            try {
+                localStorage.setItem(`chatMessages_${userId}`, JSON.stringify(this.messages));
+                console.log(`Сообщения сохранены для пользователя ${userId}`);
+            } catch (error) {
+                console.error("Ошибка при сохранении сообщений:", error);
+            }
         }
     };
 
-    // Очистка истории сообщений
+    // Очистка истории сообщений для текущего пользователя
     clearMessages = () => {
+        const userId = this.getCurrentUserId();
+        if (userId) {
+            localStorage.removeItem(`chatMessages_${userId}`);
+        }
         this.messages = [];
-        localStorage.removeItem('chatMessages');
+        console.log("Сообщения очищены");
+    };
+
+    // Очистка ВСЕХ сообщений (для админских целей)
+    clearAllMessages = () => {
+        // Очищаем все возможные ключи сообщений
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('chatMessages_')) {
+                keysToRemove.push(key);
+            }
+        }
+
+        keysToRemove.forEach(key => {
+            localStorage.removeItem(key);
+            console.log(`Удалены сообщения: ${key}`);
+        });
+
+        this.messages = [];
+        console.log("Все сообщения очищены");
+    };
+
+    // Получение сообщений другого пользователя (для админских целей)
+    getUserMessages = (userId) => {
+        try {
+            const savedMessages = localStorage.getItem(`chatMessages_${userId}`);
+            if (savedMessages) {
+                const parsedMessages = JSON.parse(savedMessages);
+                return parsedMessages.map(msg => ({
+                    ...msg,
+                    timestamp: new Date(msg.timestamp)
+                }));
+            }
+            return [];
+        } catch (error) {
+            console.error(`Ошибка при загрузке сообщений пользователя ${userId}:`, error);
+            return [];
+        }
+    };
+
+    // Миграция сообщений со старого формата на новый (при смене системы хранения)
+    migrateMessagesToUser = (userId) => {
+        try {
+            // Проверяем есть ли сообщения в старом формате
+            const oldMessages = localStorage.getItem('chatMessages');
+            if (oldMessages && userId) {
+                const parsedMessages = JSON.parse(oldMessages);
+
+                // Сохраняем под новым ключом
+                localStorage.setItem(`chatMessages_${userId}`, oldMessages);
+
+                // Удаляем старый формат
+                localStorage.removeItem('chatMessages');
+
+                console.log(`Сообщения мигрированы для пользователя ${userId}`);
+                this.loadMessages(); // Перезагружаем сообщения
+            }
+        } catch (error) {
+            console.error("Ошибка миграции сообщений:", error);
+        }
+    };
+
+    // Проверка наличия сообщений у пользователя
+    hasUserMessages = (userId = null) => {
+        const targetUserId = userId || this.getCurrentUserId();
+        if (!targetUserId) return false;
+
+        const savedMessages = localStorage.getItem(`chatMessages_${targetUserId}`);
+        return !!savedMessages;
+    };
+
+    // Получение статистики по сообщениям
+    getMessagesStats = () => {
+        const userId = this.getCurrentUserId();
+        if (!userId) return null;
+
+        return {
+            userId: userId,
+            totalMessages: this.messages.length,
+            userMessages: this.messages.filter(msg => msg.user === "Вы").length,
+            botMessages: this.messages.filter(msg => msg.user !== "Вы").length,
+            lastMessage: this.messages.length > 0 ? this.messages[this.messages.length - 1].timestamp : null
+        };
     };
 
     connect = () => {
@@ -129,6 +307,7 @@ class ChatStore {
                 content: data.message,
                 user: data.user || "Misa",
                 timestamp: new Date(),
+                userId: this.getCurrentUserId() // Добавляем привязку к пользователю
             };
 
             this.messages.push(botMessage);
@@ -147,7 +326,7 @@ class ChatStore {
         }
     };
 
-    // Новый метод для обработки отправки сообщения с поддержкой многострочного ввода
+    // Отправка сообщения с привязкой к пользователю
     sendMessage = async (content) => {
         if (!this.isConnected || !this.socket) {
             this.error = "Нет соединения с сервером";
@@ -163,16 +342,16 @@ class ChatStore {
 
         const userMessage = {
             id: Date.now().toString(),
-            content: content, // Сохраняем с переносами строк
+            content: content,
             user: "Вы",
             timestamp: new Date(),
+            userId: this.getCurrentUserId() // Привязываем к пользователю
         };
 
         this.messages.push(userMessage);
         this.saveMessages();
 
         try {
-            // Отправляем сообщение как есть (с переносами строк)
             this.socket.send(content);
             return true;
         } catch (error) {
@@ -181,16 +360,6 @@ class ChatStore {
             console.error("Ошибка отправки сообщения:", error);
             return false;
         }
-    };
-
-    // Новый метод для форматирования текста с сохранением переносов строк
-    formatMessageText = (text) => {
-        if (!text) return '';
-
-        // Сохраняем переносы строк и добавляем обертку для каждого абзаца
-        return text.split('\n').map((line, index) => (
-            line.trim() ? line : '<br/>'
-        )).join('\n');
     };
 
     disconnect = () => {

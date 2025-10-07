@@ -15,8 +15,7 @@ const Sidebar = observer(() => {
     const logOut = () => {
         user?.setUser({});
         user?.setIsAuth(false);
-        chatStore.disconnect();
-        console.log("disconnect");
+        chatStore.logout();
         localStorage.removeItem("token");
         navigate("/login", { replace: true });
     };
