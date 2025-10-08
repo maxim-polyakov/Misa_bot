@@ -1,7 +1,93 @@
 import { observer } from "mobx-react-lite";
 import { useState, useRef, useEffect } from "react";
 import { useStores } from "../store/rootStoreContext";
+import { imageDB } from './imageDB'; // Импортируйте ваш модуль
 import "./Styles.css";
+// Отдельный компонент для умного кэширования изображений
+const CachedImage = ({ src, cacheKey, messageContent, messageUser }) => {
+    const [imgSrc, setImgSrc] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const loadImage = async () => {
+            try {
+                // 1. Сначала проверяем кэш в IndexedDB
+                const cached = await imageDB.get(cacheKey);
+
+                if (cached) {
+                    setImgSrc(cached);
+                    setIsLoading(false);
+                    checkForUpdates();
+                } else {
+                    await fetchAndCacheImage();
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке из кэша:', error);
+                await fetchAndCacheImage();
+            }
+        };
+
+        const fetchAndCacheImage = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch(src + '?t=' + Date.now());
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const blob = await response.blob();
+
+                // Конвертируем в base64 для хранения
+                const base64data = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(blob);
+                });
+
+                // Сохраняем в IndexedDB
+                await imageDB.set(cacheKey, base64data);
+
+                setImgSrc(base64data);
+                setIsLoading(false);
+
+            } catch (error) {
+                console.error('Ошибка загрузки изображения:', error);
+                setIsLoading(false);
+            }
+        };
+
+        const checkForUpdates = async () => {
+            // Фоновая проверка обновлений
+            try {
+                const response = await fetch(src + '?check=' + Date.now());
+                // Можно добавить логику проверки ETag или Last-Modified
+            } catch (error) {
+                console.log('Не удалось проверить обновления изображения');
+            }
+        };
+
+        loadImage();
+    }, [src, cacheKey]);
+
+    if (isLoading) {
+        return <div className="image-loading">Загрузка изображения...</div>;
+    }
+
+    return (
+        <img
+            src={imgSrc}
+            alt={`Изображение от ${messageUser}`}
+            className="message-image"
+            onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const textElement = document.createElement('div');
+                textElement.className = 'message-text';
+                textElement.style.whiteSpace = 'pre-line';
+                textElement.textContent = messageContent;
+                e.currentTarget.parentNode.appendChild(textElement);
+            }}
+        />
+    );
+};
 
 const Chat = observer(({ onMenuToggle }) => {
     const { chatStore } = useStores();
@@ -76,21 +162,19 @@ const Chat = observer(({ onMenuToggle }) => {
     };
 
     const renderMessage = (msg) => {
-        // Парсим содержимое сообщения
-        // Используем распарсенные данные
         const messageUser = msg.user;
         const messageContent = msg.content;
-        console.log(messageContent);
 
-        // Проверяем, было ли сообщение изначально изображением
         const wasImage = msg.isImage ||
             /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(messageContent);
 
-        // Если это относительный путь к изображению, преобразуем в абсолютный URL
         const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(messageContent);
         const imageUrl = isRelativeImagePath
             ? `${process.env.REACT_APP_API_URL}${messageContent}`
             : messageContent;
+
+        // Генерируем ключ кэша на основе ID сообщения
+        const cacheKey = `img_${msg.id}`;
 
         return (
             <div key={msg.id} className={`message ${messageUser === "Misa" ? "misa-message" : "user-message"}`}>
@@ -100,19 +184,11 @@ const Chat = observer(({ onMenuToggle }) => {
                 <div className="message-content">
                     <div className="message-sender">{messageUser}</div>
                     {wasImage ? (
-                        <img
-                            src={imageUrl + '?v=' + Date.now()}
-                            alt={`Изображение от ${messageUser}`}
-                            className="message-image"
-                            onError={(e) => {
-                                // Если изображение не загружается, показываем текст
-                                e.currentTarget.style.display = 'none';
-                                const textElement = document.createElement('div');
-                                textElement.className = 'message-text';
-                                textElement.style.whiteSpace = 'pre-line';
-                                textElement.textContent = messageContent;
-                                e.currentTarget.parentNode.appendChild(textElement);
-                            }}
+                        <CachedImage
+                            src={imageUrl}
+                            cacheKey={cacheKey}
+                            messageContent={messageContent}
+                            messageUser={messageUser}
                         />
                     ) : (
                         <div className="message-text" style={{ whiteSpace: 'pre-line' }}>
