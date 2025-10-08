@@ -1,7 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { useState, useRef, useEffect } from "react";
 import { useStores } from "../store/rootStoreContext";
-import { getImage } from "../http/userApi"
 import "./Styles.css";
 
 const Chat = observer(({ onMenuToggle }) => {

@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Context } from "../index.js";
 import Navbar from "react-bootstrap/Navbar";
-import { Button, Nav } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router-dom";
 import "./Styles.css";
