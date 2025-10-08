@@ -148,68 +148,7 @@ class ChatStore {
         console.log("Сообщения очищены");
     };
 
-    // Получение сообщений другого пользователя (для админских целей)
-    getUserMessages(userId) {
-        try {
-            const savedMessages = localStorage.getItem(`chatMessages_${userId}`);
-            if (savedMessages) {
-                const parsedMessages = JSON.parse(savedMessages);
-                return parsedMessages.map(msg => ({
-                    ...msg,
-                    timestamp: new Date(msg.timestamp)
-                }));
-            }
-            return [];
-        } catch (error) {
-            console.error(`Ошибка при загрузке сообщений пользователя ${userId}:`, error);
-            return [];
-        }
-    };
 
-    // Миграция сообщений со старого формата на новый (при смене системы хранения)
-    migrateMessagesToUser(userId) {
-        try {
-            // Проверяем есть ли сообщения в старом формате
-            const oldMessages = localStorage.getItem('chatMessages');
-            if (oldMessages && userId) {
-                const parsedMessages = JSON.parse(oldMessages);
-
-                // Сохраняем под новым ключом
-                localStorage.setItem(`chatMessages_${userId}`, oldMessages);
-
-                // Удаляем старый формат
-                localStorage.removeItem('chatMessages');
-
-                console.log(`Сообщения мигрированы для пользователя ${userId}`);
-                this.loadMessages(); // Перезагружаем сообщения
-            }
-        } catch (error) {
-            console.error("Ошибка миграции сообщений:", error);
-        }
-    };
-
-    // Проверка наличия сообщений у пользователя
-    hasUserMessages(userId = null) {
-        const targetUserId = userId || this.getCurrentUserId();
-        if (!targetUserId) return false;
-
-        const savedMessages = localStorage.getItem(`chatMessages_${targetUserId}`);
-        return !!savedMessages;
-    };
-
-    // Получение статистики по сообщениям
-    getMessagesStats = () => {
-        const userId = this.getCurrentUserId();
-        if (!userId) return null;
-
-        return {
-            userId: userId,
-            totalMessages: this.messages.length,
-            userMessages: this.messages.filter(msg => msg.user === "Вы").length,
-            botMessages: this.messages.filter(msg => msg.user !== "Вы").length,
-            lastMessage: this.messages.length > 0 ? this.messages[this.messages.length - 1].timestamp : null
-        };
-    };
 
     connect() {
         if (this.isConnecting || this.isConnected) return;
@@ -255,10 +194,12 @@ class ChatStore {
                 if (this.reconnectAttempts < this.maxReconnectAttempts) {
                     if(event.code != 1000) {
                         setTimeout(() => {
-                            this.reconnectAttempts++;
-                            this.reconnectDelay = Math.min(this.reconnectDelay * 1.5, 30000);
-                            console.log(`Попытка переподключения #${this.reconnectAttempts} через ${this.reconnectDelay}ms`);
-                            this.connect();
+                            if(this.isAuth) {
+                                this.reconnectAttempts++;
+                                this.reconnectDelay = Math.min(this.reconnectDelay * 1.5, 30000);
+                                console.log(`Попытка переподключения #${this.reconnectAttempts} через ${this.reconnectDelay}ms`);
+                                this.connect();
+                            }
                         }, this.reconnectDelay);
                     }
                 }
