@@ -88,10 +88,11 @@ class ChatStore {
 
     // Выход из системы
     logout()  {
+        this.clearUserFromStorage();
+        this.clearMessages();
+        this.disconnect();
         this.user = null;
         this.isAuth = false;
-        this.clearUserFromStorage();
-        this.disconnect();
     };
 
     // Загрузка сообщений из localStorage для текущего пользователя
