@@ -72,7 +72,10 @@ class ChatStore {
     // Установка пользователя
     setUser(user, id) {
         this.user = user;
+        this.isAuth = true;
         this.saveUserToStorage(id);
+        // Загружаем сообщения для нового пользователя
+        this.loadMessages();
     };
 
     // Установка статуса авторизации
@@ -88,6 +91,7 @@ class ChatStore {
         this.user = null;
         this.isAuth = false;
         this.clearUserFromStorage();
+        this.clearMessages();
         this.disconnect();
     };
 
