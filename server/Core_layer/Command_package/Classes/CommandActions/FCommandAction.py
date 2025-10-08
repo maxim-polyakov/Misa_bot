@@ -80,8 +80,7 @@ class FCommandAction(IAction.IAction):
 #       нарисуй
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            message_text = (cls.message_text.strip(' ').replace('нарисуй ', ''))
-            dal = Drawer.Drawer(message_text)
+            dal = Drawer.Drawer(cls.message_text)
             filepath = dal.draw()
             return filepath
         except Exception as e:
