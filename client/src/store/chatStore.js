@@ -51,7 +51,6 @@ class ChatStore {
     saveUserToStorage(id) {
         if (this.user && this.isAuth) {
             try {
-                console.log(this.user);
                 localStorage.setItem('currentUser', this.user);
                 localStorage.setItem('currentUserId', id);
                 console.log("Пользователь сохранен в localStorage");
@@ -70,13 +69,13 @@ class ChatStore {
     };
 
     // Установка пользователя
-    setUser = (user, id) => {
+    setUser(user, id) {
         this.user = user;
         this.saveUserToStorage(id);
     };
 
     // Установка статуса авторизации
-    setIsAuth = (bool) => {
+    setIsAuth(bool) {
         this.isAuth = bool;
         if (!bool) {
             this.logout();
@@ -84,7 +83,7 @@ class ChatStore {
     };
 
     // Выход из системы
-    logout = () => {
+    logout()  {
         this.user = null;
         this.isAuth = false;
         this.clearUserFromStorage();

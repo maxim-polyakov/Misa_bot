@@ -26,11 +26,9 @@ const App = observer(() => {
                 } else {
                     user.setIsAuth(false);
                     user.setUser({});
-                    chatStore.clearUserFromStorage();
                 }
             } catch (error) {
                 console.log("Auth check error:", error.message);
-                chatStore.clearUserFromStorage();
                 user.setIsAuth(false);
                 user.setUser({});
             } finally {
