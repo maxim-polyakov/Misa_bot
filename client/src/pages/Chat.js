@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useStores } from "../store/rootStoreContext";
 import CachedImage from "./CachedImage";
 import "./Styles.css";
+import { imageDB } from "./ImageDB";
 
 
 
@@ -61,9 +62,10 @@ const Chat = observer(({ onMenuToggle }) => {
         setMessage(e.target.value);
     };
 
-    const handleClearHistory = () => {
+    const handleClearHistory = async () => {
         if (window.confirm("Очистить всю историю сообщений?")) {
             chatStore.clearMessages();
+            await imageDB.clearAll()
         }
     };
 

@@ -68,6 +68,18 @@ class ImageDB {
             request.onsuccess = () => resolve(request.result);
         });
     }
+    async clearAll() {
+        if (!this.initialized) await this.init();
+
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.clear();
+
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
 }
 
 // Создаем единственный экземпляр
