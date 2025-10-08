@@ -59,6 +59,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
     @classmethod
     def neurocheck(cls, message_text, user):
+        message_text = message_text.replace('\n', ' ')
         input = (
             "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
             f"Команда: {message_text}\n"
