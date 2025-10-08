@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import { imageDB } from "./imageDB";
+import { ImageDB } from "./ImageDB";
 
 const CachedImage = ({ src, cacheKey, messageContent, messageUser }) => {
     const [imgSrc, setImgSrc] = useState(null);
@@ -9,7 +9,7 @@ const CachedImage = ({ src, cacheKey, messageContent, messageUser }) => {
         const loadImage = async () => {
             try {
                 // 1. Сначала проверяем кэш в IndexedDB
-                const cached = await imageDB.get(cacheKey);
+                const cached = await ImageDB.get(cacheKey);
 
                 if (cached) {
                     setImgSrc(cached);
@@ -41,7 +41,7 @@ const CachedImage = ({ src, cacheKey, messageContent, messageUser }) => {
                 });
 
                 // Сохраняем в IndexedDB
-                await imageDB.set(cacheKey, base64data);
+                await ImageDB.set(cacheKey, base64data);
 
                 setImgSrc(base64data);
                 setIsLoading(false);
