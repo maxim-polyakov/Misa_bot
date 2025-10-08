@@ -89,7 +89,6 @@ class ChatStore {
     // Выход из системы
     logout()  {
         this.clearUserFromStorage();
-        this.clearMessages();
         this.disconnect();
         this.user = null;
         this.isAuth = false;
