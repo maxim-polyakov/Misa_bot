@@ -86,7 +86,11 @@ const Chat = observer(({ onMenuToggle }) => {
         const wasImage = msg.isImage ||
             /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(messageContent);
 
-        const imageUrl = `${process.env.REACT_APP_API_URL}/${messageContent}`;
+        // Если это относительный путь к изображению, преобразуем в абсолютный URL
+        const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(messageContent);
+        const imageUrl = isRelativeImagePath
+            ? `${process.env.REACT_APP_API_URL}${messageContent}`
+            : messageContent;
 
         return (
             <div key={msg.id} className={`message ${messageUser === "Misa" ? "misa-message" : "user-message"}`}>
