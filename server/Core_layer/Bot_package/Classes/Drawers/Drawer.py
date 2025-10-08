@@ -15,29 +15,30 @@ class Drawer(IDrawer.IDrawer):
     __dal = Dalle.Dalle()
     def __init__(self, text):
         Drawer.message_text = text
+
     @classmethod
     def draw(cls):
-        # drawing images by dalle
-        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # generate an image url using the __dal object
             image_url = cls.__dal.generate(cls.message_text)
-            # send a request to download the image
             p = requests.get(image_url)
-            # check if the 'images' directory exists, if not, create it
+
             if not os.path.exists('images'):
                 os.makedirs('images')
-            # define the file path to save the image
+
             filepath = 'images/misaimg.png'
-            # open the file in write-binary mode and save the image content
-            out = open(filepath, 'wb')
-            out.write(p.content)
-            out.close()
-            # log successful completion of the draw process
+
+            # Удаляем старый файл если существует
+            if os.path.exists(filepath):
+                os.remove(filepath)
+
+            # Создаём новый файл
+            with open(filepath, 'wb') as out:
+                out.write(p.content)
+
             logging.info('The drawer.draw process has completed successfully')
-            # return the file path of the saved image
             return filepath
+
         except Exception as e:
-            # log any exceptions that occur during the process
             logging.exception('The exception occurred in drawer.draw: ' + str(e))
+            return None
