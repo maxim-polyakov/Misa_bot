@@ -6,15 +6,17 @@ import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router-dom";
 import "./Styles.css";
 import { useStores } from "../store/rootStoreContext";
+import { imageDB } from "./ImageDB";
 
 const Sidebar = observer(() => {
     const { user } = useContext(Context);
     const { chatStore } = useStores();
     const navigate = useNavigate();
 
-    const logOut = () => {
+    const logOut = async () => {
         chatStore.clearUserFromStorage();
         chatStore.logout();
+        imageDB.clearAll();
 
         user?.setUser({});
         user?.setIsAuth(false);
