@@ -16,7 +16,6 @@ const Sidebar = observer(() => {
     const logOut = async () => {
         chatStore.clearUserFromStorage();
         chatStore.logout();
-        await imageDB.clearAll();
 
         user?.setUser({});
         user?.setIsAuth(false);

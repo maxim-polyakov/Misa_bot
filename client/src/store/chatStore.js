@@ -88,7 +88,6 @@ class ChatStore {
         this.user = null;
         this.isAuth = false;
         this.clearUserFromStorage();
-        this.clearMessages();
         this.disconnect();
     };
 
