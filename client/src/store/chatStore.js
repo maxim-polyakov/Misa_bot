@@ -28,7 +28,8 @@ class ChatStore {
             return this.rootStore.user.getCurrentUserId();
         }
         // Или из локального состояния
-        return this.user?.id || localStorage.getItem('currentUserId');
+        const id = localStorage.getItem('currentUserId');
+        return this.user?.user_id || id
     };
 
     // Загрузка пользователя из localStorage

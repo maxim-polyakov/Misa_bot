@@ -50,11 +50,14 @@ const Auth = observer(() => {
             let data;
             if (isLogin) {
                 data = await login(email, password);
-                chatStore.setUser(data.email, data.id);
+                chatStore.setIsAuth(true);
+                chatStore.setUser(data.email, data.user_id);
+
 
             } else {
                 data = await registration(email, password);
-                chatStore.setUser(data.email);
+                chatStore.setIsAuth(true);
+                chatStore.setUser(data.email, data.user_id);
 
             }
 
