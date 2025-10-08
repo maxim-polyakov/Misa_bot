@@ -57,6 +57,7 @@ class MessageMonitor(IMonitor.IMonitor):
     def check(cls, text_message, user):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            text_message = text_message.replace('\n', ' ')
             input = (
                     "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
                     "Сообщение: " + text_message + "\n"
