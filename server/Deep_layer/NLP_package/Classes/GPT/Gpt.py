@@ -74,7 +74,7 @@ class Gpt(IGpt.IGpt):
 
             # sending a request to the gpt model to generate a response with full context
             response = client.chat.completions.create(
-                model='chatgpt-4o-latest',
+                model='gpt-5',
                 messages=conversation_history if not is_command_check else [{"role": "user", "content": text}],
                 temperature=0,
                 top_p=1,
