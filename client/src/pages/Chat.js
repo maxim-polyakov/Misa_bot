@@ -101,7 +101,7 @@ const Chat = observer(({ onMenuToggle }) => {
                     <div className="message-sender">{messageUser}</div>
                     {wasImage ? (
                         <img
-                            src={imageUrl}
+                            src={imageUrl + '?v=' + Date.now()}
                             alt={`Изображение от ${messageUser}`}
                             className="message-image"
                             onError={(e) => {
