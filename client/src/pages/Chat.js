@@ -89,7 +89,7 @@ const Chat = observer(({ onMenuToggle }) => {
         // Если это относительный путь к изображению, преобразуем в абсолютный URL
         const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(messageContent);
         const imageUrl = isRelativeImagePath
-            ? `${process.env.REACT_APP_API_URL}${messageContent}`
+            ? `${process.env.REACT_APP_API_URL}/${messageContent}`
             : messageContent;
 
         return (
