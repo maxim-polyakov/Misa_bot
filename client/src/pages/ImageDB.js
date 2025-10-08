@@ -71,4 +71,4 @@ class ImageDB {
 }
 
 // Создаем единственный экземпляр
-export const ImageDB = new ImageDB();
+export const imageDB = new ImageDB();
