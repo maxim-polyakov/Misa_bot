@@ -83,7 +83,7 @@ class ChatStore {
         this.isAuth = bool;
         if (!bool) {
             this.logout();
-        }
+        }F
     };
 
     // Выход из системы
@@ -91,7 +91,6 @@ class ChatStore {
         this.user = null;
         this.isAuth = false;
         this.clearUserFromStorage();
-        this.clearMessages();
         this.disconnect();
     };
 
