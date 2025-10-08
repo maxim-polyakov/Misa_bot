@@ -89,11 +89,6 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
     def __action(cls, message_text, user):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # Проверяем, является ли сообщение кодом (CSS, JS, HTML и т.д.)
-            if cls.__is_code_message(message_text):
-                # Для кода возвращаем специальный маркер, пропускаем NLP обработку
-                return ''
-
             # Обычная обработка только для текстовых сообщений
             outlist = []
             # Берем только первые 10 слов для анализа (оптимизация)
@@ -110,22 +105,6 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
         except Exception as e:
             logging.exception('Exception in commandanalyzer.__action: ' + str(e))
-
-    @classmethod
-    def __is_code_message(cls, text):
-        """Быстрая проверка на код (CSS, JS, HTML, XML и т.д.)"""
-
-        code_indicators = [
-            '{', '}', ':', ';', '=', '<', '>', '/',
-            'function', 'var', 'const', 'let', 'class', 'import',
-            'margin', 'padding', 'font', 'color', 'background',
-            '<?php', '<html', '<div', '<script', '<style'
-        ]
-
-        # Быстрая проверка по первым 200 символам
-        preview = text[:200]
-        indicator_count = sum(1 for indicator in code_indicators if indicator in preview)
-        return indicator_count >= 2
 
     @classmethod
     def analyse(cls, message_text, user):
