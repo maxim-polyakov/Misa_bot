@@ -36,25 +36,39 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             aone = FCommandAction.FCommandAction(cls.__message, message_text)
             asixteen = SCommandAction.SCommandAction(cls.__message, message_text)
             ac = CommandAction.CommandAction(cls.__message, message_text)
-            # create a dictionary mapping command words to their corresponding method results
-            info_dict = {
-                '1': str(aone.first()),
-                '2': str(aone.second()),
-                '3': str(aone.third()),
-                '4': str(asixteen.seventh()),
-                '5': str(ac.first()),
-                '6': str(ac.third()),
-                '7': str(ac.fifth()),
-                '8': str(ac.seventh()),
-                '9': str(ac.tenth())
-                }
+
+            # use match case instead of dictionary
+            match chosen_item:
+                case '1':
+                    result = str(aone.first())
+                case '2':
+                    result = str(aone.second())
+                case '3':
+                    result = str(aone.third())
+                case '4':
+                    result = str(asixteen.seventh())
+                case '5':
+                    result = str(ac.first())
+                case '6':
+                    result = str(ac.third())
+                case '7':
+                    result = str(ac.fifth())
+                case '8':
+                    result = str(ac.seventh())
+                case '9':
+                    result = str(ac.tenth())
+                case _:
+                    # default case if no match found
+                    logging.info(f'Unknown command: {chosen_item}')
+                    return 'команды нет в списке'
+
             # log successful completion of the process
             logging.info('The commandanalyzer.__action_step process has completed successfully')
-            # return the corresponding value from the dictionary
-            return info_dict[chosen_item]
+            return result
+
         except Exception as e:
-            # log successful completion of the process
-            logging.info('The commandanalyzer.__action_step process has not completed successfully')
+            # log error
+            logging.error(f'The commandanalyzer.__action_step process has not completed successfully: {str(e)}')
             return 'команды нет в списке'
 
     @classmethod

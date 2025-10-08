@@ -84,14 +84,13 @@ class SCommandAction(IAction.IAction):
 #       атаковать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('атакуй') > 0  and cls.message_text.count('атакуйся') == 0:
-                Inputstr = cls.__pred.preprocess_text(cls.message_text)
-                Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
-                Inputarr = Inputstr.split(' ')
-                cls.command_flag = 1
-                Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
-                logging.info('The commandaction.twentyfirst is done')
-                return Inputstr + ' - пидор.'
+            Inputstr = cls.__pred.preprocess_text(cls.message_text)
+            Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
+            Inputarr = Inputstr.split(' ')
+            cls.command_flag = 1
+            Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
+            logging.info('The commandaction.twentyfirst is done')
+            return Inputstr + ' - пидор.'
         except Exception as e:
             logging.exception(str('The exception in aactionsixteen.seventh ' + str(e)))
 
@@ -101,14 +100,13 @@ class SCommandAction(IAction.IAction):
 #       атаковаться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('атакуйся') > 0:
-                Inputstr = cls.__pred.preprocess_text(cls.message_text)
-                Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
-                Inputarr = Inputstr.split(' ')
-                cls.command_flag = 1
-                Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
-                logging.info('The scommandaction.eighth is done')
-                return Inputstr + ' - пидор.'
+            Inputstr = cls.__pred.preprocess_text(cls.message_text)
+            Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
+            Inputarr = Inputstr.split(' ')
+            cls.command_flag = 1
+            Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
+            logging.info('The scommandaction.eighth is done')
+            return Inputstr + ' - пидор.'
         except Exception as e:
             logging.exception(str('The exception in scommandaction.eighth ' + str(e)))
 

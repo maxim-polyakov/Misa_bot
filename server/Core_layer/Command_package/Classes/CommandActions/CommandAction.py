@@ -61,41 +61,39 @@ class CommandAction(IAction.IAction):
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # check if the message contains "найди" but not "найдись"
-            if cls.message_text.count('найди') > 0 and cls.message_text.count('найдись') == 0:
-                # remove unnecessary spaces and "найди" from the message
-                message_text = (cls.message_text.strip(' ')
-                                .replace('найди ', ''))
-                # check if the message is related to mathematical operations
-                if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
-                    logging.info('The commandaction.find process has completed successfully')
-                    return ''
+            # remove unnecessary spaces and "найди" from the message
+            message_text = (cls.message_text.strip(' ')
+                            .replace('найди ', ''))
+            # check if the message is related to mathematical operations
+            if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
+                logging.info('The commandaction.find process has completed successfully')
+                return 'команды нет в списке'
+            else:
+                # check if the message is related to wikipedia search
+                if (message_text.count('в википедии') > 0):
+                    message_text = (message_text.strip(' ')
+                                    .replace('в википедии ', ''))
+                    try:
+                        # perform a wikipedia search
+                        apif = WikiFinder.WikiFinder(cls.__pr.preprocess_text(message_text))
+                        finded_list = apif.find()
+                        logging.info('The commandaction.find process has completed successfully')
+                        return str(finded_list)
+                    except Exception as e:
+                        # log any exceptions that occur during the wikipedia
+                        logging.exception('The exception occurred in commandaction.third: ' + str(e))
+                        return 'Не нашла'
                 else:
-                    # check if the message is related to wikipedia search
-                    if (message_text.count('в википедии') > 0):
-                        message_text = (message_text.strip(' ')
-                                        .replace('в википедии ', ''))
-                        try:
-                            # perform a wikipedia search
-                            apif = WikiFinder.WikiFinder(cls.__pr.preprocess_text(message_text))
-                            finded_list = apif.find()
-                            logging.info('The commandaction.find process has completed successfully')
-                            return str(finded_list)
-                        except Exception as e:
-                            # log any exceptions that occur during the wikipedia
-                            logging.exception('The exception occurred in commandaction.third: ' + str(e))
-                            return 'Не нашла'
-                    else:
-                        try:
-                            # perform a google search
-                            gpif = DuckduckgoFinder.DuckduckgoFinder(message_text)
-                            outstr = gpif.find()
-                            logging.info('The commandaction.third process has completed successfully')
-                            return outstr
-                        except Exception as e:
-                            # log any exceptions that occur during the google search
-                            logging.exception('The exception occurred in commandaction.third: ' + str(e))
-                            return 'Не нашла'
+                    try:
+                        # perform a google search
+                        gpif = DuckduckgoFinder.DuckduckgoFinder(message_text)
+                        outstr = gpif.find()
+                        logging.info('The commandaction.third process has completed successfully')
+                        return outstr
+                    except Exception as e:
+                        # log any exceptions that occur during the google search
+                        logging.exception('The exception occurred in commandaction.third: ' + str(e))
+                        return 'Не нашла'
         except Exception as e:
             # log any general exceptions that occur in the method
             logging.exception('The exception occurred in commandaction.third: ' + str(e))
@@ -107,14 +105,13 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "скажи" (which means "say" in russian)
-            if cls.message_text.lower().count('скажи') > 0 or cls.message_text.lower().count('говори'):
-                # remove "скажи " from the message text
-                message_text = (cls.message_text.replace('скажи ', '').replace(' скажи', '').replace('говори ', '')
-                                .replace(' говори', ''))
-                # log successful execution of the method
-                logging.info('The commandaction.fourth process has completed successfully')
-                # return the modified message text
-                return message_text
+            # remove "скажи " from the message text
+            message_text = (cls.message_text.replace('скажи ', '').replace(' скажи', '').replace('говори ', '')
+                            .replace(' говори', ''))
+            # log successful execution of the method
+            logging.info('The commandaction.fourth process has completed successfully')
+            # return the modified message text
+            return message_text
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception in commandaction.fourth ' + str(e))
@@ -126,18 +123,17 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "погода" (weather)
-            if cls.message_text.count('погода') > 0:
-                # remove all words starting with '#' from the message
+            # remove all words starting with '#' from the message
 
-                message = re.sub(r'#\w+\s*', '', cls.message_text).strip()
-                # get weather information for the specified location
-                w = Weather.Weather(message)
-                out = w.predict()
-                # log successful execution
-                logging.info('The commandaction.fifth process has completed successfully')
-                if (out == "п. р"):
-                    return "Город не найден"
-                return out
+            message = re.sub(r'#\w+\s*', '', cls.message_text).strip()
+            # get weather information for the specified location
+            w = Weather.Weather(message)
+            out = w.predict()
+            # log successful execution
+            logging.info('The commandaction.fifth process has completed successfully')
+            if (out == "п. р"):
+                return "Город не найден"
+            return out
         except Exception as e:
             # log any exceptions that occur
             logging.exception('The exception occurred in commandaction.fifth: ' + str(e))
@@ -158,15 +154,14 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "почисти" but not "почистись"
-            if cls.message_text.count('почисти') > 0 and cls.message_text.count('почистись') == 0:
-                # remove "почисти " from the message text
-                message_text = (cls.message_text.replace('почисти ', ''))
-                # create an instance of the common preprocessing class
-                pr = CommonPreprocessing.CommonPreprocessing()
-                # log successful execution
-                logging.info('The commandaction.seventh process has completed successfully')
-                # preprocess the cleaned message text and return the result
-                return pr.preprocess_text(message_text)
+            # remove "почисти " from the message text
+            message_text = (cls.message_text.replace('почисти ', ''))
+            # create an instance of the common preprocessing class
+            pr = CommonPreprocessing.CommonPreprocessing()
+            # log successful execution
+            logging.info('The commandaction.seventh process has completed successfully')
+            # preprocess the cleaned message text and return the result
+            return pr.preprocess_text(message_text)
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception(str('The exception in commandaction.seventh ' + str(e)))
@@ -194,16 +189,15 @@ class CommandAction(IAction.IAction):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # check if the message contains the word "очисти" but not "очисться"
-            if cls.message_text.count('очисти') > 0 and cls.message_text.count('очисться') == 0:
-                # remove "очисти " from the message text
-                message_text = (cls.message_text.replace('почисти ', '')
-                                .replace('очисти', ''))
-                # create an instance of the common preprocessing class
-                pr = CommonPreprocessing.CommonPreprocessing()
-                # log successful execution of the method
-                logging.info('The commandaction.seventh process has completed successfully')
-                # preprocess the cleaned message text and return the result
-                return pr.preprocess_text(message_text)
+            # remove "очисти " from the message text
+            message_text = (cls.message_text.replace('почисти ', '')
+                            .replace('очисти', ''))
+            # create an instance of the common preprocessing class
+            pr = CommonPreprocessing.CommonPreprocessing()
+            # log successful execution of the method
+            logging.info('The commandaction.seventh process has completed successfully')
+            # preprocess the cleaned message text and return the result
+            return pr.preprocess_text(message_text)
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception(str('The exception occurred in commandaction.seventh: ' + str(e)))
