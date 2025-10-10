@@ -145,6 +145,9 @@ class CommandAction(IAction.IAction):
             )
             gpt_response = cls._gpta.answer(input, cls.user, True)
 
+            if (gpt_response =='город не найден'):
+                return "Город не найден"
+
             # get weather information for the specified location
             w = Weather.Weather(gpt_response)
             out = w.predict()
