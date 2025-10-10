@@ -5,6 +5,7 @@ from Core_layer.Bot_package.Classes.Finder import DuckduckgoFinder
 from Core_layer.Bot_package.Classes.Finder import WikiFinder
 from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
+from Core_layer.Answer_package.Classes import GptAnswer
 import re
 
 class CommandAction(IAction.IAction):
@@ -14,13 +15,16 @@ class CommandAction(IAction.IAction):
     boto = None
     message = None
     message_text = None
+    user = None
 
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
+    _gpta = GptAnswer.GptAnswer()
 
-    def __init__(self, message, message_text):
+    def __init__(self, message, message_text, user):
         CommandAction.message = message
         CommandAction.message_text = message_text
+        CommandAction.user = user
 
     @classmethod
     def first(cls):
@@ -122,12 +126,27 @@ class CommandAction(IAction.IAction):
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # check if the message contains the word "погода" (weather)
-            # remove all words starting with '#' from the message
+            input = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                "Анализируй текст и извлекай названия географических объектов (городов, населенных пунктов). \n\n"
+                f"Сообщение: {cls.message_text}\n"
+                "Правила:\n"
+                "1. Извлекай ТОЛЬКО названия городов/населенных пунктов\n"
+                "2. Возвращай название в исходной форме (именительный падеж, единственное число)\n"
+                "3. Если в тексте несколько городов - возвращай все через запятую\n"
+                "4. Если городов нет - возвращай город не найден\n"
+                "5. Игнорируй другие типы географических объектов (реки, страны, регионы)\n"
+                "6. Не добавляй пояснения, только результат\n"
+                "Примеры:\n"
+                "Сообщение: Мне нравится Париж и Берлин \n"
+                "Результат: Париж, Берлин \n"
+                "Сообщение: Здесь нет упоминаний населенных пунктов\n"
+                "Результат: город не найден\n"
+            )
+            gpt_response = cls._gpta.answer(input, cls.user, True)
 
-            message = re.sub(r'#\w+\s*', '', cls.message_text).strip()
             # get weather information for the specified location
-            w = Weather.Weather(message)
+            w = Weather.Weather(gpt_response)
             out = w.predict()
             # log successful execution
             logging.info('The commandaction.fifth process has completed successfully')

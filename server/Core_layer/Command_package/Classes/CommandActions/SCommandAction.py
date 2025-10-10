@@ -10,13 +10,15 @@ class SCommandAction(IAction.IAction):
     boto = None
     message = None
     message_text = None
+    user = None
 
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
 
-    def __init__(self, message, message_text):
+    def __init__(self, message, message_text, user):
         SCommandAction.message = message
         SCommandAction.message_text = message_text
+        SCommandAction.user = user
 
     @classmethod
     def first(cls):

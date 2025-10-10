@@ -27,15 +27,15 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         CommandAnalyzer.__mesentype = mesentype
 
     @classmethod
-    def __action_step(cls, chosen_item, message_text):
+    def __action_step(cls, chosen_item, message_text, user):
         # step of action
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # create instances of different command action classes
-            aone = FCommandAction.FCommandAction(cls.__message, message_text)
-            asixteen = SCommandAction.SCommandAction(cls.__message, message_text)
-            ac = CommandAction.CommandAction(cls.__message, message_text)
+            aone = FCommandAction.FCommandAction(cls.__message, message_text, user)
+            asixteen = SCommandAction.SCommandAction(cls.__message, message_text, user)
+            ac = CommandAction.CommandAction(cls.__message, message_text, user)
 
             # use match case instead of dictionary
             match chosen_item:
@@ -112,7 +112,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             array_of_message_text = check.split(',')
 
             for word in array_of_message_text:
-                processed_word = cls.__action_step(word, message_text)
+                processed_word = cls.__action_step(word, message_text, user)
                 outlist.append(processed_word)
 
             outlist = list(set(outlist))

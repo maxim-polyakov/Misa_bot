@@ -18,14 +18,17 @@ class FCommandAction(IAction.IAction):
     message_text = None
     __hashone = None
     __hashtwo = None
+    user = None
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
     __dbc = DB_Communication.DB_Communication()
     _gpta = GptAnswer.GptAnswer()
 
-    def __init__(self, message, message_text):
+
+    def __init__(self, message, message_text, user):
         FCommandAction.message = message
         FCommandAction.message_text = message_text
+        FCommandAction.user = user
 
     @classmethod
     def first(cls):
