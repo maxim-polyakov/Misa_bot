@@ -68,36 +68,32 @@ class CommandAction(IAction.IAction):
             # remove unnecessary spaces and "найди" from the message
             message_text = (cls.message_text.strip(' ')
                             .replace('найди ', ''))
-            # check if the message is related to mathematical operations
-            if (message_text.count('производную') > 0) or (message_text.count('интеграл') > 0):
-                logging.info('The commandaction.find process has completed successfully')
-                return 'команды нет в списке'
+
+            # check if the message is related to wikipedia search
+            if (message_text.count('в википедии') > 0):
+                message_text = (message_text.strip(' ')
+                                .replace('в википедии ', ''))
+                try:
+                    # perform a wikipedia search
+                    apif = WikiFinder.WikiFinder(cls.__pr.preprocess_text(message_text))
+                    finded_list = apif.find()
+                    logging.info('The commandaction.find process has completed successfully')
+                    return str(finded_list)
+                except Exception as e:
+                    # log any exceptions that occur during the wikipedia
+                    logging.exception('The exception occurred in commandaction.third: ' + str(e))
+                    return 'Не нашла'
             else:
-                # check if the message is related to wikipedia search
-                if (message_text.count('в википедии') > 0):
-                    message_text = (message_text.strip(' ')
-                                    .replace('в википедии ', ''))
-                    try:
-                        # perform a wikipedia search
-                        apif = WikiFinder.WikiFinder(cls.__pr.preprocess_text(message_text))
-                        finded_list = apif.find()
-                        logging.info('The commandaction.find process has completed successfully')
-                        return str(finded_list)
-                    except Exception as e:
-                        # log any exceptions that occur during the wikipedia
-                        logging.exception('The exception occurred in commandaction.third: ' + str(e))
-                        return 'Не нашла'
-                else:
-                    try:
-                        # perform a google search
-                        gpif = DuckduckgoFinder.DuckduckgoFinder(message_text)
-                        outstr = gpif.find()
-                        logging.info('The commandaction.third process has completed successfully')
-                        return outstr
-                    except Exception as e:
-                        # log any exceptions that occur during the google search
-                        logging.exception('The exception occurred in commandaction.third: ' + str(e))
-                        return 'Не нашла'
+                try:
+                    # perform a google search
+                    gpif = DuckduckgoFinder.DuckduckgoFinder(message_text)
+                    outstr = gpif.find()
+                    logging.info('The commandaction.third process has completed successfully')
+                    return outstr
+                except Exception as e:
+                    # log any exceptions that occur during the google search
+                    logging.exception('The exception occurred in commandaction.third: ' + str(e))
+                    return 'Не нашла'
         except Exception as e:
             # log any general exceptions that occur in the method
             logging.exception('The exception occurred in commandaction.third: ' + str(e))
