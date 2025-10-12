@@ -3,7 +3,7 @@ import json
 import logging
 from vosk import Model, KaldiRecognizer, SetLogLevel
 from Core_layer.Bot_package.Interfaces import IMonitor
-
+from openai import OpenAI
 
 class AudioMonitor(IMonitor.IMonitor):
     """
@@ -17,34 +17,34 @@ class AudioMonitor(IMonitor.IMonitor):
         # configure logging to store logs in "misa.log" file
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # open the audio file in read mode
-            wf = wave.open(file_path, "rb")
-            # initialize the speech recognition model
-            model = Model(model_name="vosk-model-ru-0.42")
-            # create a recognizer object with the model and sample rate of the audio file
-            rec = KaldiRecognizer(model, wf.getframerate())
-            # enable word-level and partial word recognition
-            rec.SetWords(True)
-            rec.SetPartialWords(True)
-            # process the audio file in chunks
-            while True:
-                data = wf.readframes(4000)
-                if len(data) == 0:
-                    # stop if there is no more data
-                    break
-                # process the audio data
-                if rec.AcceptWaveform(data):
-                    # finalized recognition result
-                    pass
-                else:
-                    # partial recognition result
-                    pass
-            # get the final recognition result and parse it as json
-            output = json.loads(rec.FinalResult())
-            out = output["text"]
-            # log that the monitoring process is complete
+            # retrieving api tokens from the database
+            fdf = cls.__dbc.get_data(
+                'select token from assistant_sets.tokens where botname = \'Misa\' and platformname = \'Gpt\'')
+            sdf = cls.__dbc.get_data(
+                'select token from assistant_sets.projects where botname = \'Misa\' and platformname = \'Gpt\'')
+            tdf = cls.__dbc.get_data(
+                'select token from assistant_sets.organizations where botname = \'Misa\' and platformname = \'Gpt\'')
+            # extracting api keys from the retrieved data
+            OPENAI_API_KEY = fdf['token'][0]
+            OPENAI_API_PROJECT = sdf['token'][0]
+            OPENAI_API_ORG = tdf['token'][0]
+            # initializing openai client with api credentials
+            client = OpenAI(
+                api_key=OPENAI_API_KEY,
+                organization=OPENAI_API_ORG,
+                project=OPENAI_API_PROJECT,
+            )
+
+            # Transcribing an audio file with Whisper
+            with open(file_path, "rb") as audio_file:
+                transcription = client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=audio_file,
+                    language="ru"
+                )
+            transcribed_text = transcription.text
             logging.info('The audiomonitor.monitor process has completed successfully')
-            return out
+            return transcribed_text
         except Exception as e:
             # log any exceptions that occur during processing
             logging.exception('The exception occurred in audiomonitor.monitor: ' + str(e))
