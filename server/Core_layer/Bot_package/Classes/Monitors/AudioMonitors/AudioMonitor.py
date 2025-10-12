@@ -1,7 +1,5 @@
-import wave
-import json
 import logging
-from vosk import Model, KaldiRecognizer, SetLogLevel
+from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Bot_package.Interfaces import IMonitor
 from openai import OpenAI
 
@@ -11,6 +9,8 @@ class AudioMonitor(IMonitor.IMonitor):
     This is a monitor for speach recognition
 
     """
+    __dbc = DB_Communication.DB_Communication()
+
     @classmethod
     def monitor(cls, file_path):
         # this class method processes an audio file and converts speech to text
