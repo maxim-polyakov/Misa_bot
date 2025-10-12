@@ -20,7 +20,13 @@ class SongsMonitor(IMonitor.IMonitor):
     youtube_watch_url = youtube_base_url + 'watch?v='
     ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
                       'options': '-vn -filter:a "volume=0.25"'}
-    yt_dl_options = {"format": "bestaudio/best"}
+    yt_dl_options = {
+        "format": "bestaudio",
+        "extractor_args": {"youtube": {"formats": "missing_pot"}},
+        "socket_timeout": 10,
+        "extract_flat": False,
+        "ignoreerrors": "only_download"
+    }
     ytdl = yt_dlp.YoutubeDL(yt_dl_options)
     message = None
     bot = None
