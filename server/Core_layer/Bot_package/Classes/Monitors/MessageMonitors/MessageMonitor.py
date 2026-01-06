@@ -12,6 +12,9 @@ class MessageMonitor(IMonitor.IMonitor):
     _pr = CommonPreprocessing.CommonPreprocessing()
     _dbc = DB_Communication.DB_Communication()
     _gpta = GptAnswer.GptAnswer()
+    __comands = None
+    __text_message = None
+    __user = None
 
     @classmethod
     def __decision(cls, text_message, user, emotion, commands):
@@ -20,6 +23,9 @@ class MessageMonitor(IMonitor.IMonitor):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             outlist = []
+            cls.__commands = commands
+            cls.text_message = text_message
+            cls.__user = user
             # check if the message contains a command
             if (cls.check(text_message, user)):
                 # analyze the command and add the result to the output list
@@ -53,6 +59,13 @@ class MessageMonitor(IMonitor.IMonitor):
             # log the exception if an error occurs
             logging.exception('The exception occurred in messagemonitor._neurodesc: ' + str(e))
 
+    @classmethod
+    def command_type(cls):
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            return cls.__commands.neurocheck(cls.__text_message, cls.__user)
+        except Exception as e:
+            logging.exception('The exception occurred in messagemonitor.command_type: ' + str(e))
     @classmethod
     def check(cls, text_message, user):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
