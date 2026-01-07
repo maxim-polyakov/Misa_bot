@@ -54,7 +54,7 @@ async def on_message(message):
             if outstr != '' or outstr != '\n':
                 if(isCommand):
                     try:
-                        if mmon.command_type() == 3:
+                        if mmon.command_type() == '3':
                             outarr = outstr.split('|command|\n')
                             outarr = [word for word in outarr if word != '']
                             for el in outarr:
