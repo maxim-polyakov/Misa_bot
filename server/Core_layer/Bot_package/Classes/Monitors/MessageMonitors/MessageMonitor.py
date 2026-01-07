@@ -12,7 +12,7 @@ class MessageMonitor(IMonitor.IMonitor):
     _pr = CommonPreprocessing.CommonPreprocessing()
     _dbc = DB_Communication.DB_Communication()
     _gpta = GptAnswer.GptAnswer()
-    __comands = None
+    __commands = None
     __text_message = None
     __user = None
 
@@ -24,7 +24,7 @@ class MessageMonitor(IMonitor.IMonitor):
         try:
             outlist = []
             cls.__commands = commands
-            cls.text_message = text_message
+            cls.__text_message = text_message
             cls.__user = user
             # check if the message contains a command
             if (cls.check(text_message, user)):
@@ -63,7 +63,8 @@ class MessageMonitor(IMonitor.IMonitor):
     def command_type(cls):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            return cls.__commands.neurocheck(cls.__text_message, cls.__user)
+            res = cls.__commands.neurocheck(cls.__text_message, cls.__user)
+            return res
         except Exception as e:
             logging.exception('The exception occurred in messagemonitor.command_type: ' + str(e))
     @classmethod
