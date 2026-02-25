@@ -32,7 +32,7 @@ async def get_user_text(message):
     output = mon.monitor()
     if(output != '' or output != '\n'):
         try:
-            if message.text.lower().count('нарисуй') > 0:
+            if mon.command_type() == '3':
                 outarr = output.split('|command|\n')
                 outarr = [word for word in outarr if word != '']
                 for el in outarr:
