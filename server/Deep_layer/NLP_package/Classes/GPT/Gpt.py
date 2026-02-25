@@ -76,7 +76,7 @@ class Gpt(IGpt.IGpt):
             response = client.chat.completions.create(
                 model='gpt-5',
                 messages=conversation_history if not is_command_check else [{"role": "user", "content": text}],
-                temperature=0,
+                temperature=1,
                 top_p=1,
                 frequency_penalty=0,
                 presence_penalty=0
