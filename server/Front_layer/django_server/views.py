@@ -18,6 +18,28 @@ def login_view(request):
     ctrlr = Controller.Controller()
     return ctrlr.login_view(request)
 
+
+# Google OAuth (redirect flow, по аналогии с e-commerce-java-two)
+@csrf_exempt
+@require_http_methods(["GET"])
+def oauth_google_redirect(request):
+    ctrlr = Controller.Controller()
+    return ctrlr.oauth_google_redirect(request)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def oauth_google_callback(request):
+    ctrlr = Controller.Controller()
+    return ctrlr.oauth_google_callback(request)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def oauth_token(request):
+    ctrlr = Controller.Controller()
+    return ctrlr.oauth_token(request)
+
 # Этот view будет вызываться через middleware
 @csrf_exempt
 @require_http_methods(["GET"])

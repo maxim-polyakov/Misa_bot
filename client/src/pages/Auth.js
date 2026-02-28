@@ -1,22 +1,60 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { Button, Card, Container, Form, Alert } from "react-bootstrap";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { CHAT_ROUTE, LOGIN_ROUTE, REGISTRATION_ROUTE } from "../utils/consts.js";
-import { login, registration } from "../http/userApi.js";
+import { login, registration, exchangeOAuthCode } from "../http/userApi.js";
 import { observer } from "mobx-react-lite";
 import { Context } from "../index.js";
 import { useStores } from "../store/rootStoreContext";
+
+const API_URL = process.env.REACT_APP_API_URL || "";
 
 const Auth = observer(() => {
     const { user } = useContext(Context);
     const { chatStore } = useStores();
     const location = useLocation();
-    const isLogin = location.pathname === LOGIN_ROUTE && true;
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const oauthHandled = useRef(false);
+    const isLogin = location.pathname === LOGIN_ROUTE && true;
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState(""); // Состояние для ошибок
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        const oauthError = searchParams.get("oauth_error");
+        if (oauthError) {
+            const messages = {
+                OAUTH_MISSING_DATA: "Не удалось получить данные от Google.",
+                OAUTH_AUTH_ERROR: "Ошибка входа через Google. Попробуйте позже.",
+            };
+            setError(messages[oauthError] || "Ошибка входа через Google.");
+            setSearchParams({}, { replace: true });
+            return;
+        }
+
+        const code = searchParams.get("code");
+        if (!code || searchParams.get("oauth") !== "google" || oauthHandled.current) return;
+
+        oauthHandled.current = true;
+        setError("");
+        exchangeOAuthCode(code)
+            .then((data) => {
+                chatStore.setIsAuth(true);
+                chatStore.setUser(data.email, data.user_id);
+                user.setUser(data);
+                user.setIsAuth(true);
+                chatStore.connect();
+                swapMethod();
+                navigate(CHAT_ROUTE);
+            })
+            .catch((err) => {
+                oauthHandled.current = false;
+                setError(err.message || "Ошибка входа через Google");
+                setSearchParams({}, { replace: true });
+            });
+    }, [searchParams, navigate, setSearchParams, user, chatStore]);
 
     const swapMethod = () => {
         setEmail("");
@@ -115,6 +153,17 @@ const Auth = observer(() => {
                         type="password"
                         required
                     />
+                    {API_URL && (
+                        <div className="mt-3 d-flex justify-content-center">
+                            <a
+                                href={`${API_URL}/auth/oauth/google/`}
+                                className="btn btn-outline-secondary btn-lg"
+                                style={{ textDecoration: "none" }}
+                            >
+                                Войти через Google
+                            </a>
+                        </div>
+                    )}
                     <div className="d-flex justify-content-between mt-3 pl-3 pr-3 align-items-center">
                         <div>
                             {isLogin ? (

@@ -82,6 +82,24 @@ export const login = async (email, password) => {
     }
 };
 
+/**
+ * Обмен OAuth code на JWT (по аналогии с e-commerce-java-two).
+ * Вызывается после редиректа с Google с ?oauth=google&code=xxx
+ */
+export const exchangeOAuthCode = async (code) => {
+    try {
+        const { data } = await $host.get(`auth/oauth-token/?code=${encodeURIComponent(code)}`);
+        localStorage.setItem("token", data.jwt);
+        return jwtDecode(data.jwt);
+    } catch (error) {
+        console.log("Google OAuth exchange error:", error);
+        let errorMessage = "Ошибка входа через Google. Попробуйте ещё раз.";
+        if (error.response?.data?.message) errorMessage = error.response.data.message;
+        else if (error.message) errorMessage = error.message;
+        throw new Error(errorMessage);
+    }
+};
+
 export const check = async () => {
     try {
         // Проверяем наличие токена в localStorage перед запросом

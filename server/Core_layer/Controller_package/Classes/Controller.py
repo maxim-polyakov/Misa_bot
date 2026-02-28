@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
@@ -11,6 +11,18 @@ import pandas as pd
 import jwt
 import logging
 import datetime
+import os
+
+try:
+    from google.oauth2 import id_token
+    from google.auth.transport import requests as google_requests
+    from google_auth_oauthlib.flow import Flow
+    GOOGLE_AUTH_AVAILABLE = True
+except ImportError:
+    GOOGLE_AUTH_AVAILABLE = False
+    Flow = None
+
+from Core_layer.Auth_package.Classes.OAuthCodeStore import put as oauth_code_put, get_and_remove as oauth_code_get
 
 
 
@@ -262,10 +274,12 @@ class Controller(IController.IController):
                 next_id = 1
 
             # Создание пользователя через DB_Communication
+            display_name = email.split('@')[0]  # По умолчанию - часть до @
             user_data = {
                 'id': next_id,  # Явно указываем ID
                 'email': email,
                 'password': hashed_password,
+                'display_name': display_name,
             }
 
             # Создаем DataFrame с данными пользователя
@@ -339,6 +353,10 @@ class Controller(IController.IController):
             if not is_active:
                 return cls.error_response("Account is disabled", 403)
 
+            # Пользователь с Google OAuth (password = NULL) не может войти по паролю
+            if hashed_password is None or (isinstance(hashed_password, float) and pd.isna(hashed_password)):
+                return cls.error_response("Используйте вход через Google", 401)
+
             # Проверяем пароль вручную
             if check_password(password, hashed_password):
                 # Генерация JWT токена
@@ -362,6 +380,151 @@ class Controller(IController.IController):
         except Exception as e:
             logging.error(f"Login error: {str(e)}")
             return cls.error_response(f"Login error: {str(e)}", 500)
+
+    @classmethod
+    def _get_or_create_google_user(cls, email, display_name):
+        """Создаёт или находит пользователя по email. Возвращает (user_id, user_email, display_name)."""
+        user_query = f"SELECT id, email, display_name FROM auth.users WHERE email = '{email}'"
+        user_df = cls.__dbc.get_data(user_query)
+
+        if user_df is not None and not user_df.empty:
+            user_data = user_df.iloc[0]
+            user_id = int(user_data['id'].item()) if hasattr(user_data['id'], 'item') else int(user_data['id'])
+            user_email = str(user_data['email'])
+            dn = str(user_data['display_name']) if 'display_name' in user_data and pd.notna(user_data.get('display_name')) else display_name
+            return user_id, user_email, dn
+
+        max_id_query = "SELECT COALESCE(MAX(id), 0) as max_id FROM auth.users"
+        max_id_df = cls.__dbc.get_data(max_id_query)
+        next_id = 1
+        if max_id_df is not None and not max_id_df.empty:
+            max_id = max_id_df.iloc[0]['max_id']
+            next_id = 1 if (max_id is None or pd.isna(max_id)) else int(max_id) + 1
+
+        user_data_insert = {
+            'id': next_id,
+            'email': email,
+            'password': None,
+            'display_name': display_name,
+        }
+        user_df_insert = pd.DataFrame([user_data_insert])
+        cls.__dbc.insert_to(user_df_insert, 'users', 'auth')
+        return next_id, email, display_name
+
+    @classmethod
+    def oauth_google_redirect(cls, request):
+        """
+        Редирект на Google OAuth (по аналогии с e-commerce-java-two).
+        Пользователь кликает ссылку -> попадает сюда -> редирект на Google.
+        """
+        if not GOOGLE_AUTH_AVAILABLE or Flow is None:
+            return cls.error_response("Google OAuth not configured", 500)
+
+        client_id = os.getenv('GOOGLE_CLIENT_ID')
+        client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+        api_base = os.getenv('API_BASE_URL', request.build_absolute_uri('/').rstrip('/'))
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+
+        if not client_id or not client_secret:
+            logging.error("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set")
+            return cls.error_response("Google OAuth not configured", 500)
+
+        callback_uri = f"{api_base}/auth/oauth/callback/"
+        client_config = {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "redirect_uris": [callback_uri],
+            }
+        }
+        scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
+
+        try:
+            flow = Flow.from_client_config(client_config, scopes=scopes, redirect_uri=callback_uri)
+            authorization_url, _ = flow.authorization_url(access_type='offline', include_granted_scopes='true')
+            return HttpResponseRedirect(authorization_url)
+        except Exception as e:
+            logging.error(f"OAuth redirect error: {str(e)}")
+            return cls.error_response("OAuth redirect failed", 500)
+
+    @classmethod
+    def oauth_google_callback(cls, request):
+        """
+        Callback от Google. Обменивает code на токены, создаёт/находит пользователя,
+        кладёт JWT в OAuthCodeStore, редиректит на frontend с ?oauth=google&code=xxx
+        """
+        if not GOOGLE_AUTH_AVAILABLE or Flow is None:
+            return HttpResponseRedirect(
+                f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/login?oauth_error=OAUTH_AUTH_ERROR"
+            )
+
+        code = request.GET.get('code')
+        if not code:
+            return HttpResponseRedirect(
+                f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/login?oauth_error=OAUTH_MISSING_DATA"
+            )
+
+        client_id = os.getenv('GOOGLE_CLIENT_ID')
+        client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+        api_base = os.getenv('API_BASE_URL', request.build_absolute_uri('/').rstrip('/'))
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
+
+        if not client_id or not client_secret:
+            return HttpResponseRedirect(f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR")
+
+        callback_uri = f"{api_base}/auth/oauth/callback/"
+        client_config = {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "redirect_uris": [callback_uri],
+            }
+        }
+        scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
+
+        try:
+            flow = Flow.from_client_config(client_config, scopes=scopes, redirect_uri=callback_uri)
+            flow.fetch_token(code=code)
+
+            credentials = flow.credentials
+            idinfo = id_token.verify_oauth2_token(
+                credentials.id_token,
+                google_requests.Request(),
+                client_id
+            )
+
+            email = idinfo.get('email', '').strip().lower()
+            display_name = idinfo.get('name') or idinfo.get('given_name') or email.split('@')[0] or 'User'
+
+            if not email:
+                return HttpResponseRedirect(f"{frontend_url}/login?oauth_error=OAUTH_MISSING_DATA")
+
+            user_id, user_email, display_name = cls._get_or_create_google_user(email, display_name)
+            jwt_token = cls.generate_jwt_token(user_id, user_email)
+
+            oauth_code = oauth_code_put(jwt_token)
+            redirect_url = f"{frontend_url}/login?oauth=google&code={oauth_code}"
+            return HttpResponseRedirect(redirect_url)
+
+        except Exception as e:
+            logging.error(f"OAuth callback error: {str(e)}")
+            return HttpResponseRedirect(f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR")
+
+    @classmethod
+    def oauth_token(cls, request):
+        """
+        Обмен OAuth code на JWT (по аналогии с e-commerce-java-two).
+        GET /auth/oauth-token?code=xxx
+        """
+        code = request.GET.get('code')
+        if not code:
+            return cls.error_response("Code is required", 400)
+
+        jwt_token = oauth_code_get(code)
+        if jwt_token is None:
+            return cls.error_response("Invalid or expired code", 400)
+
+        return JsonResponse({'jwt': jwt_token})
 
     @classmethod
     def check(cls, request):

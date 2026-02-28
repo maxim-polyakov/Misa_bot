@@ -1,6 +1,12 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+# Загружаем переменные из .env (приоритет над environment)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+load_dotenv(BASE_DIR / '.env', override=True)
+
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -11,11 +17,8 @@ INSTALLED_APPS = [
     'channels'
 ]
 
-# API URL из переменных окружения
+# API URL из .env
 API_URL = os.getenv('API_URL', '')
-
-# Предполагаем, что BASE_DIR это корень проекта (где manage.py)
-BASE_DIR = Path(__file__).resolve().parent.parent.parent  # Или подстройте под вашу структуру
 
 # URL для доступа к статическим файлам
 STATIC_URL = '/'

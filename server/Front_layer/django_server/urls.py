@@ -19,6 +19,9 @@ urlpatterns = [
     path('', home_view),
     path('auth/register/', views.register, name='register'),
     path('auth/login/', views.login_view, name='login'),
+    path('auth/oauth/google/', views.oauth_google_redirect, name='oauth_google_redirect'),
+    path('auth/oauth/callback/', views.oauth_google_callback, name='oauth_google_callback'),
+    path('auth/oauth-token/', views.oauth_token, name='oauth_token'),
     path('auth/check/', views.check, name="check")
 ]
 

@@ -18,7 +18,7 @@ class Middleware(IMiddleware.IMiddleware):
         """Синхронный обработчик запроса"""
         try:
             # Публичные пути (без аутентификации)
-            if request.path in ['/auth/register/', '/auth/login/', '/images/misaimg.png']:
+            if request.path in ['/auth/register/', '/auth/login/', '/auth/oauth/google/', '/auth/oauth/callback/', '/auth/oauth-token/', '/images/misaimg.png']:
                 return self.get_response(request)
 
             # Проверяем аутентификацию для других путей

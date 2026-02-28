@@ -9,6 +9,8 @@ services:
     restart: unless-stopped
     ports:
       - "5001:8001"
+    env_file:
+      - ./server/.env
   client:
     container_name: misa_client
     build:

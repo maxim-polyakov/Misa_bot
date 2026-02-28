@@ -8,6 +8,7 @@ async-timeout==4.0.2
 attrs==22.2.0
 Babel==2.9.1
 django==5.2.6
+python-dotenv==1.0.1
 channels==4.3.1
 hypercorn==0.17.3
 beautifulsoup4==4.11.2
