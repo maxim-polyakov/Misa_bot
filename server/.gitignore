@@ -12,5 +12,4 @@ images/*
 *.log
 *.csv
 *.google-cookie
-.env
 *.csv#
