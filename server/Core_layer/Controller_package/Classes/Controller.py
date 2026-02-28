@@ -429,7 +429,7 @@ class Controller(IController.IController):
             logging.error("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set")
             return cls.error_response("Google OAuth not configured", 500)
 
-        callback_uri = f"{api_base}/auth/oauth/callback/"
+        callback_uri = f"{api_base}/auth/oauth/callback"
         client_config = {
             "web": {
                 "client_id": client_id,
@@ -444,8 +444,8 @@ class Controller(IController.IController):
             authorization_url, _ = flow.authorization_url(access_type='offline', include_granted_scopes='true')
             return HttpResponseRedirect(authorization_url)
         except Exception as e:
-            logging.error(f"OAuth redirect error: {str(e)}")
-            return cls.error_response("OAuth redirect failed", 500)
+            logging.error(f"OAuth redirect error: {str(e)}", exc_info=True)
+            return cls.error_response(f"OAuth redirect failed: {str(e)}", 500)
 
     @classmethod
     def oauth_google_callback(cls, request):
@@ -472,7 +472,7 @@ class Controller(IController.IController):
         if not client_id or not client_secret:
             return HttpResponseRedirect(f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR")
 
-        callback_uri = f"{api_base}/auth/oauth/callback/"
+        callback_uri = f"{api_base}/auth/oauth/callback"
         client_config = {
             "web": {
                 "client_id": client_id,
