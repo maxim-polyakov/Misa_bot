@@ -435,6 +435,8 @@ class Controller(IController.IController):
                 "client_id": client_id,
                 "client_secret": client_secret,
                 "redirect_uris": [callback_uri],
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
             }
         }
         scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
@@ -478,6 +480,8 @@ class Controller(IController.IController):
                 "client_id": client_id,
                 "client_secret": client_secret,
                 "redirect_uris": [callback_uri],
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
             }
         }
         scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
