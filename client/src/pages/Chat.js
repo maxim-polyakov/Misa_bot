@@ -81,8 +81,10 @@ const Chat = observer(({ onMenuToggle }) => {
     };
 
     const parseMessageContent = (content) => {
+        if (!content || typeof content !== 'string') return [{ type: 'text', content: '' }];
         const parts = [];
-        const regex = /```(\w*)\n?([\s\S]*?)```/g;
+        // Поддержка ```language и ``` с разными переносами строк (\n, \r\n)
+        const regex = /```\s*([\w+-]*)\s*\r?\n([\s\S]*?)```/g;
         let lastIndex = 0;
         let match;
         while ((match = regex.exec(content)) !== null) {

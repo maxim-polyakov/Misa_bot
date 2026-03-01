@@ -72,10 +72,23 @@ class Gpt(IGpt.IGpt):
                 project=OPENAI_API_PROJECT,
             )
 
+            # System prompt: instruct GPT to format code in markdown blocks for proper display
+            system_prompt = (
+                "When you output code (Python, JavaScript, etc.), always wrap it in markdown code blocks: "
+                "start with ``` followed by the language (e.g. python, javascript), then the code on new lines, "
+                "then end with ```. Example: ```python\nprint('hello')\n```"
+            )
+            api_messages = (
+                [{"role": "user", "content": text}]
+                if is_command_check
+                else conversation_history
+            )
+            messages = [{"role": "system", "content": system_prompt}] + api_messages
+
             # sending a request to the gpt model to generate a response with full context
             response = client.chat.completions.create(
                 model='gpt-5',
-                messages=conversation_history if not is_command_check else [{"role": "user", "content": text}],
+                messages=messages,
                 temperature=1,
                 top_p=1,
                 frequency_penalty=0,

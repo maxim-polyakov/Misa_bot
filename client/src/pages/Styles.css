@@ -800,24 +800,25 @@ body {
 }
 
 /* Code blocks from GPT */
-.message-code-block {
+.message-text .message-code-block {
     margin: 0.75rem 0;
     border-radius: 0.5rem;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 2px solid var(--accent-color);
     background: #0d1117;
+    box-shadow: 0 0 0 1px rgba(16, 163, 127, 0.2);
 }
 
-.message-code-header {
-    padding: 0.375rem 0.75rem;
+.message-text .message-code-header {
+    padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
     font-family: 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
     color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.06);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(16, 163, 127, 0.15);
+    border-bottom: 1px solid rgba(16, 163, 127, 0.3);
 }
 
-.message-code-block pre {
+.message-text .message-code-block pre {
     margin: 0;
     padding: 0.75rem 1rem;
     border-radius: 0;
@@ -825,20 +826,26 @@ body {
     background: transparent;
 }
 
-.message-code-block pre code {
+.message-text .message-code-block pre code {
     background: transparent;
     padding: 0;
     font-size: 0.8125rem;
     line-height: 1.5;
     color: #e6edf3;
+    font-family: 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
 }
 
-.user-message .message-code-block {
-    background: rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.15);
+.user-message .message-text .message-code-block {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.25);
 }
 
-.user-message .message-code-block pre code {
+.user-message .message-text .message-code-header {
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom-color: rgba(255, 255, 255, 0.15);
+}
+
+.user-message .message-text .message-code-block pre code {
     color: rgba(255, 255, 255, 0.95);
 }
 
