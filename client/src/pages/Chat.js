@@ -80,6 +80,24 @@ const Chat = observer(({ onMenuToggle }) => {
         }
     };
 
+    const parseMessageContent = (content) => {
+        const parts = [];
+        const regex = /```(\w*)\n?([\s\S]*?)```/g;
+        let lastIndex = 0;
+        let match;
+        while ((match = regex.exec(content)) !== null) {
+            if (match.index > lastIndex) {
+                parts.push({ type: 'text', content: content.slice(lastIndex, match.index) });
+            }
+            parts.push({ type: 'code', language: match[1] || 'plaintext', content: match[2].trim() });
+            lastIndex = regex.lastIndex;
+        }
+        if (lastIndex < content.length) {
+            parts.push({ type: 'text', content: content.slice(lastIndex) });
+        }
+        return parts.length ? parts : [{ type: 'text', content }];
+    };
+
     const renderMessage = (msg) => {
         const messageUser = msg.user;
         const messageContent = msg.content;
@@ -92,8 +110,35 @@ const Chat = observer(({ onMenuToggle }) => {
             ? `${process.env.REACT_APP_API_URL}${messageContent}`
             : messageContent;
 
-        // Генерируем ключ кэша на основе ID сообщения
         const cacheKey = `img_${msg.id}`;
+
+        const renderContent = () => {
+            if (wasImage) {
+                return (
+                    <CachedImage
+                        src={imageUrl}
+                        cacheKey={cacheKey}
+                        messageContent={messageContent}
+                        messageUser={messageUser}
+                    />
+                );
+            }
+            const parsed = parseMessageContent(messageContent);
+            return (
+                <div className="message-text">
+                    {parsed.map((part, i) =>
+                        part.type === 'text' ? (
+                            <span key={i} style={{ whiteSpace: 'pre-line' }}>{part.content}</span>
+                        ) : (
+                            <div key={i} className="message-code-block">
+                                <div className="message-code-header">{part.language}</div>
+                                <pre><code>{part.content}</code></pre>
+                            </div>
+                        )
+                    )}
+                </div>
+            );
+        };
 
         return (
             <div key={msg.id} className={`message ${messageUser === "Misa" ? "misa-message" : "user-message"}`}>
@@ -102,18 +147,7 @@ const Chat = observer(({ onMenuToggle }) => {
                 </div>
                 <div className="message-content">
                     <div className="message-sender">{messageUser}</div>
-                    {wasImage ? (
-                        <CachedImage
-                            src={imageUrl}
-                            cacheKey={cacheKey}
-                            messageContent={messageContent}
-                            messageUser={messageUser}
-                        />
-                    ) : (
-                        <div className="message-text" style={{ whiteSpace: 'pre-line' }}>
-                            {messageContent}
-                        </div>
-                    )}
+                    {renderContent()}
                     <div className="message-time">
                         {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </div>

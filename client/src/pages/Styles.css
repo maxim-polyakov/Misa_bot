@@ -799,6 +799,49 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
+/* Code blocks from GPT */
+.message-code-block {
+    margin: 0.75rem 0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #0d1117;
+}
+
+.message-code-header {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-family: 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.message-code-block pre {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+}
+
+.message-code-block pre code {
+    background: transparent;
+    padding: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: #e6edf3;
+}
+
+.user-message .message-code-block {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.user-message .message-code-block pre code {
+    color: rgba(255, 255, 255, 0.95);
+}
+
 /* ===== INTERACTIVE ELEMENTS ===== */
 button {
     transition: all 0.2s ease;
