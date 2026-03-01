@@ -46,7 +46,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }, ensure_ascii=False))
 
     async def process_message(self, message):
-        message = message.split('|message|')
+        parts = message.split('|message|')
+        if len(parts) >= 2 and parts[1].strip() == '__NEW_CHAT__':
+            user = parts[0].strip()
+            MessageMonitorServer.MessageMonitorServer.clear_conversation_history(user)
+            return ''
+        message = parts
         message_monitor = MessageMonitorServer.MessageMonitorServer(user=message[0],message=message[1])
         response = message_monitor.monitor()
 

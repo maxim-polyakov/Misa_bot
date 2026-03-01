@@ -1,7 +1,10 @@
 import { makeAutoObservable } from "mobx";
 
+const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+
 class ChatStore {
-    messages = [];
+    chats = []; // [{ id, title, messages, createdAt }]
+    currentChatId = null;
     isConnected = false;
     isConnecting = false;
     isLoading = false;
@@ -10,15 +13,23 @@ class ChatStore {
     reconnectAttempts = 0;
     maxReconnectAttempts = 8;
     reconnectDelay = 1000;
-    user = null; // Добавляем поле для пользователя
+    user = null;
     isAuth = false;
 
     constructor(rootStore) {
-
         this.rootStore = rootStore;
         makeAutoObservable(this);
         this.loadUserFromStorage();
-        this.loadMessages();
+        this.loadChats();
+    }
+
+    get messages() {
+        const chat = this.chats.find(c => c.id === this.currentChatId);
+        return chat ? chat.messages : [];
+    }
+
+    get currentChat() {
+        return this.chats.find(c => c.id === this.currentChatId);
     }
 
     // Получение ID текущего пользователя
@@ -74,8 +85,7 @@ class ChatStore {
         this.user = user;
         this.isAuth = true;
         this.saveUserToStorage(id);
-        // Загружаем сообщения для нового пользователя
-        this.loadMessages();
+        this.loadChats();
     };
 
     // Установка статуса авторизации
@@ -94,60 +104,126 @@ class ChatStore {
         this.isAuth = false;
     };
 
-    // Загрузка сообщений из localStorage для текущего пользователя
-    loadMessages(){
+    // Загрузка чатов из localStorage
+    loadChats() {
         try {
             const userId = this.getCurrentUserId();
-
             if (!userId) {
-                console.log("Пользователь не авторизован, сообщения не загружены");
-                this.messages = [];
+                this.chats = [];
+                this.currentChatId = null;
                 return;
             }
-
-            const savedMessages = localStorage.getItem(`chatMessages_${userId}`);
-            if (savedMessages) {
-                const parsedMessages = JSON.parse(savedMessages);
-                this.messages = parsedMessages.map(msg => ({
-                    ...msg,
-                    timestamp: new Date(msg.timestamp)
+            let saved = localStorage.getItem(`chats_${userId}`);
+            if (!saved) {
+                const oldMessages = localStorage.getItem(`chatMessages_${userId}`);
+                if (oldMessages) {
+                    try {
+                        const msgs = JSON.parse(oldMessages).map(m => ({
+                            ...m,
+                            timestamp: new Date(m.timestamp)
+                        }));
+                        const migratedChat = {
+                            id: generateId(),
+                            title: "Новый чат",
+                            messages: msgs,
+                            createdAt: new Date()
+                        };
+                        this.chats = [migratedChat];
+                        this.currentChatId = migratedChat.id;
+                        this.saveChats();
+                        localStorage.removeItem(`chatMessages_${userId}`);
+                        return;
+                    } catch (e) {
+                        console.warn("Миграция старых сообщений не удалась", e);
+                    }
+                }
+            }
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                this.chats = parsed.map(chat => ({
+                    ...chat,
+                    messages: (chat.messages || []).map(m => ({
+                        ...m,
+                        timestamp: new Date(m.timestamp)
+                    })),
+                    createdAt: new Date(chat.createdAt)
                 }));
-                console.log(`Сообщения загружены для пользователя ${userId}:`, this.messages.length);
+                if (this.chats.length > 0 && !this.currentChatId) {
+                    this.currentChatId = this.chats[0].id;
+                } else if (this.currentChatId && !this.chats.find(c => c.id === this.currentChatId)) {
+                    this.currentChatId = this.chats[0]?.id || null;
+                }
             } else {
-                this.messages = [];
-                console.log("Нет сохраненных сообщений для пользователя");
+                const defaultChat = {
+                    id: generateId(),
+                    title: "Новый чат",
+                    messages: [],
+                    createdAt: new Date()
+                };
+                this.chats = [defaultChat];
+                this.currentChatId = defaultChat.id;
+                this.saveChats();
             }
         } catch (error) {
-            console.error("Ошибка при загрузке сообщений:", error);
-            const userId = this.getCurrentUserId();
-            if (userId) {
-                localStorage.removeItem(`chatMessages_${userId}`);
-            }
-            this.messages = [];
+            console.error("Ошибка загрузки чатов:", error);
+            this.chats = [];
+            this.currentChatId = null;
         }
     };
 
-    // Сохранение сообщений в localStorage для текущего пользователя
-    saveMessages() {
+    // Сохранение чатов в localStorage
+    saveChats() {
         const userId = this.getCurrentUserId();
-        if (userId && this.messages.length > 0) {
+        if (userId && this.chats.length > 0) {
             try {
-                localStorage.setItem(`chatMessages_${userId}`, JSON.stringify(this.messages));
-                console.log(`Сообщения сохранены для пользователя ${userId}`);
+                localStorage.setItem(`chats_${userId}`, JSON.stringify(this.chats));
             } catch (error) {
-                console.error("Ошибка при сохранении сообщений:", error);
+                console.error("Ошибка сохранения чатов:", error);
             }
         }
     };
 
-    // Очистка истории сообщений для текущего пользователя
-    clearMessages() {
-        const userId = this.getCurrentUserId();
-        if (userId) {
-            localStorage.removeItem(`chatMessages_${userId}`);
+    // Генерация заголовка чата по первому сообщению
+    getChatTitle(chat) {
+        const firstUserMsg = chat.messages?.find(m => m.user !== "Misa");
+        if (firstUserMsg) {
+            const text = (firstUserMsg.content || "").replace(/\n/g, " ").trim();
+            return text.length > 40 ? text.slice(0, 40) + "…" : text || "Новый чат";
         }
-        this.messages = [];
-        console.log("Сообщения очищены");
+        return "Новый чат";
+    }
+
+    // Переключение на чат
+    switchChat(chatId) {
+        if (this.chats.some(c => c.id === chatId)) {
+            this.currentChatId = chatId;
+        }
+    };
+
+    // Новый чат
+    newChat() {
+        const id = generateId();
+        const newChat = {
+            id,
+            title: "Новый чат",
+            messages: [],
+            createdAt: new Date()
+        };
+        this.chats.unshift(newChat);
+        this.currentChatId = id;
+        this.saveChats();
+        if (this.socket && this.isConnected && this.user) {
+            this.socket.send(this.user + '|message|__NEW_CHAT__');
+        }
+    };
+
+    // Очистка истории текущего чата
+    clearMessages() {
+        const chat = this.currentChat;
+        if (chat) {
+            chat.messages = [];
+            this.saveChats();
+        }
     };
 
 
@@ -236,12 +312,14 @@ class ChatStore {
                 content: data.message,
                 user: data.user || "Misa",
                 timestamp: new Date(),
-                userId: this.getCurrentUserId() // Добавляем привязку к пользователю
+                userId: this.getCurrentUserId()
             };
-
-            this.messages.push(botMessage);
-            this.isLoading = false;
-            this.saveMessages();
+            const chat = this.currentChat;
+            if (chat) {
+                chat.messages.push(botMessage);
+                this.isLoading = false;
+                this.saveChats();
+            }
         }
         else if (data.type === 'error') {
             this.error = data.message || "Произошла ошибка";
@@ -255,16 +333,21 @@ class ChatStore {
         }
     };
 
-    // Отправка сообщения с привязкой к пользователю
-    async sendMessage (content) {
+    async sendMessage(content) {
         if (!this.isConnected || !this.socket) {
             this.error = "Нет соединения с сервером";
             return false;
         }
+        if (!content.trim()) return false;
 
-        if (!content.trim()) {
-            return false;
+        const chatId = this.currentChatId;
+        if (!chatId) {
+            this.newChat();
+            return this.sendMessage(content);
         }
+
+        const chat = this.currentChat;
+        if (!chat) return false;
 
         this.isLoading = true;
         this.error = null;
@@ -273,17 +356,13 @@ class ChatStore {
             content: content,
             user: this.user,
             timestamp: new Date(),
-            userId: this.getCurrentUserId() // Привязываем к пользователю
+            userId: this.getCurrentUserId()
         };
-
-        this.messages.push(userMessage);
-        this.saveMessages();
+        chat.messages.push(userMessage);
+        this.saveChats();
 
         try {
-
-
-            console.log(this.user)
-            this.socket.send(this.user + '|message|' +content);
+            this.socket.send(this.user + '|message|' + content);
             return true;
         } catch (error) {
             this.error = "Ошибка при отправке сообщения";

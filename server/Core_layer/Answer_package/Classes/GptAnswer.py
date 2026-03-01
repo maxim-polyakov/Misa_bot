@@ -26,3 +26,7 @@ class GptAnswer(IAnswer.IAnswer):
         except Exception as e:
             # log the exception if an error occurs during answer generation
             logging.exception('The exception occurred in questionanswer.answer: ' + str(e))
+
+    @classmethod
+    def clear_conversation_history(cls, user=None):
+        cls.__gpt.clear_conversation_history(user)

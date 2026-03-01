@@ -177,3 +177,7 @@ class MessageMonitor(IMonitor.IMonitor):
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception('The exception occurred in messagemonitor.monitor: ' + str(e))
+
+    @classmethod
+    def clear_conversation_history(cls, user=None):
+        cls._gpta.clear_conversation_history(user)

@@ -605,6 +605,70 @@ body {
     padding: 1rem;
 }
 
+.sidebar-new-chat {
+    margin-bottom: 1rem;
+}
+
+.new-chat-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+}
+
+.new-chat-icon {
+    font-size: 1.25rem;
+    font-weight: 300;
+}
+
+.sidebar-chats {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sidebar-chat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    text-align: left;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.sidebar-chat-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.sidebar-chat-item.active {
+    background: rgba(16, 163, 127, 0.25);
+    color: white;
+}
+
+.sidebar-chat-icon {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+
+.sidebar-chat-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .sidebar-brand {
     padding: 1rem 0;
     border-bottom: 1px solid var(--border-color);
