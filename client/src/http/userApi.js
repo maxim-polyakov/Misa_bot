@@ -79,25 +79,21 @@ export const login = async (email, password) => {
         if (error.response) {
             // Сервер ответил, но с ошибкой (4xx, 5xx)
             if (error.response.status === 404) {
-                // Это может быть как "Пользователь не найден", так и ошибка маршрута
-                // Проверяем, есть ли в ответе сообщение об ошибке
                 if (error.response.data?.message) {
-                    errorMessage = error.response.data.message; // "Пользователь не найден"
+                    errorMessage = error.response.data.message;
                 } else if (typeof error.response.data === 'string') {
-                    // Пытаемся извлечь сообщение из HTML/текста
                     const match = error.response.data.match(/Пользователь не найден|User not found/i);
                     errorMessage = match ? match[0] : "Ресурс не найден";
                 } else {
                     errorMessage = "Пользователь не найден";
                 }
-            }
-            else if (error.response.status === 401) {
+            } else if (error.response.status === 401) {
                 errorMessage = "Неверный email или пароль";
-            }
-            else if (error.response.status === 400) {
+            } else if (error.response.status === 403 && error.response?.data?.message === "email_not_verified") {
+                errorMessage = "email_not_verified";
+            } else if (error.response.status === 400) {
                 errorMessage = error.response.data?.message || "Неверные данные";
-            }
-            else if (error.response.data?.message) {
+            } else if (error.response.data?.message) {
                 errorMessage = error.response.data.message;
             }
         }

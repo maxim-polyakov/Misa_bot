@@ -25,6 +25,16 @@ def put(email, password_hash):
     return code
 
 
+def has_pending(email):
+    """Проверяет, есть ли ожидающая верификация для email (без удаления)."""
+    with _lock:
+        entry = _store.get(email)
+    if entry is None:
+        return False
+    created_at, _, _ = entry
+    return time.time() - created_at <= _TTL_SEC
+
+
 def get_and_remove(email, code):
     """
     Проверяет код и возвращает password_hash при успехе, иначе None.

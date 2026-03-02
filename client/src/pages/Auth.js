@@ -97,15 +97,23 @@ const Auth = observer(() => {
             setError(""); // Очищаем ошибки перед запросом
 
             if (isLogin) {
-                const data = await login(email, password);
-                chatStore.setIsAuth(true);
-                chatStore.setUser(data.email, data.user_id);
-                user.setUser(data);
-                user.setIsAuth(true);
-                chatStore.connect();
-                setEmail("");
-                setPassword("");
-                navigate(CHAT_ROUTE);
+                try {
+                    const data = await login(email, password);
+                    chatStore.setIsAuth(true);
+                    chatStore.setUser(data.email, data.user_id);
+                    user.setUser(data);
+                    user.setIsAuth(true);
+                    chatStore.connect();
+                    setEmail("");
+                    setPassword("");
+                    navigate(CHAT_ROUTE);
+                } catch (err) {
+                    if (err.message === "email_not_verified") {
+                        navigate(REGISTRATION_VERIFY_ROUTE, { state: { email, password } });
+                        return;
+                    }
+                    throw err;
+                }
             } else {
                 await sendRegistrationCode(email, password);
                 navigate(REGISTRATION_VERIFY_ROUTE, { state: { email, password } });

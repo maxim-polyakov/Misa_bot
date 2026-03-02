@@ -23,7 +23,7 @@ except ImportError:
     Flow = None
 
 from Core_layer.Auth_package.Classes.OAuthCodeStore import put as oauth_code_put, get_and_remove as oauth_code_get
-from Core_layer.Auth_package.Classes.VerificationCodeStore import put as verification_code_put, get_and_remove as verification_code_get
+from Core_layer.Auth_package.Classes.VerificationCodeStore import put as verification_code_put, get_and_remove as verification_code_get, has_pending as verification_has_pending
 from django.core.mail import send_mail
 
 
@@ -424,6 +424,8 @@ class Controller(IController.IController):
             user_df = cls.__dbc.get_data(user_query)
 
             if user_df is None or user_df.empty:
+                if verification_has_pending(email):
+                    return cls.error_response("email_not_verified", 403)
                 return cls.error_response("Invalid email or password", 401)
 
             # Получаем данные пользователя
