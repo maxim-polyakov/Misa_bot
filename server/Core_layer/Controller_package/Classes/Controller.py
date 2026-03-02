@@ -8,6 +8,8 @@ from Core_layer.Controller_package.Interfaces import IController
 import json
 import logging
 import os
+import random
+import string
 from urllib.parse import quote
 import datetime
 import pandas as pd
@@ -23,8 +25,9 @@ except ImportError:
     Flow = None
 
 from Core_layer.Auth_package.Classes.OAuthCodeStore import put as oauth_code_put, get_and_remove as oauth_code_get
-from Core_layer.Auth_package.Classes.VerificationCodeStore import put as verification_code_put, get_and_remove as verification_code_get, has_pending as verification_has_pending
 from django.core.mail import send_mail
+
+VERIFICATION_CODE_TTL_MINUTES = 15
 
 
 
@@ -238,9 +241,13 @@ class Controller(IController.IController):
         """Нормализация email: trim, lowercase. Plus-addressing (user+tag@domain) оставляем как есть."""
         return email.strip().lower()
 
+    @staticmethod
+    def _generate_verification_code(length=6):
+        return ''.join(random.choices(string.digits, k=length))
+
     @classmethod
     def register_send_code(cls, request):
-        """Отправка кода верификации на email при регистрации"""
+        """Отправка кода верификации на email при регистрации. Код хранится в auth.users."""
         try:
             data = json.loads(request.body)
             required_fields = ['email', 'password']
@@ -259,18 +266,48 @@ class Controller(IController.IController):
             if len(password) < 6:
                 return cls.error_response("Password must be at least 6 characters long", 400)
 
-            email_check_query = f"SELECT id FROM auth.users WHERE email = '{email}'"
-            email_df = cls.__dbc.get_data(email_check_query)
-            if email_df is not None and not email_df.empty:
-                return cls.error_response("Email already registered", 409)
-
             hashed_password = make_password(password)
-            code = verification_code_put(email, hashed_password)
+            code = cls._generate_verification_code()
+            sent_at = datetime.datetime.now(datetime.timezone.utc)
+
+            user_check_query = f"SELECT id, verification_code FROM auth.users WHERE email = '{email}'"
+            user_df = cls.__dbc.get_data(user_check_query)
+
+            if user_df is not None and not user_df.empty:
+                stored_code = user_df.iloc[0].get('verification_code')
+                if pd.isna(stored_code) or stored_code is None or str(stored_code).strip() == '':
+                    return cls.error_response("Email already registered", 409)
+                # Resend: обновляем код и время
+                update_sql = """
+                    UPDATE auth.users
+                    SET verification_code = %s, verification_code_sent_at = %s, password = %s
+                    WHERE email = %s
+                """
+                cls.__dbc.execute_update(update_sql, (code, sent_at, hashed_password, email))
+            else:
+                max_id_query = "SELECT COALESCE(MAX(id), 0) as max_id FROM auth.users"
+                max_id_df = cls.__dbc.get_data(max_id_query)
+                if max_id_df is not None and not max_id_df.empty:
+                    max_id = max_id_df.iloc[0]['max_id']
+                    next_id = 1 if (max_id is None or pd.isna(max_id)) else int(max_id) + 1
+                else:
+                    next_id = 1
+                display_name = email.split('@')[0]
+                user_data = {
+                    'id': next_id,
+                    'email': email,
+                    'password': hashed_password,
+                    'display_name': display_name,
+                    'verification_code': code,
+                    'verification_code_sent_at': sent_at,
+                }
+                user_df_insert = pd.DataFrame([user_data])
+                cls.__dbc.insert_to(user_df_insert, 'users', 'auth')
 
             try:
                 send_mail(
                     subject='Код подтверждения регистрации',
-                    message=f'Ваш код подтверждения: {code}\n\nКод действителен 10 минут.',
+                    message=f'Ваш код подтверждения: {code}\n\nКод действителен {VERIFICATION_CODE_TTL_MINUTES} минут.',
                     from_email=None,
                     recipient_list=[email],
                     fail_silently=False,
@@ -292,7 +329,7 @@ class Controller(IController.IController):
 
     @classmethod
     def register_verify(cls, request):
-        """Проверка кода и создание пользователя"""
+        """Проверка кода и подтверждение регистрации. Пользователь уже в auth.users, очищаем verification_code."""
         try:
             data = json.loads(request.body)
             required_fields = ['email', 'password', 'code']
@@ -309,46 +346,43 @@ class Controller(IController.IController):
             except ValidationError:
                 return cls.error_response("Invalid email format", 400)
 
-            hashed_password = verification_code_get(email, code)
-            if hashed_password is None:
+            user_query = f"SELECT id, email, password, display_name, verification_code, verification_code_sent_at FROM auth.users WHERE email = '{email}'"
+            user_df = cls.__dbc.get_data(user_query)
+            if user_df is None or user_df.empty:
                 return cls.error_response("Invalid or expired verification code", 400)
 
-            # Проверка пароля (на случай если клиент передал другой)
+            row = user_df.iloc[0]
+            stored_code = row.get('verification_code')
+            sent_at = row.get('verification_code_sent_at')
+            hashed_password = row.get('password')
+
+            if pd.isna(stored_code) or str(stored_code).strip() != code:
+                return cls.error_response("Invalid or expired verification code", 400)
+
+            if pd.isna(sent_at):
+                return cls.error_response("Invalid or expired verification code", 400)
+
+            sent_at_dt = pd.to_datetime(sent_at)
+            if sent_at_dt.tzinfo is None:
+                sent_at_dt = sent_at_dt.replace(tzinfo=datetime.timezone.utc)
+            now = datetime.datetime.now(datetime.timezone.utc)
+            age_minutes = (now - sent_at_dt).total_seconds() / 60
+            if age_minutes > VERIFICATION_CODE_TTL_MINUTES:
+                return cls.error_response("Verification code has expired", 400)
+
             if not check_password(password, hashed_password):
                 return cls.error_response("Password does not match", 400)
 
-            email_check_query = f"SELECT id FROM auth.users WHERE email = '{email}'"
-            email_df = cls.__dbc.get_data(email_check_query)
-            if email_df is not None and not email_df.empty:
-                return cls.error_response("Email already registered", 409)
+            update_sql = """
+                UPDATE auth.users
+                SET verification_code = NULL, verification_code_sent_at = NULL
+                WHERE email = %s
+            """
+            cls.__dbc.execute_update(update_sql, (email,))
 
-            max_id_query = "SELECT COALESCE(MAX(id), 0) as max_id FROM auth.users"
-            max_id_df = cls.__dbc.get_data(max_id_query)
-            if max_id_df is not None and not max_id_df.empty:
-                max_id = max_id_df.iloc[0]['max_id']
-                next_id = 1 if (max_id is None or pd.isna(max_id)) else int(max_id) + 1
-            else:
-                next_id = 1
-
-            # display_name: часть до @ (noskoff+dima@yandex.ru -> noskoff+dima)
-            display_name = email.split('@')[0]
-            user_data = {
-                'id': next_id,
-                'email': email,
-                'password': hashed_password,
-                'display_name': display_name,
-            }
-            user_df = pd.DataFrame([user_data])
-            cls.__dbc.insert_to(user_df, 'users', 'auth')
-
-            user_confirm_query = f"SELECT id, email FROM auth.users WHERE id = {next_id}"
-            user_confirm_df = cls.__dbc.get_data(user_confirm_query)
-            if user_confirm_df is None or user_confirm_df.empty:
-                return cls.error_response("Failed to create user", 500)
-
-            user_data_from_db = user_confirm_df.iloc[0]
-            user_id = int(user_data_from_db['id'])
-            user_email = str(user_data_from_db['email'])
+            user_id = int(row['id'])
+            user_email = str(row['email'])
+            display_name = str(row['display_name']) if pd.notna(row.get('display_name')) else email.split('@')[0]
             token = cls.generate_jwt_token(user_id, user_email)
 
             return cls.success_response({
@@ -424,12 +458,15 @@ class Controller(IController.IController):
             user_df = cls.__dbc.get_data(user_query)
 
             if user_df is None or user_df.empty:
-                if verification_has_pending(email):
-                    return cls.error_response("email_not_verified", 403)
                 return cls.error_response("Invalid email or password", 401)
 
             # Получаем данные пользователя
             user_data = user_df.iloc[0]
+
+            # Пользователь с неподтверждённым email (ожидает верификацию)
+            vc = user_data.get('verification_code')
+            if vc is not None and not (pd.isna(vc) or str(vc).strip() == ''):
+                return cls.error_response("email_not_verified", 403)
             user_id = int(user_data['id'].item()) if hasattr(user_data['id'], 'item') else int(user_data['id'])
             user_email = str(user_data['email'])
             hashed_password = str(user_data['password'])

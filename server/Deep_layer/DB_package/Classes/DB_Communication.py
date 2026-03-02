@@ -187,24 +187,33 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @classmethod
     def delete_data(cls, delete):
         # deleting data to a database
-        # setting up logging configuration
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # establishing a connection to the postgresql database
             postgr_conn = Connections.PostgresConnection()
-            # creating a cursor object to execute the sql query
             cur = postgr_conn.conn_remote.cursor()
-            # executing the delete query
             cur.execute(delete)
-            # committing the transaction to apply changes
             postgr_conn.conn_remote.commit()
-            # logging successful execution
             logging.info('The db_communication.delete_data method has completed successfully')
-            # closing the cursor
             cur.close()
         except Exception as e:
-            # logging any exceptions that occur during execution
             logging.exception('The exception occurred in db_communication.delete_data: ' + str(e))
+
+    @classmethod
+    def execute_update(cls, sql, params=None):
+        """Выполняет SQL (UPDATE/INSERT) с commit. params — кортеж для параметризованного запроса."""
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            postgr_conn = Connections.PostgresConnection()
+            cur = postgr_conn.conn_remote.cursor()
+            if params is not None:
+                cur.execute(sql, params)
+            else:
+                cur.execute(sql)
+            postgr_conn.conn_remote.commit()
+            cur.close()
+        except Exception as e:
+            logging.exception('The exception occurred in db_communication.execute_update: ' + str(e))
+            raise
 
     @classmethod
     def checkcommands(cls, input_string):
