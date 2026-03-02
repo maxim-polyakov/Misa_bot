@@ -2,8 +2,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import make_password, check_password, is_password_usable
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Controller_package.Interfaces import IController
 import json
@@ -438,8 +437,8 @@ class Controller(IController.IController):
             if not is_active:
                 return cls.error_response("Account is disabled", 403)
 
-            # Пользователь с Google OAuth (password = NULL) не может войти по паролю
-            if hashed_password is None or (isinstance(hashed_password, float) and pd.isna(hashed_password)):
+            # Пользователь с Google OAuth (unusable password) не может войти по паролю
+            if not is_password_usable(str(hashed_password) if hashed_password is not None else None):
                 return cls.error_response("Используйте вход через Google", 401)
 
             # Проверяем пароль вручную
@@ -489,10 +488,11 @@ class Controller(IController.IController):
             max_id = max_id_df.iloc[0]['max_id']
             next_id = 1 if (max_id is None or pd.isna(max_id)) else int(max_id) + 1
 
+        # Колонка password имеет NOT NULL — используем Django unusable password
         user_data_insert = {
             'id': next_id,
             'email': email,
-            'password': None,
+            'password': make_password(None),
             'display_name': display_name,
         }
         user_df_insert = pd.DataFrame([user_data_insert])
