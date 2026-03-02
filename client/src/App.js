@@ -19,9 +19,14 @@ const App = observer(() => {
         const checkAuth = async () => {
             try {
                 const userData = await check();
-                console.log(userData);
                 if (userData) {
-                    user.setUser(userData);
+                    const stored = JSON.parse(localStorage.getItem("userProfile") || "{}");
+                    const merged = {
+                        ...userData,
+                        display_name: userData.display_name ?? stored.display_name ?? userData.email?.split("@")[0],
+                        picture: userData.picture ?? stored.picture,
+                    };
+                    user.setUser(merged);
                     user.setIsAuth(true);
                     chatStore.connect();
                 } else {

@@ -149,15 +149,13 @@ export const check = async () => {
         }
 
         const { data } = await $authhost.get("auth/check/");
+        const payload = data?.data ?? data;
 
-        // В зависимости от структуры ответа вашего сервера:
-
-        // Вариант 1: если сервер возвращает обновленный токен
-        if (data.data?.token) {
-            const newToken = data.data.token;
+        if (payload?.token) {
+            const newToken = payload.token;
             localStorage.setItem("token", newToken);
             const decoded = jwtDecode(newToken);
-            const userFromServer = data.data.user || {};
+            const userFromServer = payload.user || {};
             const stored = JSON.parse(localStorage.getItem("userProfile") || "{}");
             // display_name и picture: ответ → JWT → localStorage (fallback после refresh)
             const display_name = userFromServer.display_name ?? decoded.display_name ?? stored.display_name ?? decoded.email?.split("@")[0];

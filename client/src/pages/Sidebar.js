@@ -20,7 +20,14 @@ const Sidebar = observer(() => {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const profileRef = useRef(null);
 
-    const displayName = user?.user?.display_name;
+    const storedProfile = (() => {
+        try {
+            return JSON.parse(localStorage.getItem("userProfile") || "{}");
+        } catch {
+            return {};
+        }
+    })();
+    const displayName = user?.user?.display_name ?? storedProfile.display_name;
     const email = user?.user?.email || chatStore?.user || "";
     // Если display_name — это только часть до @ (авто-сгенерировано), показываем email с маскировкой
     const isAutoDisplayName = !displayName || displayName === email?.split("@")[0];
@@ -32,7 +39,7 @@ const Sidebar = observer(() => {
         return local.slice(0, 2) + "*".repeat(Math.min(local.length - 2, 5)) + local.slice(-2) + "@" + domain;
     };
     const profileLabel = isAutoDisplayName && rawLabel ? maskEmail(rawLabel) : rawLabel;
-    const picture = user?.user?.picture;
+    const picture = user?.user?.picture ?? storedProfile.picture;
     const avatarLetter = (typeof rawLabel === "string" && rawLabel.length > 0 ? rawLabel.charAt(0) : "?").toUpperCase();
 
     useEffect(() => {
