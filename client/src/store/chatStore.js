@@ -77,6 +77,7 @@ class ChatStore {
         localStorage.removeItem('currentUser');
         localStorage.removeItem('token');
         localStorage.removeItem('currentUserId');
+        localStorage.removeItem('userProfile');
         console.log("Данные пользователя очищены");
     };
 

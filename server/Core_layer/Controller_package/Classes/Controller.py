@@ -625,15 +625,21 @@ class Controller(IController.IController):
             if user is None:
                 return cls.error_response("Authentication required", 401)
 
-            # Сохраняем picture из текущего токена (для пользователей Google)
+            # Сохраняем display_name и picture из текущего токена (для Google и после refresh)
             auth_header = request.headers.get('Authorization', '')
             picture = None
+            display_name_from_token = None
             if auth_header.startswith('Bearer '):
                 payload = cls.verify_jwt_token(auth_header.split(' ')[1])
                 if payload:
                     picture = payload.get('picture')
+                    display_name_from_token = payload.get('display_name')
 
-            display_name = getattr(user, 'display_name', None) or user.email.split('@')[0]
+            display_name = (
+                getattr(user, 'display_name', None)
+                or display_name_from_token
+                or user.email.split('@')[0]
+            )
             new_token = cls.generate_jwt_token(user.id, user.email, display_name, picture)
 
             user_data = {

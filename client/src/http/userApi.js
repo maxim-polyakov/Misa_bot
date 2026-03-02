@@ -39,7 +39,14 @@ export const registration = async (email, password) => {
         localStorage.setItem("token", data.data.token);
         const decoded = jwtDecode(data.data.token);
         const userFromServer = data.data.user || {};
-        return { ...decoded, ...userFromServer };
+        const result = { ...decoded, ...userFromServer };
+        if (result.display_name || result.picture) {
+            localStorage.setItem("userProfile", JSON.stringify({
+                display_name: result.display_name,
+                picture: result.picture,
+            }));
+        }
+        return result;
     } catch (error) {
         throw new Error(extractApiError(error));
     }
@@ -55,7 +62,14 @@ export const login = async (email, password) => {
         localStorage.setItem("token", token);
         const decoded = jwtDecode(data.data.token);
         const userFromServer = data.data.user || {};
-        return { ...decoded, ...userFromServer };
+        const result = { ...decoded, ...userFromServer };
+        if (result.display_name || result.picture) {
+            localStorage.setItem("userProfile", JSON.stringify({
+                display_name: result.display_name,
+                picture: result.picture,
+            }));
+        }
+        return result;
     } catch (error) {
         console.log("Login error:", error);
 
@@ -108,7 +122,14 @@ export const exchangeOAuthCode = async (code) => {
     try {
         const { data } = await $host.get(`auth/oauth-token/?code=${encodeURIComponent(code)}`);
         localStorage.setItem("token", data.jwt);
-        return jwtDecode(data.jwt);
+        const decoded = jwtDecode(data.jwt);
+        if (decoded.display_name || decoded.picture) {
+            localStorage.setItem("userProfile", JSON.stringify({
+                display_name: decoded.display_name,
+                picture: decoded.picture,
+            }));
+        }
+        return decoded;
     } catch (error) {
         console.log("Google OAuth exchange error:", error);
         let errorMessage = "Ошибка входа через Google. Попробуйте ещё раз.";
@@ -132,13 +153,20 @@ export const check = async () => {
         // В зависимости от структуры ответа вашего сервера:
 
         // Вариант 1: если сервер возвращает обновленный токен
-        if (data.data.token) {
+        if (data.data?.token) {
             const newToken = data.data.token;
             localStorage.setItem("token", newToken);
             const decoded = jwtDecode(newToken);
             const userFromServer = data.data.user || {};
-            console.log("Новый токен установлен:", decoded);
-            return { ...decoded, ...userFromServer };
+            const stored = JSON.parse(localStorage.getItem("userProfile") || "{}");
+            // display_name и picture: ответ → JWT → localStorage (fallback после refresh)
+            const display_name = userFromServer.display_name ?? decoded.display_name ?? stored.display_name ?? decoded.email?.split("@")[0];
+            const picture = userFromServer.picture ?? decoded.picture ?? stored.picture;
+            const result = { ...decoded, ...userFromServer, display_name, picture };
+            if (display_name || picture) {
+                localStorage.setItem("userProfile", JSON.stringify({ display_name, picture }));
+            }
+            return result;
         }
 
     } catch (error) {
@@ -148,6 +176,7 @@ export const check = async () => {
             localStorage.removeItem("token");
             localStorage.removeItem("currentUser");
             localStorage.removeItem("currentUserId");
+            localStorage.removeItem("userProfile");
         }
         return null;
     }
