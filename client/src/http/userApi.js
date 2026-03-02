@@ -132,10 +132,13 @@ export const exchangeOAuthCode = async (code) => {
         return decoded;
     } catch (error) {
         console.log("Google OAuth exchange error:", error);
-        let errorMessage = "Ошибка входа через Google. Попробуйте ещё раз.";
-        if (error.response?.data?.message) errorMessage = error.response.data.message;
-        else if (error.message) errorMessage = error.message;
-        throw new Error(errorMessage);
+        let detail = error.response?.data?.message
+            ?? error.response?.data?.data?.message
+            ?? (error.response?.data && typeof error.response.data === "string" ? error.response.data.slice(0, 200) : null)
+            ?? error.message;
+        const status = error.response?.status;
+        const msg = status ? `Ошибка входа через Google (HTTP ${status}): ${detail}` : `Ошибка входа через Google: ${detail}`;
+        throw new Error(msg);
     }
 };
 

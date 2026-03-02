@@ -24,12 +24,23 @@ const Auth = observer(() => {
 
     useEffect(() => {
         const oauthError = searchParams.get("oauth_error");
+        const oauthDetail = searchParams.get("oauth_detail");
         if (oauthError) {
             const messages = {
                 OAUTH_MISSING_DATA: "Не удалось получить данные от Google.",
-                OAUTH_AUTH_ERROR: "Ошибка входа через Google. Попробуйте позже.",
+                OAUTH_AUTH_ERROR: "Ошибка входа через Google.",
             };
-            setError(messages[oauthError] || "Ошибка входа через Google.");
+            let msg = messages[oauthError] || "Ошибка входа через Google.";
+            if (oauthDetail) {
+                try {
+                    msg += " Подробности: " + decodeURIComponent(oauthDetail);
+                } catch {
+                    msg += " " + oauthDetail;
+                }
+            } else {
+                msg += " Попробуйте позже.";
+            }
+            setError(msg);
             setSearchParams({}, { replace: true });
             return;
         }

@@ -7,11 +7,12 @@ from django.contrib.auth.hashers import check_password
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Controller_package.Interfaces import IController
 import json
+import logging
+import os
+from urllib.parse import quote
+import datetime
 import pandas as pd
 import jwt
-import logging
-import datetime
-import os
 
 try:
     from google.oauth2 import id_token
@@ -607,8 +608,9 @@ class Controller(IController.IController):
             return HttpResponseRedirect(redirect_url)
 
         except Exception as e:
-            logging.error(f"OAuth callback error: {str(e)}")
-            return HttpResponseRedirect(f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR")
+            logging.error(f"OAuth callback error: {str(e)}", exc_info=True)
+            detail = quote(str(e)[:200], safe='')
+            return HttpResponseRedirect(f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR&oauth_detail={detail}")
 
     @classmethod
     def oauth_token(cls, request):
