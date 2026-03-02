@@ -16,7 +16,10 @@ const Sidebar = observer(() => {
     const [profileOpen, setProfileOpen] = useState(false);
     const profileRef = useRef(null);
 
-    const displayName = user?.user?.display_name || user?.user?.email || chatStore?.user || "Пользователь";
+    const rawName = user?.user?.display_name || user?.user?.email || chatStore?.user || "Пользователь";
+    const displayName = (typeof rawName === "string" && rawName.includes("@"))
+        ? rawName.split("@")[0]
+        : rawName;
     const picture = user?.user?.picture;
     const avatarLetter = (typeof displayName === "string" ? displayName.charAt(0) : "П").toUpperCase();
 

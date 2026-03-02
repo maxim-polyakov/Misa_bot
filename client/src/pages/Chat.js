@@ -144,11 +144,7 @@ const Chat = observer(({ onMenuToggle }) => {
 
         return (
             <div key={msg.id} className={`message ${messageUser === "Misa" ? "misa-message" : "user-message"}`}>
-                <div className="message-avatar">
-                    {messageUser === "Misa" ? "M" : "👤"}
-                </div>
                 <div className="message-content">
-                    <div className="message-sender">{messageUser}</div>
                     {renderContent()}
                     <div className="message-time">
                         {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
