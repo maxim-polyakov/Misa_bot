@@ -1,10 +1,12 @@
 // routes.js
 import Chat from "./pages/Chat";
 import Auth from "./pages/Auth";
+import VerifyCode from "./pages/VerifyCode";
 import {
     CHAT_ROUTE,
     LOGIN_ROUTE,
-    REGISTRATION_ROUTE
+    REGISTRATION_ROUTE,
+    REGISTRATION_VERIFY_ROUTE
 } from "./utils/consts";
 
 export const authRoutes = [
@@ -14,7 +16,7 @@ export const authRoutes = [
     }
 ];
 
-export const publicRoutes = [ // Исправлено: publicRoutes вместо publickRoutes
+export const publicRoutes = [
     {
         path: LOGIN_ROUTE,
         Component: Auth
@@ -22,5 +24,9 @@ export const publicRoutes = [ // Исправлено: publicRoutes вместо
     {
         path: REGISTRATION_ROUTE,
         Component: Auth
+    },
+    {
+        path: REGISTRATION_VERIFY_ROUTE,
+        Component: VerifyCode
     }
 ];

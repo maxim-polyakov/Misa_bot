@@ -11,6 +11,8 @@ services:
       - "5001:8001"
     env_file:
       - ./server/.env
+    networks:
+      - misa_net
   client:
     container_name: misa_client
     build:
@@ -21,3 +23,31 @@ services:
     ports:
       - "3001:3000"
     restart: unless-stopped
+    networks:
+      - misa_net
+  smtp-service-misa:
+    image: maildev/maildev
+    container_name: smtp-service-lotus
+    restart: unless-stopped
+    environment:
+      - NODE_OPTIONS=--no-warnings=DeprecationWarning
+      - DEBUG=maildev*
+    env_file:
+      - ./server/.env
+    command:
+      --outgoing-host smtp.gmail.com
+      --outgoing-port 465
+      --outgoing-secure
+      --outgoing-user mailer7012@gmail.com
+      --outgoing-pass "ldxm ypzz ewvf mnwq"
+      --auto-relay
+      --verbose
+    ports:
+      - "8191:1080"
+      - "1025:1025"
+    networks:
+      - misa_net
+
+networks:
+  misa_net:
+    driver: bridge

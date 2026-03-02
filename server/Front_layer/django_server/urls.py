@@ -18,6 +18,8 @@ urlpatterns = [
     # Аутентификация
     path('', home_view),
     path('auth/register/', views.register, name='register'),
+    path('auth/register/send-code/', views.register_send_code, name='register_send_code'),
+    path('auth/register/verify/', views.register_verify, name='register_verify'),
     path('auth/login/', views.login_view, name='login'),
     path('auth/oauth/google/', views.oauth_google_redirect, name='oauth_google_redirect'),
     path('auth/oauth/callback', views.oauth_google_callback, name='oauth_google_callback'),

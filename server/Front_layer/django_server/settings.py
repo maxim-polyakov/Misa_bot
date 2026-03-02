@@ -38,6 +38,18 @@ CHANNEL_LAYERS = {
     },
 }
 CORS_ALLOW_ALL_ORIGINS = True
+
+# SMTP для отправки кодов верификации (maildev в docker)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('SMTP_HOST', 'smtp-service-misa')
+EMAIL_PORT = int(os.getenv('SMTP_PORT', 1025))
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+# Отображаемое имя отправителя: Misa <mailer7012@gmail.com>
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Misa <mailer7012@gmail.com>')
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 

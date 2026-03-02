@@ -1,8 +1,8 @@
 import { useContext, useState, useEffect, useRef } from "react";
 import { Button, Card, Container, Form, Alert } from "react-bootstrap";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { CHAT_ROUTE, LOGIN_ROUTE, REGISTRATION_ROUTE } from "../utils/consts.js";
-import { login, registration, exchangeOAuthCode } from "../http/userApi.js";
+import { CHAT_ROUTE, LOGIN_ROUTE, REGISTRATION_ROUTE, REGISTRATION_VERIFY_ROUTE } from "../utils/consts.js";
+import { login, sendRegistrationCode, exchangeOAuthCode } from "../http/userApi.js";
 import { observer } from "mobx-react-lite";
 import { Context } from "../index.js";
 import { useStores } from "../store/rootStoreContext";
@@ -85,27 +85,20 @@ const Auth = observer(() => {
         try {
             setError(""); // Очищаем ошибки перед запросом
 
-            let data;
             if (isLogin) {
-                data = await login(email, password);
+                const data = await login(email, password);
                 chatStore.setIsAuth(true);
                 chatStore.setUser(data.email, data.user_id);
-
-
+                user.setUser(data);
+                user.setIsAuth(true);
+                chatStore.connect();
+                setEmail("");
+                setPassword("");
+                navigate(CHAT_ROUTE);
             } else {
-                data = await registration(email, password);
-                chatStore.setIsAuth(true);
-                chatStore.setUser(data.email, data.user_id);
-
+                await sendRegistrationCode(email, password);
+                navigate(REGISTRATION_VERIFY_ROUTE, { state: { email, password } });
             }
-
-            user.setUser(data);
-            user.setIsAuth(true);
-            chatStore.connect();
-
-            setEmail("");
-            setPassword("");
-            navigate(CHAT_ROUTE);
 
         } catch (error) {
             console.log("Ошибка авторизации:", error);

@@ -7,9 +7,25 @@ from Core_layer.Controller_package.Classes import Controller
 @csrf_exempt
 @require_http_methods(["POST"])
 def register(request):
-    """Регистрация нового пользователя"""
+    """Регистрация нового пользователя (legacy, без верификации)"""
     ctrlr = Controller.Controller()
     return ctrlr.register(request)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def register_send_code(request):
+    """Отправка кода верификации на email"""
+    ctrlr = Controller.Controller()
+    return ctrlr.register_send_code(request)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def register_verify(request):
+    """Проверка кода и создание пользователя"""
+    ctrlr = Controller.Controller()
+    return ctrlr.register_verify(request)
 
 # Контроллер авторизации
 @csrf_exempt

@@ -23,6 +23,8 @@ except ImportError:
     Flow = None
 
 from Core_layer.Auth_package.Classes.OAuthCodeStore import put as oauth_code_put, get_and_remove as oauth_code_get
+from Core_layer.Auth_package.Classes.VerificationCodeStore import put as verification_code_put, get_and_remove as verification_code_get
+from django.core.mail import send_mail
 
 
 
@@ -229,105 +231,178 @@ class Controller(IController.IController):
             logging.error(f"Error getting user from token: {str(e)}")
             return None
 
+    @staticmethod
+    def _normalize_email(email):
+        """Нормализация email: trim, lowercase. Plus-addressing (user+tag@domain) оставляем как есть."""
+        return email.strip().lower()
+
     @classmethod
-    def register(cls, request):
-        """Регистрация нового пользователя с использованием DB_Communication"""
+    def register_send_code(cls, request):
+        """Отправка кода верификации на email при регистрации"""
         try:
             data = json.loads(request.body)
-
-            # Валидация обязательных полей
             required_fields = ['email', 'password']
             for field in required_fields:
                 if not data.get(field):
                     return cls.error_response(f"Field '{field}' is required", 400)
 
-            email = data.get('email').strip().lower()
+            email = cls._normalize_email(data.get('email'))
             password = data.get('password')
 
-            # Валидация email
             try:
                 validate_email(email)
             except ValidationError:
                 return cls.error_response("Invalid email format", 400)
 
-            # Валидация пароля
             if len(password) < 6:
                 return cls.error_response("Password must be at least 6 characters long", 400)
 
-            # Проверка существующего пользователя через DB_Communication
             email_check_query = f"SELECT id FROM auth.users WHERE email = '{email}'"
             email_df = cls.__dbc.get_data(email_check_query)
-
             if email_df is not None and not email_df.empty:
                 return cls.error_response("Email already registered", 409)
 
-            # Хеширование пароля
             hashed_password = make_password(password)
+            code = verification_code_put(email, hashed_password)
 
-            # Получаем следующий ID для пользователя - ИСПРАВЛЕННАЯ ЧАСТЬ
+            try:
+                send_mail(
+                    subject='Код подтверждения регистрации',
+                    message=f'Ваш код подтверждения: {code}\n\nКод действителен 10 минут.',
+                    from_email=None,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+            except Exception as mail_err:
+                logging.error(f"Failed to send verification email: {mail_err}")
+                return cls.error_response("Failed to send verification email", 500)
+
+            return cls.success_response(
+                {'email': email},
+                "Verification code sent to email",
+                200
+            )
+        except json.JSONDecodeError:
+            return cls.error_response("Invalid JSON data", 400)
+        except Exception as e:
+            logging.error(f"register_send_code error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
+    def register_verify(cls, request):
+        """Проверка кода и создание пользователя"""
+        try:
+            data = json.loads(request.body)
+            required_fields = ['email', 'password', 'code']
+            for field in required_fields:
+                if not data.get(field):
+                    return cls.error_response(f"Field '{field}' is required", 400)
+
+            email = cls._normalize_email(data.get('email'))
+            password = data.get('password')
+            code = str(data.get('code')).strip()
+
+            try:
+                validate_email(email)
+            except ValidationError:
+                return cls.error_response("Invalid email format", 400)
+
+            hashed_password = verification_code_get(email, code)
+            if hashed_password is None:
+                return cls.error_response("Invalid or expired verification code", 400)
+
+            # Проверка пароля (на случай если клиент передал другой)
+            if not check_password(password, hashed_password):
+                return cls.error_response("Password does not match", 400)
+
+            email_check_query = f"SELECT id FROM auth.users WHERE email = '{email}'"
+            email_df = cls.__dbc.get_data(email_check_query)
+            if email_df is not None and not email_df.empty:
+                return cls.error_response("Email already registered", 409)
+
             max_id_query = "SELECT COALESCE(MAX(id), 0) as max_id FROM auth.users"
             max_id_df = cls.__dbc.get_data(max_id_query)
-
-            # Безопасное преобразование max_id
             if max_id_df is not None and not max_id_df.empty:
                 max_id = max_id_df.iloc[0]['max_id']
-                # Исправляем преобразование для случая, когда таблица пуста
-                if max_id is None or pd.isna(max_id):
-                    next_id = 1
-                else:
-                    next_id = int(max_id) + 1
+                next_id = 1 if (max_id is None or pd.isna(max_id)) else int(max_id) + 1
             else:
                 next_id = 1
 
-            # Создание пользователя через DB_Communication
-            display_name = email.split('@')[0]  # По умолчанию - часть до @
+            # display_name: часть до @ (noskoff+dima@yandex.ru -> noskoff+dima)
+            display_name = email.split('@')[0]
             user_data = {
-                'id': next_id,  # Явно указываем ID
+                'id': next_id,
                 'email': email,
                 'password': hashed_password,
                 'display_name': display_name,
             }
-
-            # Создаем DataFrame с данными пользователя
             user_df = pd.DataFrame([user_data])
-
-            # Вставляем данные в таблицу auth_user
             cls.__dbc.insert_to(user_df, 'users', 'auth')
 
-            # Получаем созданного пользователя для подтверждения
             user_confirm_query = f"SELECT id, email FROM auth.users WHERE id = {next_id}"
             user_confirm_df = cls.__dbc.get_data(user_confirm_query)
-
             if user_confirm_df is None or user_confirm_df.empty:
                 return cls.error_response("Failed to create user", 500)
 
             user_data_from_db = user_confirm_df.iloc[0]
-
-            # Преобразуем pandas типы в нативные Python типы
             user_id = int(user_data_from_db['id'])
             user_email = str(user_data_from_db['email'])
-
-            # Генерация JWT токена
             token = cls.generate_jwt_token(user_id, user_email)
 
-            user_response_data = {
-                'id': user_id,
-                'email': user_email,
-                'display_name': display_name,
-            }
-
-            response = cls.success_response({
-                'user': user_response_data,
+            return cls.success_response({
+                'user': {'id': user_id, 'email': user_email, 'display_name': display_name},
                 'token': token
             }, "User registered successfully", 201)
+        except json.JSONDecodeError:
+            return cls.error_response("Invalid JSON data", 400)
+        except Exception as e:
+            logging.error(f"register_verify error: {str(e)}")
+            return cls.error_response(str(e), 500)
 
-            return response
-
+    @classmethod
+    def register(cls, request):
+        """Legacy: прямая регистрация без верификации. Используйте send-code + verify."""
+        try:
+            data = json.loads(request.body)
+            required_fields = ['email', 'password']
+            for field in required_fields:
+                if not data.get(field):
+                    return cls.error_response(f"Field '{field}' is required", 400)
+            email = cls._normalize_email(data.get('email'))
+            password = data.get('password')
+            try:
+                validate_email(email)
+            except ValidationError:
+                return cls.error_response("Invalid email format", 400)
+            if len(password) < 6:
+                return cls.error_response("Password must be at least 6 characters long", 400)
+            email_check_query = f"SELECT id FROM auth.users WHERE email = '{email}'"
+            email_df = cls.__dbc.get_data(email_check_query)
+            if email_df is not None and not email_df.empty:
+                return cls.error_response("Email already registered", 409)
+            hashed_password = make_password(password)
+            max_id_query = "SELECT COALESCE(MAX(id), 0) as max_id FROM auth.users"
+            max_id_df = cls.__dbc.get_data(max_id_query)
+            if max_id_df is not None and not max_id_df.empty:
+                max_id = max_id_df.iloc[0]['max_id']
+                next_id = 1 if (max_id is None or pd.isna(max_id)) else int(max_id) + 1
+            else:
+                next_id = 1
+            display_name = email.split('@')[0]
+            user_data = {'id': next_id, 'email': email, 'password': hashed_password, 'display_name': display_name}
+            cls.__dbc.insert_to(pd.DataFrame([user_data]), 'users', 'auth')
+            user_confirm_df = cls.__dbc.get_data(f"SELECT id, email FROM auth.users WHERE id = {next_id}")
+            if user_confirm_df is None or user_confirm_df.empty:
+                return cls.error_response("Failed to create user", 500)
+            row = user_confirm_df.iloc[0]
+            user_id, user_email = int(row['id']), str(row['email'])
+            token = cls.generate_jwt_token(user_id, user_email)
+            return cls.success_response({'user': {'id': user_id, 'email': user_email, 'display_name': display_name}, 'token': token}, "User registered successfully", 201)
         except json.JSONDecodeError:
             return cls.error_response("Invalid JSON data", 400)
         except Exception as e:
             logging.error(f"Registration error: {str(e)}")
-            return cls.error_response(f"Registration error: {str(e)}", 500)
+            return cls.error_response(str(e), 500)
 
     @classmethod
     def login_view(cls, request):

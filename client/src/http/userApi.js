@@ -1,6 +1,35 @@
 import { $host, $authhost} from ".";
 import { jwtDecode } from "jwt-decode";
 
+const extractApiError = (error) => {
+    if (typeof error.response?.data === 'string' && error.response?.data?.includes?.('<!DOCTYPE html>')) {
+        const m = error.response.data.match(/Error: (.+?)(<br>|\n|$)/);
+        return m?.[1]?.trim() || "Ошибка";
+    }
+    return error.response?.data?.message || error.message || "Ошибка";
+};
+
+export const sendRegistrationCode = async (email, password) => {
+    try {
+        const { data } = await $host.post("auth/register/send-code/", { email, password });
+        return data;
+    } catch (error) {
+        throw new Error(extractApiError(error));
+    }
+};
+
+export const verifyRegistrationCode = async (email, password, code) => {
+    try {
+        const { data } = await $host.post("auth/register/verify/", { email, password, code });
+        localStorage.setItem("token", data.data.token);
+        const decoded = jwtDecode(data.data.token);
+        const userFromServer = data.data.user || {};
+        return { ...decoded, ...userFromServer };
+    } catch (error) {
+        throw new Error(extractApiError(error));
+    }
+};
+
 export const registration = async (email, password) => {
     try {
         const { data } = await $host.post("auth/register/", {
@@ -12,22 +41,7 @@ export const registration = async (email, password) => {
         const userFromServer = data.data.user || {};
         return { ...decoded, ...userFromServer };
     } catch (error) {
-        console.log("Registration error:", error);
-
-        let errorMessage = "Ошибка регистрации";
-
-        if (typeof error.response?.data === 'string' && error.response.data.includes('<!DOCTYPE html>')) {
-            const errorMatch = error.response.data.match(/Error: (.+?)(<br>|\n|$)/);
-            if (errorMatch && errorMatch[1]) {
-                errorMessage = errorMatch[1].trim();
-            }
-        } else if (error.response?.data?.message) {
-            errorMessage = error.response.data.message;
-        } else if (error.message) {
-            errorMessage = error.message;
-        }
-
-        throw new Error(errorMessage);
+        throw new Error(extractApiError(error));
     }
 };
 
