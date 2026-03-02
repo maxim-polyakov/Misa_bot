@@ -22,7 +22,8 @@ const Sidebar = observer(() => {
 
     const displayName = user?.user?.display_name;
     const email = user?.user?.email || chatStore?.user || "";
-    const profileLabel = displayName || email;
+    // Если display_name — это только часть до @ (авто-сгенерировано), показываем полный email
+    const profileLabel = (displayName && displayName !== email?.split("@")[0]) ? displayName : email;
     const picture = user?.user?.picture;
     const avatarLetter = (typeof profileLabel === "string" && profileLabel.length > 0 ? profileLabel.charAt(0) : "?").toUpperCase();
 
