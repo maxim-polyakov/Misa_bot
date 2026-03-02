@@ -38,10 +38,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
         return () => window.removeEventListener("storage", handleStorage);
     }, []);
 
-    const rawName = user?.user?.display_name || user?.user?.email || chatStore?.user || "Пользователь";
-    const displayName = (typeof rawName === "string" && rawName.includes("@"))
-        ? rawName.split("@")[0]
-        : rawName;
+    const displayName = user?.user?.display_name || "Пользователь";
     const email = user?.user?.email || chatStore?.user || "";
     const picture = user?.user?.picture;
     const isGoogleUser = !!picture;
