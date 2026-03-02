@@ -8,7 +8,9 @@ export const registration = async (email, password) => {
             password,
         });
         localStorage.setItem("token", data.data.token);
-        return jwtDecode(data.data.token);
+        const decoded = jwtDecode(data.data.token);
+        const userFromServer = data.data.user || {};
+        return { ...decoded, ...userFromServer };
     } catch (error) {
         console.log("Registration error:", error);
 
@@ -37,7 +39,9 @@ export const login = async (email, password) => {
         });
         const token = data.data.token.toString();
         localStorage.setItem("token", token);
-        return jwtDecode(data.data.token);
+        const decoded = jwtDecode(data.data.token);
+        const userFromServer = data.data.user || {};
+        return { ...decoded, ...userFromServer };
     } catch (error) {
         console.log("Login error:", error);
 
@@ -118,8 +122,9 @@ export const check = async () => {
             const newToken = data.data.token;
             localStorage.setItem("token", newToken);
             const decoded = jwtDecode(newToken);
+            const userFromServer = data.data.user || {};
             console.log("Новый токен установлен:", decoded);
-            return decoded;
+            return { ...decoded, ...userFromServer };
         }
 
     } catch (error) {

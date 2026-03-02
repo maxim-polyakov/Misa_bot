@@ -129,7 +129,7 @@ class Controller(IController.IController):
         }, status=status)
 
     @classmethod
-    def generate_jwt_token(cls, user_id, email):
+    def generate_jwt_token(cls, user_id, email, display_name=None, picture=None):
         try:
             # Use UTC explicitly
             current_time = datetime.datetime.utcnow()
@@ -141,6 +141,10 @@ class Controller(IController.IController):
                 'exp': expiration_time,  # jwt.encode will handle conversion to timestamp
                 'iat': current_time
             }
+            if display_name is not None:
+                payload['display_name'] = str(display_name)
+            if picture is not None:
+                payload['picture'] = str(picture)
 
             token = jwt.encode(payload, cls.JWT_SECRET, algorithm=cls.JWT_ALGORITHM)
             return token
@@ -210,11 +214,13 @@ class Controller(IController.IController):
                 email=user_data['email']
             )
 
-            # Устанавливаем даты, если они есть в данных
+            # Устанавливаем даты и display_name, если они есть в данных
             if 'date_joined' in user_data and pd.notna(user_data['date_joined']):
                 user.date_joined = user_data['date_joined']
             if 'last_login' in user_data and pd.notna(user_data['last_login']):
                 user.last_login = user_data['last_login']
+            if 'display_name' in user_data and pd.notna(user_data.get('display_name')):
+                user.display_name = str(user_data['display_name'])
 
             logging.info(f"Successfully retrieved user {user.username} from token")
             return user
@@ -307,6 +313,7 @@ class Controller(IController.IController):
             user_response_data = {
                 'id': user_id,
                 'email': user_email,
+                'display_name': display_name,
             }
 
             response = cls.success_response({
@@ -362,9 +369,11 @@ class Controller(IController.IController):
                 # Генерация JWT токена
                 token = cls.generate_jwt_token(user_id, user_email)
 
+                display_name = str(user_data['display_name']) if 'display_name' in user_data and pd.notna(user_data.get('display_name')) else user_email.split('@')[0]
                 user_response_data = {
                     'id': user_id,
                     'email': user_email,
+                    'display_name': display_name,
                 }
 
                 return cls.success_response({
@@ -499,12 +508,13 @@ class Controller(IController.IController):
 
             email = idinfo.get('email', '').strip().lower()
             display_name = idinfo.get('name') or idinfo.get('given_name') or email.split('@')[0] or 'User'
+            picture = idinfo.get('picture')
 
             if not email:
                 return HttpResponseRedirect(f"{frontend_url}/login?oauth_error=OAUTH_MISSING_DATA")
 
             user_id, user_email, display_name = cls._get_or_create_google_user(email, display_name)
-            jwt_token = cls.generate_jwt_token(user_id, user_email)
+            jwt_token = cls.generate_jwt_token(user_id, user_email, display_name, picture)
 
             oauth_code = oauth_code_put(jwt_token)
             redirect_url = f"{frontend_url}/login?oauth=google&code={oauth_code}"
@@ -540,12 +550,22 @@ class Controller(IController.IController):
             if user is None:
                 return cls.error_response("Authentication required", 401)
 
-            # Генерируем НОВЫЙ токен для пользователя
-            new_token = cls.generate_jwt_token(user.id, user.email)
+            # Сохраняем picture из текущего токена (для пользователей Google)
+            auth_header = request.headers.get('Authorization', '')
+            picture = None
+            if auth_header.startswith('Bearer '):
+                payload = cls.verify_jwt_token(auth_header.split(' ')[1])
+                if payload:
+                    picture = payload.get('picture')
+
+            display_name = getattr(user, 'display_name', None) or user.email.split('@')[0]
+            new_token = cls.generate_jwt_token(user.id, user.email, display_name, picture)
 
             user_data = {
                 'id': user.id,
                 'email': user.email,
+                'display_name': display_name,
+                'picture': picture,
             }
 
             return cls.success_response({

@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState, useRef, useEffect } from "react";
 import { Context } from "../index.js";
 import Navbar from "react-bootstrap/Navbar";
 import { Button } from "react-bootstrap";
@@ -13,20 +13,36 @@ const Sidebar = observer(() => {
     const { chatStore } = useStores();
     const { closeSidebar } = useMenuToggle();
     const navigate = useNavigate();
+    const [profileOpen, setProfileOpen] = useState(false);
+    const profileRef = useRef(null);
+
+    const displayName = user?.user?.display_name || user?.user?.email || chatStore?.user || "Пользователь";
+    const picture = user?.user?.picture;
+    const avatarLetter = (typeof displayName === "string" ? displayName.charAt(0) : "П").toUpperCase();
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (profileRef.current && !profileRef.current.contains(e.target)) {
+                setProfileOpen(false);
+            }
+        };
+        if (profileOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [profileOpen]);
 
     const handleSwitchChat = (chatId) => {
         chatStore.switchChat(chatId);
         closeSidebar?.();
     };
 
-    const logOut = async () => {
+    const logOut = () => {
+        setProfileOpen(false);
         chatStore.clearUserFromStorage();
         chatStore.logout();
-
         user?.setUser({});
         user?.setIsAuth(false);
-
-
         navigate("/login", { replace: true });
     };
 
@@ -62,15 +78,40 @@ const Sidebar = observer(() => {
                             </button>
                         ))}
                     </div>
-                    <div className="sidebar-footer">
-                        <Button
-                            variant="outline-light"
-                            className="w-100"
-                            onClick={logOut}
+                    <div className="sidebar-footer" ref={profileRef}>
+                        <button
+                            type="button"
+                            className="sidebar-profile-trigger"
+                            onClick={() => setProfileOpen(!profileOpen)}
+                            aria-expanded={profileOpen}
+                            aria-haspopup="true"
                         >
-                            <i>🚪</i>
-                            <span>Выйти</span>
-                        </Button>
+                            <div className="sidebar-profile-avatar">
+                                {picture ? (
+                                    <img src={picture} alt="" className="sidebar-profile-avatar-img" referrerPolicy="no-referrer" />
+                                ) : (
+                                    avatarLetter
+                                )}
+                            </div>
+                            <span className="sidebar-profile-name">{displayName}</span>
+                            <span className="sidebar-profile-dots">⋯</span>
+                        </button>
+                        {profileOpen && (
+                            <div className="sidebar-profile-panel">
+                                <button type="button" className="sidebar-profile-item" onClick={() => { setProfileOpen(false); /* TODO: настройки */ }}>
+                                    <span className="sidebar-profile-item-icon">⚙</span>
+                                    Настройки
+                                </button>
+                                <button type="button" className="sidebar-profile-item" onClick={() => { setProfileOpen(false); /* TODO: помощь */ }}>
+                                    <span className="sidebar-profile-item-icon">?</span>
+                                    Помощь и отзыв
+                                </button>
+                                <button type="button" className="sidebar-profile-item sidebar-profile-item-logout" onClick={logOut}>
+                                    <span className="sidebar-profile-item-icon">→</span>
+                                    Выйти
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </Navbar>
