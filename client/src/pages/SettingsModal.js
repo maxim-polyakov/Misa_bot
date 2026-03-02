@@ -94,14 +94,12 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                     <div className="settings-modal-content">
                         {activeTab === "profile" && (
                         <div className="settings-profile-section">
-                            {displayName && (
+                            {isGoogleUser && displayName && (
                                 <div className="settings-profile-row">
                                     <span className="settings-profile-label">{t("name")}</span>
                                     <span className="settings-profile-value">
                                         {displayName}
-                                        {isGoogleUser && (
-                                            <span className="settings-google-badge" title="Вход через Google">G</span>
-                                        )}
+                                        <span className="settings-google-badge" title="Вход через Google">G</span>
                                     </span>
                                 </div>
                             )}
