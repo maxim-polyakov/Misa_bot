@@ -270,7 +270,7 @@ class ChatStore {
                 }
 
                 if (this.reconnectAttempts < this.maxReconnectAttempts) {
-                    if(event.code != 1000) {
+                    if (event.code !== 1000) {
                         setTimeout(() => {
                             if(this.isAuth) {
                                 this.reconnectAttempts++;

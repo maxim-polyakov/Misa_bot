@@ -38,7 +38,7 @@ const App = observer(() => {
         };
 
         checkAuth();
-    }, [user]);
+    }, [user, chatStore]);
 
     if (loading) {
         return (

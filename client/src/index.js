@@ -1,11 +1,11 @@
-import {createContext} from 'react';
+import { createContext } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import { applyTheme } from './utils/theme.js';
+import UserChat from "./store/userChat";
 import App from './App.js';
 
 applyTheme();
-import UserChat from "./store/userChat";
 
 export const Context = createContext(null)
 

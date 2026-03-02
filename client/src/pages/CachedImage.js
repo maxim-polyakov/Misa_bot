@@ -55,7 +55,7 @@ const CachedImage = ({ src, cacheKey, messageContent, messageUser }) => {
         const checkForUpdates = async () => {
             // Фоновая проверка обновлений
             try {
-                const response = await fetch(src + '?check=' + Date.now());
+                await fetch(src + '?check=' + Date.now());
                 // Можно добавить логику проверки ETag или Last-Modified
             } catch (error) {
                 console.log('Не удалось проверить обновления изображения');

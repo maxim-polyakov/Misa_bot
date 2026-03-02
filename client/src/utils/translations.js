@@ -30,7 +30,6 @@ export const translations = {
         startHint: "Задайте вопрос или поделитесь мыслями",
         reconnect: "Переподключиться",
         connectionLost: "Соединение потеряно",
-        settings: "Настройки",
         helpFeedback: "Помощь и отзыв",
     },
     en: {
@@ -64,7 +63,6 @@ export const translations = {
         startHint: "Ask a question or share your thoughts",
         reconnect: "Reconnect",
         connectionLost: "Connection lost",
-        settings: "Settings",
         helpFeedback: "Help & Feedback",
     },
 };
