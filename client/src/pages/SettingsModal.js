@@ -176,7 +176,48 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                             </div>
                         )}
                         {activeTab === "data" && (
-                            <div className="settings-placeholder">Раздел «Данные» в разработке</div>
+                            <div className="settings-data-section">
+                                <div className="settings-data-block">
+                                    <div className="settings-data-block-header">
+                                        <span className="settings-data-block-title">{t("exportData")}</span>
+                                    </div>
+                                    <p className="settings-data-block-desc">{t("exportDataDesc")}</p>
+                                    <button
+                                        type="button"
+                                        className="settings-btn-export"
+                                        onClick={() => {
+                                            const json = chatStore.exportChatsData();
+                                            const blob = new Blob([json], { type: "application/json" });
+                                            const url = URL.createObjectURL(blob);
+                                            const a = document.createElement("a");
+                                            a.href = url;
+                                            a.download = `misa-chats-${new Date().toISOString().slice(0, 10)}.json`;
+                                            a.click();
+                                            URL.revokeObjectURL(url);
+                                        }}
+                                    >
+                                        {t("exportButton")}
+                                    </button>
+                                </div>
+                                <div className="settings-data-block">
+                                    <div className="settings-data-block-header">
+                                        <span className="settings-data-block-title">{t("deleteAllChats")}</span>
+                                    </div>
+                                    <p className="settings-data-block-desc">{t("deleteAllChatsDesc")}</p>
+                                    <button
+                                        type="button"
+                                        className="settings-btn-delete-all"
+                                        onClick={() => {
+                                            if (window.confirm(t("confirmDeleteAllChats"))) {
+                                                chatStore.deleteAllChats();
+                                                onClose();
+                                            }
+                                        }}
+                                    >
+                                        {t("deleteAllButton")}
+                                    </button>
+                                </div>
+                            </div>
                         )}
                         {activeTab === "about" && (
                             <div className="settings-placeholder">Misa AI Чат</div>

@@ -227,6 +227,38 @@ class ChatStore {
         }
     };
 
+    // Удаление всех чатов
+    deleteAllChats() {
+        const id = generateId();
+        const newChat = {
+            id,
+            title: "Новый чат",
+            messages: [],
+            createdAt: new Date()
+        };
+        this.chats = [newChat];
+        this.currentChatId = id;
+        this.saveChats();
+    };
+
+    // Экспорт чатов в JSON
+    exportChatsData() {
+        const data = {
+            exportedAt: new Date().toISOString(),
+            chats: this.chats.map(c => ({
+                id: c.id,
+                title: c.title,
+                createdAt: c.createdAt,
+                messages: (c.messages || []).map(m => ({
+                    content: m.content,
+                    user: m.user,
+                    timestamp: m.timestamp
+                }))
+            }))
+        };
+        return JSON.stringify(data, null, 2);
+    };
+
 
 
     connect() {
