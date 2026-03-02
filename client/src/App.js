@@ -28,15 +28,20 @@ const App = observer(() => {
                     };
                     user.setUser(merged);
                     user.setIsAuth(true);
+                    chatStore.setUser(merged.email, merged.user_id ?? merged.id);
                     chatStore.connect();
                 } else {
+                    localStorage.setItem("userIsAuth", "false");
                     user.setIsAuth(false);
                     user.setUser({});
+                    chatStore.logout();
                 }
             } catch (error) {
                 console.log("Auth check error:", error.message);
+                localStorage.setItem("userIsAuth", "false");
                 user.setIsAuth(false);
                 user.setUser({});
+                chatStore.logout();
             } finally {
                 setLoading(false);
             }

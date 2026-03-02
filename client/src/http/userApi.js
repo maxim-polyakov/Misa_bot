@@ -175,6 +175,7 @@ export const check = async () => {
             localStorage.removeItem("currentUser");
             localStorage.removeItem("currentUserId");
             localStorage.removeItem("userProfile");
+            localStorage.setItem("userIsAuth", "false");
         }
         return null;
     }
