@@ -22,10 +22,18 @@ const Sidebar = observer(() => {
 
     const displayName = user?.user?.display_name;
     const email = user?.user?.email || chatStore?.user || "";
-    // Если display_name — это только часть до @ (авто-сгенерировано), показываем полный email
-    const profileLabel = (displayName && displayName !== email?.split("@")[0]) ? displayName : email;
+    // Если display_name — это только часть до @ (авто-сгенерировано), показываем email с маскировкой
+    const isAutoDisplayName = !displayName || displayName === email?.split("@")[0];
+    const rawLabel = isAutoDisplayName ? email : displayName;
+    const maskEmail = (e) => {
+        if (!e || !e.includes("@")) return rawLabel || "-";
+        const [local, domain] = e.split("@");
+        if (local.length <= 2) return e;
+        return local.slice(0, 2) + "*".repeat(Math.min(local.length - 2, 5)) + local.slice(-2) + "@" + domain;
+    };
+    const profileLabel = isAutoDisplayName && rawLabel ? maskEmail(rawLabel) : rawLabel;
     const picture = user?.user?.picture;
-    const avatarLetter = (typeof profileLabel === "string" && profileLabel.length > 0 ? profileLabel.charAt(0) : "?").toUpperCase();
+    const avatarLetter = (typeof rawLabel === "string" && rawLabel.length > 0 ? rawLabel.charAt(0) : "?").toUpperCase();
 
     useEffect(() => {
         const handleClickOutside = (e) => {
