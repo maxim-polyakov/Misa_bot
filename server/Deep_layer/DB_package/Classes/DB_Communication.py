@@ -72,19 +72,16 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     @dispatch(object, object, object, object)
     def insert_to(cls, df, datatable, schema):
         # inserting data to a database
-        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # establish a connection to the postgresql database
             postgr_conn = Connections.PostgresConnection()
-            # log that the insertion process is completed
+            with postgr_conn.engine_remote.connect() as conn:
+                df.to_sql(datatable, con=conn, schema=schema, index=False, if_exists='append')
+                conn.commit()
             logging.info('The db_communication.insert_to 3 method has completed successfully')
-            # insert the dataframe into the specified database table
-            df.to_sql(datatable, con=postgr_conn.engine_remote, schema=schema,
-                index=False, if_exists='append')
         except Exception as e:
-            # log any exceptions that occur during execution
             logging.exception('The exception occurred in db_communication.insert_to 3: ' + str(e))
+            raise
 
     @classmethod
     @dispatch(object, object, object)

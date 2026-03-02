@@ -216,13 +216,15 @@ class Controller(IController.IController):
                 email=user_data['email']
             )
 
-            # Устанавливаем даты и display_name, если они есть в данных
-            if 'date_joined' in user_data and pd.notna(user_data['date_joined']):
+            # Устанавливаем даты, display_name и picture, если они есть в данных
+            if 'date_joined' in user_data and pd.notna(user_data.get('date_joined')):
                 user.date_joined = user_data['date_joined']
-            if 'last_login' in user_data and pd.notna(user_data['last_login']):
+            if 'last_login' in user_data and pd.notna(user_data.get('last_login')):
                 user.last_login = user_data['last_login']
             if 'display_name' in user_data and pd.notna(user_data.get('display_name')):
                 user.display_name = str(user_data['display_name'])
+            if 'picture' in user_data and pd.notna(user_data.get('picture')):
+                user.picture = str(user_data['picture'])
 
             logging.info(f"Successfully retrieved user {user.username} from token")
             return user
@@ -466,8 +468,8 @@ class Controller(IController.IController):
             return cls.error_response(f"Login error: {str(e)}", 500)
 
     @classmethod
-    def _get_or_create_google_user(cls, email, display_name):
-        """Создаёт или находит пользователя по email. Возвращает (user_id, user_email, display_name)."""
+    def _get_or_create_google_user(cls, email, display_name, picture=None):
+        """Создаёт или находит пользователя по email. Возвращает (user_id, user_email, display_name, picture)."""
         user_query = f"SELECT id, email, display_name FROM auth.users WHERE email = '{email}'"
         user_df = cls.__dbc.get_data(user_query)
 
@@ -476,7 +478,8 @@ class Controller(IController.IController):
             user_id = int(user_data['id'].item()) if hasattr(user_data['id'], 'item') else int(user_data['id'])
             user_email = str(user_data['email'])
             dn = str(user_data['display_name']) if 'display_name' in user_data and pd.notna(user_data.get('display_name')) else display_name
-            return user_id, user_email, dn
+            pic = picture  # picture всегда из текущего запроса Google
+            return user_id, user_email, dn, pic
 
         max_id_query = "SELECT COALESCE(MAX(id), 0) as max_id FROM auth.users"
         max_id_df = cls.__dbc.get_data(max_id_query)
@@ -492,8 +495,16 @@ class Controller(IController.IController):
             'display_name': display_name,
         }
         user_df_insert = pd.DataFrame([user_data_insert])
-        cls.__dbc.insert_to(user_df_insert, 'users', 'auth')
-        return next_id, email, display_name
+        try:
+            cls.__dbc.insert_to(user_df_insert, 'users', 'auth')
+        except Exception as e:
+            logging.error(f"Failed to insert Google user: {e}")
+            raise
+        verify_df = cls.__dbc.get_data(f"SELECT id FROM auth.users WHERE id = {next_id}")
+        if verify_df is None or verify_df.empty:
+            logging.error("Google user insert succeeded but user not found in DB")
+            raise ValueError("Failed to create user in database")
+        return next_id, email, display_name, picture
 
     @classmethod
     def oauth_google_redirect(cls, request):
@@ -588,7 +599,7 @@ class Controller(IController.IController):
             if not email:
                 return HttpResponseRedirect(f"{frontend_url}/login?oauth_error=OAUTH_MISSING_DATA")
 
-            user_id, user_email, display_name = cls._get_or_create_google_user(email, display_name)
+            user_id, user_email, display_name, picture = cls._get_or_create_google_user(email, display_name, picture)
             jwt_token = cls.generate_jwt_token(user_id, user_email, display_name, picture)
 
             oauth_code = oauth_code_put(jwt_token)
@@ -640,6 +651,7 @@ class Controller(IController.IController):
                 or display_name_from_token
                 or user.email.split('@')[0]
             )
+            picture = picture or getattr(user, 'picture', None)
             new_token = cls.generate_jwt_token(user.id, user.email, display_name, picture)
 
             user_data = {
