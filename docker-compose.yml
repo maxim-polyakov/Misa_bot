@@ -27,7 +27,7 @@ services:
       - misa_net
   smtp-service-misa:
     image: maildev/maildev
-    container_name: smtp-service-lotus
+    container_name: smtp-service-misa
     restart: unless-stopped
     environment:
       - NODE_OPTIONS=--no-warnings=DeprecationWarning
