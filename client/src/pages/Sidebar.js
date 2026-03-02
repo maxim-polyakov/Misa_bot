@@ -20,9 +20,11 @@ const Sidebar = observer(() => {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const profileRef = useRef(null);
 
-    const displayName = user?.user?.display_name || "Пользователь";
+    const displayName = user?.user?.display_name;
+    const email = user?.user?.email || chatStore?.user || "";
+    const profileLabel = displayName || email;
     const picture = user?.user?.picture;
-    const avatarLetter = (typeof displayName === "string" ? displayName.charAt(0) : "П").toUpperCase();
+    const avatarLetter = (typeof profileLabel === "string" && profileLabel.length > 0 ? profileLabel.charAt(0) : "?").toUpperCase();
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -97,7 +99,7 @@ const Sidebar = observer(() => {
                                     avatarLetter
                                 )}
                             </div>
-                            <span className="sidebar-profile-name">{displayName}</span>
+                            <span className="sidebar-profile-name">{profileLabel}</span>
                             <span className="sidebar-profile-dots">⋯</span>
                         </button>
                         {profileOpen && (

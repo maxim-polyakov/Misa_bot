@@ -38,7 +38,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
         return () => window.removeEventListener("storage", handleStorage);
     }, []);
 
-    const displayName = user?.user?.display_name || "Пользователь";
+    const displayName = user?.user?.display_name;
     const email = user?.user?.email || chatStore?.user || "";
     const picture = user?.user?.picture;
     const isGoogleUser = !!picture;
@@ -94,17 +94,17 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                     <div className="settings-modal-content">
                         {activeTab === "profile" && (
                         <div className="settings-profile-section">
-                            <div className="settings-profile-row">
-                                <span className="settings-profile-label">{t("name")}</span>
-                                <span className="settings-profile-value">
-                                    {displayName}
-                                    {isGoogleUser && (
-                                        <span className="settings-google-badge" title="Вход через Google">
-                                            G
-                                        </span>
-                                    )}
-                                </span>
-                            </div>
+                            {displayName && (
+                                <div className="settings-profile-row">
+                                    <span className="settings-profile-label">{t("name")}</span>
+                                    <span className="settings-profile-value">
+                                        {displayName}
+                                        {isGoogleUser && (
+                                            <span className="settings-google-badge" title="Вход через Google">G</span>
+                                        )}
+                                    </span>
+                                </div>
+                            )}
                             <div className="settings-profile-row">
                                 <span className="settings-profile-label">{t("email")}</span>
                                 <span className="settings-profile-value">{maskEmail(email) || "-"}</span>
