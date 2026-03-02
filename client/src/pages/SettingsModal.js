@@ -2,6 +2,7 @@ import { createPortal } from "react-dom";
 import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { observer } from "mobx-react-lite";
+import JSZip from "jszip";
 import { Context } from "../index.js";
 import { useStores } from "../store/rootStoreContext";
 import { useLocale } from "../contexts/LocaleContext";
@@ -185,13 +186,23 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                                     <button
                                         type="button"
                                         className="settings-btn-export"
-                                        onClick={() => {
-                                            const json = chatStore.exportChatsData();
-                                            const blob = new Blob([json], { type: "application/json" });
+                                        onClick={async () => {
+                                            const zip = new JSZip();
+                                            const dateStr = new Date().toISOString().slice(0, 10);
+                                            const conversationsData = chatStore.getConversationsExportData();
+                                            zip.file("conversations.json", JSON.stringify(conversationsData, null, 2));
+                                            const userData = {
+                                                exportedAt: new Date().toISOString(),
+                                                display_name: displayName || null,
+                                                email: email || null,
+                                                picture: picture || null,
+                                            };
+                                            zip.file("user.json", JSON.stringify(userData, null, 2));
+                                            const blob = await zip.generateAsync({ type: "blob" });
                                             const url = URL.createObjectURL(blob);
                                             const a = document.createElement("a");
                                             a.href = url;
-                                            a.download = `misa-chats-${new Date().toISOString().slice(0, 10)}.json`;
+                                            a.download = `misa_data-${dateStr}.zip`;
                                             a.click();
                                             URL.revokeObjectURL(url);
                                         }}

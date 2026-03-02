@@ -241,11 +241,11 @@ class ChatStore {
         this.saveChats();
     };
 
-    // Экспорт чатов в JSON
-    exportChatsData() {
-        const data = {
+    // Данные для conversations.json (экспорт)
+    getConversationsExportData() {
+        return {
             exportedAt: new Date().toISOString(),
-            chats: this.chats.map(c => ({
+            conversations: this.chats.map(c => ({
                 id: c.id,
                 title: c.title,
                 createdAt: c.createdAt,
@@ -256,10 +256,7 @@ class ChatStore {
                 }))
             }))
         };
-        return JSON.stringify(data, null, 2);
-    };
-
-
+    }
 
     connect() {
         if (this.isConnecting || this.isConnected) return;
