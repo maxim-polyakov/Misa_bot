@@ -5,7 +5,8 @@
     box-sizing: border-box;
 }
 
-:root {
+:root,
+[data-theme="dark"] {
     --primary-bg: #0f1117;
     --secondary-bg: #1a1d28;
     --message-bg: #1a1d28;
@@ -18,6 +19,22 @@
     --warning-color: #ff9800;
     --sidebar-width: 250px;
     --mobile-sidebar-width: 280px;
+}
+
+[data-theme="light"] {
+    --primary-bg: #f3f4f6;
+    --secondary-bg: #ffffff;
+    --message-bg: #ffffff;
+    --user-message-bg: #1e40af;
+    --border-color: #e5e7eb;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --accent-color: #10a37f;
+}
+
+[data-theme="light"] .sidebar-wrapper,
+[data-theme="light"] .sidebar {
+    background: linear-gradient(180deg, #e5e7eb 0%, #d1d5db 100%) !important;
 }
 
 html {
@@ -807,6 +824,268 @@ body {
 .sidebar-profile-item-logout:hover {
     background: rgba(239, 68, 68, 0.2);
     color: #fca5a5;
+}
+
+/* ===== SETTINGS MODAL ===== */
+.settings-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.2s ease;
+}
+
+.settings-modal {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    width: min(90vw, 560px);
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.settings-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.settings-modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.settings-modal-close {
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.settings-modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.settings-modal-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.settings-modal-nav {
+    width: 10rem;
+    padding: 0.75rem 0;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.settings-modal-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s, color 0.2s;
+}
+
+.settings-modal-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.settings-modal-nav-item.active {
+    background: rgba(16, 163, 127, 0.15);
+    color: var(--accent-color);
+}
+
+.settings-modal-nav-icon {
+    font-size: 1rem;
+}
+
+.settings-modal-content {
+    flex: 1;
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+.settings-profile-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.settings-profile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.settings-profile-row-actions {
+    align-items: center;
+}
+
+.settings-profile-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.settings-profile-value {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.settings-google-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: #4285f4;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.settings-btn-logout,
+.settings-btn-delete {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+}
+
+.settings-btn-logout {
+    background: #ef4444;
+    color: white;
+}
+
+.settings-btn-logout:hover {
+    background: #dc2626;
+}
+
+.settings-btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+.settings-btn-delete:hover {
+    background: #dc2626;
+}
+
+.settings-placeholder {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.settings-general-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.settings-theme-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.settings-theme-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.settings-theme-options {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.settings-theme-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 5rem;
+}
+
+.settings-theme-btn:hover {
+    border-color: var(--accent-color);
+    color: var(--text-primary);
+    background: rgba(16, 163, 127, 0.08);
+}
+
+.settings-theme-btn.active {
+    border-color: var(--accent-color);
+    background: rgba(16, 163, 127, 0.15);
+    color: var(--accent-color);
+}
+
+.settings-theme-icon {
+    font-size: 1.25rem;
+}
+
+.settings-language-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.settings-language-select {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--border-color);
+    background: var(--primary-bg);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    max-width: 12rem;
+}
+
+.settings-language-select:focus {
+    outline: none;
+    border-color: var(--accent-color);
 }
 
 .sidebar-header {

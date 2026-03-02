@@ -1,14 +1,14 @@
 import { observer } from "mobx-react-lite";
 import { useState, useRef, useEffect } from "react";
 import { useStores } from "../store/rootStoreContext";
+import { useLocale } from "../contexts/LocaleContext";
 import CachedImage from "./CachedImage";
 import "./Styles.css";
 import { imageDB } from "./ImageDB";
 
-
-
 const Chat = observer(({ onMenuToggle }) => {
     const { chatStore } = useStores();
+    const { t } = useLocale();
     const [message, setMessage] = useState("");
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
@@ -63,7 +63,7 @@ const Chat = observer(({ onMenuToggle }) => {
     };
 
     const handleClearHistory = async () => {
-        if (window.confirm("Очистить всю историю сообщений?")) {
+        if (window.confirm(t("confirmClearHistory") + "?")) {
             chatStore.clearMessages();
             await imageDB.clearAll()
         }
@@ -72,11 +72,11 @@ const Chat = observer(({ onMenuToggle }) => {
 
     const getConnectionStatus = () => {
         if (chatStore.isConnected) {
-            return <span className="connection-status status-connected">● Подключено</span>;
+            return <span className="connection-status status-connected">● {t("connected")}</span>;
         } else if (chatStore.isConnecting) {
-            return <span className="connection-status status-connecting">● Подключение...</span>;
+            return <span className="connection-status status-connecting">● {t("connecting")}</span>;
         } else {
-            return <span className="connection-status status-disconnected">● Отключено</span>;
+            return <span className="connection-status status-disconnected">● {t("disconnected")}</span>;
         }
     };
 
@@ -158,7 +158,7 @@ const Chat = observer(({ onMenuToggle }) => {
     return (
         <div className="chat-container">
             <div className="chat-header">
-                <h1>Misa AI Чат</h1>
+                <h1>{t("misaChat")}</h1>
                 {/* Добавленная кнопка меню */}
                 <div className="chat-header-controls">
                     <div className="chat-status">
@@ -168,7 +168,7 @@ const Chat = observer(({ onMenuToggle }) => {
                         <button
                             onClick={handleClearHistory}
                             className="clear-history-button"
-                            title="Очистить историю"
+                            title={t("clearHistory")}
                         >
                             🗑️
                         </button>
@@ -182,8 +182,8 @@ const Chat = observer(({ onMenuToggle }) => {
                     {chatStore.messages.length === 0 ? (
                         <div className="empty-chat">
                             <div className="empty-icon">💬</div>
-                            <p>Начните общение с Misa AI</p>
-                            <small>Задайте вопрос или поделитесь мыслями</small>
+                            <p>{t("startChat")}</p>
+                            <small>{t("startHint")}</small>
                         </div>
                     ) : (
                         chatStore.messages.map(renderMessage)
@@ -199,7 +199,7 @@ const Chat = observer(({ onMenuToggle }) => {
                         <span></span>
                         <span></span>
                     </div>
-                    Misa AI печатает...
+                    {t("typing")}
                 </div>
             )}
 
@@ -209,7 +209,7 @@ const Chat = observer(({ onMenuToggle }) => {
                     value={message}
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
-                    placeholder="Введите ваше сообщение... (Shift+Enter для переноса строки)"
+                    placeholder={t("placeholder")}
                     rows={1}
                     style={{
                         minHeight: '40px',
@@ -252,12 +252,12 @@ const Chat = observer(({ onMenuToggle }) => {
 
             {!chatStore.isConnected && !chatStore.isConnecting && (
                 <div className="reconnect-container">
-                    <p>Соединение потеряно</p>
+                    <p>{t("connectionLost")}</p>
                     <button
                         onClick={() => chatStore.connect()}
                         className="reconnect-button"
                     >
-                        🔄 Переподключиться
+                        🔄 {t("reconnect")}
                     </button>
                 </div>
             )}

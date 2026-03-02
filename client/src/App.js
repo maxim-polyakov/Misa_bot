@@ -8,6 +8,7 @@ import { Context } from "./index.js";
 import { check } from "./http/userApi.js";
 import AppRouter from "./components/AppRouter";
 import { useStores } from "./store/rootStoreContext";
+import { LocaleProvider } from "./contexts/LocaleContext";
 
 const App = observer(() => {
     const { user } = useContext(Context);
@@ -48,9 +49,11 @@ const App = observer(() => {
     }
 
     return (
-        <BrowserRouter>
-            <AppRouter />
-        </BrowserRouter>
+        <LocaleProvider>
+            <BrowserRouter>
+                <AppRouter />
+            </BrowserRouter>
+        </LocaleProvider>
     );
 });
 

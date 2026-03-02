@@ -7,13 +7,17 @@ import { useNavigate } from "react-router-dom";
 import "./Styles.css";
 import { useStores } from "../store/rootStoreContext";
 import { useMenuToggle } from "../pages/MainLayout";
+import { useLocale } from "../contexts/LocaleContext";
+import SettingsModal from "./SettingsModal";
 
 const Sidebar = observer(() => {
     const { user } = useContext(Context);
+    const { t } = useLocale();
     const { chatStore } = useStores();
     const { closeSidebar } = useMenuToggle();
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const profileRef = useRef(null);
 
     const rawName = user?.user?.display_name || user?.user?.email || chatStore?.user || "Пользователь";
@@ -64,7 +68,7 @@ const Sidebar = observer(() => {
                             onClick={() => chatStore.newChat()}
                         >
                             <span className="new-chat-icon">+</span>
-                            <span>Новый чат</span>
+                            <span>{t("newChat")}</span>
                         </Button>
                     </div>
                     <div className="sidebar-chats">
@@ -101,23 +105,24 @@ const Sidebar = observer(() => {
                         </button>
                         {profileOpen && (
                             <div className="sidebar-profile-panel">
-                                <button type="button" className="sidebar-profile-item" onClick={() => { setProfileOpen(false); /* TODO: настройки */ }}>
+                                <button type="button" className="sidebar-profile-item" onClick={() => { setProfileOpen(false); setSettingsOpen(true); }}>
                                     <span className="sidebar-profile-item-icon">⚙</span>
-                                    Настройки
+                                    {t("settings")}
                                 </button>
                                 <button type="button" className="sidebar-profile-item" onClick={() => { setProfileOpen(false); /* TODO: помощь */ }}>
                                     <span className="sidebar-profile-item-icon">?</span>
-                                    Помощь и отзыв
+                                    {t("helpFeedback")}
                                 </button>
                                 <button type="button" className="sidebar-profile-item sidebar-profile-item-logout" onClick={logOut}>
                                     <span className="sidebar-profile-item-icon">→</span>
-                                    Выйти
+                                    {t("logout")}
                                 </button>
                             </div>
                         )}
                     </div>
                 </div>
             </Navbar>
+            <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
         </div>
     );
 });
