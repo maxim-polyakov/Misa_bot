@@ -24,7 +24,8 @@ urlpatterns = [
     path('auth/oauth/google/', views.oauth_google_redirect, name='oauth_google_redirect'),
     path('auth/oauth/callback', views.oauth_google_callback, name='oauth_google_callback'),
     path('auth/oauth-token/', views.oauth_token, name='oauth_token'),
-    path('auth/check/', views.check, name="check")
+    path('auth/check/', views.check, name="check"),
+    path('auth/logout-all/', views.logout_all, name='logout_all'),
 ]
 
 # Для production: обслуживание статических файлов через Django (не рекомендуется для высоконагруженных проектов)

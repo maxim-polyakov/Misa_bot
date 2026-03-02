@@ -1,5 +1,6 @@
 import jwt
 import logging
+from datetime import datetime, timezone
 from django.http import JsonResponse
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Middleware_package.Interfaces import IMiddleware
@@ -58,15 +59,27 @@ class Middleware(IMiddleware.IMiddleware):
             # Декодируем JWT токен синхронно
             payload = jwt.decode(token, self.JWT_SECRET, algorithms=[self.JWT_ALGORITHM])
             user_id = payload['user_id']
+            iat = payload.get('iat')
+            if iat is None:
+                return None
 
             # Синхронный запрос к базе данных
-            query = f"SELECT id, email FROM auth.users WHERE id = {user_id}"
+            query = f"SELECT id, email, logout_all_at FROM auth.users WHERE id = {user_id}"
             user_df = self.dbc.get_data(query)
 
             if user_df is None or user_df.empty:
                 return None
 
             user_data = user_df.iloc[0]
+            logout_all_at = user_data.get('logout_all_at')
+            if logout_all_at is not None and not pd.isna(logout_all_at):
+                token_issued = datetime.fromtimestamp(iat, tz=timezone.utc)
+                logout_dt = pd.to_datetime(logout_all_at)
+                if logout_dt.tzinfo is None:
+                    logout_dt = logout_dt.replace(tzinfo=timezone.utc)
+                if token_issued < logout_dt:
+                    logging.warning("Token invalidated by logout from all devices")
+                    return None
 
             # Создаем упрощенный объект пользователя
             class SimpleUser:

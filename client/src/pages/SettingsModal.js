@@ -5,6 +5,7 @@ import { observer } from "mobx-react-lite";
 import JSZip from "jszip";
 import { Context } from "../index.js";
 import { useStores } from "../store/rootStoreContext";
+import { logoutAll } from "../http/userApi";
 import { useLocale } from "../contexts/LocaleContext";
 import { getTheme, setTheme, THEMES } from "../utils/theme.js";
 import { getLanguage, LANGUAGES } from "../utils/locale.js";
@@ -51,8 +52,11 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
         return local.slice(0, 2) + "*".repeat(Math.min(local.length - 2, 5)) + local.slice(-2) + "@" + domain;
     };
 
-    const handleLogout = () => {
+    const handleLogout = async (fromAllDevices = false) => {
         onClose();
+        if (fromAllDevices) {
+            await logoutAll();
+        }
         chatStore.clearUserFromStorage();
         chatStore.logout();
         user?.setUser({});
@@ -114,7 +118,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                             </div>
                             <div className="settings-profile-row settings-profile-row-actions">
                                 <span className="settings-profile-label">{t("logoutAll")}</span>
-                                <button type="button" className="settings-btn-logout" onClick={handleLogout}>
+                                <button type="button" className="settings-btn-logout" onClick={() => handleLogout(true)}>
                                     {t("logout")}
                                 </button>
                             </div>

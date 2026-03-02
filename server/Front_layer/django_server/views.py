@@ -62,3 +62,11 @@ def oauth_token(request):
 def check(request):
     ctrlr = Controller.Controller()
     return ctrlr.check(request)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def logout_all(request):
+    """Выход со всех устройств"""
+    ctrlr = Controller.Controller()
+    return ctrlr.logout_all(request)

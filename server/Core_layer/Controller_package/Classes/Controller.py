@@ -668,6 +668,23 @@ class Controller(IController.IController):
         return JsonResponse({'jwt': jwt_token})
 
     @classmethod
+    def logout_all(cls, request):
+        """Выход со всех устройств: помечает все токены пользователя как недействительные"""
+        try:
+            user = getattr(request, 'user', None)
+            if user is None:
+                return cls.error_response("Authentication required", 401)
+            user_id = getattr(user, 'id', None)
+            if user_id is None:
+                return cls.error_response("Authentication required", 401)
+            update_sql = "UPDATE auth.users SET logout_all_at = CURRENT_TIMESTAMP WHERE id = %s"
+            cls.__dbc.execute_update(update_sql, (user_id,))
+            return cls.success_response(None, "Logged out from all devices", 200)
+        except Exception as e:
+            logging.error(f"logout_all error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
     def check(cls, request):
         """Проверка аутентификации пользователя с обновлением токена"""
         try:

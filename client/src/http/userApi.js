@@ -138,6 +138,18 @@ export const exchangeOAuthCode = async (code) => {
     }
 };
 
+/**
+ * Выход со всех устройств: инвалидирует все токены пользователя на сервере
+ */
+export const logoutAll = async () => {
+    try {
+        await $authhost.post("auth/logout-all/");
+    } catch (error) {
+        console.warn("logoutAll API error:", error?.response?.data || error?.message);
+        // Продолжаем локальный выход даже при ошибке API
+    }
+};
+
 export const check = async () => {
     try {
         // Проверяем наличие токена в localStorage перед запросом
