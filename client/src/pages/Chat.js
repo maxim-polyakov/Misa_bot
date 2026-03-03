@@ -161,15 +161,17 @@ const Chat = observer(() => {
         <div className="chat-container">
             <div className="chat-header">
                 <div className="chat-header-left">
-                    <button
-                        type="button"
-                        className="chat-menu-toggle"
-                        onClick={toggleSidebar}
-                        aria-label={sidebarExpanded ? "Свернуть меню" : "Развернуть меню"}
-                        title={sidebarExpanded ? "Свернуть" : "Меню"}
-                    >
-                        ☰
-                    </button>
+                    {!sidebarExpanded && (
+                        <button
+                            type="button"
+                            className="chat-menu-toggle"
+                            onClick={toggleSidebar}
+                            aria-label="Развернуть меню"
+                            title="Меню"
+                        >
+                            ☰
+                        </button>
+                    )}
                     <h1>{t("misaChat")}</h1>
                 </div>
                 <div className="chat-header-controls">
