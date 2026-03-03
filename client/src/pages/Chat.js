@@ -229,14 +229,6 @@ const Chat = observer(() => {
                         minHeight: '40px',
                         maxHeight: '150px',
                         resize: 'none',
-                        padding: '12px',
-                        border: '1px solid #ddd',
-                        borderRadius: '20px',
-                        fontSize: '14px',
-                        outline: 'none',
-                        transition: 'border-color 0.3s ease',
-                        fontFamily: 'inherit',
-                        lineHeight: '1.4'
                     }}
                     disabled={chatStore.isLoading || !chatStore.isConnected}
                     className="message-textarea"
