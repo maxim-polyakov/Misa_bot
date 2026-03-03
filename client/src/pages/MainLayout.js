@@ -84,27 +84,12 @@ const MainLayout = ({ children }) => {
         <MenuToggleContext.Provider value={contextValue}>
             <div className="main-layout">
                 {user?.isAuth && (
-                    <>
-                        {/* Рейка с единой кнопкой — всегда видна */}
-                        <div className="sidebar-rail">
-                            <button
-                                type="button"
-                                className="sidebar-rail-btn"
-                                onClick={toggleSidebar}
-                                aria-label={sidebarExpanded ? "Свернуть меню" : "Развернуть меню"}
-                                title={sidebarExpanded ? "Свернуть" : "Развернуть"}
-                            >
-                                {sidebarExpanded ? "◀" : "☰"}
-                            </button>
-                        </div>
-                        {/* Панель — расширяется вправо от рейки */}
-                        <div
-                            className={`sidebar-panel ${sidebarExpanded ? "sidebar-panel-open" : ""} ${showOverlay ? "sidebar-panel-mobile-open" : ""}`}
-                            inert={isMobile && !sidebarExpanded ? "" : undefined}
-                        >
-                            <Sidebar />
-                        </div>
-                    </>
+                    <div
+                        className={`sidebar-panel ${sidebarExpanded ? "sidebar-panel-open" : ""} ${showOverlay ? "sidebar-panel-mobile-open" : ""}`}
+                        inert={isMobile && !sidebarExpanded ? "" : undefined}
+                    >
+                        <Sidebar />
+                    </div>
                 )}
 
                 {showOverlay && (

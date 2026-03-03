@@ -2,6 +2,7 @@ import { observer } from "mobx-react-lite";
 import { useState, useRef, useEffect } from "react";
 import { useStores } from "../store/rootStoreContext";
 import { useLocale } from "../contexts/LocaleContext";
+import { useMenuToggle } from "./MainLayout";
 import CachedImage from "./CachedImage";
 import "./Styles.css";
 import { imageDB } from "./ImageDB";
@@ -9,6 +10,7 @@ import { imageDB } from "./ImageDB";
 const Chat = observer(() => {
     const { chatStore } = useStores();
     const { t } = useLocale();
+    const { toggleSidebar, sidebarExpanded } = useMenuToggle();
     const [message, setMessage] = useState("");
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
@@ -158,7 +160,18 @@ const Chat = observer(() => {
     return (
         <div className="chat-container">
             <div className="chat-header">
-                <h1>{t("misaChat")}</h1>
+                <div className="chat-header-left">
+                    <button
+                        type="button"
+                        className="chat-menu-toggle"
+                        onClick={toggleSidebar}
+                        aria-label={sidebarExpanded ? "Свернуть меню" : "Развернуть меню"}
+                        title={sidebarExpanded ? "Свернуть" : "Меню"}
+                    >
+                        ☰
+                    </button>
+                    <h1>{t("misaChat")}</h1>
+                </div>
                 <div className="chat-header-controls">
                     <div className="chat-status">
                         {getConnectionStatus()}
