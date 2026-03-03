@@ -6,6 +6,7 @@ from urllib.parse import quote
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.conf import settings
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorServer
+from Core_layer.Chat_package.Classes.ChatService import ChatService
 
 logger = logging.getLogger(__name__)
 
@@ -47,16 +48,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def process_message(self, message):
         parts = message.split('|message|')
-        if len(parts) >= 2 and parts[1].strip() == '__NEW_CHAT__':
+        if len(parts) < 2:
+            return "Я не понял ваш запрос"
+
+        if parts[1].strip() == '__NEW_CHAT__':
             user = parts[0].strip()
             MessageMonitorServer.MessageMonitorServer.clear_conversation_history(user)
             return ''
-        message = parts
-        message_monitor = MessageMonitorServer.MessageMonitorServer(user=message[0],message=message[1])
+
+        # Формат: user|chat_id|message|content или user|message|content (без chat_id)
+        first = parts[0].strip()
+        content = parts[1].strip()
+        first_parts = first.split('|')
+        if len(first_parts) >= 2:
+            user = first_parts[0].strip()
+            chat_id = first_parts[1].strip()
+        else:
+            user = first
+            chat_id = None
+
+        is_image = content.startswith('/images/') or content.startswith('http')
+        if chat_id:
+            ChatService.save_message(chat_id, user, content, is_image=is_image)
+
+        message_monitor = MessageMonitorServer.MessageMonitorServer(user=user, message=content)
         response = message_monitor.monitor()
 
         if not response:
             return "Я не понял ваш запрос"
+
+        if chat_id:
+            ChatService.save_message(chat_id, 'Misa', response, is_image=False)
 
         return response
 

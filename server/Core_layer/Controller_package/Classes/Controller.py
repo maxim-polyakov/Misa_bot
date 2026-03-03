@@ -729,3 +729,186 @@ class Controller(IController.IController):
         except Exception as e:
             logging.error(f"Auth check error: {str(e)}")
             return cls.error_response("Authentication check failed", 500)
+
+    # ========== Chat API (хранение в БД как у DeepSeek) ==========
+
+    @classmethod
+    def chats_list(cls, request):
+        """GET /api/chats/ — список чатов пользователя"""
+        try:
+            user = cls.get_user_from_token(request)
+            if user is None:
+                return cls.error_response("Authentication required", 401)
+            user_id = user.id
+            df = cls.__dbc.execute_query(
+                "SELECT id, title, created_at FROM chat.chats WHERE user_id = %s ORDER BY created_at DESC",
+                (user_id,)
+            )
+            if df is None or df.empty:
+                return cls.success_response([])
+            chats = []
+            for _, row in df.iterrows():
+                chats.append({
+                    'id': str(row['id']),
+                    'title': str(row['title']) if pd.notna(row['title']) else 'Новый чат',
+                    'createdAt': row['created_at'].isoformat() if hasattr(row['created_at'], 'isoformat') else str(row['created_at']),
+                })
+            return cls.success_response(chats)
+        except Exception as e:
+            logging.error(f"chats_list error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
+    def chats_create(cls, request):
+        """POST /api/chats/ — создать новый чат"""
+        try:
+            user = cls.get_user_from_token(request)
+            if user is None:
+                return cls.error_response("Authentication required", 401)
+            data = json.loads(request.body) if request.body else {}
+            chat_id = data.get('id') or (datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S') + str(random.randint(100, 999)))
+            title = data.get('title', 'Новый чат')[:500]
+            cls.__dbc.execute_update(
+                "INSERT INTO chat.chats (id, user_id, title) VALUES (%s, %s, %s)",
+                (chat_id, user.id, title)
+            )
+            return cls.success_response({
+                'id': chat_id,
+                'title': title,
+                'createdAt': datetime.datetime.utcnow().isoformat() + 'Z',
+            }, status=201)
+        except Exception as e:
+            logging.error(f"chats_create error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
+    def chats_messages(cls, request, chat_id):
+        """GET /api/chats/<id>/messages/ — сообщения чата"""
+        try:
+            user = cls.get_user_from_token(request)
+            if user is None:
+                return cls.error_response("Authentication required", 401)
+            df_chat = cls.__dbc.execute_query(
+                "SELECT id, user_id FROM chat.chats WHERE id = %s",
+                (chat_id,)
+            )
+            if df_chat is None or df_chat.empty:
+                return cls.error_response("Chat not found", 404)
+            if int(df_chat.iloc[0]['user_id']) != user.id:
+                return cls.error_response("Forbidden", 403)
+            df = cls.__dbc.execute_query(
+                'SELECT id, "user", content, is_image, timestamp FROM chat.chat_messages WHERE chat_id = %s ORDER BY timestamp ASC',
+                (chat_id,)
+            )
+            if df is None or df.empty:
+                return cls.success_response([])
+            messages = []
+            for _, row in df.iterrows():
+                ts = row['timestamp']
+                messages.append({
+                    'id': str(row['id']),
+                    'user': str(row['user']),
+                    'content': str(row['content']),
+                    'isImage': bool(row.get('is_image', False)),
+                    'timestamp': ts.isoformat() if hasattr(ts, 'isoformat') else str(ts),
+                })
+            return cls.success_response(messages)
+        except Exception as e:
+            logging.error(f"chats_messages error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
+    def chats_update_title(cls, request, chat_id):
+        """PATCH /api/chats/<id>/ — обновить заголовок чата"""
+        try:
+            user = cls.get_user_from_token(request)
+            if user is None:
+                return cls.error_response("Authentication required", 401)
+            df = cls.__dbc.execute_query("SELECT user_id FROM chat.chats WHERE id = %s", (chat_id,))
+            if df is None or df.empty:
+                return cls.error_response("Chat not found", 404)
+            if int(df.iloc[0]['user_id']) != user.id:
+                return cls.error_response("Forbidden", 403)
+            data = json.loads(request.body) if request.body else {}
+            title = (data.get('title') or 'Новый чат')[:500]
+            cls.__dbc.execute_update(
+                "UPDATE chat.chats SET title = %s WHERE id = %s",
+                (title, chat_id)
+            )
+            return cls.success_response({'id': chat_id, 'title': title})
+        except Exception as e:
+            logging.error(f"chats_update_title error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
+    def chats_delete(cls, request, chat_id):
+        """DELETE /api/chats/<id>/ — удалить чат"""
+        try:
+            user = cls.get_user_from_token(request)
+            if user is None:
+                return cls.error_response("Authentication required", 401)
+            df = cls.__dbc.execute_query("SELECT user_id FROM chat.chats WHERE id = %s", (chat_id,))
+            if df is None or df.empty:
+                return cls.error_response("Chat not found", 404)
+            if int(df.iloc[0]['user_id']) != user.id:
+                return cls.error_response("Forbidden", 403)
+            cls.__dbc.execute_update("DELETE FROM chat.chats WHERE id = %s", (chat_id,))
+            return cls.success_response(None, "Chat deleted", 200)
+        except Exception as e:
+            logging.error(f"chats_delete error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
+    def chats_export(cls, request):
+        """GET /api/chats/export/ — экспорт всех чатов с сообщениями для ZIP"""
+        try:
+            user = cls.get_user_from_token(request)
+            if user is None:
+                return cls.error_response("Authentication required", 401)
+            user_id = user.id
+            df_chats = cls.__dbc.execute_query(
+                "SELECT id, title, created_at FROM chat.chats WHERE user_id = %s ORDER BY created_at DESC",
+                (user_id,)
+            )
+            if df_chats is None or df_chats.empty:
+                return cls.success_response({
+                    'conversations': [],
+                    'user': {
+                        'display_name': getattr(user, 'display_name', None) or user.email.split('@')[0],
+                        'email': user.email,
+                        'picture': getattr(user, 'picture', None),
+                    }
+                })
+            conversations = []
+            for _, row in df_chats.iterrows():
+                chat_id = str(row['id'])
+                df_msgs = cls.__dbc.execute_query(
+                    'SELECT "user", content, is_image, timestamp FROM chat.chat_messages WHERE chat_id = %s ORDER BY timestamp ASC',
+                    (chat_id,)
+                )
+                messages = []
+                if df_msgs is not None and not df_msgs.empty:
+                    for _, m in df_msgs.iterrows():
+                        ts = m['timestamp']
+                        messages.append({
+                            'content': str(m['content']),
+                            'user': str(m['user']),
+                            'timestamp': ts.isoformat() if hasattr(ts, 'isoformat') else str(ts),
+                        })
+                conversations.append({
+                    'id': chat_id,
+                    'title': str(row['title']) if pd.notna(row['title']) else 'Новый чат',
+                    'createdAt': row['created_at'].isoformat() if hasattr(row['created_at'], 'isoformat') else str(row['created_at']),
+                    'messages': messages,
+                })
+            return cls.success_response({
+                'conversations': conversations,
+                'user': {
+                    'display_name': getattr(user, 'display_name', None) or user.email.split('@')[0],
+                    'email': user.email,
+                    'picture': getattr(user, 'picture', None),
+                }
+            })
+        except Exception as e:
+            logging.error(f"chats_export error: {str(e)}")
+            return cls.error_response(str(e), 500)

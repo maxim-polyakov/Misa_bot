@@ -191,16 +191,38 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                                         type="button"
                                         className="settings-btn-export"
                                         onClick={async () => {
+                                            const apiUrl = process.env.REACT_APP_API_URL || '';
                                             const zip = new JSZip();
                                             const dateStr = new Date().toISOString().slice(0, 10);
-                                            const conversationsData = chatStore.getConversationsExportData();
+                                            let conversationsData = { exportedAt: new Date().toISOString(), conversations: [] };
+                                            let userData = { exportedAt: new Date().toISOString(), display_name: displayName || null, email: email || null, picture: picture || null };
+                                            if (apiUrl) {
+                                                try {
+                                                    const token = localStorage.getItem('token');
+                                                    const res = await fetch(`${apiUrl}/api/chats/export/`, {
+                                                        headers: token ? { Authorization: `Bearer ${token}` } : {}
+                                                    });
+                                                    const json = await res.json();
+                                                    if (json.status === 'success' && json.data) {
+                                                        conversationsData = {
+                                                            exportedAt: new Date().toISOString(),
+                                                            conversations: json.data.conversations || []
+                                                        };
+                                                        userData = {
+                                                            exportedAt: new Date().toISOString(),
+                                                            display_name: json.data.user?.display_name ?? displayName ?? null,
+                                                            email: json.data.user?.email ?? email ?? null,
+                                                            picture: json.data.user?.picture ?? picture ?? null,
+                                                        };
+                                                    }
+                                                } catch (e) {
+                                                    console.warn("Ошибка экспорта с бэкенда, fallback на локальные данные:", e);
+                                                    conversationsData = chatStore.getConversationsExportData();
+                                                }
+                                            } else {
+                                                conversationsData = chatStore.getConversationsExportData();
+                                            }
                                             zip.file("conversations.json", JSON.stringify(conversationsData, null, 2));
-                                            const userData = {
-                                                exportedAt: new Date().toISOString(),
-                                                display_name: displayName || null,
-                                                email: email || null,
-                                                picture: picture || null,
-                                            };
                                             zip.file("user.json", JSON.stringify(userData, null, 2));
                                             const blob = await zip.generateAsync({ type: "blob" });
                                             const url = URL.createObjectURL(blob);

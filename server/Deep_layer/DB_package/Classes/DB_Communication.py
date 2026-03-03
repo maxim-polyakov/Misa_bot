@@ -216,6 +216,22 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             raise
 
     @classmethod
+    def execute_query(cls, sql, params=None):
+        """Выполняет SELECT с параметрами, возвращает DataFrame."""
+        logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
+        try:
+            postgr_conn = Connections.PostgresConnection()
+            if params is not None:
+                df = pd.read_sql_query(sql, postgr_conn.conn_remote, params=params)
+            else:
+                df = pd.read_sql_query(sql, postgr_conn.conn_remote)
+            logging.info('The db_communication.execute_query method has completed successfully')
+            return df
+        except Exception as e:
+            logging.exception('The exception occurred in db_communication.execute_query: ' + str(e))
+            return None
+
+    @classmethod
     def checkcommands(cls, input_string):
         # checking of commands in a database
         # configuring logging settings

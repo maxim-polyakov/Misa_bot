@@ -26,6 +26,12 @@ urlpatterns = [
     path('auth/oauth-token/', views.oauth_token, name='oauth_token'),
     path('auth/check/', views.check, name="check"),
     path('auth/logout-all/', views.logout_all, name='logout_all'),
+    # Chat API (хранение в БД)
+    path('api/chats/', views.chats_list_or_create, name='chats_list_or_create'),
+    path('api/chats/export/', views.chats_export, name='chats_export'),
+    path('api/chats/<str:chat_id>/messages/', views.chats_messages, name='chats_messages'),
+    path('api/chats/<str:chat_id>/', views.chats_update, name='chats_update'),
+    path('api/chats/<str:chat_id>/delete/', views.chats_delete, name='chats_delete'),
 ]
 
 # Для production: обслуживание статических файлов через Django (не рекомендуется для высоконагруженных проектов)

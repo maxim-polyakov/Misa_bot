@@ -70,3 +70,39 @@ def logout_all(request):
     """Выход со всех устройств"""
     ctrlr = Controller.Controller()
     return ctrlr.logout_all(request)
+
+
+# Chat API (требует JWT)
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def chats_list_or_create(request):
+    ctrlr = Controller.Controller()
+    if request.method == "GET":
+        return ctrlr.chats_list(request)
+    return ctrlr.chats_create(request)
+
+
+@require_http_methods(["GET"])
+def chats_export(request):
+    ctrlr = Controller.Controller()
+    return ctrlr.chats_export(request)
+
+
+@require_http_methods(["GET"])
+def chats_messages(request, chat_id):
+    ctrlr = Controller.Controller()
+    return ctrlr.chats_messages(request, chat_id)
+
+
+@csrf_exempt
+@require_http_methods(["PATCH"])
+def chats_update(request, chat_id):
+    ctrlr = Controller.Controller()
+    return ctrlr.chats_update_title(request, chat_id)
+
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def chats_delete(request, chat_id):
+    ctrlr = Controller.Controller()
+    return ctrlr.chats_delete(request, chat_id)
