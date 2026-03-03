@@ -72,16 +72,6 @@ const Chat = observer(() => {
     };
 
 
-    const getConnectionStatus = () => {
-        if (chatStore.isConnected) {
-            return <span className="connection-status status-connected">● {t("connected")}</span>;
-        } else if (chatStore.isConnecting) {
-            return <span className="connection-status status-connecting">● {t("connecting")}</span>;
-        } else {
-            return <span className="connection-status status-disconnected">● {t("disconnected")}</span>;
-        }
-    };
-
     const parseMessageContent = (content) => {
         if (!content || typeof content !== 'string') return [{ type: 'text', content: '' }];
         const parts = [];
@@ -161,15 +151,25 @@ const Chat = observer(() => {
         <div className="chat-container">
             {/* Плавающие кнопки поверх чата */}
             {!sidebarExpanded && (
-                <button
-                    type="button"
-                    className="chat-floating-menu-btn"
-                    onClick={toggleSidebar}
-                    aria-label="Развернуть меню"
-                    title="Меню"
-                >
-                    ☰
-                </button>
+                <div className="chat-floating-buttons">
+                    <button
+                        type="button"
+                        className="chat-floating-menu-btn"
+                        onClick={toggleSidebar}
+                        aria-label="Развернуть меню"
+                        title="Меню"
+                    >
+                        ☰
+                    </button>
+                    <button
+                        type="button"
+                        className="chat-floating-new-chat-btn"
+                        onClick={() => chatStore.newChat()}
+                        title={t("newChat")}
+                    >
+                        +
+                    </button>
+                </div>
             )}
             {chatStore.messages.length > 0 && (
                 <button
@@ -180,9 +180,6 @@ const Chat = observer(() => {
                     🗑️
                 </button>
             )}
-            <div className="chat-status-floating">
-                {getConnectionStatus()}
-            </div>
 
             {/* Контейнер для сообщений с прокруткой */}
             <div className="messages-container" ref={messagesContainerRef}>
