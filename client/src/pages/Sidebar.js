@@ -76,26 +76,28 @@ const Sidebar = observer(() => {
         <>
         <Navbar className="sidebar" bg="dark" data-bs-theme="dark">
                 <div className="sidebar-content">
-                    {sidebarExpanded && (
-                        <button
-                            type="button"
-                            className="sidebar-menu-toggle"
-                            onClick={toggleSidebar}
-                            aria-label="Свернуть меню"
-                            title="Свернуть"
-                        >
-                            ◀
-                        </button>
-                    )}
-                    <div className="sidebar-new-chat">
-                        <Button
-                            variant="outline-light"
-                            className="w-100 new-chat-button"
-                            onClick={() => chatStore.newChat()}
-                        >
-                            <span className="new-chat-icon">+</span>
-                            <span>{t("newChat")}</span>
-                        </Button>
+                    <div className="sidebar-new-chat-row">
+                        {sidebarExpanded && (
+                            <button
+                                type="button"
+                                className="menu-toggle-btn"
+                                onClick={toggleSidebar}
+                                aria-label="Свернуть меню"
+                                title="Свернуть"
+                            >
+                                ☰
+                            </button>
+                        )}
+                        <div className="sidebar-new-chat">
+                            <Button
+                                variant="outline-light"
+                                className="w-100 new-chat-button"
+                                onClick={() => chatStore.newChat()}
+                            >
+                                <span className="new-chat-icon">+</span>
+                                <span>{t("newChat")}</span>
+                            </Button>
+                        </div>
                     </div>
                     <div className="sidebar-chats">
                         {chatStore.chats.map((chat) => (

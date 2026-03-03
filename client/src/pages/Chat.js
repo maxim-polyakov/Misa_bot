@@ -164,7 +164,7 @@ const Chat = observer(() => {
                     {!sidebarExpanded && (
                         <button
                             type="button"
-                            className="chat-menu-toggle"
+                            className="menu-toggle-btn"
                             onClick={toggleSidebar}
                             aria-label="Развернуть меню"
                             title="Меню"
