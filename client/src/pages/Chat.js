@@ -152,6 +152,16 @@ const Chat = observer(() => {
             {/* Плавающие кнопки поверх чата */}
             {!sidebarExpanded && (
                 <div className="chat-floating-buttons">
+                    <img
+                        src="/misa.png"
+                        alt=""
+                        className="chat-floating-logo"
+                        onClick={toggleSidebar}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") toggleSidebar(); }}
+                        title="Меню"
+                    />
                     <button
                         type="button"
                         className="chat-floating-menu-btn"

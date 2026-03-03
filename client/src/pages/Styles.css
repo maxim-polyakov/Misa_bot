@@ -70,9 +70,9 @@ body {
     width: 100vw;
 }
 
-/* Панель — узкая полоска с логотипом когда свёрнута (как у DeepSeek) */
+/* Панель — полностью скрыта когда свёрнута */
 .sidebar-panel {
-    width: var(--sidebar-collapsed-width);
+    width: 0;
     flex-shrink: 0;
     height: 100dvh;
     background: var(--sidebar-bg);
@@ -85,7 +85,7 @@ body {
     width: var(--sidebar-width);
 }
 
-/* На мобильных при закрытой панели — полностью скрыта */
+/* На мобильных при закрытой панели */
 .sidebar-panel.sidebar-panel-mobile-collapsed {
     width: 0;
     min-width: 0;
@@ -224,6 +224,19 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.chat-floating-logo {
+    width: 2rem;
+    height: 2rem;
+    object-fit: contain;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: opacity 0.2s ease;
+}
+
+.chat-floating-logo:hover {
+    opacity: 0.85;
 }
 
 .chat-floating-menu-btn,

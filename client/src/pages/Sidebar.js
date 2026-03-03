@@ -75,26 +75,22 @@ const Sidebar = observer(() => {
         <>
         <Navbar className="sidebar" bg="dark" data-bs-theme="dark">
                 <div className={`sidebar-content ${sidebarExpanded ? "" : "sidebar-content-collapsed"}`}>
-                    <div
-                        className="sidebar-brand-row"
-                        onClick={!sidebarExpanded ? toggleSidebar : undefined}
-                        role={!sidebarExpanded ? "button" : undefined}
-                        tabIndex={!sidebarExpanded ? 0 : undefined}
-                        onKeyDown={!sidebarExpanded ? (e) => { if (e.key === "Enter" || e.key === " ") toggleSidebar(); } : undefined}
-                    >
-                        {sidebarExpanded && (
-                            <button
-                                type="button"
-                                className="menu-toggle-btn"
-                                onClick={toggleSidebar}
-                                aria-label="Свернуть меню"
-                                title="Свернуть"
-                            >
-                                ☰
-                            </button>
-                        )}
+                    <div className="sidebar-brand-row">
                         <img src="/misa.png" alt="" className="sidebar-logo" />
-                        <span className="sidebar-brand-name">{t("misaChat")}</span>
+                        {sidebarExpanded && (
+                            <>
+                                <span className="sidebar-brand-name">{t("misaChat")}</span>
+                                <button
+                                    type="button"
+                                    className="menu-toggle-btn"
+                                    onClick={toggleSidebar}
+                                    aria-label="Свернуть меню"
+                                    title="Свернуть"
+                                >
+                                    ☰
+                                </button>
+                            </>
+                        )}
                     </div>
                     <div className="sidebar-new-chat">
                         <button
