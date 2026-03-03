@@ -194,6 +194,36 @@ class ChatStore {
         return "Новый чат";
     }
 
+    // Группировка чатов по периодам (Сегодня, Вчера, 7 дней, 30 дней)
+    getChatsGroupedByPeriod() {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterdayStart = new Date(todayStart);
+        yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+        const sevenDaysAgo = new Date(todayStart);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const thirtyDaysAgo = new Date(todayStart);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const groups = { today: [], yesterday: [], last7Days: [], last30Days: [] };
+
+        for (const chat of this.chats) {
+            let date = chat.createdAt ? new Date(chat.createdAt) : new Date();
+            if (isNaN(date.getTime())) date = new Date();
+            if (date >= todayStart) {
+                groups.today.push(chat);
+            } else if (date >= yesterdayStart) {
+                groups.yesterday.push(chat);
+            } else if (date >= sevenDaysAgo) {
+                groups.last7Days.push(chat);
+            } else if (date >= thirtyDaysAgo) {
+                groups.last30Days.push(chat);
+            }
+        }
+
+        return groups;
+    }
+
     // Переключение на чат
     switchChat(chatId) {
         if (this.chats.some(c => c.id === chatId)) {

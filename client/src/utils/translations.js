@@ -38,6 +38,10 @@ export const translations = {
         deleteAllChatsDesc: "Безвозвратно удалить всю историю чатов.",
         deleteAllButton: "Удалить всё",
         confirmDeleteAllChats: "Вы уверены, что хотите удалить все чаты? Это действие необратимо.",
+        today: "Сегодня",
+        yesterday: "Вчера",
+        last7Days: "7 дней",
+        last30Days: "30 дней",
     },
     en: {
         settings: "Settings",
@@ -78,5 +82,9 @@ export const translations = {
         deleteAllChatsDesc: "Permanently delete all chat history.",
         deleteAllButton: "Delete all",
         confirmDeleteAllChats: "Are you sure you want to delete all chats? This action cannot be undone.",
+        today: "Today",
+        yesterday: "Yesterday",
+        last7Days: "7 Days",
+        last30Days: "30 Days",
     },
 };

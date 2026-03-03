@@ -103,18 +103,34 @@ const Sidebar = observer(() => {
                         </button>
                     </div>
                     <div className="sidebar-chats">
-                        {chatStore.chats.map((chat) => (
-                            <button
-                                key={chat.id}
-                                className={`sidebar-chat-item ${chat.id === chatStore.currentChatId ? 'active' : ''}`}
-                                onClick={() => handleSwitchChat(chat.id)}
-                            >
-                                <span className="sidebar-chat-icon">💬</span>
-                                <span className="sidebar-chat-title">
-                                    {chatStore.getChatTitle(chat)}
-                                </span>
-                            </button>
-                        ))}
+                        {(() => {
+                            const groups = chatStore.getChatsGroupedByPeriod();
+                            const sections = [
+                                { key: 'today', label: t('today'), chats: groups.today },
+                                { key: 'yesterday', label: t('yesterday'), chats: groups.yesterday },
+                                { key: 'last7Days', label: t('last7Days'), chats: groups.last7Days },
+                                { key: 'last30Days', label: t('last30Days'), chats: groups.last30Days },
+                            ];
+                            return sections
+                                .filter(({ chats }) => chats.length > 0)
+                                .map(({ key, label, chats }) => (
+                                    <div key={key} className="sidebar-chats-group">
+                                        <div className="sidebar-chats-group-title">{label}</div>
+                                        {chats.map((chat) => (
+                                            <button
+                                                key={chat.id}
+                                                className={`sidebar-chat-item ${chat.id === chatStore.currentChatId ? 'active' : ''}`}
+                                                onClick={() => handleSwitchChat(chat.id)}
+                                            >
+                                                <span className="sidebar-chat-icon">💬</span>
+                                                <span className="sidebar-chat-title">
+                                                    {chatStore.getChatTitle(chat)}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ));
+                        })()}
                     </div>
                     <div className="sidebar-footer" ref={profileRef}>
                         <button
