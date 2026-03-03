@@ -18,6 +18,31 @@ export const sendRegistrationCode = async (email, password) => {
     }
 };
 
+export const sendForgotPasswordCode = async (email) => {
+    try {
+        const { data } = await $host.post("auth/forgot-password/send-code/", { email });
+        return data;
+    } catch (error) {
+        throw new Error(extractApiError(error));
+    }
+};
+
+export const verifyForgotPasswordCode = async (email, code, newPassword) => {
+    try {
+        const { data } = await $host.post("auth/forgot-password/verify/", {
+            email,
+            code,
+            new_password: newPassword,
+        });
+        localStorage.setItem("token", data.data.token);
+        const decoded = jwtDecode(data.data.token);
+        const userFromServer = data.data.user || {};
+        return { ...decoded, ...userFromServer };
+    } catch (error) {
+        throw new Error(extractApiError(error));
+    }
+};
+
 export const verifyRegistrationCode = async (email, password, code) => {
     try {
         const { data } = await $host.post("auth/register/verify/", { email, password, code });

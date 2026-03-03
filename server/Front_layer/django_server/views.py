@@ -27,6 +27,23 @@ def register_verify(request):
     ctrlr = Controller.Controller()
     return ctrlr.register_verify(request)
 
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def forgot_password_send_code(request):
+    """Отправка кода восстановления пароля на email"""
+    ctrlr = Controller.Controller()
+    return ctrlr.forgot_password_send_code(request)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def forgot_password_verify(request):
+    """Проверка кода и установка нового пароля"""
+    ctrlr = Controller.Controller()
+    return ctrlr.forgot_password_verify(request)
+
+
 # Контроллер авторизации
 @csrf_exempt
 @require_http_methods(["POST"])

@@ -395,6 +395,126 @@ class Controller(IController.IController):
             return cls.error_response(str(e), 500)
 
     @classmethod
+    def forgot_password_send_code(cls, request):
+        """Отправка кода восстановления пароля на email. Код хранится в auth.users (password_reset_code, password_reset_sent_at)."""
+        try:
+            data = json.loads(request.body)
+            if not data.get('email'):
+                return cls.error_response("Field 'email' is required", 400)
+
+            email = cls._normalize_email(data.get('email'))
+            try:
+                validate_email(email)
+            except ValidationError:
+                return cls.error_response("Invalid email format", 400)
+
+            user_check_query = f"SELECT id, verification_code FROM auth.users WHERE email = '{email}'"
+            user_df = cls.__dbc.get_data(user_check_query)
+
+            if user_df is None or user_df.empty:
+                return cls.error_response("User not found", 404)
+
+            stored_code = user_df.iloc[0].get('verification_code')
+            if stored_code is not None and not (pd.isna(stored_code) or str(stored_code).strip() == ''):
+                return cls.error_response("Email not verified. Complete registration first.", 403)
+
+            code = cls._generate_verification_code()
+            sent_at = datetime.datetime.now(datetime.timezone.utc)
+
+            update_sql = """
+                UPDATE auth.users
+                SET password_reset_code = %s, password_reset_sent_at = %s
+                WHERE email = %s
+            """
+            cls.__dbc.execute_update(update_sql, (code, sent_at, email))
+
+            try:
+                send_mail(
+                    subject='Код восстановления пароля',
+                    message=f'Ваш код восстановления пароля: {code}\n\nКод действителен {VERIFICATION_CODE_TTL_MINUTES} минут.',
+                    from_email=None,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+            except Exception as mail_err:
+                logging.error(f"Failed to send password reset email: {mail_err}")
+                return cls.error_response("Failed to send email", 500)
+
+            return cls.success_response({'email': email}, "Password reset code sent", 200)
+        except json.JSONDecodeError:
+            return cls.error_response("Invalid JSON data", 400)
+        except Exception as e:
+            logging.error(f"forgot_password_send_code error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
+    def forgot_password_verify(cls, request):
+        """Проверка кода и установка нового пароля. Очищаем password_reset_code."""
+        try:
+            data = json.loads(request.body)
+            required_fields = ['email', 'code', 'new_password']
+            for field in required_fields:
+                if not data.get(field):
+                    return cls.error_response(f"Field '{field}' is required", 400)
+
+            email = cls._normalize_email(data.get('email'))
+            code = str(data.get('code')).strip()
+            new_password = data.get('new_password')
+
+            try:
+                validate_email(email)
+            except ValidationError:
+                return cls.error_response("Invalid email format", 400)
+
+            if len(new_password) < 6:
+                return cls.error_response("Password must be at least 6 characters long", 400)
+
+            user_query = f"SELECT id, email, password_reset_code, password_reset_sent_at FROM auth.users WHERE email = '{email}'"
+            user_df = cls.__dbc.get_data(user_query)
+            if user_df is None or user_df.empty:
+                return cls.error_response("Invalid or expired code", 400)
+
+            row = user_df.iloc[0]
+            stored_code = row.get('password_reset_code')
+            sent_at = row.get('password_reset_sent_at')
+
+            if pd.isna(stored_code) or str(stored_code).strip() != code:
+                return cls.error_response("Invalid or expired code", 400)
+
+            if pd.isna(sent_at):
+                return cls.error_response("Invalid or expired code", 400)
+
+            sent_at_dt = pd.to_datetime(sent_at)
+            if sent_at_dt.tzinfo is None:
+                sent_at_dt = sent_at_dt.replace(tzinfo=datetime.timezone.utc)
+            now = datetime.datetime.now(datetime.timezone.utc)
+            age_minutes = (now - sent_at_dt).total_seconds() / 60
+            if age_minutes > VERIFICATION_CODE_TTL_MINUTES:
+                return cls.error_response("Code has expired", 400)
+
+            hashed_password = make_password(new_password)
+            update_sql = """
+                UPDATE auth.users
+                SET password = %s, password_reset_code = NULL, password_reset_sent_at = NULL
+                WHERE email = %s
+            """
+            cls.__dbc.execute_update(update_sql, (hashed_password, email))
+
+            user_id = int(row['id'])
+            user_email = str(row['email'])
+            token = cls.generate_jwt_token(user_id, user_email)
+
+            return cls.success_response({
+                'user': {'id': user_id, 'email': user_email},
+                'token': token
+            }, "Password reset successfully", 200)
+        except json.JSONDecodeError:
+            return cls.error_response("Invalid JSON data", 400)
+        except Exception as e:
+            logging.error(f"forgot_password_verify error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
     def register(cls, request):
         """Legacy: прямая регистрация без верификации. Используйте send-code + verify."""
         try:

@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect, useRef } from "react";
 import { Button, Card, Container, Form, Alert } from "react-bootstrap";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { CHAT_ROUTE, LOGIN_ROUTE, REGISTRATION_ROUTE, REGISTRATION_VERIFY_ROUTE } from "../utils/consts.js";
+import { CHAT_ROUTE, LOGIN_ROUTE, REGISTRATION_ROUTE, REGISTRATION_VERIFY_ROUTE, FORGOT_PASSWORD_ROUTE } from "../utils/consts.js";
 import { login, sendRegistrationCode, exchangeOAuthCode } from "../http/userApi.js";
 import { observer } from "mobx-react-lite";
 import { Context } from "../index.js";
@@ -174,6 +174,13 @@ const Auth = observer(() => {
                             >
                                 Войти через Google
                             </a>
+                        </div>
+                    )}
+                    {isLogin && (
+                        <div className="mt-2 text-end">
+                            <Link to={FORGOT_PASSWORD_ROUTE} style={{ textDecoration: "none", fontSize: "0.9rem" }}>
+                                Забыл пароль
+                            </Link>
                         </div>
                     )}
                     <div className="d-flex justify-content-between mt-3 pl-3 pr-3 align-items-center">

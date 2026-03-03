@@ -2,11 +2,15 @@
 import Chat from "./pages/Chat";
 import Auth from "./pages/Auth";
 import VerifyCode from "./pages/VerifyCode";
+import ForgotPasswordRequest from "./pages/ForgotPasswordRequest";
+import ForgotPasswordVerify from "./pages/ForgotPasswordVerify";
 import {
     CHAT_ROUTE,
     LOGIN_ROUTE,
     REGISTRATION_ROUTE,
-    REGISTRATION_VERIFY_ROUTE
+    REGISTRATION_VERIFY_ROUTE,
+    FORGOT_PASSWORD_ROUTE,
+    FORGOT_PASSWORD_VERIFY_ROUTE
 } from "./utils/consts";
 
 export const authRoutes = [
@@ -28,5 +32,13 @@ export const publicRoutes = [
     {
         path: REGISTRATION_VERIFY_ROUTE,
         Component: VerifyCode
+    },
+    {
+        path: FORGOT_PASSWORD_ROUTE,
+        Component: ForgotPasswordRequest
+    },
+    {
+        path: FORGOT_PASSWORD_VERIFY_ROUTE,
+        Component: ForgotPasswordVerify
     }
 ];
