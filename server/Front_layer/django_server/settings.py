@@ -31,12 +31,21 @@ STATICFILES_DIRS = [
 ROOT_URLCONF = 'Front_layer.django_server.urls'
 ASGI_APPLICATION = 'Front_layer.django_server.asgi.application'
 ALLOWED_HOSTS = ['*']
-# Замените Redis на InMemoryChannelLayer
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
+# Channel layers: Redis если задан REDIS_URL, иначе InMemory
+REDIS_URL = os.getenv('REDIS_URL', '')
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {'hosts': [REDIS_URL]},
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 CORS_ALLOW_ALL_ORIGINS = True
 
 # SMTP для отправки кодов верификации (maildev в docker)

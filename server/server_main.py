@@ -18,8 +18,11 @@ if __name__ == "__main__":
     # Инициализируем Django
     django.setup()
 
-    # Используем InMemoryChannelLayer вместо Redis
-    print("Используется InMemoryChannelLayer (без Redis)")
+    redis_url = os.getenv('REDIS_URL', '')
+    if redis_url:
+        print("Используется Redis ChannelLayer:", redis_url)
+    else:
+        print("Используется InMemoryChannelLayer (без Redis)")
 
     # Запускаем ASGI сервер напрямую
     print("Запуск Django ASGI сервера...")

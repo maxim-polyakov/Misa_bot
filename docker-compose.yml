@@ -11,6 +11,8 @@ services:
       - "5001:8001"
     env_file:
       - ./server/.env
+    depends_on:
+      - misa-redis
     networks:
       - misa_net
   client:
@@ -45,6 +47,14 @@ services:
     ports:
       - "8191:1080"
       - "1025:1025"
+    networks:
+      - misa_net
+  misa-redis:
+    image: redis:7-alpine
+    container_name: misa-redis
+    restart: unless-stopped
+    ports:
+      - "6384:6379"
     networks:
       - misa_net
 
