@@ -296,13 +296,19 @@ class ChatStore {
         }
     };
 
-    // Очистка истории текущего чата
-    clearMessages() {
+    // Очистка истории текущего чата (удаляет сообщения на бэкенде)
+    async clearMessages() {
         const chat = this.currentChat;
-        if (chat) {
-            chat.messages = [];
-            this.saveChats();
+        if (!chat) return;
+        if (API_URL) {
+            try {
+                await apiFetch(`/api/chats/${chat.id}/messages/clear/`, { method: 'DELETE' });
+            } catch (e) {
+                console.warn("Ошибка очистки сообщений на сервере:", e);
+            }
         }
+        chat.messages = [];
+        this.saveChats();
     };
 
     // Удаление всех чатов (с сервера)

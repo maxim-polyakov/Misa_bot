@@ -95,6 +95,13 @@ def chats_messages(request, chat_id):
 
 
 @csrf_exempt
+@require_http_methods(["DELETE"])
+def chats_clear_messages(request, chat_id):
+    ctrlr = Controller.Controller()
+    return ctrlr.chats_clear_messages(request, chat_id)
+
+
+@csrf_exempt
 @require_http_methods(["PATCH"])
 def chats_update(request, chat_id):
     ctrlr = Controller.Controller()

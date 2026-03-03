@@ -66,8 +66,8 @@ const Chat = observer(() => {
 
     const handleClearHistory = async () => {
         if (window.confirm(t("confirmClearHistory") + "?")) {
-            chatStore.clearMessages();
-            await imageDB.clearAll()
+            await chatStore.clearMessages();
+            await imageDB.clearAll();
         }
     };
 

@@ -859,6 +859,24 @@ class Controller(IController.IController):
             return cls.error_response(str(e), 500)
 
     @classmethod
+    def chats_clear_messages(cls, request, chat_id):
+        """DELETE /api/chats/<id>/messages/ — удалить все сообщения в чате"""
+        try:
+            user = cls.get_user_from_token(request)
+            if user is None:
+                return cls.error_response("Authentication required", 401)
+            df = cls.__dbc.execute_query("SELECT user_id FROM chat.chats WHERE id = %s", (chat_id,))
+            if df is None or df.empty:
+                return cls.error_response("Chat not found", 404)
+            if int(df.iloc[0]['user_id']) != user.id:
+                return cls.error_response("Forbidden", 403)
+            cls.__dbc.execute_update("DELETE FROM chat.chat_messages WHERE chat_id = %s", (chat_id,))
+            return cls.success_response(None, "Messages cleared", 200)
+        except Exception as e:
+            logging.error(f"chats_clear_messages error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
     def chats_export(cls, request):
         """GET /api/chats/export/ — экспорт всех чатов с сообщениями для ZIP"""
         try:
