@@ -3,6 +3,9 @@ from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 from Core_layer.Middleware_package.Classes import Middleware
 from . import views
 import os
@@ -11,8 +14,16 @@ import os
 def home_view(request):
     return HttpResponse("Django server is working!")
 
-# Применяем middleware к конкретному view
-
+# Swagger / OpenAPI
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Misa API",
+        default_version="v1",
+        description="API документация Misa Bot",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     # Аутентификация
@@ -28,6 +39,10 @@ urlpatterns = [
     path('auth/oauth-token/', views.oauth_token, name='oauth_token'),
     path('auth/check/', views.check, name="check"),
     path('auth/logout-all/', views.logout_all, name='logout_all'),
+    # Swagger
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     # Chat API (хранение в БД)
     path('api/chats/', views.chats_list_or_create, name='chats_list_or_create'),
     path('api/chats/export/', views.chats_export, name='chats_export'),

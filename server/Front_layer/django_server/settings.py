@@ -14,7 +14,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'channels'
+    'channels',
+    'rest_framework',
+    'drf_yasg',
 ]
 
 # API URL из .env
