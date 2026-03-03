@@ -26,6 +26,7 @@ except ImportError:
 
 from Core_layer.Auth_package.Classes.OAuthCodeStore import put as oauth_code_put, get_and_remove as oauth_code_get
 from django.core.mail import send_mail
+from django.core.cache import cache
 
 VERIFICATION_CODE_TTL_MINUTES = 15
 
@@ -200,18 +201,16 @@ class Controller(IController.IController):
 
         try:
             user_id = payload['user_id']
-
-            # Используем DB_Communication для получения пользователя
-            query = f"SELECT * FROM auth.users WHERE id = {user_id}"
-            user_df = cls.__dbc.get_data(query)
-
-            # Проверяем, что данные получены и не пустые
-            if user_df is None or user_df.empty:
-                logging.warning(f"User with id {user_id} not found in database")
-                return None
-
-            # Получаем первую запись
-            user_data = user_df.iloc[0]
+            cache_key = f"auth_user_full:{user_id}"
+            user_data = cache.get(cache_key)
+            if user_data is None:
+                query = f"SELECT * FROM auth.users WHERE id = {user_id}"
+                user_df = cls.__dbc.get_data(query)
+                if user_df is None or user_df.empty:
+                    logging.warning(f"User with id {user_id} not found in database")
+                    return None
+                user_data = user_df.iloc[0].to_dict()
+                cache.set(cache_key, user_data, 300)
 
             # Создаем объект пользователя Django
             user = User(
@@ -679,6 +678,8 @@ class Controller(IController.IController):
                 return cls.error_response("Authentication required", 401)
             update_sql = "UPDATE auth.users SET logout_all_at = CURRENT_TIMESTAMP WHERE id = %s"
             cls.__dbc.execute_update(update_sql, (user_id,))
+            cache.delete(f"auth_user:{user_id}")
+            cache.delete(f"auth_user_full:{user_id}")
             return cls.success_response(None, "Logged out from all devices", 200)
         except Exception as e:
             logging.error(f"logout_all error: {str(e)}")

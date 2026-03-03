@@ -31,7 +31,7 @@ STATICFILES_DIRS = [
 ROOT_URLCONF = 'Front_layer.django_server.urls'
 ASGI_APPLICATION = 'Front_layer.django_server.asgi.application'
 ALLOWED_HOSTS = ['*']
-# Channel layers: Redis если задан REDIS_URL, иначе InMemory
+# Channel layers и кэш: Redis если задан REDIS_URL
 REDIS_URL = os.getenv('REDIS_URL', '')
 if REDIS_URL:
     CHANNEL_LAYERS = {
@@ -40,10 +40,26 @@ if REDIS_URL:
             'CONFIG': {'hosts': [REDIS_URL]},
         },
     }
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
+        },
+    }
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    SESSION_CACHE_ALIAS = 'default'
 else:
     CHANNEL_LAYERS = {
         'default': {
             'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         },
     }
 CORS_ALLOW_ALL_ORIGINS = True

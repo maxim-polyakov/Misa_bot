@@ -2,9 +2,12 @@ import jwt
 import logging
 from datetime import datetime, timezone
 from django.http import JsonResponse
+from django.core.cache import cache
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Middleware_package.Interfaces import IMiddleware
 import pandas as pd
+
+USER_CACHE_TTL = 300  # 5 минут
 
 
 class Middleware(IMiddleware.IMiddleware):
@@ -54,23 +57,29 @@ class Middleware(IMiddleware.IMiddleware):
             }, status=500)
 
     def verify_token_and_get_user(self, token):
-        """Синхронная верификация JWT токена"""
+        """Синхронная верификация JWT токена (с кэшем Redis)"""
         try:
-            # Декодируем JWT токен синхронно
             payload = jwt.decode(token, self.JWT_SECRET, algorithms=[self.JWT_ALGORITHM])
             user_id = payload['user_id']
             iat = payload.get('iat')
             if iat is None:
                 return None
 
-            # Синхронный запрос к базе данных
-            query = f"SELECT id, email, logout_all_at FROM auth.users WHERE id = {user_id}"
-            user_df = self.dbc.get_data(query)
+            cache_key = f"auth_user:{user_id}"
+            user_data = cache.get(cache_key)
+            if user_data is None:
+                query = f"SELECT id, email, logout_all_at FROM auth.users WHERE id = {user_id}"
+                user_df = self.dbc.get_data(query)
+                if user_df is None or user_df.empty:
+                    return None
+                row = user_df.iloc[0]
+                user_data = {
+                    'id': int(row['id']),
+                    'email': str(row['email']),
+                    'logout_all_at': row.get('logout_all_at'),
+                }
+                cache.set(cache_key, user_data, USER_CACHE_TTL)
 
-            if user_df is None or user_df.empty:
-                return None
-
-            user_data = user_df.iloc[0]
             logout_all_at = user_data.get('logout_all_at')
             if logout_all_at is not None and not pd.isna(logout_all_at):
                 token_issued = datetime.fromtimestamp(iat, tz=timezone.utc)
@@ -81,11 +90,10 @@ class Middleware(IMiddleware.IMiddleware):
                     logging.warning("Token invalidated by logout from all devices")
                     return None
 
-            # Создаем упрощенный объект пользователя
             class SimpleUser:
-                def __init__(self, user_data):
-                    self.id = int(user_data['id'])
-                    self.email = str(user_data['email'])
+                def __init__(self, data):
+                    self.id = data['id']
+                    self.email = data['email']
                     self.is_authenticated = True
 
             return SimpleUser(user_data)
