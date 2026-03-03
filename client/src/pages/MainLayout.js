@@ -85,7 +85,7 @@ const MainLayout = ({ children }) => {
             <div className="main-layout">
                 {user?.isAuth && (
                     <div
-                        className={`sidebar-panel ${sidebarExpanded ? "sidebar-panel-open" : ""} ${showOverlay ? "sidebar-panel-mobile-open" : ""}`}
+                        className={`sidebar-panel ${sidebarExpanded ? "sidebar-panel-open" : ""} ${showOverlay ? "sidebar-panel-mobile-open" : ""} ${isMobile && !sidebarExpanded ? "sidebar-panel-mobile-collapsed" : ""}`}
                         inert={isMobile && !sidebarExpanded ? "" : undefined}
                     >
                         <Sidebar />

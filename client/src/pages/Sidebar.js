@@ -1,7 +1,6 @@
 import { useContext, useState, useRef, useEffect } from "react";
 import { Context } from "../index.js";
 import Navbar from "react-bootstrap/Navbar";
-import { Button } from "react-bootstrap";
 import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router-dom";
 import "./Styles.css";
@@ -75,8 +74,14 @@ const Sidebar = observer(() => {
     return (
         <>
         <Navbar className="sidebar" bg="dark" data-bs-theme="dark">
-                <div className="sidebar-content">
-                    <div className="sidebar-new-chat-row">
+                <div className={`sidebar-content ${sidebarExpanded ? "" : "sidebar-content-collapsed"}`}>
+                    <div
+                        className="sidebar-brand-row"
+                        onClick={!sidebarExpanded ? toggleSidebar : undefined}
+                        role={!sidebarExpanded ? "button" : undefined}
+                        tabIndex={!sidebarExpanded ? 0 : undefined}
+                        onKeyDown={!sidebarExpanded ? (e) => { if (e.key === "Enter" || e.key === " ") toggleSidebar(); } : undefined}
+                    >
                         {sidebarExpanded && (
                             <button
                                 type="button"
@@ -88,16 +93,18 @@ const Sidebar = observer(() => {
                                 ☰
                             </button>
                         )}
-                        <div className="sidebar-new-chat">
-                            <Button
-                                variant="outline-light"
-                                className="w-100 new-chat-button"
-                                onClick={() => chatStore.newChat()}
-                            >
-                                <span className="new-chat-icon">+</span>
-                                <span>{t("newChat")}</span>
-                            </Button>
-                        </div>
+                        <img src="/misa.png" alt="" className="sidebar-logo" />
+                        <span className="sidebar-brand-name">{t("misaChat")}</span>
+                    </div>
+                    <div className="sidebar-new-chat">
+                        <button
+                            type="button"
+                            className="new-chat-button"
+                            onClick={() => chatStore.newChat()}
+                        >
+                            <span className="new-chat-icon">+</span>
+                            <span className="new-chat-text">{t("newChat")}</span>
+                        </button>
                     </div>
                     <div className="sidebar-chats">
                         {chatStore.chats.map((chat) => (

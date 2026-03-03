@@ -159,35 +159,29 @@ const Chat = observer(() => {
 
     return (
         <div className="chat-container">
-            <div className="chat-header">
-                <div className="chat-header-left">
-                    {!sidebarExpanded && (
-                        <button
-                            type="button"
-                            className="menu-toggle-btn"
-                            onClick={toggleSidebar}
-                            aria-label="Развернуть меню"
-                            title="Меню"
-                        >
-                            ☰
-                        </button>
-                    )}
-                    <h1>{t("misaChat")}</h1>
-                </div>
-                <div className="chat-header-controls">
-                    <div className="chat-status">
-                        {getConnectionStatus()}
-                    </div>
-                    {chatStore.messages.length > 0 && (
-                        <button
-                            onClick={handleClearHistory}
-                            className="clear-history-button"
-                            title={t("clearHistory")}
-                        >
-                            🗑️
-                        </button>
-                    )}
-                </div>
+            {/* Плавающие кнопки поверх чата */}
+            {!sidebarExpanded && (
+                <button
+                    type="button"
+                    className="chat-floating-menu-btn"
+                    onClick={toggleSidebar}
+                    aria-label="Развернуть меню"
+                    title="Меню"
+                >
+                    ☰
+                </button>
+            )}
+            {chatStore.messages.length > 0 && (
+                <button
+                    onClick={handleClearHistory}
+                    className="chat-floating-clear-btn"
+                    title={t("clearHistory")}
+                >
+                    🗑️
+                </button>
+            )}
+            <div className="chat-status-floating">
+                {getConnectionStatus()}
             </div>
 
             {/* Контейнер для сообщений с прокруткой */}
