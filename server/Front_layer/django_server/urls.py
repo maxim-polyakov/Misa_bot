@@ -14,13 +14,14 @@ import os
 def home_view(request):
     return HttpResponse("Django server is working!")
 
-# Swagger / OpenAPI
+# Swagger / OpenAPI (базовый URL API)
 schema_view = get_schema_view(
     openapi.Info(
         title="Misa API",
         default_version="v1",
         description="API документация Misa Bot",
     ),
+    url="https://misaapi.baxic.ru",
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
