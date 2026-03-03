@@ -17,14 +17,14 @@ const Chat = observer(() => {
     const messagesContainerRef = useRef(null);
 
     const scrollToBottom = () => {
-        if (messagesContainerRef.current) {
-            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-        }
+        requestAnimationFrame(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        });
     };
 
     useEffect(() => {
         scrollToBottom();
-    }, [chatStore.messages]);
+    }, [chatStore.messages, chatStore.isLoading]);
 
     // Функция для автоматического изменения высоты textarea
     const adjustTextareaHeight = () => {
