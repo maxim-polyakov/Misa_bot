@@ -116,8 +116,11 @@ class ChatStore {
         this.isAuth = false;
     };
 
+    _loadChatsInProgress = false;
+
     // Загрузка чатов из API (БД на бэкенде)
     async loadChats() {
+        if (this._loadChatsInProgress) return;
         try {
             const userId = this.getCurrentUserId();
             if (!userId) {
@@ -129,19 +132,28 @@ class ChatStore {
                 this._loadChatsFromLocalStorage();
                 return;
             }
+            this._loadChatsInProgress = true;
             try {
                 const chatsData = await apiFetch('/api/chats/');
                 if (Array.isArray(chatsData) && chatsData.length > 0) {
-                    this.chats = chatsData.map(c => ({
-                        id: c.id,
-                        title: c.title || 'Новый чат',
-                        messages: [],
-                        createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
-                        _messagesLoaded: false
-                    }));
+                    const seen = new Set();
+                    this.chats = chatsData
+                        .filter(c => {
+                            if (seen.has(c.id)) return false;
+                            seen.add(c.id);
+                            return true;
+                        })
+                        .map(c => ({
+                            id: c.id,
+                            title: c.title || 'Новый чат',
+                            messages: [],
+                            createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
+                            _messagesLoaded: false
+                        }));
                     this.currentChatId = this.chats[0].id;
                     this._loadChatMessagesIfNeeded(this.chats[0].id);
                 } else {
+                    this.chats = [];
                     await this.newChat();
                 }
             } catch (e) {
@@ -152,6 +164,8 @@ class ChatStore {
             console.error("Ошибка загрузки чатов:", error);
             this.chats = [];
             this.currentChatId = null;
+        } finally {
+            this._loadChatsInProgress = false;
         }
     }
 
@@ -188,7 +202,7 @@ class ChatStore {
             }));
             if (this.chats.length > 0 && !this.currentChatId) this.currentChatId = this.chats[0].id;
         } else {
-            this._createDefaultChat();
+            this.newChat();
         }
     }
 
