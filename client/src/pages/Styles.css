@@ -33,7 +33,8 @@
     --accent-color: #10a37f;
 }
 
-[data-theme="light"] .sidebar-wrapper,
+[data-theme="light"] .sidebar-rail,
+[data-theme="light"] .sidebar-panel,
 [data-theme="light"] .sidebar {
     background: linear-gradient(180deg, #e5e7eb 0%, #d1d5db 100%) !important;
 }
@@ -60,72 +61,50 @@ body {
     width: 100vw;
 }
 
-.sidebar-wrapper {
-    width: var(--sidebar-width);
+/* Рейка с единой кнопкой — всегда видна слева */
+.sidebar-rail {
+    width: var(--sidebar-collapsed-width);
     flex-shrink: 0;
     height: 100dvh;
     background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
     border-right: 1px solid var(--border-color);
-    transition: width 0.25s ease, transform 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 1rem;
 }
 
-.sidebar-wrapper.sidebar-collapsed {
-    width: var(--sidebar-collapsed-width);
-    overflow-x: hidden;
-}
-
-.sidebar-wrapper.sidebar-collapsed .sidebar-new-chat span:last-child,
-.sidebar-wrapper.sidebar-collapsed .sidebar-chat-title,
-.sidebar-wrapper.sidebar-collapsed .sidebar-profile-name,
-.sidebar-wrapper.sidebar-collapsed .sidebar-profile-dots {
-    display: none;
-}
-
-.sidebar-wrapper.sidebar-collapsed .sidebar-new-chat .new-chat-button {
-    justify-content: center;
-    padding: 0.5rem;
-}
-
-.sidebar-wrapper.sidebar-collapsed .sidebar-chat-item {
-    justify-content: center;
-    padding: 0.5rem;
-}
-
-.sidebar-wrapper.sidebar-collapsed .sidebar-profile-trigger {
-    justify-content: center;
-    padding: 0.5rem;
-}
-
-.sidebar-wrapper.sidebar-collapsed .sidebar-profile-trigger .sidebar-profile-avatar {
-    margin: 0;
-}
-
-.sidebar-toggle-btn {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.5rem;
-    width: 2rem;
-    height: 2rem;
+.sidebar-rail-btn {
+    width: 2.25rem;
+    height: 2.25rem;
     border: none;
     background: rgba(255, 255, 255, 0.15);
     color: white;
     border-radius: 0.375rem;
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10;
-    flex-shrink: 0;
 }
 
-.sidebar-wrapper.sidebar-collapsed .sidebar-toggle-btn {
-    right: 50%;
-    transform: translateX(50%);
-}
-
-.sidebar-toggle-btn:hover {
+.sidebar-rail-btn:hover {
     background: rgba(255, 255, 255, 0.25);
+}
+
+/* Панель — расширяется вправо от рейки */
+.sidebar-panel {
+    width: 0;
+    flex-shrink: 0;
+    height: 100dvh;
+    background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+    border-right: 1px solid var(--border-color);
+    overflow: hidden;
+    transition: width 0.25s ease, transform 0.25s ease;
+}
+
+.sidebar-panel.sidebar-panel-open {
+    width: calc(var(--sidebar-width) - var(--sidebar-collapsed-width));
 }
 
 .main-content {
@@ -213,14 +192,6 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-}
-
-.chat-header-left {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    flex: 1;
-    min-width: 0;
 }
 
 .chat-header h1 {
@@ -1405,26 +1376,28 @@ button:active {
         position: relative;
     }
 
-    /* Сайдбар скрыт по умолчанию, выезжает поверх контента */
-    .sidebar-wrapper {
+    /* Рейка фиксирована слева, кнопка всегда видна */
+    .sidebar-rail {
         position: fixed;
         left: 0;
         top: 0;
-        height: 100dvh;
         z-index: 1100;
-        width: var(--mobile-sidebar-width);
-        transform: translateX(-100%);
+    }
+
+    /* Панель выезжает поверх контента */
+    .sidebar-panel {
+        position: fixed;
+        left: var(--sidebar-collapsed-width);
+        top: 0;
+        height: 100dvh;
+        z-index: 1090;
+        width: 0;
         box-shadow: none;
     }
 
-    .sidebar-wrapper.sidebar-mobile-open {
-        transform: translateX(0);
+    .sidebar-panel.sidebar-panel-mobile-open {
+        width: calc(var(--mobile-sidebar-width) - var(--sidebar-collapsed-width));
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
-    }
-
-    .sidebar-wrapper.sidebar-collapsed,
-    .sidebar-wrapper.sidebar-expanded {
-        width: var(--mobile-sidebar-width);
     }
 
     .sidebar-overlay {
@@ -1436,30 +1409,9 @@ button:active {
     }
 
     .main-content {
-        width: 100%;
-        margin-left: 0;
+        margin-left: var(--sidebar-collapsed-width);
         flex: 1;
         min-height: 0;
-    }
-
-    /* Кнопка меню в хедере - видна на мобильных */
-    .menu-toggle {
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        width: 2.5rem;
-        height: 2.5rem;
-        margin-right: 0.75rem;
-        border: none;
-        background: rgba(255, 255, 255, 0.15);
-        color: white;
-        border-radius: 0.375rem;
-        cursor: pointer;
-        font-size: 1.25rem;
-    }
-
-    .menu-toggle:hover {
-        background: rgba(255, 255, 255, 0.25);
     }
 
     .message-image-container {
@@ -1473,8 +1425,8 @@ button:active {
 
 /* Small mobile devices (up to 375px) */
 @media (max-width: 375px) {
-    .sidebar-wrapper.sidebar-mobile-open {
-        width: min(260px, 85vw);
+    .sidebar-panel.sidebar-panel-mobile-open {
+        width: min(224px, calc(100vw - var(--sidebar-collapsed-width)));
     }
 
     .sidebar-content {
@@ -1643,26 +1595,6 @@ button:active {
     }
 }
 
-/* Кнопка меню/свёртки - базовая */
-.menu-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    margin-right: 0.75rem;
-    border: none;
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-
-.menu-toggle:hover {
-    background: rgba(255, 255, 255, 0.25);
-}
 
 /* Tablet styles (769px to 1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
@@ -1754,8 +1686,7 @@ button:active {
 @media print {
     .sidebar,
     .input-container,
-    .chat-header-controls,
-    .menu-toggle {
+    .chat-header-controls {
         display: none !important;
     }
 

@@ -2,7 +2,6 @@ import { observer } from "mobx-react-lite";
 import { useState, useRef, useEffect } from "react";
 import { useStores } from "../store/rootStoreContext";
 import { useLocale } from "../contexts/LocaleContext";
-import { useMenuToggle } from "./MainLayout";
 import CachedImage from "./CachedImage";
 import "./Styles.css";
 import { imageDB } from "./ImageDB";
@@ -10,7 +9,6 @@ import { imageDB } from "./ImageDB";
 const Chat = observer(() => {
     const { chatStore } = useStores();
     const { t } = useLocale();
-    const { toggleSidebar, openSidebar, isMobile, sidebarExpanded } = useMenuToggle();
     const [message, setMessage] = useState("");
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
@@ -160,18 +158,7 @@ const Chat = observer(() => {
     return (
         <div className="chat-container">
             <div className="chat-header">
-                <div className="chat-header-left">
-                    <button
-                        type="button"
-                        className="menu-toggle"
-                        onClick={isMobile ? (sidebarExpanded ? toggleSidebar : openSidebar) : toggleSidebar}
-                        aria-label={isMobile ? (sidebarExpanded ? "Закрыть меню" : "Открыть меню") : (sidebarExpanded ? "Свернуть" : "Развернуть")}
-                        title={isMobile ? (sidebarExpanded ? "Закрыть" : "Меню") : (sidebarExpanded ? "Свернуть" : "Развернуть")}
-                    >
-                        {isMobile ? (sidebarExpanded ? "✕" : "☰") : (sidebarExpanded ? "◀" : "☰")}
-                    </button>
-                    <h1>{t("misaChat")}</h1>
-                </div>
+                <h1>{t("misaChat")}</h1>
                 <div className="chat-header-controls">
                     <div className="chat-status">
                         {getConnectionStatus()}

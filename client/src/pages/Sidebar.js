@@ -14,7 +14,7 @@ const Sidebar = observer(() => {
     const { user } = useContext(Context);
     const { t } = useLocale();
     const { chatStore } = useStores();
-    const { closeSidebar, sidebarExpanded, toggleSidebar } = useMenuToggle();
+    const { closeSidebar } = useMenuToggle();
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
@@ -76,15 +76,6 @@ const Sidebar = observer(() => {
         <>
         <Navbar className="sidebar" bg="dark" data-bs-theme="dark">
                 <div className="sidebar-content">
-                    <button
-                        type="button"
-                        className="sidebar-toggle-btn"
-                        onClick={toggleSidebar}
-                        aria-label={sidebarExpanded ? "Свернуть меню" : "Развернуть меню"}
-                        title={sidebarExpanded ? "Свернуть" : "Развернуть"}
-                    >
-                        {sidebarExpanded ? "◀" : "▶"}
-                    </button>
                     <div className="sidebar-new-chat">
                         <Button
                             variant="outline-light"
