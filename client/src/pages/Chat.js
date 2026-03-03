@@ -72,10 +72,25 @@ const Chat = observer(() => {
     };
 
 
+    const getBlockType = (language) => {
+        const lang = (language || 'plaintext').toLowerCase();
+        const typeMap = {
+            json: 'json', yaml: 'yaml', yml: 'yaml', xml: 'xml',
+            bash: 'bash', sh: 'bash', shell: 'bash',
+            sql: 'sql',
+            md: 'md', markdown: 'md',
+            diff: 'diff',
+            warning: 'warning', warn: 'warning',
+            error: 'error', err: 'error',
+            quote: 'quote', citation: 'quote',
+            output: 'output', log: 'output',
+        };
+        return typeMap[lang] || 'code';
+    };
+
     const parseMessageContent = (content) => {
         if (!content || typeof content !== 'string') return [{ type: 'text', content: '' }];
         const parts = [];
-        // Поддержка ```language и ``` с разными переносами строк (\n, \r\n)
         const regex = /```\s*([\w+-]*)\s*\r?\n([\s\S]*?)```/g;
         let lastIndex = 0;
         let match;
@@ -83,7 +98,13 @@ const Chat = observer(() => {
             if (match.index > lastIndex) {
                 parts.push({ type: 'text', content: content.slice(lastIndex, match.index) });
             }
-            parts.push({ type: 'code', language: match[1] || 'plaintext', content: match[2].trim() });
+            const language = match[1] || 'plaintext';
+            parts.push({
+                type: 'code',
+                language,
+                blockType: getBlockType(language),
+                content: match[2].trim(),
+            });
             lastIndex = regex.lastIndex;
         }
         if (lastIndex < content.length) {
@@ -124,7 +145,7 @@ const Chat = observer(() => {
                         part.type === 'text' ? (
                             <span key={i} style={{ whiteSpace: 'pre-line' }}>{part.content}</span>
                         ) : (
-                            <div key={i} className="message-code-block">
+                            <div key={i} className={`message-code-block message-code-block--${part.blockType}`}>
                                 <div className="message-code-header">{part.language}</div>
                                 <pre><code>{part.content}</code></pre>
                             </div>

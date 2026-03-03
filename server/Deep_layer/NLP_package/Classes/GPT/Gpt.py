@@ -72,11 +72,21 @@ class Gpt(IGpt.IGpt):
                 project=OPENAI_API_PROJECT,
             )
 
-            # System prompt: instruct GPT to format code in markdown blocks for proper display
+            # System prompt: instruct GPT to format content in markdown blocks for proper display
             system_prompt = (
-                "When you output code (Python, JavaScript, etc.), always wrap it in markdown code blocks: "
-                "start with ``` followed by the language (e.g. python, javascript), then the code on new lines, "
-                "then end with ```. Example: ```python\nprint('hello')\n```"
+                "When you output code or structured content, always wrap it in markdown code blocks: "
+                "```label\\ncontent\\n```. Use these labels for different frame styles:\n"
+                "- Code: python, javascript, typescript, go, rust, java, etc.\n"
+                "- json: JSON data\n"
+                "- yaml/yml: YAML configs\n"
+                "- bash/sh: shell commands\n"
+                "- sql: SQL queries\n"
+                "- md/markdown: Markdown snippets\n"
+                "- diff: file diffs\n"
+                "- warning: warnings\n"
+                "- error: error messages\n"
+                "- quote: citations\n"
+                "- output: command output or logs"
             )
             api_messages = (
                 [{"role": "user", "content": text}]

@@ -1479,6 +1479,8 @@ body {
 
 .user-message .message-text .message-code-block {
     background: rgba(0, 0, 0, 0.4);
+}
+.user-message .message-text .message-code-block:not([class*="--"]) {
     border-color: rgba(255, 255, 255, 0.25);
 }
 
@@ -1486,9 +1488,127 @@ body {
     background: rgba(255, 255, 255, 0.1);
     border-bottom-color: rgba(255, 255, 255, 0.15);
 }
+/* Сохраняем цвета рамок для типизированных блоков в сообщениях пользователя */
+.user-message .message-text .message-code-block--json { border-color: rgba(167, 139, 250, 0.6); }
+.user-message .message-text .message-code-block--yaml { border-color: rgba(52, 211, 153, 0.6); }
+.user-message .message-text .message-code-block--bash { border-color: rgba(249, 115, 22, 0.6); }
+.user-message .message-text .message-code-block--sql { border-color: rgba(34, 197, 94, 0.6); }
+.user-message .message-text .message-code-block--md { border-color: rgba(59, 130, 246, 0.6); }
+.user-message .message-text .message-code-block--warning { border-color: rgba(245, 158, 11, 0.7); }
+.user-message .message-text .message-code-block--error { border-color: rgba(239, 68, 68, 0.7); }
 
 .user-message .message-text .message-code-block pre code {
     color: rgba(255, 255, 255, 0.95);
+}
+
+/* Разные рамки по типу блока */
+.message-text .message-code-block--code {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 1px rgba(74, 144, 226, 0.2);
+}
+.message-text .message-code-block--code .message-code-header {
+    background: rgba(74, 144, 226, 0.15);
+    border-bottom-color: rgba(74, 144, 226, 0.3);
+}
+
+.message-text .message-code-block--json {
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.2);
+}
+.message-text .message-code-block--json .message-code-header {
+    background: rgba(167, 139, 250, 0.15);
+    border-bottom-color: rgba(167, 139, 250, 0.3);
+}
+
+.message-text .message-code-block--yaml {
+    border-color: #34d399;
+    box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.2);
+}
+.message-text .message-code-block--yaml .message-code-header {
+    background: rgba(52, 211, 153, 0.15);
+    border-bottom-color: rgba(52, 211, 153, 0.3);
+}
+
+.message-text .message-code-block--xml {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.2);
+}
+.message-text .message-code-block--xml .message-code-header {
+    background: rgba(245, 158, 11, 0.15);
+    border-bottom-color: rgba(245, 158, 11, 0.3);
+}
+
+.message-text .message-code-block--bash {
+    border-color: #f97316;
+    box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.2);
+}
+.message-text .message-code-block--bash .message-code-header {
+    background: rgba(249, 115, 22, 0.15);
+    border-bottom-color: rgba(249, 115, 22, 0.3);
+}
+
+.message-text .message-code-block--sql {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2);
+}
+.message-text .message-code-block--sql .message-code-header {
+    background: rgba(34, 197, 94, 0.15);
+    border-bottom-color: rgba(34, 197, 94, 0.3);
+}
+
+.message-text .message-code-block--md {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+}
+.message-text .message-code-block--md .message-code-header {
+    background: rgba(59, 130, 246, 0.15);
+    border-bottom-color: rgba(59, 130, 246, 0.3);
+}
+
+.message-text .message-code-block--diff {
+    border-color: #6b7280;
+    box-shadow: 0 0 0 1px rgba(107, 114, 128, 0.2);
+}
+.message-text .message-code-block--diff .message-code-header {
+    background: rgba(107, 114, 128, 0.2);
+    border-bottom-color: rgba(107, 114, 128, 0.3);
+}
+
+.message-text .message-code-block--warning {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.3);
+}
+.message-text .message-code-block--warning .message-code-header {
+    background: rgba(245, 158, 11, 0.2);
+    border-bottom-color: rgba(245, 158, 11, 0.4);
+}
+
+.message-text .message-code-block--error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
+}
+.message-text .message-code-block--error .message-code-header {
+    background: rgba(239, 68, 68, 0.2);
+    border-bottom-color: rgba(239, 68, 68, 0.4);
+}
+
+.message-text .message-code-block--quote {
+    border-color: #94a3b8;
+    border-left-width: 4px;
+    box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.15);
+}
+.message-text .message-code-block--quote .message-code-header {
+    background: rgba(148, 163, 184, 0.1);
+    border-bottom-color: rgba(148, 163, 184, 0.2);
+}
+
+.message-text .message-code-block--output {
+    border-color: #64748b;
+    box-shadow: 0 0 0 1px rgba(100, 116, 139, 0.2);
+}
+.message-text .message-code-block--output .message-code-header {
+    background: rgba(100, 116, 139, 0.15);
+    border-bottom-color: rgba(100, 116, 139, 0.25);
 }
 
 /* ===== INTERACTIVE ELEMENTS ===== */
