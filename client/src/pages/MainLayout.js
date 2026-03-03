@@ -1,4 +1,4 @@
-import { useState, useContext, createContext, useMemo, useCallback } from "react";
+import { useState, useContext, createContext, useMemo, useCallback, useEffect } from "react";
 import { Context } from "../index";
 import Sidebar from "../pages/Sidebar";
 import "./Styles.css";
@@ -14,56 +14,97 @@ export const useMenuToggle = () => {
     return context;
 };
 
+const SIDEBAR_COLLAPSED_KEY = "misa_sidebar_collapsed";
+
 const MainLayout = ({ children }) => {
     const { user } = useContext(Context);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [sidebarExpanded, setSidebarExpanded] = useState(() => {
+        if (typeof window === "undefined") return true;
+        if (window.innerWidth <= 768) return false;
+        try {
+            return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) !== "true";
+        } catch {
+            return true;
+        }
+    });
+    const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 768);
 
-    // Используем useCallback для стабильности функций
-    const toggleSidebar = useCallback(() => {
-        setIsSidebarOpen(prev => !prev);
+    useEffect(() => {
+        const mq = window.matchMedia("(max-width: 768px)");
+        const handler = () => {
+            const mobile = mq.matches;
+            setIsMobile(mobile);
+            if (mobile) setSidebarExpanded(false);
+        };
+        handler();
+        mq.addEventListener("change", handler);
+        return () => mq.removeEventListener("change", handler);
     }, []);
+
+    useEffect(() => {
+        if (!isMobile) {
+            try {
+                const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+                setSidebarExpanded(saved !== "true");
+            } catch {}
+        }
+    }, [isMobile]);
+
+    const toggleSidebar = useCallback(() => {
+        setSidebarExpanded(prev => {
+            const next = !prev;
+            if (!isMobile) {
+                try {
+                    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, (!next).toString());
+                } catch {}
+            }
+            return next;
+        });
+    }, [isMobile]);
 
     const closeSidebar = useCallback(() => {
-        setIsSidebarOpen(false);
+        if (isMobile) setSidebarExpanded(false);
+    }, [isMobile]);
+
+    const openSidebar = useCallback(() => {
+        setSidebarExpanded(true);
     }, []);
 
-    // Memoize context value to prevent unnecessary re-renders
     const contextValue = useMemo(() => ({
-        isSidebarOpen,
+        sidebarExpanded,
+        isMobile,
         toggleSidebar,
-        closeSidebar
-    }), [isSidebarOpen, toggleSidebar, closeSidebar]);
+        closeSidebar,
+        openSidebar
+    }), [sidebarExpanded, isMobile, toggleSidebar, closeSidebar, openSidebar]);
+
+    const showOverlay = isMobile && sidebarExpanded;
 
     return (
         <MenuToggleContext.Provider value={contextValue}>
             <div className="main-layout">
-                {/* Sidebar with accessibility improvements */}
                 {user?.isAuth && (
                     <div
-                        className={`sidebar-wrapper ${isSidebarOpen ? 'mobile-open' : ''}`}
-                        inert={!isSidebarOpen ? "" : undefined} // Apply inert when sidebar is closed
+                        className={`sidebar-wrapper ${sidebarExpanded ? "sidebar-expanded" : "sidebar-collapsed"} ${showOverlay ? "sidebar-mobile-open" : ""}`}
+                        inert={isMobile && !sidebarExpanded ? "" : undefined}
                     >
                         <Sidebar />
                     </div>
                 )}
 
-                {/* Overlay with enhanced accessibility */}
-                {isSidebarOpen && (
+                {showOverlay && (
                     <div
                         className="sidebar-overlay"
                         onClick={closeSidebar}
                         role="button"
-                        aria-label="Close menu"
+                        aria-label="Закрыть меню"
                         tabIndex={0}
                         onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                                closeSidebar();
-                            }
+                            if (e.key === "Enter" || e.key === " ") closeSidebar();
                         }}
                     />
                 )}
 
-                {/* Main content */}
                 <div className="main-content">
                     <div className="chat-container-wrapper">
                         {children}

@@ -6,7 +6,7 @@ import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router-dom";
 import "./Styles.css";
 import { useStores } from "../store/rootStoreContext";
-import { useMenuToggle } from "../pages/MainLayout";
+import { useMenuToggle } from "./MainLayout";
 import { useLocale } from "../contexts/LocaleContext";
 import SettingsModal from "./SettingsModal";
 
@@ -14,7 +14,7 @@ const Sidebar = observer(() => {
     const { user } = useContext(Context);
     const { t } = useLocale();
     const { chatStore } = useStores();
-    const { closeSidebar } = useMenuToggle();
+    const { closeSidebar, sidebarExpanded, toggleSidebar } = useMenuToggle();
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
@@ -73,9 +73,18 @@ const Sidebar = observer(() => {
     }
 
     return (
-        <div className="sidebar-wrapper">
-            <Navbar className="sidebar" bg="dark" data-bs-theme="dark">
+        <>
+        <Navbar className="sidebar" bg="dark" data-bs-theme="dark">
                 <div className="sidebar-content">
+                    <button
+                        type="button"
+                        className="sidebar-toggle-btn"
+                        onClick={toggleSidebar}
+                        aria-label={sidebarExpanded ? "Свернуть меню" : "Развернуть меню"}
+                        title={sidebarExpanded ? "Свернуть" : "Развернуть"}
+                    >
+                        {sidebarExpanded ? "◀" : "▶"}
+                    </button>
                     <div className="sidebar-new-chat">
                         <Button
                             variant="outline-light"
@@ -137,8 +146,8 @@ const Sidebar = observer(() => {
                     </div>
                 </div>
             </Navbar>
-            <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
-        </div>
+        <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+        </>
     );
 });
 
