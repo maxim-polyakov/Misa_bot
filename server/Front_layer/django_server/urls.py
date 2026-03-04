@@ -14,6 +14,35 @@ import os
 def home_view(request):
     return HttpResponse("Django server is working!")
 
+
+def swagger_ui_view(request):
+    """Swagger UI через CDN — без DRF, без Django Login."""
+    schema_url = request.build_absolute_uri('/swagger.json')
+    html = f'''<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Misa API - Swagger</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+        SwaggerUIBundle({{
+            url: "{schema_url}",
+            dom_id: "#swagger-ui",
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIBundle.SwaggerUIStandalonePreset
+            ]
+        }});
+    </script>
+</body>
+</html>'''
+    return HttpResponse(html, content_type='text/html')
+
+
 # URL-паттерны только для схемы (без catch-all и static)
 api_patterns_for_schema = [
     path('auth/register/', views.register, name='register'),
@@ -62,10 +91,10 @@ urlpatterns = [
     path('auth/oauth-token/', views.oauth_token, name='oauth_token'),
     path('auth/check/', views.check, name="check"),
     path('auth/logout-all/', views.logout_all, name='logout_all'),
-    # Swagger (как lotusapi: /swagger-ui/ и /swagger-ui/index.html)
-    path('swagger-ui/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('swagger-ui/index.html', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui-html'),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-legacy'),
+    # Swagger UI (своя страница через CDN — без DRF/Django Login)
+    path('swagger-ui/', swagger_ui_view, name='schema-swagger-ui'),
+    path('swagger-ui/index.html', swagger_ui_view, name='schema-swagger-ui-html'),
+    path('swagger/', swagger_ui_view, name='schema-swagger-legacy'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     # Chat API (хранение в БД)
