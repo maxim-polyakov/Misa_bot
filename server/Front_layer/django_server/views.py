@@ -1,49 +1,49 @@
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
+from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 from Core_layer.Controller_package.Classes import Controller
 
 # Контроллер регистрации
-@swagger_auto_schema(operation_summary='Регистрация (legacy)', tags=['Auth'])
+@swagger_auto_schema(method='post', operation_summary='Регистрация (legacy)', tags=['Auth'])
+@api_view(['POST'])
 @csrf_exempt
-@require_http_methods(["POST"])
 def register(request):
     """Регистрация нового пользователя (legacy, без верификации)"""
     ctrlr = Controller.Controller()
     return ctrlr.register(request)
 
 
-@swagger_auto_schema(operation_summary='Отправка кода верификации', tags=['Auth'])
+@swagger_auto_schema(method='post', operation_summary='Отправка кода верификации', tags=['Auth'])
+@api_view(['POST'])
 @csrf_exempt
-@require_http_methods(["POST"])
 def register_send_code(request):
     """Отправка кода верификации на email"""
     ctrlr = Controller.Controller()
     return ctrlr.register_send_code(request)
 
 
-@swagger_auto_schema(operation_summary='Проверка кода и создание пользователя', tags=['Auth'])
+@swagger_auto_schema(method='post', operation_summary='Проверка кода и создание пользователя', tags=['Auth'])
+@api_view(['POST'])
 @csrf_exempt
-@require_http_methods(["POST"])
 def register_verify(request):
     """Проверка кода и создание пользователя"""
     ctrlr = Controller.Controller()
     return ctrlr.register_verify(request)
 
 
-@swagger_auto_schema(operation_summary='Отправка кода восстановления пароля', tags=['Auth'])
+@swagger_auto_schema(method='post', operation_summary='Отправка кода восстановления пароля', tags=['Auth'])
+@api_view(['POST'])
 @csrf_exempt
-@require_http_methods(["POST"])
 def forgot_password_send_code(request):
     """Отправка кода восстановления пароля на email"""
     ctrlr = Controller.Controller()
     return ctrlr.forgot_password_send_code(request)
 
 
-@swagger_auto_schema(operation_summary='Проверка кода и установка нового пароля', tags=['Auth'])
+@swagger_auto_schema(method='post', operation_summary='Проверка кода и установка нового пароля', tags=['Auth'])
+@api_view(['POST'])
 @csrf_exempt
-@require_http_methods(["POST"])
 def forgot_password_verify(request):
     """Проверка кода и установка нового пароля"""
     ctrlr = Controller.Controller()
@@ -51,49 +51,49 @@ def forgot_password_verify(request):
 
 
 # Контроллер авторизации
-@swagger_auto_schema(operation_summary='Вход по email/паролю', tags=['Auth'])
+@swagger_auto_schema(method='post', operation_summary='Вход по email/паролю', tags=['Auth'])
+@api_view(['POST'])
 @csrf_exempt
-@require_http_methods(["POST"])
 def login_view(request):
     ctrlr = Controller.Controller()
     return ctrlr.login_view(request)
 
 
 # Google OAuth
-@swagger_auto_schema(operation_summary='OAuth Google redirect', tags=['Auth'])
+@swagger_auto_schema(method='get', operation_summary='OAuth Google redirect', tags=['Auth'])
+@api_view(['GET'])
 @csrf_exempt
-@require_http_methods(["GET"])
 def oauth_google_redirect(request):
     ctrlr = Controller.Controller()
     return ctrlr.oauth_google_redirect(request)
 
 
-@swagger_auto_schema(operation_summary='OAuth Google callback', tags=['Auth'])
+@swagger_auto_schema(method='get', operation_summary='OAuth Google callback', tags=['Auth'])
+@api_view(['GET'])
 @csrf_exempt
-@require_http_methods(["GET"])
 def oauth_google_callback(request):
     ctrlr = Controller.Controller()
     return ctrlr.oauth_google_callback(request)
 
 
-@swagger_auto_schema(operation_summary='OAuth token', tags=['Auth'])
+@swagger_auto_schema(method='get', operation_summary='OAuth token', tags=['Auth'])
+@api_view(['GET'])
 @csrf_exempt
-@require_http_methods(["GET"])
 def oauth_token(request):
     ctrlr = Controller.Controller()
     return ctrlr.oauth_token(request)
 
-@swagger_auto_schema(operation_summary='Проверка JWT', tags=['Auth'])
+@swagger_auto_schema(method='get', operation_summary='Проверка JWT', tags=['Auth'])
+@api_view(['GET'])
 @csrf_exempt
-@require_http_methods(["GET"])
 def check(request):
     ctrlr = Controller.Controller()
     return ctrlr.check(request)
 
 
-@swagger_auto_schema(operation_summary='Выход со всех устройств', tags=['Auth'])
+@swagger_auto_schema(method='post', operation_summary='Выход со всех устройств', tags=['Auth'])
+@api_view(['POST'])
 @csrf_exempt
-@require_http_methods(["POST"])
 def logout_all(request):
     """Выход со всех устройств"""
     ctrlr = Controller.Controller()
@@ -101,9 +101,10 @@ def logout_all(request):
 
 
 # Chat API (требует JWT)
-@swagger_auto_schema(operation_summary='Список/создание чатов', tags=['Chats'])
+@swagger_auto_schema(method='get', operation_summary='Список чатов', tags=['Chats'])
+@swagger_auto_schema(method='post', operation_summary='Создать чат', tags=['Chats'])
+@api_view(['GET', 'POST'])
 @csrf_exempt
-@require_http_methods(["GET", "POST"])
 def chats_list_or_create(request):
     ctrlr = Controller.Controller()
     if request.method == "GET":
@@ -111,39 +112,39 @@ def chats_list_or_create(request):
     return ctrlr.chats_create(request)
 
 
-@swagger_auto_schema(operation_summary='Экспорт чатов', tags=['Chats'])
-@require_http_methods(["GET"])
+@swagger_auto_schema(method='get', operation_summary='Экспорт чатов', tags=['Chats'])
+@api_view(['GET'])
 def chats_export(request):
     ctrlr = Controller.Controller()
     return ctrlr.chats_export(request)
 
 
-@swagger_auto_schema(operation_summary='Сообщения чата', tags=['Chats'])
-@require_http_methods(["GET"])
+@swagger_auto_schema(method='get', operation_summary='Сообщения чата', tags=['Chats'])
+@api_view(['GET'])
 def chats_messages(request, chat_id):
     ctrlr = Controller.Controller()
     return ctrlr.chats_messages(request, chat_id)
 
 
-@swagger_auto_schema(operation_summary='Очистить сообщения чата', tags=['Chats'])
+@swagger_auto_schema(method='delete', operation_summary='Очистить сообщения чата', tags=['Chats'])
+@api_view(['DELETE'])
 @csrf_exempt
-@require_http_methods(["DELETE"])
 def chats_clear_messages(request, chat_id):
     ctrlr = Controller.Controller()
     return ctrlr.chats_clear_messages(request, chat_id)
 
 
-@swagger_auto_schema(operation_summary='Обновить чат', tags=['Chats'])
+@swagger_auto_schema(method='patch', operation_summary='Обновить чат', tags=['Chats'])
+@api_view(['PATCH'])
 @csrf_exempt
-@require_http_methods(["PATCH"])
 def chats_update(request, chat_id):
     ctrlr = Controller.Controller()
     return ctrlr.chats_update_title(request, chat_id)
 
 
-@swagger_auto_schema(operation_summary='Удалить чат', tags=['Chats'])
+@swagger_auto_schema(method='delete', operation_summary='Удалить чат', tags=['Chats'])
+@api_view(['DELETE'])
 @csrf_exempt
-@require_http_methods(["DELETE"])
 def chats_delete(request, chat_id):
     ctrlr = Controller.Controller()
     return ctrlr.chats_delete(request, chat_id)
