@@ -1,7 +1,9 @@
 import jwt
 import logging
+import traceback
 from datetime import datetime, timezone
 from django.http import JsonResponse
+from django.conf import settings
 from django.core.cache import cache
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Middleware_package.Interfaces import IMiddleware
@@ -58,10 +60,11 @@ class Middleware(IMiddleware.IMiddleware):
 
         except Exception as e:
             logging.error(f"Middleware error: {str(e)}")
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Internal server error'
-            }, status=500)
+            response_data = {'status': 'error', 'message': 'Internal server error'}
+            if getattr(settings, 'DEBUG', False):
+                response_data['error'] = str(e)
+                response_data['traceback'] = traceback.format_exc()
+            return JsonResponse(response_data, status=500)
 
     def verify_token_and_get_user(self, token):
         """Синхронная верификация JWT токена (с кэшем Redis)"""
