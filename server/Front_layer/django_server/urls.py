@@ -1,5 +1,5 @@
 from django.urls import path, re_path
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
@@ -13,70 +13,6 @@ import os
 
 def home_view(request):
     return HttpResponse("Django server is working!")
-
-
-def swagger_json_view(request):
-    """OpenAPI 2.0 схема с BaseURL и всеми эндпоинтами."""
-    base_url = getattr(settings, 'API_URL', '').rstrip('/').replace('https://', '').replace('http://', '')
-    host = base_url or request.get_host()
-    scheme = 'https' if 'https' in str(getattr(settings, 'API_URL', '')) else 'http'
-
-    schema = {
-        "swagger": "2.0",
-        "info": {"title": "Misa API", "version": "v1", "description": "API документация Misa Bot"},
-        "host": host,
-        "basePath": "/",
-        "schemes": [scheme],
-        "paths": {
-            "/auth/register/": {"post": {"summary": "Регистрация (legacy)", "tags": ["Auth"]}},
-            "/auth/register/send-code/": {"post": {"summary": "Отправить код верификации", "tags": ["Auth"], "parameters": [{"name": "body", "in": "body", "schema": {"type": "object", "properties": {"email": {}, "password": {}}}}]}},
-            "/auth/register/verify/": {"post": {"summary": "Подтвердить код", "tags": ["Auth"], "parameters": [{"name": "body", "in": "body", "schema": {"type": "object", "properties": {"email": {}, "password": {}, "code": {}}}}]}},
-            "/auth/forgot-password/send-code/": {"post": {"summary": "Код восстановления пароля", "tags": ["Auth"], "parameters": [{"name": "body", "in": "body", "schema": {"type": "object", "properties": {"email": {}}}}]}},
-            "/auth/forgot-password/verify/": {"post": {"summary": "Сбросить пароль по коду", "tags": ["Auth"], "parameters": [{"name": "body", "in": "body", "schema": {"type": "object", "properties": {"email": {}, "code": {}, "new_password": {}}}}]}},
-            "/auth/login/": {"post": {"summary": "Вход", "tags": ["Auth"], "parameters": [{"name": "body", "in": "body", "schema": {"type": "object", "properties": {"email": {}, "password": {}}}}]}},
-            "/auth/check/": {"get": {"summary": "Проверка JWT", "tags": ["Auth"], "security": [{"Bearer": []}]}},
-            "/auth/logout-all/": {"post": {"summary": "Выход со всех устройств", "tags": ["Auth"], "security": [{"Bearer": []}]}},
-            "/api/chats/": {"get": {"summary": "Список чатов", "tags": ["Chats"], "security": [{"Bearer": []}]}, "post": {"summary": "Создать чат", "tags": ["Chats"], "security": [{"Bearer": []}]}},
-            "/api/chats/export/": {"get": {"summary": "Экспорт чатов", "tags": ["Chats"], "security": [{"Bearer": []}]}},
-            "/api/chats/{chat_id}/": {"patch": {"summary": "Обновить чат", "tags": ["Chats"], "security": [{"Bearer": []}]}},
-            "/api/chats/{chat_id}/delete/": {"delete": {"summary": "Удалить чат", "tags": ["Chats"], "security": [{"Bearer": []}]}},
-            "/api/chats/{chat_id}/messages/": {"get": {"summary": "Сообщения чата", "tags": ["Chats"], "security": [{"Bearer": []}]}},
-            "/api/chats/{chat_id}/messages/clear/": {"delete": {"summary": "Очистить сообщения", "tags": ["Chats"], "security": [{"Bearer": []}]}},
-        },
-        "securityDefinitions": {"Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}},
-    }
-    return JsonResponse(schema)
-
-
-def swagger_ui_view(request):
-    """Swagger UI через CDN — без DRF, без Django Login."""
-    schema_url = '/swagger.json'
-    html = f'''<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Misa API - Swagger</title>
-    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
-</head>
-<body>
-    <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
-    <script>
-        SwaggerUIBundle({{
-            url: "{schema_url}",
-            dom_id: "#swagger-ui",
-            layout: "BaseLayout",
-            docExpansion: "list",
-            filter: true,
-            presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIBundle.SwaggerUIStandalonePreset
-            ]
-        }});
-    </script>
-</body>
-</html>'''
-    return HttpResponse(html, content_type='text/html')
 
 
 # URL-паттерны только для схемы (без catch-all и static)
@@ -100,7 +36,7 @@ api_patterns_for_schema = [
     path('api/chats/<str:chat_id>/delete/', views.chats_delete, name='chats_delete'),
 ]
 
-# Swagger / OpenAPI (без аутентификации — иначе DRF показывает Django Login)
+# Swagger / OpenAPI (authentication_classes=[] — без Django Login)
 schema_view = get_schema_view(
     openapi.Info(
         title="Misa API",
@@ -109,8 +45,9 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
-    authentication_classes=[],  # отключаем SessionAuthentication — иначе редирект на login
+    authentication_classes=[],
     patterns=api_patterns_for_schema,
+    url=settings.API_URL or None,
 )
 
 urlpatterns = [
@@ -127,12 +64,12 @@ urlpatterns = [
     path('auth/oauth-token/', views.oauth_token, name='oauth_token'),
     path('auth/check/', views.check, name="check"),
     path('auth/logout-all/', views.logout_all, name='logout_all'),
-    # Swagger UI (своя страница через CDN — без DRF/Django Login)
-    path('swagger-ui/', swagger_ui_view, name='schema-swagger-ui'),
-    path('swagger-ui/index.html', swagger_ui_view, name='schema-swagger-ui-html'),
-    path('swagger/', swagger_ui_view, name='schema-swagger-legacy'),
+    # Swagger (drf-yasg)
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('swagger-ui/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('swagger-ui/index.html', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui-html'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('swagger.json', swagger_json_view, name='schema-json'),
+    path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     # Chat API (хранение в БД)
     path('api/chats/', views.chats_list_or_create, name='chats_list_or_create'),
     path('api/chats/export/', views.chats_export, name='chats_export'),

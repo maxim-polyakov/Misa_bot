@@ -30,9 +30,11 @@ class Middleware(IMiddleware.IMiddleware):
                 '/auth/oauth/google/', '/auth/oauth/callback', '/auth/oauth-token/',
                 '/images/misaimg.png',
                 '/swagger/', '/swagger-ui/', '/swagger-ui/index.html', '/redoc/', '/swagger.json',
+                '/accounts/login/',  # DRF "Django Login" редирект — не блокировать
             ]
             if (request.path in public_paths or request.path.startswith('/swagger') or
-                    request.path.startswith('/redoc') or request.path.startswith('/static/')):
+                    request.path.startswith('/redoc') or request.path.startswith('/static/') or
+                    request.path.startswith('/accounts/')):
                 return self.get_response(request)
 
             # Проверяем аутентификацию для других путей
