@@ -35,7 +35,7 @@ api_patterns_for_schema = [
     path('api/chats/<str:chat_id>/delete/', views.chats_delete, name='chats_delete'),
 ]
 
-# Swagger / OpenAPI
+# Swagger / OpenAPI (без аутентификации — иначе DRF показывает Django Login)
 schema_view = get_schema_view(
     openapi.Info(
         title="Misa API",
@@ -44,6 +44,7 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
+    authentication_classes=[],  # отключаем SessionAuthentication — иначе редирект на login
     patterns=api_patterns_for_schema,
 )
 

@@ -90,6 +90,13 @@ else:
     }
 CORS_ALLOW_ALL_ORIGINS = True
 
+# REST Framework: отключаем SessionAuthentication по умолчанию для API
+# (иначе Swagger и другие API показывают Django Login)
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
+}
+
 # SMTP для отправки кодов верификации (maildev в docker)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('SMTP_HOST', 'smtp-service-misa')
