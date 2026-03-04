@@ -22,9 +22,26 @@ INSTALLED_APPS = [
 # API URL из .env
 API_URL = os.getenv('API_URL', '')
 
+# SECRET_KEY обязателен для Django (сессии, CSRF, шаблоны)
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-in-production')
+
 # DEBUG: при True показывает полный traceback на странице (для отладки 500)
 # В .env: DEBUG=1 или DEBUG=true. После отладки отключить!
 DEBUG = os.getenv('DEBUG', 'false').lower() in ('true', '1', 'yes')
+
+# Шаблоны (нужно для drf-yasg Swagger UI)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+            ],
+        },
+    },
+]
 
 # URL для доступа к статическим файлам
 STATIC_URL = '/'
