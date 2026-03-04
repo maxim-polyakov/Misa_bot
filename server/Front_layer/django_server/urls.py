@@ -14,16 +14,37 @@ import os
 def home_view(request):
     return HttpResponse("Django server is working!")
 
-# Swagger / OpenAPI (базовый URL API)
+# URL-паттерны только для схемы (без catch-all и static)
+api_patterns_for_schema = [
+    path('auth/register/', views.register, name='register'),
+    path('auth/register/send-code/', views.register_send_code, name='register_send_code'),
+    path('auth/register/verify/', views.register_verify, name='register_verify'),
+    path('auth/forgot-password/send-code/', views.forgot_password_send_code, name='forgot_password_send_code'),
+    path('auth/forgot-password/verify/', views.forgot_password_verify, name='forgot_password_verify'),
+    path('auth/login/', views.login_view, name='login'),
+    path('auth/oauth/google/', views.oauth_google_redirect, name='oauth_google_redirect'),
+    path('auth/oauth/callback', views.oauth_google_callback, name='oauth_google_callback'),
+    path('auth/oauth-token/', views.oauth_token, name='oauth_token'),
+    path('auth/check/', views.check, name='check'),
+    path('auth/logout-all/', views.logout_all, name='logout_all'),
+    path('api/chats/', views.chats_list_or_create, name='chats_list_or_create'),
+    path('api/chats/export/', views.chats_export, name='chats_export'),
+    path('api/chats/<str:chat_id>/messages/', views.chats_messages, name='chats_messages'),
+    path('api/chats/<str:chat_id>/messages/clear/', views.chats_clear_messages, name='chats_clear_messages'),
+    path('api/chats/<str:chat_id>/', views.chats_update, name='chats_update'),
+    path('api/chats/<str:chat_id>/delete/', views.chats_delete, name='chats_delete'),
+]
+
+# Swagger / OpenAPI
 schema_view = get_schema_view(
     openapi.Info(
         title="Misa API",
         default_version="v1",
         description="API документация Misa Bot",
     ),
-    url="https://misaapi.baxic.ru",
     public=True,
     permission_classes=(permissions.AllowAny,),
+    patterns=api_patterns_for_schema,
 )
 
 urlpatterns = [
