@@ -31,7 +31,8 @@ class Middleware(IMiddleware.IMiddleware):
                 '/images/misaimg.png',
                 '/swagger/', '/swagger-ui/', '/swagger-ui/index.html', '/redoc/', '/swagger.json',
             ]
-            if request.path in public_paths or request.path.startswith('/swagger') or request.path.startswith('/redoc'):
+            if (request.path in public_paths or request.path.startswith('/swagger') or
+                    request.path.startswith('/redoc') or request.path.startswith('/static/')):
                 return self.get_response(request)
 
             # Проверяем аутентификацию для других путей
