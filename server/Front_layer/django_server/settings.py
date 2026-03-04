@@ -44,7 +44,10 @@ TEMPLATES = [
 ]
 
 # URL для доступа к статическим файлам
-STATIC_URL = '/'
+STATIC_URL = '/static/'
+
+# MEDIA_URL должен отличаться от STATIC_URL (требование Django)
+MEDIA_URL = '/media/'
 
 # Директории, где Django ищет статические файлы, кроме app/static/
 STATICFILES_DIRS = [
