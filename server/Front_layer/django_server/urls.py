@@ -17,7 +17,8 @@ def home_view(request):
 
 def swagger_ui_view(request):
     """Swagger UI через CDN — без DRF, без Django Login."""
-    schema_url = request.build_absolute_uri('/swagger.json')
+    # Относительный URL — схема загружается с того же домена (избегаем localhost и mixed-content)
+    schema_url = '/swagger.json'
     html = f'''<!DOCTYPE html>
 <html>
 <head>
