@@ -5,7 +5,7 @@ from drf_yasg.utils import swagger_auto_schema
 from Core_layer.Controller_package.Classes import Controller
 
 # Контроллер регистрации
-@swagger_auto_schema(method='post', operation_summary='Регистрация (legacy)', tags=['Auth'])
+@swagger_auto_schema(operation_summary='Регистрация (legacy)', tags=['Auth'])
 @csrf_exempt
 @require_http_methods(["POST"])
 def register(request):
@@ -14,7 +14,7 @@ def register(request):
     return ctrlr.register(request)
 
 
-@swagger_auto_schema(method='post', operation_summary='Отправка кода верификации', tags=['Auth'])
+@swagger_auto_schema(operation_summary='Отправка кода верификации', tags=['Auth'])
 @csrf_exempt
 @require_http_methods(["POST"])
 def register_send_code(request):
@@ -23,7 +23,7 @@ def register_send_code(request):
     return ctrlr.register_send_code(request)
 
 
-@swagger_auto_schema(method='post', operation_summary='Проверка кода и создание пользователя', tags=['Auth'])
+@swagger_auto_schema(operation_summary='Проверка кода и создание пользователя', tags=['Auth'])
 @csrf_exempt
 @require_http_methods(["POST"])
 def register_verify(request):
@@ -32,7 +32,7 @@ def register_verify(request):
     return ctrlr.register_verify(request)
 
 
-@swagger_auto_schema(method='post', operation_summary='Отправка кода восстановления пароля', tags=['Auth'])
+@swagger_auto_schema(operation_summary='Отправка кода восстановления пароля', tags=['Auth'])
 @csrf_exempt
 @require_http_methods(["POST"])
 def forgot_password_send_code(request):
@@ -41,7 +41,7 @@ def forgot_password_send_code(request):
     return ctrlr.forgot_password_send_code(request)
 
 
-@swagger_auto_schema(method='post', operation_summary='Проверка кода и установка нового пароля', tags=['Auth'])
+@swagger_auto_schema(operation_summary='Проверка кода и установка нового пароля', tags=['Auth'])
 @csrf_exempt
 @require_http_methods(["POST"])
 def forgot_password_verify(request):
@@ -51,7 +51,7 @@ def forgot_password_verify(request):
 
 
 # Контроллер авторизации
-@swagger_auto_schema(method='post', operation_summary='Вход по email/паролю', tags=['Auth'])
+@swagger_auto_schema(operation_summary='Вход по email/паролю', tags=['Auth'])
 @csrf_exempt
 @require_http_methods(["POST"])
 def login_view(request):
@@ -60,7 +60,7 @@ def login_view(request):
 
 
 # Google OAuth
-@swagger_auto_schema(method='get', operation_summary='OAuth Google redirect', tags=['Auth'])
+@swagger_auto_schema(operation_summary='OAuth Google redirect', tags=['Auth'])
 @csrf_exempt
 @require_http_methods(["GET"])
 def oauth_google_redirect(request):
@@ -68,7 +68,7 @@ def oauth_google_redirect(request):
     return ctrlr.oauth_google_redirect(request)
 
 
-@swagger_auto_schema(method='get', operation_summary='OAuth Google callback', tags=['Auth'])
+@swagger_auto_schema(operation_summary='OAuth Google callback', tags=['Auth'])
 @csrf_exempt
 @require_http_methods(["GET"])
 def oauth_google_callback(request):
@@ -76,14 +76,14 @@ def oauth_google_callback(request):
     return ctrlr.oauth_google_callback(request)
 
 
-@swagger_auto_schema(method='get', operation_summary='OAuth token', tags=['Auth'])
+@swagger_auto_schema(operation_summary='OAuth token', tags=['Auth'])
 @csrf_exempt
 @require_http_methods(["GET"])
 def oauth_token(request):
     ctrlr = Controller.Controller()
     return ctrlr.oauth_token(request)
 
-@swagger_auto_schema(method='get', operation_summary='Проверка JWT', tags=['Auth'])
+@swagger_auto_schema(operation_summary='Проверка JWT', tags=['Auth'])
 @csrf_exempt
 @require_http_methods(["GET"])
 def check(request):
@@ -91,7 +91,7 @@ def check(request):
     return ctrlr.check(request)
 
 
-@swagger_auto_schema(method='post', operation_summary='Выход со всех устройств', tags=['Auth'])
+@swagger_auto_schema(operation_summary='Выход со всех устройств', tags=['Auth'])
 @csrf_exempt
 @require_http_methods(["POST"])
 def logout_all(request):
@@ -101,8 +101,7 @@ def logout_all(request):
 
 
 # Chat API (требует JWT)
-@swagger_auto_schema(method='get', operation_summary='Список чатов', tags=['Chats'])
-@swagger_auto_schema(method='post', operation_summary='Создать чат', tags=['Chats'])
+@swagger_auto_schema(operation_summary='Список/создание чатов', tags=['Chats'])
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def chats_list_or_create(request):
@@ -112,21 +111,21 @@ def chats_list_or_create(request):
     return ctrlr.chats_create(request)
 
 
-@swagger_auto_schema(method='get', operation_summary='Экспорт чатов', tags=['Chats'])
+@swagger_auto_schema(operation_summary='Экспорт чатов', tags=['Chats'])
 @require_http_methods(["GET"])
 def chats_export(request):
     ctrlr = Controller.Controller()
     return ctrlr.chats_export(request)
 
 
-@swagger_auto_schema(method='get', operation_summary='Сообщения чата', tags=['Chats'])
+@swagger_auto_schema(operation_summary='Сообщения чата', tags=['Chats'])
 @require_http_methods(["GET"])
 def chats_messages(request, chat_id):
     ctrlr = Controller.Controller()
     return ctrlr.chats_messages(request, chat_id)
 
 
-@swagger_auto_schema(method='delete', operation_summary='Очистить сообщения чата', tags=['Chats'])
+@swagger_auto_schema(operation_summary='Очистить сообщения чата', tags=['Chats'])
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def chats_clear_messages(request, chat_id):
@@ -134,7 +133,7 @@ def chats_clear_messages(request, chat_id):
     return ctrlr.chats_clear_messages(request, chat_id)
 
 
-@swagger_auto_schema(method='patch', operation_summary='Обновить чат', tags=['Chats'])
+@swagger_auto_schema(operation_summary='Обновить чат', tags=['Chats'])
 @csrf_exempt
 @require_http_methods(["PATCH"])
 def chats_update(request, chat_id):
@@ -142,7 +141,7 @@ def chats_update(request, chat_id):
     return ctrlr.chats_update_title(request, chat_id)
 
 
-@swagger_auto_schema(method='delete', operation_summary='Удалить чат', tags=['Chats'])
+@swagger_auto_schema(operation_summary='Удалить чат', tags=['Chats'])
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def chats_delete(request, chat_id):
