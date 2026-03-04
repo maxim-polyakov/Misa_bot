@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
 from rest_framework import permissions
+import drf_yasg
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from Core_layer.Middleware_package.Classes import Middleware
@@ -77,6 +78,14 @@ urlpatterns = [
     path('api/chats/<str:chat_id>/messages/clear/', views.chats_clear_messages, name='chats_clear_messages'),
     path('api/chats/<str:chat_id>/', views.chats_update, name='chats_update'),
     path('api/chats/<str:chat_id>/delete/', views.chats_delete, name='chats_delete'),
+]
+
+# Swagger UI: раздача из пакета drf-yasg (без collectstatic)
+_drf_yasg_static = os.path.join(os.path.dirname(drf_yasg.__file__), 'static', 'drf-yasg')
+urlpatterns += [
+    re_path(r'^static/drf-yasg/(?P<path>.*)$', serve, {
+        'document_root': _drf_yasg_static,
+    }),
 ]
 
 # Для production: обслуживание статических файлов через Django (не рекомендуется для высоконагруженных проектов)
