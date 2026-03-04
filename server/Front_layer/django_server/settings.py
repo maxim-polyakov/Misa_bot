@@ -22,6 +22,10 @@ INSTALLED_APPS = [
 # API URL из .env
 API_URL = os.getenv('API_URL', '')
 
+# DEBUG: при True показывает полный traceback на странице (для отладки 500)
+# В .env: DEBUG=1 или DEBUG=true. После отладки отключить!
+DEBUG = os.getenv('DEBUG', 'false').lower() in ('true', '1', 'yes')
+
 # URL для доступа к статическим файлам
 STATIC_URL = '/'
 
