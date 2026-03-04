@@ -97,6 +97,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
 }
 
+# drf-yasg: скрыть кнопку Django Login в Swagger UI
+SWAGGER_SETTINGS = {
+    'LOGIN_URL': None,
+    'LOGOUT_URL': None,
+    'USE_SESSION_AUTH': False,
+}
+
 # SMTP для отправки кодов верификации (maildev в docker)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('SMTP_HOST', 'smtp-service-misa')
