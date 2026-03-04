@@ -61,8 +61,10 @@ urlpatterns = [
     path('auth/oauth-token/', views.oauth_token, name='oauth_token'),
     path('auth/check/', views.check, name="check"),
     path('auth/logout-all/', views.logout_all, name='logout_all'),
-    # Swagger
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    # Swagger (как lotusapi: /swagger-ui/ и /swagger-ui/index.html)
+    path('swagger-ui/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('swagger-ui/index.html', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui-html'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-legacy'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     # Chat API (хранение в БД)

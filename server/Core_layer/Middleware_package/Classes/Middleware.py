@@ -29,7 +29,7 @@ class Middleware(IMiddleware.IMiddleware):
                 '/auth/login/', '/auth/forgot-password/send-code/', '/auth/forgot-password/verify/',
                 '/auth/oauth/google/', '/auth/oauth/callback', '/auth/oauth-token/',
                 '/images/misaimg.png',
-                '/swagger/', '/redoc/', '/swagger.json',
+                '/swagger/', '/swagger-ui/', '/swagger-ui/index.html', '/redoc/', '/swagger.json',
             ]
             if request.path in public_paths or request.path.startswith('/swagger') or request.path.startswith('/redoc'):
                 return self.get_response(request)
