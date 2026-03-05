@@ -1,17 +1,36 @@
+import unittest
+from Core_layer.Test_package.Classes.PythonTests import (
+    TestCase_Auth_package,
+    TestCase_API_views,
+)
+
+
 class TestRun:
+    """Запуск набора тестов."""
 
-  @classmethod
-  def run_all_tests(cls):
+    @classmethod
+    def run_all_tests(cls):
+        loader = unittest.TestLoader()
+        suite = unittest.TestSuite()
 
-    # caseAPI = TestCase_API_package.TestCase_API_package()
-    # caseAPI.test_calc()
-    # caseAPI.test_founder()
-    # caseAPI.test_trans()
-    #
-    # caseDB = TestCase_DB_package.TestCase_DB_package()
-    # caseDB.test_bridge()
-    #
-    # caseAns = TestCase_Answer_package.TestCase_API_package()
-    # caseAns.test_tmon()
-    # caseAns.test_answer()
-    pass
+        # Auth (VerificationCodeStore)
+        suite.addTests(loader.loadTestsFromModule(TestCase_Auth_package))
+        # Django API views
+        suite.addTests(loader.loadTestsFromModule(TestCase_API_views))
+
+        # API package (calc, finders) — требует внешние сервисы
+        try:
+            from Core_layer.Test_package.Classes.PythonTests import TestCase_API_package
+            suite.addTests(loader.loadTestsFromModule(TestCase_API_package))
+        except Exception:
+            pass
+
+        # Command analyzer — требует GPT
+        try:
+            from Core_layer.Test_package.Classes.PythonTests import TestCase_Command_package
+            suite.addTests(loader.loadTestsFromModule(TestCase_Command_package))
+        except Exception:
+            pass
+
+        runner = unittest.TextTestRunner(verbosity=2)
+        return runner.run(suite)
