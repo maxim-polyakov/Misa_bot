@@ -104,6 +104,11 @@ SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
 }
 
+# Yandex Object Storage (S3-совместимый) для изображений
+S3_ACCESS_KEY_ID = os.getenv('S3_ACCESS_KEY_ID', '')
+S3_SECRET_ACCESS_KEY = os.getenv('S3_SECRET_ACCESS_KEY', '')
+S3_BUCKET = os.getenv('S3_BUCKET', '')
+
 # SMTP для отправки кодов верификации (maildev в docker)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('SMTP_HOST', 'smtp-service-misa')

@@ -29,8 +29,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             outarr = response.split('|command|\n')
             outarr = [word for word in outarr if word != '']
             for el in outarr:
+                # Локальный файл -> конвертируем в URL; S3 URL -> отправляем как есть
                 if self.is_file_path(el):
                     el = self.convert_file_path_to_url(el)
+                # el уже может быть S3 URL (https://...) — отправляется без изменений
 
                 await self.send(text_data=json.dumps({
                     'type': 'chat_message',
