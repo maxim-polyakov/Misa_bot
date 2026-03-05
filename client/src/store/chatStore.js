@@ -324,6 +324,10 @@ class ChatStore {
         }
         chat.messages = [];
         this.saveChats();
+        // Синхронизация: broadcast на другие устройства
+        if (this.socket && this.isConnected) {
+            this.socket.send(JSON.stringify({ type: 'clear_messages', chat_id: chat.id }));
+        }
     };
 
     // Удаление всех чатов (с сервера)
@@ -443,10 +447,14 @@ class ChatStore {
                 timestamp: new Date(),
                 isImage: data.isImage || /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(data.message)
             };
-            const chat = this.currentChat;
+            const chatId = data.chat_id || this.currentChatId;
+            const chat = this.chats.find(c => c.id === chatId);
             if (chat) {
                 chat.messages.push(msg);
-                this.isLoading = false;
+                // Сообщение от пользователя → Миса печатает; от Misa → печатание закончено (только для текущего чата)
+                if (chatId === this.currentChatId) {
+                    this.isLoading = (data.user && data.user !== "Misa");
+                }
                 this.saveChats();
             }
         }
@@ -473,6 +481,14 @@ class ChatStore {
             console.log("Соединение подтверждено сервером");
             if (this.currentChatId) {
                 this._loadChatMessagesViaWebSocket(this.currentChatId);
+            }
+        }
+        else if (data.type === 'messages_cleared') {
+            const chatId = data.chat_id;
+            const chat = this.chats.find(c => c.id === chatId);
+            if (chat) {
+                chat.messages = [];
+                this.saveChats();
             }
         }
         else {

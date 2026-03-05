@@ -65,10 +65,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         if chat_id:
                             await self._join_chat_group(chat_id)
                         return
+                    if msg_type == 'clear_messages':
+                        chat_id = data.get('chat_id')
+                        if chat_id:
+                            await self._join_chat_group(chat_id)
+                            await self._broadcast_clear_messages(chat_id)
+                        return
             except (json.JSONDecodeError, TypeError):
                 pass
 
             # Legacy: user|chat_id|message|content
+            chat_id = None
+            if '|message|' in text_data:
+                first = text_data.split('|message|')[0].strip()
+                first_parts = first.split('|')
+                if len(first_parts) >= 2:
+                    chat_id = first_parts[1].strip()
             response = await self.process_message(text_data)
             outarr = self._clean_command_response(response)
             for el in outarr:
@@ -76,6 +88,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     el = self.convert_file_path_to_url(el)
                 is_img = el.startswith('http') or el.startswith('/images/')
                 msg_data = {'type': 'chat_message', 'message': el, 'user': 'Misa', 'isImage': is_img}
+                if chat_id:
+                    msg_data['chat_id'] = chat_id
                 await self.send(text_data=json.dumps(msg_data, ensure_ascii=False))
 
         except Exception as e:
@@ -136,12 +150,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         return response
 
+    async def _broadcast_clear_messages(self, chat_id, exclude_self=True):
+        """Broadcast очистки сообщений чата на все устройства."""
+        payload = {
+            'type': 'chat_broadcast',
+            'data': {'type': 'messages_cleared', 'chat_id': chat_id}
+        }
+        if exclude_self:
+            payload['exclude_channel'] = self.channel_name
+        await self.channel_layer.group_send(f"chat_{chat_id}", payload)
+
     async def _broadcast_message(self, chat_id, user, content, is_image=False, exclude_self=False):
         """Отправить сообщение всем подключённым к чату (все устройства)."""
         payload = {
             'type': 'chat_broadcast',
             'data': {
                 'type': 'chat_message',
+                'chat_id': chat_id,
                 'message': content,
                 'user': user,
                 'isImage': is_image,
