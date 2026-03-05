@@ -23,11 +23,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         pass
 
+    def _clean_command_response(self, response):
+        """Убирает |command| из ответа, возвращает список частей."""
+        parts = response.replace('|command|\n', '\x00').replace('|command|', '\x00').split('\x00')
+        return [p.strip() for p in parts if p.strip()]
+
     async def receive(self, text_data):
         try:
             response = await self.process_message(text_data)
-            outarr = response.split('|command|')
-            outarr = [word.strip() for word in outarr if word.strip()]
+            outarr = self._clean_command_response(response)
             for el in outarr:
                 # Локальный файл -> конвертируем в URL; S3 URL -> отправляем как есть
                 if self.is_file_path(el):
@@ -80,7 +84,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return "Я не понял ваш запрос"
 
         if chat_id:
-            ChatService.save_message(chat_id, 'Misa', response, is_image=False)
+            # Сохраняем очищенный ответ (без |command|)
+            cleaned = self._clean_command_response(response)
+            msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else response)
+            is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned)
+            ChatService.save_message(chat_id, 'Misa', msg_to_save, is_image=is_img)
 
         return response
 
