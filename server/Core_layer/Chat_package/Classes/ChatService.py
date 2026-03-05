@@ -2,6 +2,7 @@
 """Сервис для сохранения сообщений чата в БД."""
 import logging
 from Deep_layer.DB_package.Classes import DB_Communication
+from Deep_layer.Storage_package.Classes.S3Storage import delete_by_url
 
 
 class ChatService:
@@ -79,3 +80,12 @@ class ChatService:
             )
         except Exception as e:
             logging.error(f"ChatService.save_message error: {str(e)}")
+
+    @classmethod
+    def delete_chat_images_from_s3(cls, chat_id):
+        """Удаляет изображения из S3 для всех сообщений чата с S3 URL."""
+        messages = cls.get_messages(chat_id)
+        for m in messages:
+            content = m.get('content', '')
+            if content and content.startswith('https://storage.yandexcloud.net/'):
+                delete_by_url(content)

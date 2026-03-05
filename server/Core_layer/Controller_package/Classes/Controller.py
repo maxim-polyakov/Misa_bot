@@ -25,6 +25,7 @@ except ImportError:
     Flow = None
 
 from Core_layer.Auth_package.Classes.OAuthCodeStore import put as oauth_code_put, get_and_remove as oauth_code_get
+from Core_layer.Chat_package.Classes.ChatService import ChatService
 from django.core.mail import send_mail
 from django.core.cache import cache
 
@@ -972,6 +973,8 @@ class Controller(IController.IController):
                 return cls.error_response("Chat not found", 404)
             if int(df.iloc[0]['user_id']) != user.id:
                 return cls.error_response("Forbidden", 403)
+            ChatService.delete_chat_images_from_s3(chat_id)
+            cls.__dbc.execute_update("DELETE FROM chat.chat_messages WHERE chat_id = %s", (chat_id,))
             cls.__dbc.execute_update("DELETE FROM chat.chats WHERE id = %s", (chat_id,))
             return cls.success_response(None, "Chat deleted", 200)
         except Exception as e:
@@ -990,6 +993,7 @@ class Controller(IController.IController):
                 return cls.error_response("Chat not found", 404)
             if int(df.iloc[0]['user_id']) != user.id:
                 return cls.error_response("Forbidden", 403)
+            ChatService.delete_chat_images_from_s3(chat_id)
             cls.__dbc.execute_update("DELETE FROM chat.chat_messages WHERE chat_id = %s", (chat_id,))
             return cls.success_response(None, "Messages cleared", 200)
         except Exception as e:
