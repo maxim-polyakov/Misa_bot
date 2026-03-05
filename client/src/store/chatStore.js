@@ -171,20 +171,32 @@ class ChatStore {
 
     async _loadChatMessagesIfNeeded(chatId) {
         const chat = this.chats.find(c => c.id === chatId);
-        if (!chat || chat._messagesLoaded || !API_URL) return;
-        try {
-            const msgs = await apiFetch(`/api/chats/${chatId}/messages/`);
-            chat.messages = (msgs || []).map(m => ({
-                id: String(m.id),
-                content: m.content,
-                user: m.user,
-                timestamp: new Date(m.timestamp),
-                isImage: m.isImage
-            }));
-            chat._messagesLoaded = true;
-        } catch (e) {
-            console.warn("Ошибка загрузки сообщений:", e);
+        if (!chat || chat._messagesLoaded) return;
+        if (this.socket && this.isConnected) {
+            this._loadChatMessagesViaWebSocket(chatId);
+        } else if (API_URL) {
+            try {
+                const msgs = await apiFetch(`/api/chats/${chatId}/messages/`);
+                chat.messages = (msgs || []).map(m => ({
+                    id: String(m.id),
+                    content: m.content,
+                    user: m.user,
+                    timestamp: new Date(m.timestamp),
+                    isImage: m.isImage
+                }));
+                chat._messagesLoaded = true;
+            } catch (e) {
+                console.warn("Ошибка загрузки сообщений:", e);
+            }
         }
+    }
+
+    _loadChatMessagesViaWebSocket(chatId) {
+        if (!this.socket || !this.isConnected) return;
+        const chat = this.chats.find(c => c.id === chatId);
+        if (!chat) return;
+        this.socket.send(JSON.stringify({ type: 'load_history', chat_id: chatId }));
+        chat._pendingHistory = true;
     }
 
     _loadChatsFromLocalStorage() {
@@ -263,6 +275,9 @@ class ChatStore {
     switchChat(chatId) {
         if (this.chats.some(c => c.id === chatId)) {
             this.currentChatId = chatId;
+            if (this.socket && this.isConnected) {
+                this.socket.send(JSON.stringify({ type: 'join_chat', chat_id: chatId }));
+            }
             this._loadChatMessagesIfNeeded(chatId);
         }
     };
@@ -421,17 +436,32 @@ class ChatStore {
 
     handleIncomingMessage(data) {
         if (data.type === 'chat_message') {
-            const botMessage = {
-                id: Date.now().toString(),
+            const msg = {
+                id: Date.now().toString() + Math.random().toString(36).slice(2),
                 content: data.message,
                 user: data.user || "Misa",
                 timestamp: new Date(),
-                userId: this.getCurrentUserId()
+                isImage: data.isImage || /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(data.message)
             };
             const chat = this.currentChat;
             if (chat) {
-                chat.messages.push(botMessage);
+                chat.messages.push(msg);
                 this.isLoading = false;
+                this.saveChats();
+            }
+        }
+        else if (data.type === 'history') {
+            const chat = this.chats.find(c => c.id === data.chat_id);
+            if (chat) {
+                chat.messages = (data.messages || []).map(m => ({
+                    id: String(m.id),
+                    content: m.content,
+                    user: m.user,
+                    timestamp: new Date(m.timestamp),
+                    isImage: m.isImage
+                }));
+                chat._messagesLoaded = true;
+                chat._pendingHistory = false;
                 this.saveChats();
             }
         }
@@ -441,6 +471,9 @@ class ChatStore {
         }
         else if (data.type === 'connection_established') {
             console.log("Соединение подтверждено сервером");
+            if (this.currentChatId) {
+                this._loadChatMessagesViaWebSocket(this.currentChatId);
+            }
         }
         else {
             console.log("Неизвестный тип сообщения:", data);

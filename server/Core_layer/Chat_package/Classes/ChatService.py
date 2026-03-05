@@ -43,6 +43,31 @@ class ChatService:
         return False
 
     @classmethod
+    def get_messages(cls, chat_id):
+        """Получить сообщения чата из БД."""
+        try:
+            df = DB_Communication.DB_Communication().execute_query(
+                'SELECT id, "user", content, is_image, timestamp FROM chat.chat_messages WHERE chat_id = %s ORDER BY timestamp ASC',
+                (chat_id,)
+            )
+            if df is None or df.empty:
+                return []
+            messages = []
+            for _, row in df.iterrows():
+                ts = row['timestamp']
+                messages.append({
+                    'id': str(row['id']),
+                    'user': str(row['user']),
+                    'content': str(row['content']),
+                    'isImage': bool(row.get('is_image', False)),
+                    'timestamp': ts.isoformat() if hasattr(ts, 'isoformat') else str(ts),
+                })
+            return messages
+        except Exception as e:
+            logging.error(f"ChatService.get_messages error: {str(e)}")
+            return []
+
+    @classmethod
     def save_message(cls, chat_id, user, content, is_image=False):
         """Сохранить сообщение в БД."""
         try:

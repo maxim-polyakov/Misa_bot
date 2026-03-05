@@ -4,6 +4,7 @@ import logging
 import os
 from urllib.parse import quote
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
 from django.conf import settings
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorServer
 from Core_layer.Chat_package.Classes.ChatService import ChatService
@@ -11,9 +12,15 @@ from Core_layer.Chat_package.Classes.ChatService import ChatService
 logger = logging.getLogger(__name__)
 
 
+def _get_messages_sync(chat_id):
+    return ChatService.get_messages(chat_id)
+
+
 class ChatConsumer(AsyncWebsocketConsumer):
+    """WebSocket consumer с загрузкой истории и broadcast на все устройства."""
 
     async def connect(self):
+        self.chat_groups = set()  # chat_id, к которым подключен
         await self.accept()
         await self.send(text_data=json.dumps({
             'type': 'connection_established',
@@ -21,7 +28,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     async def disconnect(self, close_code):
-        pass
+        for chat_id in list(self.chat_groups):
+            await self.channel_layer.group_discard(f"chat_{chat_id}", self.channel_name)
+
+    async def chat_broadcast(self, event):
+        """Получить broadcast от группы и отправить в WebSocket."""
+        if event.get('exclude_channel') == self.channel_name:
+            return
+        await self.send(text_data=json.dumps(event['data'], ensure_ascii=False))
 
     def _clean_command_response(self, response):
         """Убирает |command| из ответа, возвращает список частей."""
@@ -30,20 +44,39 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         try:
+            # JSON: load_history, join_chat
+            try:
+                data = json.loads(text_data)
+                if isinstance(data, dict):
+                    msg_type = data.get('type')
+                    if msg_type == 'load_history':
+                        chat_id = data.get('chat_id')
+                        if chat_id:
+                            await self._join_chat_group(chat_id)
+                            messages = await database_sync_to_async(_get_messages_sync)(chat_id)
+                            await self.send(text_data=json.dumps({
+                                'type': 'history',
+                                'chat_id': chat_id,
+                                'messages': messages
+                            }, ensure_ascii=False))
+                        return
+                    if msg_type == 'join_chat':
+                        chat_id = data.get('chat_id')
+                        if chat_id:
+                            await self._join_chat_group(chat_id)
+                        return
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+            # Legacy: user|chat_id|message|content
             response = await self.process_message(text_data)
             outarr = self._clean_command_response(response)
             for el in outarr:
-                # Локальный файл -> конвертируем в URL; S3 URL -> отправляем как есть
                 if self.is_file_path(el):
                     el = self.convert_file_path_to_url(el)
-                # el уже может быть S3 URL (https://...) — отправляется без изменений
-
-                await self.send(text_data=json.dumps({
-                    'type': 'chat_message',
-                    'message': el,
-                    'user': 'Misa'
-                }, ensure_ascii=False))
-
+                is_img = el.startswith('http') or el.startswith('/images/')
+                msg_data = {'type': 'chat_message', 'message': el, 'user': 'Misa', 'isImage': is_img}
+                await self.send(text_data=json.dumps(msg_data, ensure_ascii=False))
 
         except Exception as e:
             logger.error(f"Error processing message: {str(e)}")
@@ -51,6 +84,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'type': 'error',
                 'message': 'Произошла ошибка при обработке сообщения'
             }, ensure_ascii=False))
+
+    async def _join_chat_group(self, chat_id):
+        group = f"chat_{chat_id}"
+        if chat_id not in self.chat_groups:
+            await self.channel_layer.group_add(group, self.channel_name)
+            self.chat_groups.add(chat_id)
 
     async def process_message(self, message):
         parts = message.split('|message|')
@@ -73,9 +112,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             user = first
             chat_id = None
 
+        if chat_id:
+            await self._join_chat_group(chat_id)
+
         is_image = content.startswith('/images/') or content.startswith('http')
         if chat_id:
             ChatService.save_message(chat_id, user, content, is_image=is_image)
+            await self._broadcast_message(chat_id, user, content, is_image, exclude_self=True)
 
         message_monitor = MessageMonitorServer.MessageMonitorServer(user=user, message=content)
         response = message_monitor.monitor()
@@ -84,13 +127,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return "Я не понял ваш запрос"
 
         if chat_id:
-            # Сохраняем очищенный ответ (без |command|)
             cleaned = self._clean_command_response(response)
             msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else response)
             is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned)
             ChatService.save_message(chat_id, 'Misa', msg_to_save, is_image=is_img)
+            for el in cleaned:
+                await self._broadcast_message(chat_id, 'Misa', el, is_img, exclude_self=True)
 
         return response
+
+    async def _broadcast_message(self, chat_id, user, content, is_image=False, exclude_self=False):
+        """Отправить сообщение всем подключённым к чату (все устройства)."""
+        payload = {
+            'type': 'chat_broadcast',
+            'data': {
+                'type': 'chat_message',
+                'message': content,
+                'user': user,
+                'isImage': is_image,
+            }
+        }
+        if exclude_self:
+            payload['exclude_channel'] = self.channel_name
+        await self.channel_layer.group_send(f"chat_{chat_id}", payload)
 
     def is_file_path(self, response):
         if not isinstance(response, str):
