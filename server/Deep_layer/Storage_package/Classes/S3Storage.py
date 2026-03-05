@@ -28,10 +28,11 @@ def _get_s3_credentials():
 S3_ENDPOINT = 'https://storage.yandexcloud.net'
 
 
-def upload_image(image_bytes: bytes, content_type: str = 'image/png') -> str | None:
+def upload_image(image_bytes: bytes, content_type: str = 'image/png', source: str | None = None) -> str | None:
     """
     Загружает изображение в S3 и возвращает публичный URL.
-    Имя файла: uuid4.png
+    source: 'telegram' | 'discord' — помечает для регулярной очистки (images/telegram/, images/discord/)
+    source: None — веб-чат, не удаляется автоматически (images/)
     """
     access_key, secret_key, bucket = _get_s3_credentials()
 
@@ -52,7 +53,10 @@ def upload_image(image_bytes: bytes, content_type: str = 'image/png') -> str | N
             config=Config(signature_version='s3v4'),
         )
 
-        key = f"images/{uuid.uuid4().hex}.png"
+        prefix = 'images/web/'
+        if source in ('telegram', 'discord'):
+            prefix = f'images/{source}/'
+        key = f"{prefix}{uuid.uuid4().hex}.png"
         s3.put_object(
             Bucket=bucket,
             Key=key,
@@ -112,3 +116,49 @@ def delete_by_url(url: str) -> bool:
     except Exception as e:
         logger.exception(f'Ошибка удаления из S3: {e}')
         return False
+
+
+def cleanup_temp_images(days_old: int = 7) -> int:
+    """
+    Удаляет из S3 помеченные изображения (images/telegram/, images/discord/)
+    старше days_old дней. Веб-чаты (images/) не трогает.
+    Возвращает количество удалённых объектов.
+    """
+    access_key, secret_key, bucket = _get_s3_credentials()
+    if not all([access_key, secret_key, bucket]):
+        return 0
+
+    try:
+        import boto3
+        from botocore.config import Config
+        from datetime import datetime, timezone
+
+        s3 = boto3.client(
+            's3',
+            endpoint_url=S3_ENDPOINT,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            region_name='ru-central1',
+            config=Config(signature_version='s3v4'),
+        )
+
+        cutoff = datetime.now(timezone.utc).timestamp() - (days_old * 86400)
+        deleted = 0
+
+        for prefix in ('images/telegram/', 'images/discord/'):
+            paginator = s3.get_paginator('list_objects_v2')
+            for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+                for obj in page.get('Contents', []):
+                    key = obj['Key']
+                    last_modified = obj.get('LastModified')
+                    if last_modified and last_modified.timestamp() < cutoff:
+                        s3.delete_object(Bucket=bucket, Key=key)
+                        deleted += 1
+                        logger.info(f'Удалено помеченное изображение: {key}')
+
+        if deleted:
+            logger.info(f'Очистка S3 (telegram/discord): удалено {deleted} изображений старше {days_old} дн.')
+        return deleted
+    except Exception as e:
+        logger.exception(f'Ошибка очистки S3: {e}')
+        return 0

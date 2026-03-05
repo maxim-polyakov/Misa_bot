@@ -25,10 +25,13 @@ class FCommandAction(IAction.IAction):
     _gpta = GptAnswer.GptAnswer()
 
 
-    def __init__(self, message, message_text, user):
+    mesentype = None
+
+    def __init__(self, message, message_text, user, mesentype=None):
         FCommandAction.message = message
         FCommandAction.message_text = message_text
         FCommandAction.user = user
+        FCommandAction.mesentype = mesentype
 
     @classmethod
     def first(cls):
@@ -83,7 +86,7 @@ class FCommandAction(IAction.IAction):
 #       нарисуй
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            dal = Drawer.Drawer(cls.message_text)
+            dal = Drawer.Drawer(cls.message_text, source=cls.mesentype)
             filepath = dal.draw()
             return filepath
         except Exception as e:

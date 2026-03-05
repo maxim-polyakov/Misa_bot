@@ -7,7 +7,7 @@ from Core_layer.Bot_package.Classes.Drawers import Drawer
 @discord_bot.bot.slash_command(name='draw', description='Нарисовать что-нибудь')
 async def draw(message, what_to_draw):
     await message.response.defer(ephemeral=True)
-    draw = Drawer.Drawer(what_to_draw)
+    draw = Drawer.Drawer(what_to_draw, source='discord')
     outputder = draw.draw()
     if not outputder:
         await message.followup.send('Не удалось сгенерировать изображение')

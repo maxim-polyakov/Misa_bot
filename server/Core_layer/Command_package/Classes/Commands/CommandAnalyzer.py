@@ -33,7 +33,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # create instances of different command action classes
-            aone = FCommandAction.FCommandAction(cls.__message, message_text, user)
+            aone = FCommandAction.FCommandAction(cls.__message, message_text, user, cls.__mesentype)
             asixteen = SCommandAction.SCommandAction(cls.__message, message_text, user)
             ac = CommandAction.CommandAction(cls.__message, message_text, user)
 

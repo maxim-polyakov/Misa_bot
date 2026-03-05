@@ -11,12 +11,15 @@ class Drawer(IDrawer.IDrawer):
 
     That's a class drawer. It describes an image drawing algorithm.
     Сохраняет изображения в S3 (Yandex Object Storage) или локально в images/ при отсутствии S3.
+    source: 'telegram'|'discord' — помечает для регулярной очистки.
 
     """
     message_text = None
+    __source = None
     __dal = Dalle.Dalle()
-    def __init__(self, text):
+    def __init__(self, text, source=None):
         Drawer.message_text = text
+        Drawer.__source = source if source in ('telegram', 'discord') else None
 
     @classmethod
     def draw(cls):
@@ -26,8 +29,8 @@ class Drawer(IDrawer.IDrawer):
             p = requests.get(image_url)
             image_bytes = p.content
 
-            # Пробуем загрузить в S3
-            s3_url = upload_image(image_bytes)
+            # Пробуем загрузить в S3 (source=telegram/discord для пометки под очистку)
+            s3_url = upload_image(image_bytes, source=cls.__source)
             if s3_url:
                 logging.info('The drawer.draw process has completed successfully (S3)')
                 return s3_url
