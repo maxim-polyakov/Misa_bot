@@ -1,24 +1,28 @@
 """
 S3-совместимое хранилище (Yandex Object Storage).
 Загрузка файлов с уникальными именами и получение публичных URL.
+Работает без Django (telegram/discord) — использует только os.getenv.
 """
 import os
 import uuid
 import logging
 
-# Загрузка .env для работы без Django (telegram/discord bots)
-try:
-    from django.conf import settings
-except ImportError:
-    settings = None
-
-# Загрузка .env если не Django (server/.env)
-_env_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '.env')
-if not os.getenv('S3_ACCESS_KEY_ID') and os.path.exists(os.path.normpath(_env_path)):
+# Загрузка .env для telegram/discord (без Django settings)
+_env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '.env'))
+if os.path.exists(_env_path):
     from dotenv import load_dotenv
-    load_dotenv(os.path.normpath(_env_path))
+    load_dotenv(_env_path)
 
 logger = logging.getLogger(__name__)
+
+
+def _get_s3_credentials():
+    """Получить S3 credentials из env (Django settings не используется — падает при telegram/discord)."""
+    return (
+        os.getenv('S3_ACCESS_KEY_ID'),
+        os.getenv('S3_SECRET_ACCESS_KEY'),
+        os.getenv('S3_BUCKET'),
+    )
 
 # Yandex Object Storage endpoint
 S3_ENDPOINT = 'https://storage.yandexcloud.net'
@@ -29,9 +33,7 @@ def upload_image(image_bytes: bytes, content_type: str = 'image/png') -> str | N
     Загружает изображение в S3 и возвращает публичный URL.
     Имя файла: uuid4.png
     """
-    access_key = (getattr(settings, 'S3_ACCESS_KEY_ID', None) if settings else None) or os.getenv('S3_ACCESS_KEY_ID')
-    secret_key = (getattr(settings, 'S3_SECRET_ACCESS_KEY', None) if settings else None) or os.getenv('S3_SECRET_ACCESS_KEY')
-    bucket = (getattr(settings, 'S3_BUCKET', None) if settings else None) or os.getenv('S3_BUCKET')
+    access_key, secret_key, bucket = _get_s3_credentials()
 
     if not all([access_key, secret_key, bucket]):
         logger.warning('S3 не настроен (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_BUCKET). Сохранение в images/')
@@ -76,9 +78,7 @@ def delete_by_url(url: str) -> bool:
     if not url or not isinstance(url, str) or 'storage.yandexcloud.net' not in url:
         return False
 
-    access_key = (getattr(settings, 'S3_ACCESS_KEY_ID', None) if settings else None) or os.getenv('S3_ACCESS_KEY_ID')
-    secret_key = (getattr(settings, 'S3_SECRET_ACCESS_KEY', None) if settings else None) or os.getenv('S3_SECRET_ACCESS_KEY')
-    bucket = (getattr(settings, 'S3_BUCKET', None) if settings else None) or os.getenv('S3_BUCKET')
+    access_key, secret_key, bucket = _get_s3_credentials()
 
     if not all([access_key, secret_key, bucket]):
         return False
