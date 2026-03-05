@@ -48,6 +48,8 @@ const CachedImage = ({ src, cacheKey, messageContent, messageUser }) => {
 
             } catch (error) {
                 console.error('Ошибка загрузки изображения:', error);
+                // Fallback: используем URL напрямую (fetch может падать из-за CORS на S3)
+                setImgSrc(src);
                 setIsLoading(false);
             }
         };
@@ -69,9 +71,15 @@ const CachedImage = ({ src, cacheKey, messageContent, messageUser }) => {
         return <div className="image-loading">Загрузка изображения...</div>;
     }
 
+    // imgSrc может быть null при ошибке до fetch — используем src напрямую
+    const displaySrc = imgSrc || src;
+    if (!displaySrc) {
+        return <div className="message-text">{messageContent}</div>;
+    }
+
     return (
         <img
-            src={imgSrc}
+            src={displaySrc}
             alt={`Изображение от ${messageUser}`}
             className="message-image"
             onError={(e) => {
