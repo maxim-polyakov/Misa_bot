@@ -26,8 +26,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             response = await self.process_message(text_data)
-            outarr = response.split('|command|\n')
-            outarr = [word for word in outarr if word != '']
+            outarr = response.split('|command|')
+            outarr = [word.strip() for word in outarr if word.strip()]
             for el in outarr:
                 # Локальный файл -> конвертируем в URL; S3 URL -> отправляем как есть
                 if self.is_file_path(el):
