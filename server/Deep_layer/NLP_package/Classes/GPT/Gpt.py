@@ -93,7 +93,8 @@ class Gpt(IGpt.IGpt):
                 if is_command_check
                 else conversation_history
             )
-            messages = [{"role": "system", "content": system_prompt}] + api_messages
+            # При проверке команды — без системного сообщения (чистый запрос)
+            messages = api_messages if is_command_check else [{"role": "system", "content": system_prompt}] + api_messages
 
             # sending a request to the gpt model to generate a response with full context
             response = client.chat.completions.create(
