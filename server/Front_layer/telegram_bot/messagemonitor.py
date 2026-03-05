@@ -36,9 +36,11 @@ async def get_user_text(message):
                 outarr = output.split('|command|\n')
                 outarr = [word for word in outarr if word != '']
                 for el in outarr:
-                    if (is_file_path(el)):
-                        photo = str(el)
-                        await telegram_bot.boto.send_photo(message.chat.id, photo=open(photo, 'rb'))
+                    el = str(el).strip()
+                    if is_file_path(el):
+                        await telegram_bot.boto.send_photo(message.chat.id, photo=open(el, 'rb'))
+                    elif el.startswith('http'):
+                        await telegram_bot.boto.send_photo(message.chat.id, photo=el)
                     else:
                         await processing_large_messages(el)
             else:
