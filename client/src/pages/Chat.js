@@ -26,6 +26,13 @@ const Chat = observer(() => {
         scrollToBottom();
     }, [chatStore.messages, chatStore.isLoading]);
 
+    // Подключаемся к группе чата при открытии — чтобы получать broadcast на других устройствах
+    useEffect(() => {
+        if (chatStore.currentChatId && chatStore.isConnected) {
+            chatStore.ensureJoinedToChat(chatStore.currentChatId);
+        }
+    }, [chatStore.currentChatId, chatStore.isConnected]);
+
     // Функция для автоматического изменения высоты textarea
     const adjustTextareaHeight = () => {
         if (textareaRef.current) {

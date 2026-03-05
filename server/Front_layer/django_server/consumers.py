@@ -133,14 +133,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if chat_id:
             ChatService.save_message(chat_id, user, content, is_image=is_image)
             await self._broadcast_message(chat_id, user, content, is_image, exclude_self=True)
+            await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
 
-        message_monitor = MessageMonitorServer.MessageMonitorServer(user=user, message=content)
-        response = message_monitor.monitor()
+        try:
+            message_monitor = MessageMonitorServer.MessageMonitorServer(user=user, message=content)
+            response = message_monitor.monitor()
 
-        if not response:
-            return "Я не понял ваш запрос"
+            if not response:
+                return "Я не понял ваш запрос"
 
-        if chat_id:
             cleaned = self._clean_command_response(response)
             msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else response)
             is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned)
@@ -148,7 +149,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
             for el in cleaned:
                 await self._broadcast_message(chat_id, 'Misa', el, is_img, exclude_self=True)
 
-        return response
+            return response
+        finally:
+            if chat_id:
+                await self._broadcast_typing(chat_id, is_typing=False, exclude_self=True)
+
+    async def _broadcast_typing(self, chat_id, is_typing=True, exclude_self=True):
+        """Broadcast индикатора печати Мисы на все устройства."""
+        payload = {
+            'type': 'chat_broadcast',
+            'data': {'type': 'typing', 'chat_id': chat_id, 'isTyping': is_typing}
+        }
+        if exclude_self:
+            payload['exclude_channel'] = self.channel_name
+        await self.channel_layer.group_send(f"chat_{chat_id}", payload)
 
     async def _broadcast_clear_messages(self, chat_id, exclude_self=True):
         """Broadcast очистки сообщений чата на все устройства."""

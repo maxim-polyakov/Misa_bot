@@ -199,6 +199,12 @@ class ChatStore {
         chat._pendingHistory = true;
     }
 
+    /** Подключиться к группе чата для получения broadcast (сообщения, typing) на всех устройствах */
+    ensureJoinedToChat(chatId) {
+        if (!this.socket || !this.isConnected || !chatId) return;
+        this.socket.send(JSON.stringify({ type: 'join_chat', chat_id: chatId }));
+    }
+
     _loadChatsFromLocalStorage() {
         const userId = this.getCurrentUserId();
         const saved = localStorage.getItem(`chats_${userId}`);
@@ -489,6 +495,11 @@ class ChatStore {
             if (chat) {
                 chat.messages = [];
                 this.saveChats();
+            }
+        }
+        else if (data.type === 'typing') {
+            if (data.chat_id === this.currentChatId) {
+                this.isLoading = !!data.isTyping;
             }
         }
         else {
