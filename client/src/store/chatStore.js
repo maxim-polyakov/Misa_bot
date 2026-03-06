@@ -262,6 +262,7 @@ class ChatStore {
         const groups = { today: [], yesterday: [], last7Days: [], last30Days: [] };
 
         for (const chat of this.chats) {
+            if (!chat.messages || chat.messages.length === 0) continue;
             let date = chat.createdAt ? new Date(chat.createdAt) : new Date();
             if (isNaN(date.getTime())) date = new Date();
             if (date >= todayStart) {
