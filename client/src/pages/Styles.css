@@ -83,6 +83,8 @@ body {
 
 .sidebar-panel.sidebar-panel-open {
     width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    max-width: var(--sidebar-width);
 }
 
 /* На мобильных при закрытой панели */
@@ -748,9 +750,11 @@ body {
     position: relative;
     height: 100dvh;
     width: 100%;
+    max-width: 100%;
     background: var(--sidebar-bg);
     border-right: 1px solid var(--border-color);
     z-index: 100;
+    overflow: hidden;
 }
 
 .sidebar-content {
@@ -758,6 +762,8 @@ body {
     flex-direction: column;
     height: 100%;
     padding: 1rem;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .sidebar-new-chat {
@@ -897,7 +903,8 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
     min-width: 0;
-    flex: 1;
+    flex: 1 1 0;
+    width: 0;
     display: block;
 }
 
