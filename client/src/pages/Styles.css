@@ -982,6 +982,33 @@ body {
     opacity: 0.9;
 }
 
+.sidebar-chat-item-editing {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    width: 100%;
+    min-width: 0;
+    cursor: default;
+}
+
+.sidebar-chat-rename-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 0.875rem;
+    outline: none;
+}
+
+.sidebar-chat-rename-input:focus {
+    border-color: rgba(74, 144, 226, 0.8);
+    background: rgba(255, 255, 255, 0.08);
+}
+
 .sidebar-chat-icon {
     flex-shrink: 0;
     font-size: 0.9rem;
