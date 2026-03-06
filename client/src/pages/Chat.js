@@ -33,6 +33,12 @@ const Chat = observer(() => {
         }
     }, [chatStore.currentChatId, chatStore.isConnected]);
 
+    // Заголовок активного чата в названии вкладки
+    useEffect(() => {
+        const title = chatStore.currentChat?.title?.trim();
+        document.title = (title && title !== 'Новый чат') ? title : 'Misa AI Chat';
+    }, [chatStore.currentChatId, chatStore.currentChat?.title]);
+
     // Функция для автоматического изменения высоты textarea
     const adjustTextareaHeight = () => {
         if (textareaRef.current) {
