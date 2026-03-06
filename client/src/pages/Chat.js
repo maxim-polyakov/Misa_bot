@@ -235,7 +235,7 @@ const Chat = observer(() => {
                 </div>
             </div>
 
-            {chatStore.isLoading && (
+            {chatStore.isLoading && chatStore.loadingChatId === chatStore.currentChatId && (
                 <div className="typing-indicator">
                     <div className="typing-dots">
                         <span></span>

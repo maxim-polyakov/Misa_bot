@@ -19,6 +19,7 @@ class ChatStore {
     isConnected = false;
     isConnecting = false;
     isLoading = false;
+    loadingChatId = null; // в каком чате Миса печатает
     error = null;
     socket = null;
     reconnectAttempts = 0;
@@ -281,6 +282,7 @@ class ChatStore {
     switchChat(chatId) {
         if (this.chats.some(c => c.id === chatId)) {
             this.currentChatId = chatId;
+            this.isLoading = (this.loadingChatId === chatId);
             if (this.socket && this.isConnected) {
                 this.socket.send(JSON.stringify({ type: 'join_chat', chat_id: chatId }));
             }
@@ -463,9 +465,14 @@ class ChatStore {
             const chat = this.chats.find(c => c.id === chatId);
             if (chat) {
                 chat.messages.push(msg);
-                // Сообщение от пользователя → Миса печатает; от Misa → печатание закончено (только для текущего чата)
-                if (chatId === this.currentChatId) {
-                    this.isLoading = (data.user && data.user !== "Misa");
+                if (data.user === "Misa") {
+                    if (chatId === this.loadingChatId) {
+                        this.isLoading = false;
+                        this.loadingChatId = null;
+                    }
+                } else {
+                    this.loadingChatId = chatId;
+                    this.isLoading = (chatId === this.currentChatId);
                 }
                 this.saveChats();
             }
@@ -490,6 +497,7 @@ class ChatStore {
                 ? `${data.message || "Произошла ошибка"}: ${data.detail}`
                 : (data.message || "Произошла ошибка");
             this.isLoading = false;
+            this.loadingChatId = null;
         }
         else if (data.type === 'connection_established') {
             console.log("Соединение подтверждено сервером");
@@ -506,8 +514,12 @@ class ChatStore {
             }
         }
         else if (data.type === 'typing') {
-            if (data.chat_id === this.currentChatId) {
-                this.isLoading = !!data.isTyping;
+            if (data.isTyping) {
+                this.loadingChatId = data.chat_id;
+                this.isLoading = (data.chat_id === this.currentChatId);
+            } else if (data.chat_id === this.loadingChatId) {
+                this.loadingChatId = null;
+                this.isLoading = false;
             }
         }
         else {
@@ -532,6 +544,7 @@ class ChatStore {
         if (!chat) return false;
 
         this.isLoading = true;
+        this.loadingChatId = chatId;
         this.error = null;
         const userMessage = {
             id: Date.now().toString(),
