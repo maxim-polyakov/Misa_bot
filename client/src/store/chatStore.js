@@ -238,16 +238,9 @@ class ChatStore {
         }
     };
 
-    // Заголовок чата для боковой панели (обрезается CSS с ... как у DeepSeek)
+    // Заголовок чата (только от GPT — чаты без заголовка не показываются на панели)
     getChatTitle(chat) {
-        if (chat.title && chat.title.trim() && chat.title !== "Новый чат") {
-            return chat.title.trim();
-        }
-        const firstUserMsg = chat.messages?.find(m => m.user !== "Misa");
-        if (firstUserMsg) {
-            return (firstUserMsg.content || "").replace(/\n/g, " ").trim() || "Новый чат";
-        }
-        return "Новый чат";
+        return (chat.title && chat.title.trim()) ? chat.title.trim() : '';
     }
 
     // Группировка чатов по периодам (Сегодня, Вчера, 7 дней, 30 дней)
