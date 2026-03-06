@@ -268,6 +268,7 @@ class ChatStore {
 
         for (const chat of this.chats) {
             if (!chat.messages || chat.messages.length === 0) continue;
+            if (!chat.title || chat.title.trim() === '' || chat.title.trim() === 'Новый чат') continue;
             let date = chat.createdAt ? new Date(chat.createdAt) : new Date();
             if (isNaN(date.getTime())) date = new Date();
             if (date >= todayStart) {
@@ -579,13 +580,6 @@ class ChatStore {
             userId: this.getCurrentUserId()
         };
         chat.messages.push(userMessage);
-        if (isFirstUserMsg && API_URL) {
-            const title = content.replace(/\n/g, ' ').trim().slice(0, 40) + (content.length > 40 ? '…' : '');
-            apiFetch(`/api/chats/${chatId}/`, {
-                method: 'PATCH',
-                body: JSON.stringify({ title: title || 'Новый чат' })
-            }).then(() => { chat.title = title || 'Новый чат'; }).catch(() => {});
-        }
         this.saveChats();
 
         try {
