@@ -8,7 +8,7 @@ from channels.db import database_sync_to_async
 from django.conf import settings
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorServer
 from Core_layer.Chat_package.Classes.ChatService import ChatService
-from Deep_layer.NLP_package.Classes.GPT import Gpt
+from Deep_layer.NLP_package.Classes.GPT.Gpt import Gpt
 
 logger = logging.getLogger(__name__)
 
