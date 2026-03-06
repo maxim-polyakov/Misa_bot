@@ -290,6 +290,12 @@ class ChatStore {
 
     // Новый чат (создаёт в БД через API)
     async newChat() {
+        // Если есть пустой чат — переключаемся на него, не создаём новый (чтобы не флудить)
+        const emptyChat = this.chats.find(c => !c.messages || c.messages.length === 0);
+        if (emptyChat) {
+            this.switchChat(emptyChat.id);
+            return;
+        }
         let id = generateId();
         if (API_URL) {
             try {
