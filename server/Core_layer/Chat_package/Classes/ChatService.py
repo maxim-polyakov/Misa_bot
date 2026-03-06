@@ -82,10 +82,27 @@ class ChatService:
             logging.error(f"ChatService.save_message error: {str(e)}")
 
     @classmethod
+    def get_title(cls, chat_id):
+        """Получить текущий заголовок чата."""
+        try:
+            df = DB_Communication.DB_Communication().execute_query(
+                "SELECT title FROM chat.chats WHERE id = %s",
+                (chat_id,)
+            )
+            if df is not None and not df.empty:
+                return str(df.iloc[0].get('title', '')).strip()
+        except Exception as e:
+            logging.error(f"ChatService.get_title error: {str(e)}")
+        return None
+
+    @classmethod
     def update_title(cls, chat_id, title):
-        """Обновить заголовок чата в БД."""
+        """Обновить заголовок чата в БД. Только если ещё не назван (Новый чат или пусто)."""
         try:
             if not title or len(title) > 500:
+                return False
+            current = cls.get_title(chat_id)
+            if current and current != 'Новый чат' and len(current) > 0:
                 return False
             DB_Communication.DB_Communication().execute_update(
                 "UPDATE chat.chats SET title = %s WHERE id = %s",
