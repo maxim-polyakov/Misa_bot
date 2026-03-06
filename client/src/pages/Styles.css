@@ -1016,7 +1016,7 @@ body {
 
 .sidebar-chat-title {
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip;
     white-space: nowrap;
     min-width: 0;
     flex: 1 1 0;
