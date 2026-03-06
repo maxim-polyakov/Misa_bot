@@ -2,9 +2,9 @@
   "short_name": "Misa",
   "name": "Misa AI Chat",
   "icons": [
-    {"src": "/favicon.ico", "type": "image/x-icon", "sizes": "48x48", "purpose": "any"},
-    {"src": "/favicon-195.png", "type": "image/png", "sizes": "195x195", "purpose": "any"},
-    {"src": "/favicon-228.png", "type": "image/png", "sizes": "228x228", "purpose": "any"}
+    {"src": "%PUBLIC_URL%/favicon.ico", "type": "image/x-icon", "sizes": "48x48", "purpose": "any"},
+    {"src": "%PUBLIC_URL%/favicon-195.png", "type": "image/png", "sizes": "195x195", "purpose": "any"},
+    {"src": "%PUBLIC_URL%/favicon-228.png", "type": "image/png", "sizes": "228x228", "purpose": "any"}
   ],
   "start_url": ".",
   "display": "standalone",
