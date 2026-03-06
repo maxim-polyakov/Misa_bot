@@ -18,8 +18,7 @@ class ChatStore {
     currentChatId = null;
     isConnected = false;
     isConnecting = false;
-    isLoading = false;
-    loadingChatId = null; // в каком чате Миса печатает
+    loadingChatIds = []; // массив chat_id, в которых Миса печатает (параллельная обработка)
     error = null;
     socket = null;
     reconnectAttempts = 0;
@@ -42,6 +41,14 @@ class ChatStore {
 
     get currentChat() {
         return this.chats.find(c => c.id === this.currentChatId);
+    }
+
+    get isLoading() {
+        return this.loadingChatIds.length > 0;
+    }
+
+    isChatLoading(chatId) {
+        return this.loadingChatIds.includes(chatId);
     }
 
     // Получение ID текущего пользователя
@@ -279,7 +286,6 @@ class ChatStore {
     switchChat(chatId) {
         if (this.chats.some(c => c.id === chatId)) {
             this.currentChatId = chatId;
-            this.isLoading = (this.loadingChatId === chatId);
             if (this.socket && this.isConnected) {
                 this.socket.send(JSON.stringify({ type: 'join_chat', chat_id: chatId }));
             }
@@ -463,13 +469,9 @@ class ChatStore {
             if (chat) {
                 chat.messages.push(msg);
                 if (data.user === "Misa") {
-                    if (chatId === this.loadingChatId) {
-                        this.isLoading = false;
-                        this.loadingChatId = null;
-                    }
+                    this.loadingChatIds = this.loadingChatIds.filter(id => id !== chatId);
                 } else {
-                    this.loadingChatId = chatId;
-                    this.isLoading = (chatId === this.currentChatId);
+                    if (!this.loadingChatIds.includes(chatId)) this.loadingChatIds.push(chatId);
                 }
                 this.saveChats();
             }
@@ -496,8 +498,11 @@ class ChatStore {
             this.error = data.detail
                 ? `${data.message || "Произошла ошибка"}: ${data.detail}`
                 : (data.message || "Произошла ошибка");
-            this.isLoading = false;
-            this.loadingChatId = null;
+            if (data.chat_id) {
+                this.loadingChatIds = this.loadingChatIds.filter(id => id !== data.chat_id);
+            } else {
+                this.loadingChatIds = [];
+            }
         }
         else if (data.type === 'connection_established') {
             console.log("Соединение подтверждено сервером");
@@ -515,11 +520,9 @@ class ChatStore {
         }
         else if (data.type === 'typing') {
             if (data.isTyping) {
-                this.loadingChatId = data.chat_id;
-                this.isLoading = (data.chat_id === this.currentChatId);
-            } else if (data.chat_id === this.loadingChatId) {
-                this.loadingChatId = null;
-                this.isLoading = false;
+                if (!this.loadingChatIds.includes(data.chat_id)) this.loadingChatIds.push(data.chat_id);
+            } else {
+                this.loadingChatIds = this.loadingChatIds.filter(id => id !== data.chat_id);
             }
         }
         else if (data.type === 'chat_title') {
@@ -562,8 +565,7 @@ class ChatStore {
             }
         }
 
-        this.isLoading = true;
-        this.loadingChatId = chatId;
+        if (!this.loadingChatIds.includes(chatId)) this.loadingChatIds.push(chatId);
         this.error = null;
         const userMessage = {
             id: Date.now().toString(),
@@ -583,7 +585,7 @@ class ChatStore {
             return true;
         } catch (error) {
             this.error = "Ошибка при отправке сообщения";
-            this.isLoading = false;
+            this.loadingChatIds = this.loadingChatIds.filter(id => id !== chatId);
             console.error("Ошибка отправки сообщения:", error);
             return false;
         }

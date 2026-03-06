@@ -78,13 +78,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
             except (json.JSONDecodeError, TypeError):
                 pass
 
-            # Legacy: user|chat_id|message|content
+            # Legacy: user|chat_id|message|content — обрабатываем в фоне для параллельности
             chat_id = None
             if '|message|' in text_data:
                 first = text_data.split('|message|')[0].strip()
                 first_parts = first.split('|')
                 if len(first_parts) >= 2:
                     chat_id = first_parts[1].strip()
+            asyncio.create_task(self._process_and_send(text_data, chat_id))
+        except Exception as e:
+            import traceback
+            logger.error(f"Error in receive: {str(e)}\n{traceback.format_exc()}")
+            await self.send(text_data=json.dumps({
+                'type': 'error',
+                'message': 'Произошла ошибка при обработке сообщения',
+                'detail': str(e)
+            }, ensure_ascii=False))
+
+    async def _process_and_send(self, text_data, chat_id):
+        """Обрабатывает сообщение и отправляет ответ — позволяет параллельную обработку разных чатов."""
+        try:
             response = await self.process_message(text_data)
             outarr = self._clean_command_response(response)
             for el in outarr:
@@ -95,15 +108,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 if chat_id:
                     msg_data['chat_id'] = chat_id
                 await self.send(text_data=json.dumps(msg_data, ensure_ascii=False))
-
         except Exception as e:
             import traceback
             logger.error(f"Error processing message: {str(e)}\n{traceback.format_exc()}")
-            await self.send(text_data=json.dumps({
+            err_payload = {
                 'type': 'error',
                 'message': 'Произошла ошибка при обработке сообщения',
                 'detail': str(e)
-            }, ensure_ascii=False))
+            }
+            if chat_id:
+                err_payload['chat_id'] = chat_id
+            await self.send(text_data=json.dumps(err_payload, ensure_ascii=False))
 
     async def _join_chat_group(self, chat_id):
         group = f"chat_{chat_id}"

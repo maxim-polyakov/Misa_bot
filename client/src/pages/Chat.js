@@ -24,7 +24,7 @@ const Chat = observer(() => {
 
     useEffect(() => {
         scrollToBottom();
-    }, [chatStore.messages, chatStore.isLoading]);
+    }, [chatStore.messages, chatStore.isChatLoading(chatStore.currentChatId)]);
 
     // Подключаемся к группе чата при открытии — чтобы получать broadcast на других устройствах
     useEffect(() => {
@@ -240,7 +240,7 @@ const Chat = observer(() => {
                 </div>
             </div>
 
-            {chatStore.isLoading && chatStore.loadingChatId === chatStore.currentChatId && (
+            {chatStore.isChatLoading(chatStore.currentChatId) && (
                 <div className="typing-indicator">
                     <div className="typing-dots">
                         <span></span>
@@ -264,12 +264,12 @@ const Chat = observer(() => {
                         maxHeight: '150px',
                         resize: 'none',
                     }}
-                    disabled={(chatStore.isLoading && chatStore.loadingChatId === chatStore.currentChatId) || !chatStore.isConnected}
+                    disabled={chatStore.isChatLoading(chatStore.currentChatId) || !chatStore.isConnected}
                     className="message-textarea"
                 />
                 <button
                     onClick={handleSendMessage}
-                    disabled={!message.trim() || (chatStore.isLoading && chatStore.loadingChatId === chatStore.currentChatId) || !chatStore.isConnected}
+                    disabled={!message.trim() || chatStore.isChatLoading(chatStore.currentChatId) || !chatStore.isConnected}
                     className="send-button"
                     title="Отправить сообщение"
                 >
