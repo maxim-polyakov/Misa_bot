@@ -51,6 +51,15 @@ const AppRouter = observer(() => {
 
     return (
         <Routes>
+            {/* Публичные маршруты первыми — /share должен быть доступен без входа */}
+            {publicRoutes.map(({ path, Component }) => (
+                <Route
+                    key={path}
+                    path={path}
+                    element={<Component />}
+                />
+            ))}
+
             {/* Protected routes inside MainLayout */}
             <Route element={<ProtectedLayout />}>
                 {authRoutes.map(({ path, Component }) => (
@@ -62,15 +71,6 @@ const AppRouter = observer(() => {
                 ))}
                 <Route path="/" element={<Navigate to="/chat" replace />} />
             </Route>
-
-            {/* Public routes - without MainLayout */}
-            {publicRoutes.map(({ path, Component }) => (
-                <Route
-                    key={path}
-                    path={path}
-                    element={<Component />}
-                />
-            ))}
 
             {/* Fallback routes */}
             <Route
