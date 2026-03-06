@@ -98,15 +98,21 @@ class ChatStore {
 
     async setMessageFeedback(msgId, feedback, categories = null, comment = null) {
         const chat = this.currentChat;
-        const msg = chat?.messages?.find(m => m.id === msgId);
+        const idx = chat?.messages?.findIndex(m => m.id === msgId);
+        if (idx == null || idx < 0) return;
+        const msg = chat.messages[idx];
         const prev = msg?.feedback ?? null;
         const prevCats = msg?.feedbackCategories ?? null;
         const prevComm = msg?.feedbackComment ?? null;
-        if (msg) {
-            msg.feedback = feedback;
-            msg.feedbackCategories = feedback === 'dislike' ? (categories || []) : null;
-            msg.feedbackComment = feedback === 'dislike' ? (comment || null) : null;
-        }
+        const nextFeedback = feedback === 'dislike' ? (categories || []) : null;
+        const nextComment = feedback === 'dislike' ? (comment || null) : null;
+        chat.messages[idx] = {
+            ...msg,
+            feedback,
+            feedbackCategories: nextFeedback,
+            feedbackComment: nextComment,
+        };
+        this.saveChats();
         if (API_URL) {
             try {
                 await apiFetch(`/api/chats/${this.currentChatId}/messages/${msgId}/feedback/`, {
@@ -114,11 +120,8 @@ class ChatStore {
                     body: JSON.stringify({ feedback, categories: categories || [], comment: comment || '' })
                 });
             } catch (e) {
-                if (msg) {
-                    msg.feedback = prev;
-                    msg.feedbackCategories = prevCats;
-                    msg.feedbackComment = prevComm;
-                }
+                chat.messages[idx] = { ...msg, feedback: prev, feedbackCategories: prevCats, feedbackComment: prevComm };
+                this.saveChats();
                 console.warn('Ошибка сохранения feedback:', e);
             }
         }
