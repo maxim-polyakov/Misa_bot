@@ -94,10 +94,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.send(text_data=json.dumps(msg_data, ensure_ascii=False))
 
         except Exception as e:
-            logger.error(f"Error processing message: {str(e)}")
+            import traceback
+            logger.error(f"Error processing message: {str(e)}\n{traceback.format_exc()}")
             await self.send(text_data=json.dumps({
                 'type': 'error',
-                'message': 'Произошла ошибка при обработке сообщения'
+                'message': 'Произошла ошибка при обработке сообщения',
+                'detail': str(e)
             }, ensure_ascii=False))
 
     async def _join_chat_group(self, chat_id):
@@ -141,7 +143,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         try:
             message_monitor = MessageMonitorServer.MessageMonitorServer(user=user, message=content, chat_id=chat_id)
-            response = message_monitor.monitor()
+            response = await database_sync_to_async(message_monitor.monitor)()
 
             if not response:
                 return "Я не понял ваш запрос"

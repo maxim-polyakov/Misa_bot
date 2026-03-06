@@ -480,7 +480,9 @@ class ChatStore {
             }
         }
         else if (data.type === 'error') {
-            this.error = data.message || "Произошла ошибка";
+            this.error = data.detail
+                ? `${data.message || "Произошла ошибка"}: ${data.detail}`
+                : (data.message || "Произошла ошибка");
             this.isLoading = false;
         }
         else if (data.type === 'connection_established') {
