@@ -264,12 +264,12 @@ const Chat = observer(() => {
                         maxHeight: '150px',
                         resize: 'none',
                     }}
-                    disabled={chatStore.isLoading || !chatStore.isConnected}
+                    disabled={(chatStore.isLoading && chatStore.loadingChatId === chatStore.currentChatId) || !chatStore.isConnected}
                     className="message-textarea"
                 />
                 <button
                     onClick={handleSendMessage}
-                    disabled={!message.trim() || chatStore.isLoading || !chatStore.isConnected}
+                    disabled={!message.trim() || (chatStore.isLoading && chatStore.loadingChatId === chatStore.currentChatId) || !chatStore.isConnected}
                     className="send-button"
                     title="Отправить сообщение"
                 >
