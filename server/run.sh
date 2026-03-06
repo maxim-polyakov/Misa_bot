@@ -1,6 +1,6 @@
 python -u nltkdownload.py &
 python -u tests_main.py &
-python -u scripts/cleanup_s3.py &
+python -u cleanup_s3.py &
 python -u telegram_main.py &
 python -u discord_main.py &
 python -u server_main.py &

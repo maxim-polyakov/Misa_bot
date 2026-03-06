@@ -8,6 +8,7 @@ from channels.db import database_sync_to_async
 from django.conf import settings
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorServer
 from Core_layer.Chat_package.Classes.ChatService import ChatService
+from Deep_layer.NLP_package.Classes.GPT import Gpt
 
 logger = logging.getLogger(__name__)
 
@@ -111,8 +112,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return "Я не понял ваш запрос"
 
         if parts[1].strip() == '__NEW_CHAT__':
-            user = parts[0].strip()
-            MessageMonitorServer.MessageMonitorServer.clear_conversation_history(user)
+            # Новый чат — не очищаем историю GPT, т.к. создаётся новая запись в БД
             return ''
 
         # Формат: user|chat_id|message|content или user|message|content (без chat_id)
@@ -129,6 +129,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if chat_id:
             await self._join_chat_group(chat_id)
 
+        # Импорт истории из БД в контекст GPT для данного чата
+        if chat_id and user:
+            await database_sync_to_async(Gpt.import_history_from_db)(user, chat_id)
+
         is_image = content.startswith('/images/') or content.startswith('http')
         if chat_id:
             ChatService.save_message(chat_id, user, content, is_image=is_image)
@@ -136,7 +140,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
 
         try:
-            message_monitor = MessageMonitorServer.MessageMonitorServer(user=user, message=content)
+            message_monitor = MessageMonitorServer.MessageMonitorServer(user=user, message=content, chat_id=chat_id)
             response = message_monitor.monitor()
 
             if not response:

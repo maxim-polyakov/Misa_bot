@@ -15,9 +15,10 @@ class MessageMonitor(IMonitor.IMonitor):
     __commands = None
     __text_message = None
     __user = None
+    __chat_id = None
 
     @classmethod
-    def __decision(cls, text_message, user, emotion, commands):
+    def __decision(cls, text_message, user, emotion, commands, chat_id=None):
         # call gpt to get an answer and check commands
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
@@ -26,13 +27,12 @@ class MessageMonitor(IMonitor.IMonitor):
             cls.__commands = commands
             cls.__text_message = text_message
             cls.__user = user
-            # check if the message contains a command
+            cls.__chat_id = chat_id
             if (cls.check(text_message, user)):
                 # analyze the command and add the result to the output list
                 outlist.append(commands.analyse(text_message, user))
                 return outlist
-            # get a response from gpt
-            res = cls._gpta.answer(text_message, user, False)
+            res = cls._gpta.answer(text_message, user, False, chat_id=chat_id)
             outlist.append(res)
             # append the emotion to the output list
             outlist.append('' + emotion)
@@ -44,7 +44,7 @@ class MessageMonitor(IMonitor.IMonitor):
             logging.exception('The exception occurred in messagemonitor.__decision: ' + str(e))
 
     @classmethod
-    def _neurodesc(cls, text, user, text_message, command):
+    def _neurodesc(cls, text, user, text_message, command, chat_id=None):
         # calling the decision with emotion
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
@@ -54,7 +54,7 @@ class MessageMonitor(IMonitor.IMonitor):
             # log successful execution of the method
             logging.info('The messagemonitor._neurodesc process has completed successfully')
             # call the __decision method with the provided parameters
-            return cls.__decision(text_message, user, emotion, command)
+            return cls.__decision(text_message, user, emotion, command, chat_id=chat_id)
         except Exception as e:
             # log the exception if an error occurs
             logging.exception('The exception occurred in messagemonitor._neurodesc: ' + str(e))
@@ -82,7 +82,7 @@ class MessageMonitor(IMonitor.IMonitor):
                     "Верни True, если это команда, или False, если нет.\n"
                     "Формат ответа: только True или False, без дополнительного текста."
             )
-            res = cls._gpta.answer(input, user, True)
+            res = cls._gpta.answer(input, user, True, chat_id=cls.__chat_id)
 
             if res.count("True") > 0:
                 logging.info('The messagemonitor.check process has completed successfully')
@@ -94,7 +94,7 @@ class MessageMonitor(IMonitor.IMonitor):
             logging.exception('The exception occurred in messagemonitor.check: ' + str(e))
 
     @classmethod
-    def monitor(cls, message, user, command, pltype):
+    def monitor(cls, message, user, command, pltype, chat_id=None):
         # main monitor for calculating messages
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
@@ -132,10 +132,8 @@ class MessageMonitor(IMonitor.IMonitor):
                              .replace('Миша', '')
                              .replace('Misha', '')
                              .replace('Иса', ''))
-                # add processed text to the list
                 text.append(lowertext)
-                # process the text using a neural network function
-                outlist = cls._neurodesc(text, user, lowertext, command)
+                outlist = cls._neurodesc(text, user, lowertext, command, chat_id=chat_id)
                 # if the function returns a result, format it into a string
                 if (outlist != None):
                     for outmes in outlist:
@@ -160,10 +158,8 @@ class MessageMonitor(IMonitor.IMonitor):
                                  .replace('Миша', '')
                                  .replace('Misha', '')
                                  .replace('Иса', ''))
-                    # add processed text to the list
                     text.append(lowertext)
-                    # process the text using a neural network function
-                    outlist = cls._neurodesc(text, user, lowertext, command)
+                    outlist = cls._neurodesc(text, user, lowertext, command, chat_id=chat_id)
                     # if the function returns a result, format it into a string
                     if (outlist != None):
                         for outmes in outlist:
