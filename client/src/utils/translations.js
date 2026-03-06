@@ -42,6 +42,11 @@ export const translations = {
         yesterday: "Вчера",
         last7Days: "7 дней",
         last30Days: "30 дней",
+        rename: "Переименовать",
+        pin: "Закрепить",
+        share: "Поделиться",
+        delete: "Удалить",
+        confirmDeleteChat: "Удалить этот чат?",
     },
     en: {
         settings: "Settings",
@@ -86,5 +91,10 @@ export const translations = {
         yesterday: "Yesterday",
         last7Days: "7 Days",
         last30Days: "30 Days",
+        rename: "Rename",
+        pin: "Pin",
+        share: "Share",
+        delete: "Delete",
+        confirmDeleteChat: "Delete this chat?",
     },
 };

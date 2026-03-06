@@ -17,7 +17,9 @@ const Sidebar = observer(() => {
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [chatMenuOpen, setChatMenuOpen] = useState(null); // chatId or null
     const profileRef = useRef(null);
+    const chatMenuRef = useRef(null);
 
     const storedProfile = (() => {
         try {
@@ -46,16 +48,40 @@ const Sidebar = observer(() => {
             if (profileRef.current && !profileRef.current.contains(e.target)) {
                 setProfileOpen(false);
             }
+            if (chatMenuOpen && chatMenuRef.current && !chatMenuRef.current.contains(e.target)) {
+                setChatMenuOpen(null);
+            }
         };
-        if (profileOpen) {
+        if (profileOpen || chatMenuOpen) {
             document.addEventListener("mousedown", handleClickOutside);
         }
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [profileOpen]);
+    }, [profileOpen, chatMenuOpen]);
 
     const handleSwitchChat = (chatId) => {
         chatStore.switchChat(chatId);
         closeSidebar?.();
+    };
+
+    const handleChatMenuToggle = (e, chatId) => {
+        e.stopPropagation();
+        setChatMenuOpen(prev => prev === chatId ? null : chatId);
+    };
+
+    const handleRename = async (chatId) => {
+        setChatMenuOpen(null);
+        const chat = chatStore.chats.find(c => c.id === chatId);
+        const newTitle = window.prompt(t("rename"), chat?.title || '');
+        if (newTitle != null && newTitle.trim()) {
+            await chatStore.renameChat(chatId, newTitle.trim());
+        }
+    };
+
+    const handleDelete = async (chatId) => {
+        setChatMenuOpen(null);
+        if (window.confirm(t("confirmDeleteChat"))) {
+            await chatStore.deleteChat(chatId);
+        }
     };
 
     const logOut = () => {
@@ -117,17 +143,52 @@ const Sidebar = observer(() => {
                                     <div key={key} className="sidebar-chats-group">
                                         <div className="sidebar-chats-group-title">{label}</div>
                                         {chats.map((chat) => (
-                                            <button
+                                            <div
                                                 key={chat.id}
-                                                className={`sidebar-chat-item ${chat.id === chatStore.currentChatId ? 'active' : ''}`}
-                                                onClick={() => handleSwitchChat(chat.id)}
-                                                title={chat.title || chat.messages?.find(m => m.user !== 'Misa')?.content || ''}
+                                                className={`sidebar-chat-item-wrap ${chat.id === chatStore.currentChatId ? 'active' : ''}`}
+                                                ref={chatMenuOpen === chat.id ? chatMenuRef : null}
                                             >
-                                                <span className="sidebar-chat-icon">💬</span>
-                                                <span className="sidebar-chat-title">
-                                                    {chatStore.getChatTitle(chat)}
-                                                </span>
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    className="sidebar-chat-item"
+                                                    onClick={() => handleSwitchChat(chat.id)}
+                                                    title={chat.title || chat.messages?.find(m => m.user !== 'Misa')?.content || ''}
+                                                >
+                                                    <span className="sidebar-chat-icon">💬</span>
+                                                    <span className="sidebar-chat-title">
+                                                        {chatStore.getChatTitle(chat)}
+                                                    </span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="sidebar-chat-menu-btn"
+                                                    onClick={(e) => handleChatMenuToggle(e, chat.id)}
+                                                    aria-label={t("rename")}
+                                                    title="Меню"
+                                                >
+                                                    ⋯
+                                                </button>
+                                                {chatMenuOpen === chat.id && (
+                                                    <div className="sidebar-chat-menu">
+                                                        <button type="button" className="sidebar-chat-menu-item" onClick={() => handleRename(chat.id)}>
+                                                            <span className="sidebar-chat-menu-icon">✎</span>
+                                                            {t("rename")}
+                                                        </button>
+                                                        <button type="button" className="sidebar-chat-menu-item" onClick={() => { setChatMenuOpen(null); /* TODO */ }}>
+                                                            <span className="sidebar-chat-menu-icon">📌</span>
+                                                            {t("pin")}
+                                                        </button>
+                                                        <button type="button" className="sidebar-chat-menu-item" onClick={() => { setChatMenuOpen(null); /* TODO */ }}>
+                                                            <span className="sidebar-chat-menu-icon">⎘</span>
+                                                            {t("share")}
+                                                        </button>
+                                                        <button type="button" className="sidebar-chat-menu-item sidebar-chat-menu-item-delete" onClick={() => handleDelete(chat.id)}>
+                                                            <span className="sidebar-chat-menu-icon">🗑</span>
+                                                            {t("delete")}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         ))}
                                     </div>
                                 ));

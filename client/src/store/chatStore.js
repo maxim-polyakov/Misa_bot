@@ -347,6 +347,46 @@ class ChatStore {
         }
     };
 
+    // Удаление одного чата
+    async deleteChat(chatId) {
+        if (API_URL) {
+            try {
+                await apiFetch(`/api/chats/${chatId}/delete/`, { method: 'DELETE' });
+            } catch (e) {
+                console.warn("Ошибка удаления чата:", e);
+                return false;
+            }
+        }
+        this.chats = this.chats.filter(c => c.id !== chatId);
+        if (this.currentChatId === chatId) {
+            this.currentChatId = this.chats[0]?.id ?? null;
+            if (this.chats.length === 0) this.newChat();
+        }
+        this.saveChats();
+        return true;
+    }
+
+    // Переименование чата
+    async renameChat(chatId, newTitle) {
+        const chat = this.chats.find(c => c.id === chatId);
+        if (!chat) return false;
+        const title = (newTitle || '').trim().slice(0, 500) || 'Новый чат';
+        if (API_URL) {
+            try {
+                await apiFetch(`/api/chats/${chatId}/`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ title })
+                });
+            } catch (e) {
+                console.warn("Ошибка переименования чата:", e);
+                return false;
+            }
+        }
+        chat.title = title;
+        this.saveChats();
+        return true;
+    }
+
     // Удаление всех чатов (с сервера)
     async deleteAllChats() {
         if (API_URL) {

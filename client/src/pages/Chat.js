@@ -215,15 +215,6 @@ const Chat = observer(() => {
                     </button>
                 </div>
             )}
-            {chatStore.messages.length > 0 && (
-                <button
-                    onClick={handleClearHistory}
-                    className="chat-floating-clear-btn"
-                    title={t("clearHistory")}
-                >
-                    🗑️
-                </button>
-            )}
 
             {/* Контейнер для сообщений с прокруткой */}
             <div className="messages-container" ref={messagesContainerRef}>
