@@ -181,7 +181,7 @@ const Chat = observer(() => {
             {!sidebarExpanded && (
                 <div className="chat-floating-buttons">
                     <img
-                        src="/misa.png"
+                        src="/favicon.ico"
                         alt=""
                         className="chat-floating-logo"
                         onClick={toggleSidebar}

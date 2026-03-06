@@ -76,7 +76,7 @@ const Sidebar = observer(() => {
         <Navbar className="sidebar" bg="dark" data-bs-theme="dark">
                 <div className={`sidebar-content ${sidebarExpanded ? "" : "sidebar-content-collapsed"}`}>
                     <div className="sidebar-brand-row">
-                        <img src="/misa.png" alt="" className="sidebar-logo" />
+                        <img src="/favicon.ico" alt="" className="sidebar-logo" />
                         {sidebarExpanded && (
                             <>
                                 <span className="sidebar-brand-name">{t("misaChat")}</span>
