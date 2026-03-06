@@ -81,6 +81,14 @@ const ShareChat = () => {
         fetchChat();
     }, [chatId]);
 
+    // Обновляем title для SEO и превью при шаринге (хук должен быть до любых return)
+    useEffect(() => {
+        if (data?.title) {
+            document.title = `${data.title} | Misa AI`;
+            return () => { document.title = 'Misa AI Chat'; };
+        }
+    }, [data?.title]);
+
     const renderMessage = (msg) => {
         const messageUser = msg.user;
         const messageContent = msg.content;
@@ -163,12 +171,6 @@ const ShareChat = () => {
             </div>
         );
     }
-
-    // Обновляем title для SEO и превью при шаринге
-    useEffect(() => {
-        document.title = `${data.title || 'Чат'} | Misa AI`;
-        return () => { document.title = 'Misa AI Chat'; };
-    }, [data?.title]);
 
     return (
         <div className="share-chat-page">
