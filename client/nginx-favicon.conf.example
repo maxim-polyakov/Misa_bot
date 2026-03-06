@@ -1,0 +1,11 @@
+# Пример для nginx: отдавать favicon и статику ДО proxy на SPA
+# Добавь в server {} ПЕРЕД location / (порядок важен!)
+
+location = /favicon.ico {
+    root /path/to/build;  # или alias /path/to/build/favicon.ico;
+    add_header Cache-Control "public, max-age=86400";
+}
+location ~* ^/(favicon-.*\.png|manifest\.json|misa\.png)$ {
+    root /path/to/build;
+    add_header Cache-Control "public, max-age=86400";
+}
