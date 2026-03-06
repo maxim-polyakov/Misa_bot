@@ -445,6 +445,210 @@ body {
     text-align: right;
 }
 
+/* Выделение сообщений для шаринга */
+.message.message-selected .message-content {
+    outline: 2px solid rgba(74, 144, 226, 0.6);
+    background: rgba(74, 144, 226, 0.15) !important;
+}
+
+.message[role="button"] {
+    cursor: pointer;
+}
+
+.message[role="button"]:hover .message-content {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.message.message-selected[role="button"]:hover .message-content {
+    background: rgba(74, 144, 226, 0.2) !important;
+}
+
+.message-select-icon {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: var(--accent-color);
+}
+
+/* Панель шаринга */
+.share-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--secondary-bg);
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.share-bar-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.share-bar-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.share-bar-btn-primary {
+    background: var(--accent-color);
+    color: white;
+    margin-left: auto;
+}
+
+.share-bar-btn-primary:hover {
+    background: rgba(74, 144, 226, 0.85);
+}
+
+.share-bar-count {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.share-toast {
+    position: fixed;
+    bottom: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.5rem;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+.input-container-hidden {
+    display: none;
+}
+
+/* ===== ПУБЛИЧНАЯ СТРАНИЦА ШАРИНГА (как у DeepSeek) ===== */
+.share-chat-page {
+    min-height: 100dvh;
+    background: var(--primary-bg);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Верхняя панель — логотип слева, badge справа */
+.share-chat-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.share-chat-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.share-chat-logo:hover {
+    opacity: 0.9;
+}
+
+.share-chat-logo img {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-sm);
+}
+
+.share-chat-badge {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+/* Основной контент */
+.share-chat-body {
+    flex: 1;
+    padding: 2rem 1.5rem;
+    max-width: 48rem;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.share-chat-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1.5rem;
+    text-align: center;
+}
+
+.share-chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.share-chat-loading,
+.share-chat-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 40vh;
+    color: var(--text-secondary);
+    gap: 1rem;
+}
+
+.share-chat-link {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.share-chat-link:hover {
+    text-decoration: underline;
+}
+
+/* Футер с CTA — как у DeepSeek */
+.share-chat-footer {
+    padding: 2rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.share-chat-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--accent-color);
+    color: white !important;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    transition: background 0.2s ease;
+}
+
+.share-chat-cta:hover {
+    background: rgba(74, 144, 226, 0.85);
+    color: white !important;
+}
+
 /* ===== IMAGE MESSAGE STYLES ===== */
 .message-with-image {
     display: flex;

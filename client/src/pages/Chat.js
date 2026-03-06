@@ -1,5 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useStores } from "../store/rootStoreContext";
 import { useLocale } from "../contexts/LocaleContext";
 import { useMenuToggle } from "./MainLayout";
@@ -10,8 +11,10 @@ import { imageDB } from "./ImageDB";
 const Chat = observer(() => {
     const { chatStore } = useStores();
     const { t } = useLocale();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { toggleSidebar, sidebarExpanded } = useMenuToggle();
     const [message, setMessage] = useState("");
+    const [linkCopiedToast, setLinkCopiedToast] = useState(false);
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
     const messagesContainerRef = useRef(null);
@@ -50,6 +53,15 @@ const Chat = observer(() => {
     useEffect(() => {
         adjustTextareaHeight();
     }, [message]);
+
+    // Открытие чата по ссылке ?chat=id
+    useEffect(() => {
+        const chatId = searchParams.get('chat');
+        if (chatId && chatStore.chats.some(c => c.id === chatId)) {
+            chatStore.switchChat(chatId);
+            setSearchParams({}, { replace: true });
+        }
+    }, [searchParams, chatStore.chats]);
 
     const handleSendMessage = async () => {
         if (message.trim()) {
@@ -126,9 +138,12 @@ const Chat = observer(() => {
         return parts.length ? parts : [{ type: 'text', content }];
     };
 
+    const isShareMode = chatStore.shareModeForChatId === chatStore.currentChatId;
+
     const renderMessage = (msg) => {
         const messageUser = msg.user;
         const messageContent = msg.content;
+        const isSelected = isShareMode && chatStore.isMessageSelected(msg.id);
 
         const wasImage = msg.isImage ||
             /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(messageContent);
@@ -168,9 +183,19 @@ const Chat = observer(() => {
             );
         };
 
-        return (
-            <div key={msg.id} className={`message ${messageUser === "Misa" ? "misa-message" : "user-message"}`}>
+        const messageEl = (
+            <div
+                key={msg.id}
+                className={`message ${messageUser === "Misa" ? "misa-message" : "user-message"} ${isSelected ? "message-selected" : ""}`}
+                onClick={isShareMode ? () => chatStore.toggleMessageSelection(msg.id) : undefined}
+                role={isShareMode ? "button" : undefined}
+                tabIndex={isShareMode ? 0 : undefined}
+                onKeyDown={isShareMode ? (e) => { if (e.key === "Enter" || e.key === " ") chatStore.toggleMessageSelection(msg.id); } : undefined}
+            >
                 <div className="message-content">
+                    {isShareMode && (
+                        <span className="message-select-icon">{isSelected ? "✓" : ""}</span>
+                    )}
                     {renderContent()}
                     <div className="message-time">
                         {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
@@ -178,6 +203,18 @@ const Chat = observer(() => {
                 </div>
             </div>
         );
+        return messageEl;
+    };
+
+    const handleCreateLink = async () => {
+        const url = chatStore.getShareLink();
+        try {
+            await navigator.clipboard.writeText(url);
+            setLinkCopiedToast(true);
+            setTimeout(() => setLinkCopiedToast(false), 2000);
+        } catch (e) {
+            console.warn("Copy failed:", e);
+        }
     };
 
 
@@ -248,7 +285,33 @@ const Chat = observer(() => {
                 </div>
             )}
 
-            <div className="input-container">
+            {isShareMode && (
+                <div className="share-bar">
+                    <button type="button" className="share-bar-btn" onClick={() => chatStore.selectAllMessages()}>
+                        {t("selectAll")}
+                    </button>
+                    <span className="share-bar-count">
+                        {chatStore.selectedMessageIds.length} {t("selectedTurns")}
+                    </span>
+                    <button type="button" className="share-bar-btn" onClick={() => chatStore.endShareMode()}>
+                        {t("cancel")}
+                    </button>
+                    <button
+                        type="button"
+                        className="share-bar-btn share-bar-btn-primary"
+                        onClick={handleCreateLink}
+                        title={t("createPublicLink")}
+                    >
+                        ⎘ {t("createPublicLink")}
+                    </button>
+                </div>
+            )}
+
+            {linkCopiedToast && (
+                <div className="share-toast">{t("linkCopied")}</div>
+            )}
+
+            <div className={`input-container ${isShareMode ? "input-container-hidden" : ""}`}>
                 <textarea
                     ref={textareaRef}
                     value={message}

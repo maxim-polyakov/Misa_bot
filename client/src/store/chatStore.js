@@ -17,6 +17,8 @@ class ChatStore {
     chats = []; // [{ id, title, messages, createdAt }]
     pinnedChatIds = []; // id закреплённых чатов (только клиент, localStorage)
     currentChatId = null;
+    shareModeForChatId = null; // chatId — режим выделения для шаринга
+    selectedMessageIds = []; // id выделенных сообщений
     isConnected = false;
     isConnecting = false;
     loadingChatIds = []; // массив chat_id, в которых Миса печатает (параллельная обработка)
@@ -50,6 +52,43 @@ class ChatStore {
 
     isChatLoading(chatId) {
         return this.loadingChatIds.includes(chatId);
+    }
+
+    // Режим шаринга — выделение сообщений
+    startShareMode(chatId) {
+        this.shareModeForChatId = chatId;
+        this.selectedMessageIds = [];
+    }
+
+    endShareMode() {
+        this.shareModeForChatId = null;
+        this.selectedMessageIds = [];
+    }
+
+    toggleMessageSelection(msgId) {
+        const idx = this.selectedMessageIds.indexOf(msgId);
+        if (idx >= 0) {
+            this.selectedMessageIds = this.selectedMessageIds.filter(id => id !== msgId);
+        } else {
+            this.selectedMessageIds = [...this.selectedMessageIds, msgId];
+        }
+    }
+
+    selectAllMessages() {
+        const chat = this.currentChat;
+        if (!chat?.messages) return;
+        this.selectedMessageIds = chat.messages.map(m => m.id);
+    }
+
+    isMessageSelected(msgId) {
+        return this.selectedMessageIds.includes(msgId);
+    }
+
+    getShareLink() {
+        const base = typeof window !== 'undefined' ? window.location.origin : '';
+        const chatId = this.shareModeForChatId || this.currentChatId;
+        if (!chatId) return base;
+        return `${base}/share/${encodeURIComponent(chatId)}`;
     }
 
     // Получение ID текущего пользователя
@@ -344,6 +383,9 @@ class ChatStore {
     switchChat(chatId) {
         if (this.chats.some(c => c.id === chatId)) {
             this.currentChatId = chatId;
+            if (this.shareModeForChatId && this.shareModeForChatId !== chatId) {
+                this.endShareMode();
+            }
             if (this.socket && this.isConnected) {
                 this.socket.send(JSON.stringify({ type: 'join_chat', chat_id: chatId }));
             }

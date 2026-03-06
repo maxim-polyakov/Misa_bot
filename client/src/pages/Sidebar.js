@@ -110,6 +110,13 @@ const Sidebar = observer(() => {
         chatStore.togglePinChat(chatId);
     };
 
+    const handleShare = (chatId) => {
+        setChatMenuOpen(null);
+        chatStore.switchChat(chatId);
+        chatStore.startShareMode(chatId);
+        closeSidebar?.();
+    };
+
     const logOut = () => {
         setProfileOpen(false);
         chatStore.clearUserFromStorage();
@@ -222,7 +229,7 @@ const Sidebar = observer(() => {
                                                             <span className="sidebar-chat-menu-icon">📌</span>
                                                             {chatStore.isChatPinned(chat.id) ? t("unpin") : t("pin")}
                                                         </button>
-                                                        <button type="button" className="sidebar-chat-menu-item" onClick={() => { setChatMenuOpen(null); /* TODO */ }}>
+                                                        <button type="button" className="sidebar-chat-menu-item" onClick={() => handleShare(chat.id)}>
                                                             <span className="sidebar-chat-menu-icon">⎘</span>
                                                             {t("share")}
                                                         </button>

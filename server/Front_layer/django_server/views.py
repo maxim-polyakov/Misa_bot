@@ -119,6 +119,14 @@ def chats_export(request):
     return ctrlr.chats_export(request)
 
 
+@swagger_auto_schema(method='get', operation_summary='Публичный просмотр чата (без авторизации)', tags=['Chats'])
+@api_view(['GET'])
+@csrf_exempt
+def chats_share_public(request, chat_id):
+    ctrlr = Controller.Controller()
+    return ctrlr.chats_share_public(request, chat_id)
+
+
 @swagger_auto_schema(method='get', operation_summary='Сообщения чата', tags=['Chats'])
 @api_view(['GET'])
 def chats_messages(request, chat_id):

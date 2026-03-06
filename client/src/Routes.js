@@ -1,11 +1,13 @@
 // routes.js
 import Chat from "./pages/Chat";
+import ShareChat from "./pages/ShareChat";
 import Auth from "./pages/Auth";
 import VerifyCode from "./pages/VerifyCode";
 import ForgotPasswordRequest from "./pages/ForgotPasswordRequest";
 import ForgotPasswordVerify from "./pages/ForgotPasswordVerify";
 import {
     CHAT_ROUTE,
+    SHARE_ROUTE,
     LOGIN_ROUTE,
     REGISTRATION_ROUTE,
     REGISTRATION_VERIFY_ROUTE,
@@ -21,6 +23,10 @@ export const authRoutes = [
 ];
 
 export const publicRoutes = [
+    {
+        path: `${SHARE_ROUTE}/:chatId`,
+        Component: ShareChat
+    },
     {
         path: LOGIN_ROUTE,
         Component: Auth

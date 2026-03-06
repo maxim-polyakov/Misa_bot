@@ -31,6 +31,7 @@ api_patterns_for_schema = [
     path('auth/logout-all/', views.logout_all, name='logout_all'),
     path('api/chats/', views.chats_list_or_create, name='chats_list_or_create'),
     path('api/chats/export/', views.chats_export, name='chats_export'),
+    path('api/chats/<str:chat_id>/share/', views.chats_share_public, name='chats_share_public'),
     path('api/chats/<str:chat_id>/messages/', views.chats_messages, name='chats_messages'),
     path('api/chats/<str:chat_id>/messages/clear/', views.chats_clear_messages, name='chats_clear_messages'),
     path('api/chats/<str:chat_id>/', views.chats_update, name='chats_update'),
@@ -74,6 +75,7 @@ urlpatterns = [
     # Chat API (хранение в БД)
     path('api/chats/', views.chats_list_or_create, name='chats_list_or_create'),
     path('api/chats/export/', views.chats_export, name='chats_export'),
+    path('api/chats/<str:chat_id>/share/', views.chats_share_public, name='chats_share_public'),
     path('api/chats/<str:chat_id>/messages/', views.chats_messages, name='chats_messages'),
     path('api/chats/<str:chat_id>/messages/clear/', views.chats_clear_messages, name='chats_clear_messages'),
     path('api/chats/<str:chat_id>/', views.chats_update, name='chats_update'),
