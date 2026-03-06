@@ -544,6 +544,18 @@ class ChatStore {
         const chat = this.currentChat;
         if (!chat) return false;
 
+        const isFirstUserMsg = chat.messages.filter(m => m.user !== 'Misa').length === 0;
+        if (isFirstUserMsg && API_URL) {
+            try {
+                await apiFetch('/api/chats/', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: chatId, title: 'Новый чат' })
+                });
+            } catch (e) {
+                console.warn("Ошибка создания чата на сервере:", e);
+            }
+        }
+
         this.isLoading = true;
         this.loadingChatId = chatId;
         this.error = null;
@@ -555,7 +567,6 @@ class ChatStore {
             userId: this.getCurrentUserId()
         };
         chat.messages.push(userMessage);
-        const isFirstUserMsg = chat.messages.filter(m => m.user !== 'Misa').length === 1;
         if (isFirstUserMsg && API_URL) {
             const title = content.replace(/\n/g, ' ').trim().slice(0, 40) + (content.length > 40 ? '…' : '');
             apiFetch(`/api/chats/${chatId}/`, {

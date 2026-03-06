@@ -890,7 +890,8 @@ class Controller(IController.IController):
             chat_id = data.get('id') or (datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S') + str(random.randint(100, 999)))
             title = data.get('title', 'Новый чат')[:500]
             cls.__dbc.execute_update(
-                "INSERT INTO chat.chats (id, user_id, title) VALUES (%s, %s, %s)",
+                """INSERT INTO chat.chats (id, user_id, title) VALUES (%s, %s, %s)
+                   ON CONFLICT (id) DO NOTHING""",
                 (chat_id, user.id, title)
             )
             return cls.success_response({
