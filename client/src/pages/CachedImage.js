@@ -26,8 +26,16 @@ const CachedImage = ({ src, cacheKey, messageContent, messageUser }) => {
 
         const fetchAndCacheImage = async () => {
             try {
+                if (!src || typeof src !== 'string') {
+                    setImgSrc(src);
+                    setIsLoading(false);
+                    return;
+                }
                 setIsLoading(true);
-                const response = await fetch(src + '?t=' + Date.now());
+                const response = await fetch(src + '?t=' + Date.now(), {
+                    mode: 'cors',
+                    credentials: 'omit',
+                });
 
                 if (!response.ok) throw new Error('Network response was not ok');
 
@@ -47,20 +55,25 @@ const CachedImage = ({ src, cacheKey, messageContent, messageUser }) => {
                 setIsLoading(false);
 
             } catch (error) {
-                console.error('Ошибка загрузки изображения:', error);
-                // Fallback: используем URL напрямую (fetch может падать из-за CORS на S3)
-                setImgSrc(src);
+                // Failed to fetch — обычно CORS на S3/внешних доменах; img src загрузит напрямую
+                if (error?.name === 'TypeError' && error?.message?.includes('fetch')) {
+                    setImgSrc(src);
+                } else {
+                    console.error('Ошибка загрузки изображения:', error);
+                    setImgSrc(src);
+                }
                 setIsLoading(false);
             }
         };
 
         const checkForUpdates = async () => {
-            // Фоновая проверка обновлений
+            // Фоновая проверка обновлений (игнорируем ошибки CORS)
             try {
-                await fetch(src + '?check=' + Date.now());
-                // Можно добавить логику проверки ETag или Last-Modified
-            } catch (error) {
-                console.log('Не удалось проверить обновления изображения');
+                if (src && typeof src === 'string') {
+                    await fetch(src + '?check=' + Date.now(), { mode: 'cors', credentials: 'omit' });
+                }
+            } catch {
+                // CORS или сеть — не критично
             }
         };
 
