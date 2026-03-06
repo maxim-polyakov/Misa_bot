@@ -285,33 +285,33 @@ const Chat = observer(() => {
                 </div>
             )}
 
-            {isShareMode && (
-                <div className="share-bar">
-                    <button type="button" className="share-bar-btn" onClick={() => chatStore.selectAllMessages()}>
-                        {t("selectAll")}
-                    </button>
-                    <span className="share-bar-count">
-                        {chatStore.selectedMessageIds.length} {t("selectedTurns")}
-                    </span>
-                    <button type="button" className="share-bar-btn" onClick={() => chatStore.endShareMode()}>
-                        {t("cancel")}
-                    </button>
-                    <button
-                        type="button"
-                        className="share-bar-btn share-bar-btn-primary"
-                        onClick={handleCreateLink}
-                        title={t("createPublicLink")}
-                    >
-                        ⎘ {t("createPublicLink")}
-                    </button>
-                </div>
-            )}
-
             {linkCopiedToast && (
                 <div className="share-toast">{t("linkCopied")}</div>
             )}
 
-            <div className={`input-container ${isShareMode ? "input-container-hidden" : ""}`}>
+            <div className="input-container">
+                {isShareMode ? (
+                    <div className="share-bar">
+                        <button type="button" className="share-bar-btn" onClick={() => chatStore.selectAllMessages()}>
+                            {t("selectAll")}
+                        </button>
+                        <span className="share-bar-count">
+                            {chatStore.selectedMessageIds.length} {t("selectedTurns")}
+                        </span>
+                        <button type="button" className="share-bar-btn" onClick={() => chatStore.endShareMode()}>
+                            {t("cancel")}
+                        </button>
+                        <button
+                            type="button"
+                            className="share-bar-btn share-bar-btn-primary"
+                            onClick={handleCreateLink}
+                            title={t("createPublicLink")}
+                        >
+                            ⎘ {t("createPublicLink")}
+                        </button>
+                    </div>
+                ) : (
+                    <>
                 <textarea
                     ref={textareaRef}
                     value={message}
@@ -335,6 +335,8 @@ const Chat = observer(() => {
                 >
                     ➤
                 </button>
+                    </>
+                )}
             </div>
 
             {chatStore.error && (

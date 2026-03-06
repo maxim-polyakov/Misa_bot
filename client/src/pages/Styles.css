@@ -476,15 +476,13 @@ body {
     color: var(--accent-color);
 }
 
-/* Панель шаринга */
-.share-bar {
+/* Панель шаринга — на месте поля ввода */
+.input-container .share-bar {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.75rem 1.5rem;
-    background: var(--secondary-bg);
-    border-top: 1px solid var(--border-color);
-    flex-shrink: 0;
+    width: 100%;
+    flex: 1;
 }
 
 .share-bar-btn {
