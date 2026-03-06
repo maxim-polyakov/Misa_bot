@@ -134,6 +134,14 @@ def chats_messages(request, chat_id):
     return ctrlr.chats_messages(request, chat_id)
 
 
+@swagger_auto_schema(method='patch', operation_summary='Лайк/дизлайк сообщения', tags=['Chats'])
+@api_view(['PATCH'])
+@csrf_exempt
+def chats_message_feedback(request, chat_id, message_id):
+    ctrlr = Controller.Controller()
+    return ctrlr.chats_message_feedback(request, chat_id, message_id)
+
+
 @swagger_auto_schema(method='delete', operation_summary='Очистить сообщения чата', tags=['Chats'])
 @api_view(['DELETE'])
 @csrf_exempt

@@ -60,6 +60,18 @@ class ChatStore {
         this.selectedMessageIds = [];
     }
 
+    startShareModeWithMessage(chatId, msgId) {
+        this.shareModeForChatId = chatId;
+        const chat = this.chats.find(c => c.id === chatId);
+        const idx = chat?.messages?.findIndex(m => m.id === msgId);
+        const ids = [msgId];
+        if (idx != null && idx > 0) {
+            const prev = chat.messages[idx - 1];
+            if (prev?.user !== 'Misa') ids.unshift(prev.id);
+        }
+        this.selectedMessageIds = ids;
+    }
+
     endShareMode() {
         this.shareModeForChatId = null;
         this.selectedMessageIds = [];
@@ -82,6 +94,39 @@ class ChatStore {
 
     isMessageSelected(msgId) {
         return this.selectedMessageIds.includes(msgId);
+    }
+
+    async setMessageFeedback(msgId, feedback, categories = null, comment = null) {
+        const chat = this.currentChat;
+        const msg = chat?.messages?.find(m => m.id === msgId);
+        const prev = msg?.feedback ?? null;
+        const prevCats = msg?.feedbackCategories ?? null;
+        const prevComm = msg?.feedbackComment ?? null;
+        if (msg) {
+            msg.feedback = feedback;
+            msg.feedbackCategories = feedback === 'dislike' ? (categories || []) : null;
+            msg.feedbackComment = feedback === 'dislike' ? (comment || null) : null;
+        }
+        if (API_URL) {
+            try {
+                await apiFetch(`/api/chats/${this.currentChatId}/messages/${msgId}/feedback/`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ feedback, categories: categories || [], comment: comment || '' })
+                });
+            } catch (e) {
+                if (msg) {
+                    msg.feedback = prev;
+                    msg.feedbackCategories = prevCats;
+                    msg.feedbackComment = prevComm;
+                }
+                console.warn('Ошибка сохранения feedback:', e);
+            }
+        }
+    }
+
+    getMessageFeedback(msgId) {
+        const msg = this.currentChat?.messages?.find(m => m.id === msgId);
+        return msg?.feedback ?? null;
     }
 
     getShareLink() {
@@ -234,7 +279,10 @@ class ChatStore {
                     content: m.content,
                     user: m.user,
                     timestamp: new Date(m.timestamp),
-                    isImage: m.isImage
+                    isImage: m.isImage,
+                    feedback: m.feedback && (m.feedback === 'like' || m.feedback === 'dislike') ? m.feedback : null,
+                    feedbackCategories: m.feedbackCategories || null,
+                    feedbackComment: m.feedbackComment || null
                 }));
                 chat._messagesLoaded = true;
             } catch (e) {
@@ -600,11 +648,12 @@ class ChatStore {
     handleIncomingMessage(data) {
         if (data.type === 'chat_message') {
             const msg = {
-                id: Date.now().toString() + Math.random().toString(36).slice(2),
+                id: data.message_id || Date.now().toString() + Math.random().toString(36).slice(2),
                 content: data.message,
                 user: data.user || "Misa",
                 timestamp: new Date(),
-                isImage: data.isImage || /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(data.message)
+                isImage: data.isImage || /^(\/images\/|https?:\/\/).+(\.(jpg|jpeg|png|gif|bmp|webp|svg))($|\?)/i.test(data.message),
+                feedback: null
             };
             const chatId = data.chat_id || this.currentChatId;
             const chat = this.chats.find(c => c.id === chatId);
@@ -626,7 +675,10 @@ class ChatStore {
                     content: m.content,
                     user: m.user,
                     timestamp: new Date(m.timestamp),
-                    isImage: m.isImage
+                    isImage: m.isImage,
+                    feedback: m.feedback && (m.feedback === 'like' || m.feedback === 'dislike') ? m.feedback : null,
+                    feedbackCategories: m.feedbackCategories || null,
+                    feedbackComment: m.feedbackComment || null
                 }));
                 if (data.title != null && data.title !== '') {
                     chat.title = String(data.title).trim();
@@ -678,6 +730,19 @@ class ChatStore {
             console.log("Неизвестный тип сообщения:", data);
         }
     };
+
+    regenerateReply(msgId) {
+        const chat = this.currentChat;
+        if (!chat?.messages) return false;
+        const idx = chat.messages.findIndex(m => m.id === msgId);
+        if (idx < 1) return false;
+        const misaMsg = chat.messages[idx];
+        const prevMsg = chat.messages[idx - 1];
+        if (misaMsg?.user !== 'Misa' || prevMsg?.user === 'Misa') return false;
+        chat.messages = chat.messages.slice(0, idx);
+        this.saveChats();
+        return this.sendMessage(prevMsg.content);
+    }
 
     async sendMessage(content) {
         if (!this.isConnected || !this.socket) {

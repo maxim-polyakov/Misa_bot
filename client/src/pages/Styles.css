@@ -445,6 +445,35 @@ body {
     text-align: right;
 }
 
+/* Кнопки действий под сообщениями Misa */
+.message-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.message-action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    transition: color 0.15s, background 0.15s;
+}
+
+.message-action-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.message-action-btn.active {
+    color: var(--accent-color);
+}
+
 /* Выделение сообщений для шаринга */
 .message.message-selected .message-content {
     outline: 2px solid rgba(74, 144, 226, 0.6);
@@ -1466,6 +1495,117 @@ body {
 
 .settings-modal-nav-icon {
     font-size: 1rem;
+}
+
+/* ===== FEEDBACK MODAL (dislike) ===== */
+.feedback-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.2s ease;
+}
+
+.feedback-modal {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    width: min(90vw, 420px);
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.feedback-modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+}
+
+.feedback-modal-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.feedback-modal-pill {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.feedback-modal-pill:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.feedback-modal-pill.active {
+    background: rgba(74, 144, 226, 0.2);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.feedback-modal-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--primary-bg);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    margin-bottom: 1rem;
+}
+
+.feedback-modal-textarea::placeholder {
+    color: var(--text-secondary);
+}
+
+.feedback-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.feedback-modal-btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.feedback-modal-btn-cancel {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.feedback-modal-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.feedback-modal-btn-submit {
+    background: var(--accent-color);
+    border: none;
+    color: white;
+}
+
+.feedback-modal-btn-submit:hover {
+    background: var(--accent-hover);
 }
 
 .settings-modal-content {

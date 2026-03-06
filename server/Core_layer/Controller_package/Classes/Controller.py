@@ -935,25 +935,37 @@ class Controller(IController.IController):
                 return cls.error_response("Chat not found", 404)
             if int(df_chat.iloc[0]['user_id']) != user.id:
                 return cls.error_response("Forbidden", 403)
-            df = cls.__dbc.execute_query(
-                'SELECT id, "user", content, is_image, timestamp FROM chat.chat_messages WHERE chat_id = %s ORDER BY timestamp ASC',
-                (chat_id,)
-            )
-            if df is None or df.empty:
-                return cls.success_response([])
-            messages = []
-            for _, row in df.iterrows():
-                ts = row['timestamp']
-                messages.append({
-                    'id': str(row['id']),
-                    'user': str(row['user']),
-                    'content': str(row['content']),
-                    'isImage': bool(row.get('is_image', False)),
-                    'timestamp': ts.isoformat() if hasattr(ts, 'isoformat') else str(ts),
-                })
+            messages = ChatService.get_messages(chat_id)
             return cls.success_response(messages)
         except Exception as e:
             logging.error(f"chats_messages error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
+    def chats_message_feedback(cls, request, chat_id, message_id):
+        """PATCH /api/chats/<id>/messages/<mid>/feedback/ — установить лайк/дизлайк"""
+        try:
+            user = cls.get_user_from_token(request)
+            if user is None:
+                return cls.error_response("Authentication required", 401)
+            df = cls.__dbc.execute_query(
+                "SELECT user_id FROM chat.chats WHERE id = %s",
+                (chat_id,)
+            )
+            if df is None or df.empty:
+                return cls.error_response("Chat not found", 404)
+            if int(df.iloc[0]['user_id']) != user.id:
+                return cls.error_response("Forbidden", 403)
+            data = json.loads(request.body) if request.body else {}
+            feedback = data.get('feedback')
+            if feedback is not None and feedback not in ('like', 'dislike'):
+                feedback = None
+            categories = data.get('categories') or data.get('feedbackCategories')
+            comment = data.get('comment') or data.get('feedbackComment')
+            ChatService.set_message_feedback(chat_id, message_id, feedback, categories=categories, comment=comment)
+            return cls.success_response({'feedback': feedback})
+        except Exception as e:
+            logging.error(f"chats_message_feedback error: {str(e)}")
             return cls.error_response(str(e), 500)
 
     @classmethod

@@ -48,7 +48,7 @@ class ChatService:
         """Получить сообщения чата из БД."""
         try:
             df = DB_Communication.DB_Communication().execute_query(
-                'SELECT id, "user", content, is_image, timestamp FROM chat.chat_messages WHERE chat_id = %s ORDER BY timestamp ASC',
+                'SELECT id, "user", content, is_image, timestamp, feedback, feedback_categories, feedback_comment FROM chat.chat_messages WHERE chat_id = %s ORDER BY timestamp ASC',
                 (chat_id,)
             )
             if df is None or df.empty:
@@ -56,12 +56,23 @@ class ChatService:
             messages = []
             for _, row in df.iterrows():
                 ts = row['timestamp']
+                fb = row.get('feedback')
+                cats = row.get('feedback_categories')
+                comm = row.get('feedback_comment')
+                try:
+                    import json
+                    feedback_categories = json.loads(cats) if cats and isinstance(cats, str) else (cats if isinstance(cats, list) else None)
+                except Exception:
+                    feedback_categories = None
                 messages.append({
                     'id': str(row['id']),
                     'user': str(row['user']),
                     'content': str(row['content']),
                     'isImage': bool(row.get('is_image', False)),
                     'timestamp': ts.isoformat() if hasattr(ts, 'isoformat') else str(ts),
+                    'feedback': str(fb) if fb in ('like', 'dislike') else None,
+                    'feedbackCategories': feedback_categories,
+                    'feedbackComment': str(comm).strip() if comm else None,
                 })
             return messages
         except Exception as e:
@@ -80,6 +91,27 @@ class ChatService:
             )
         except Exception as e:
             logging.error(f"ChatService.save_message error: {str(e)}")
+
+    @classmethod
+    def set_message_feedback(cls, chat_id, message_id, feedback, categories=None, comment=None):
+        """Установить лайк/дизлайк для сообщения. feedback: 'like'|'dislike'|None. categories: list, comment: str."""
+        try:
+            import json
+            val = feedback if feedback in ('like', 'dislike') else None
+            cats_raw = None
+            comm = None
+            if val == 'dislike':
+                if categories and isinstance(categories, (list, tuple)):
+                    cats_raw = json.dumps([c for c in categories if c in ('harmful', 'fake', 'unhelpful', 'others')])
+                comm = (comment or '').strip()[:2000] if comment else None
+            DB_Communication.DB_Communication().execute_update(
+                'UPDATE chat.chat_messages SET feedback = %s, feedback_categories = %s, feedback_comment = %s WHERE id = %s AND chat_id = %s',
+                (val, cats_raw, comm, message_id, chat_id)
+            )
+            return True
+        except Exception as e:
+            logging.error(f"ChatService.set_message_feedback error: {str(e)}")
+            return False
 
     @classmethod
     def get_title(cls, chat_id):

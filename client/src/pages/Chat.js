@@ -15,6 +15,9 @@ const Chat = observer(() => {
     const { toggleSidebar, sidebarExpanded } = useMenuToggle();
     const [message, setMessage] = useState("");
     const [linkCopiedToast, setLinkCopiedToast] = useState(false);
+    const [feedbackModalMsgId, setFeedbackModalMsgId] = useState(null);
+    const [feedbackCategories, setFeedbackCategories] = useState([]);
+    const [feedbackComment, setFeedbackComment] = useState("");
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
     const messagesContainerRef = useRef(null);
@@ -200,6 +203,59 @@ const Chat = observer(() => {
                     <div className="message-time">
                         {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </div>
+                    {messageUser === 'Misa' && (
+                        <div className="message-actions" onClick={e => e.stopPropagation()}>
+                            <button
+                                type="button"
+                                className="message-action-btn"
+                                onClick={e => handleCopyMessage(e, msg)}
+                                title={t("copy")}
+                            >
+                                {copiedMsgId === msg.id ? "✓" : "📋"}
+                            </button>
+                            <button
+                                type="button"
+                                className="message-action-btn"
+                                onClick={e => handleRegenerate(e, msg)}
+                                title={t("regenerate")}
+                            >
+                                ↻
+                            </button>
+                            <button
+                                type="button"
+                                className={`message-action-btn ${chatStore.getMessageFeedback(msg.id) === 'like' ? 'active' : ''}`}
+                                onClick={e => { e.stopPropagation(); chatStore.setMessageFeedback(msg.id, chatStore.getMessageFeedback(msg.id) === 'like' ? null : 'like'); }}
+                                title={t("like")}
+                            >
+                                👍
+                            </button>
+                            <button
+                                type="button"
+                                className={`message-action-btn ${chatStore.getMessageFeedback(msg.id) === 'dislike' ? 'active' : ''}`}
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    if (chatStore.getMessageFeedback(msg.id) === 'dislike') {
+                                        chatStore.setMessageFeedback(msg.id, null);
+                                    } else {
+                                        setFeedbackModalMsgId(msg.id);
+                                        setFeedbackCategories(msg.feedbackCategories || []);
+                                        setFeedbackComment(msg.feedbackComment || "");
+                                    }
+                                }}
+                                title={t("dislike")}
+                            >
+                                👎
+                            </button>
+                            <button
+                                type="button"
+                                className="message-action-btn"
+                                onClick={e => handleShareMessage(e, msg)}
+                                title={t("share")}
+                            >
+                                ↗
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -217,6 +273,55 @@ const Chat = observer(() => {
         }
     };
 
+    const [copiedMsgId, setCopiedMsgId] = useState(null);
+    const handleCopyMessage = async (e, msg) => {
+        e?.stopPropagation?.();
+        try {
+            await navigator.clipboard.writeText(msg.content);
+            setCopiedMsgId(msg.id);
+            setTimeout(() => setCopiedMsgId(null), 1500);
+        } catch (err) {
+            console.warn("Copy failed:", err);
+        }
+    };
+
+    const handleShareMessage = (e, msg) => {
+        e?.stopPropagation?.();
+        chatStore.startShareModeWithMessage(chatStore.currentChatId, msg.id);
+    };
+
+    const handleRegenerate = (e, msg) => {
+        e?.stopPropagation?.();
+        chatStore.regenerateReply(msg.id);
+    };
+
+    const FEEDBACK_CATEGORIES = [
+        { id: 'harmful', tKey: 'feedbackHarmful' },
+        { id: 'fake', tKey: 'feedbackFake' },
+        { id: 'unhelpful', tKey: 'feedbackUnhelpful' },
+        { id: 'others', tKey: 'feedbackOthers' },
+    ];
+
+    const toggleFeedbackCategory = (id) => {
+        setFeedbackCategories(prev =>
+            prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+        );
+    };
+
+    const handleFeedbackSubmit = async () => {
+        if (feedbackModalMsgId) {
+            await chatStore.setMessageFeedback(feedbackModalMsgId, 'dislike', feedbackCategories, feedbackComment);
+            setFeedbackModalMsgId(null);
+            setFeedbackCategories([]);
+            setFeedbackComment("");
+        }
+    };
+
+    const handleFeedbackCancel = () => {
+        setFeedbackModalMsgId(null);
+        setFeedbackCategories([]);
+        setFeedbackComment("");
+    };
 
     return (
         <div className="chat-container">
@@ -287,6 +392,41 @@ const Chat = observer(() => {
 
             {linkCopiedToast && (
                 <div className="share-toast">{t("linkCopied")}</div>
+            )}
+
+            {feedbackModalMsgId && (
+                <div className="feedback-modal-overlay" onClick={handleFeedbackCancel}>
+                    <div className="feedback-modal" onClick={e => e.stopPropagation()}>
+                        <h3 className="feedback-modal-title">{t("feedback")}</h3>
+                        <div className="feedback-modal-categories">
+                            {FEEDBACK_CATEGORIES.map(({ id, tKey }) => (
+                                <button
+                                    key={id}
+                                    type="button"
+                                    className={`feedback-modal-pill ${feedbackCategories.includes(id) ? "active" : ""}`}
+                                    onClick={() => toggleFeedbackCategory(id)}
+                                >
+                                    {t(tKey)}
+                                </button>
+                            ))}
+                        </div>
+                        <textarea
+                            className="feedback-modal-textarea"
+                            placeholder={t("feedbackPlaceholder")}
+                            value={feedbackComment}
+                            onChange={e => setFeedbackComment(e.target.value)}
+                            rows={4}
+                        />
+                        <div className="feedback-modal-actions">
+                            <button type="button" className="feedback-modal-btn feedback-modal-btn-cancel" onClick={handleFeedbackCancel}>
+                                {t("cancel")}
+                            </button>
+                            <button type="button" className="feedback-modal-btn feedback-modal-btn-submit" onClick={handleFeedbackSubmit}>
+                                {t("submit")}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             <div className="input-container">
