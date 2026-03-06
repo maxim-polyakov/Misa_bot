@@ -8,7 +8,7 @@ from channels.db import database_sync_to_async
 from django.conf import settings
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorServer
 from Core_layer.Chat_package.Classes.ChatService import ChatService
-from Deep_layer.NLP_package.Classes.GPT.Gpt import Gpt
+from Core_layer.Answer_package.Classes import GptAnswer
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +133,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Импорт истории из БД в контекст GPT для данного чата
         if chat_id and user:
-            await database_sync_to_async(Gpt.import_history_from_db)(user, chat_id)
+            await database_sync_to_async(GptAnswer.GptAnswer.import_history_from_db)(user, chat_id)
 
         is_image = content.startswith('/images/') or content.startswith('http')
         if chat_id:

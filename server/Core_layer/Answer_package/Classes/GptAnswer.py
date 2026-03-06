@@ -28,3 +28,8 @@ class GptAnswer(IAnswer.IAnswer):
     @classmethod
     def clear_conversation_history(cls, user=None):
         cls.__gpt.clear_conversation_history(user)
+
+    @classmethod
+    def import_history_from_db(cls, user, chat_id):
+        """Импорт истории чата из БД в контекст GPT для данного чата."""
+        Gpt.Gpt.import_history_from_db(user, chat_id)
