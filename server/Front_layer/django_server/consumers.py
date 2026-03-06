@@ -155,6 +155,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
             for el in cleaned:
                 await self._broadcast_message(chat_id, 'Misa', el, is_img, exclude_self=True)
 
+            # Генерация контекстного заголовка (как у DeepSeek)
+            def _generate_and_save_title():
+                msgs = ChatService.get_messages(chat_id)
+                if not msgs:
+                    return None
+                t = GptAnswer.GptAnswer.generate_chat_title(msgs)
+                if t and ChatService.update_title(chat_id, t):
+                    return t
+                return None
+            title = await database_sync_to_async(_generate_and_save_title)()
+            if title:
+                await self._broadcast_title(chat_id, title)
+
             return response
         finally:
             if chat_id:
@@ -175,6 +188,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         payload = {
             'type': 'chat_broadcast',
             'data': {'type': 'messages_cleared', 'chat_id': chat_id}
+        }
+        if exclude_self:
+            payload['exclude_channel'] = self.channel_name
+        await self.channel_layer.group_send(f"chat_{chat_id}", payload)
+
+    async def _broadcast_title(self, chat_id, title, exclude_self=False):
+        """Broadcast обновления заголовка чата."""
+        payload = {
+            'type': 'chat_broadcast',
+            'data': {'type': 'chat_title', 'chat_id': chat_id, 'title': title}
         }
         if exclude_self:
             payload['exclude_channel'] = self.channel_name

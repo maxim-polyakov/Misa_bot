@@ -82,6 +82,21 @@ class ChatService:
             logging.error(f"ChatService.save_message error: {str(e)}")
 
     @classmethod
+    def update_title(cls, chat_id, title):
+        """Обновить заголовок чата в БД."""
+        try:
+            if not title or len(title) > 500:
+                return False
+            DB_Communication.DB_Communication().execute_update(
+                "UPDATE chat.chats SET title = %s WHERE id = %s",
+                (title[:500], chat_id)
+            )
+            return True
+        except Exception as e:
+            logging.error(f"ChatService.update_title error: {str(e)}")
+        return False
+
+    @classmethod
     def delete_chat_images_from_s3(cls, chat_id):
         """Удаляет изображения из S3 для всех сообщений чата с S3 URL."""
         messages = cls.get_messages(chat_id)

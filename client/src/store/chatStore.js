@@ -238,8 +238,12 @@ class ChatStore {
         }
     };
 
-    // Генерация заголовка чата по первому сообщению
+    // Заголовок чата: контекстный (от сервера) или первое сообщение
     getChatTitle(chat) {
+        if (chat.title && chat.title.trim() && chat.title !== "Новый чат") {
+            const t = chat.title.trim();
+            return t.length > 40 ? t.slice(0, 40) + "…" : t;
+        }
         const firstUserMsg = chat.messages?.find(m => m.user !== "Misa");
         if (firstUserMsg) {
             const text = (firstUserMsg.content || "").replace(/\n/g, " ").trim();
@@ -521,6 +525,13 @@ class ChatStore {
             } else if (data.chat_id === this.loadingChatId) {
                 this.loadingChatId = null;
                 this.isLoading = false;
+            }
+        }
+        else if (data.type === 'chat_title') {
+            const chat = this.chats.find(c => c.id === data.chat_id);
+            if (chat && data.title) {
+                chat.title = data.title.trim().slice(0, 500);
+                this.saveChats();
             }
         }
         else {

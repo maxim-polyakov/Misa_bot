@@ -33,3 +33,31 @@ class GptAnswer(IAnswer.IAnswer):
     def import_history_from_db(cls, user, chat_id):
         """Импорт истории чата из БД в контекст GPT для данного чата."""
         Gpt.Gpt.import_history_from_db(user, chat_id)
+
+    @classmethod
+    def generate_chat_title(cls, messages):
+        """Сгенерировать контекстный заголовок чата из сообщений (как у DeepSeek)."""
+        if not messages or len(messages) < 2:
+            return None
+        try:
+            context_parts = []
+            for m in messages[-6:]:
+                role = "user" if str(m.get('user', '')).strip() != 'Misa' else "assistant"
+                content = str(m.get('content', ''))[:300].replace('\n', ' ')
+                if content.strip():
+                    context_parts.append(f"{role}: {content.strip()}")
+            if not context_parts:
+                return None
+            prompt = (
+                "На основе диалога ниже сгенерируй краткий заголовок чата (до 40 символов). "
+                "Заголовок должен отражать суть разговора. Только заголовок, без кавычек и пояснений.\n\n"
+                + "\n".join(context_parts)
+            )
+            result = cls.__gpt.generate(prompt, "title_gen", is_command_check=True, chat_id=None)
+            if result and isinstance(result, str):
+                title = result.strip()[:40]
+                if title and len(title) > 2:
+                    return title
+        except Exception as e:
+            logging.warning(f"generate_chat_title error: {e}")
+        return None
