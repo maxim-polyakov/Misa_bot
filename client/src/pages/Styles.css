@@ -217,6 +217,15 @@ body {
     min-height: min-content;
 }
 
+.chat-title-center {
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1rem;
+    padding: 0;
+}
+
 /* ===== ПЛАВАЮЩИЕ КНОПКИ ЧАТА ===== */
 .chat-floating-buttons {
     position: absolute;
