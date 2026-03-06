@@ -2,8 +2,8 @@
   "short_name": "Misa",
   "name": "Misa AI Chat",
   "icons": [
-    {"src": "misa.jpg", "type": "image/jpeg", "sizes": "192x192"},
-    {"src": "misa.jpg", "type": "image/jpeg", "sizes": "512x512"}
+    {"src": "https://misa.baxic.ru/misa.jpg?v=2", "type": "image/jpeg", "sizes": "192x192", "purpose": "any"},
+    {"src": "https://misa.baxic.ru/misa.jpg?v=2", "type": "image/jpeg", "sizes": "512x512", "purpose": "any"}
   ],
   "start_url": ".",
   "display": "standalone",
