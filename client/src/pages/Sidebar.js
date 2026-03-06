@@ -105,6 +105,11 @@ const Sidebar = observer(() => {
         }
     };
 
+    const handlePin = (chatId) => {
+        setChatMenuOpen(null);
+        chatStore.togglePinChat(chatId);
+    };
+
     const logOut = () => {
         setProfileOpen(false);
         chatStore.clearUserFromStorage();
@@ -153,6 +158,7 @@ const Sidebar = observer(() => {
                         {(() => {
                             const groups = chatStore.getChatsGroupedByPeriod();
                             const sections = [
+                                { key: 'pinned', label: t('pinned'), chats: groups.pinned },
                                 { key: 'today', label: t('today'), chats: groups.today },
                                 { key: 'yesterday', label: t('yesterday'), chats: groups.yesterday },
                                 { key: 'last7Days', label: t('last7Days'), chats: groups.last7Days },
@@ -212,9 +218,9 @@ const Sidebar = observer(() => {
                                                             <span className="sidebar-chat-menu-icon">✎</span>
                                                             {t("rename")}
                                                         </button>
-                                                        <button type="button" className="sidebar-chat-menu-item" onClick={() => { setChatMenuOpen(null); /* TODO */ }}>
+                                                        <button type="button" className="sidebar-chat-menu-item" onClick={() => handlePin(chat.id)}>
                                                             <span className="sidebar-chat-menu-icon">📌</span>
-                                                            {t("pin")}
+                                                            {chatStore.isChatPinned(chat.id) ? t("unpin") : t("pin")}
                                                         </button>
                                                         <button type="button" className="sidebar-chat-menu-item" onClick={() => { setChatMenuOpen(null); /* TODO */ }}>
                                                             <span className="sidebar-chat-menu-icon">⎘</span>

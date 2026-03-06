@@ -15,6 +15,7 @@ const apiFetch = async (path, options = {}) => {
 
 class ChatStore {
     chats = []; // [{ id, title, messages, createdAt }]
+    pinnedChatIds = []; // id закреплённых чатов (только клиент, localStorage)
     currentChatId = null;
     isConnected = false;
     isConnecting = false;
@@ -129,6 +130,7 @@ class ChatStore {
     // Загрузка чатов из API (БД на бэкенде)
     async loadChats() {
         if (this._loadChatsInProgress) return;
+        this._loadPinnedChatIds();
         try {
             const userId = this.getCurrentUserId();
             if (!userId) {
@@ -144,6 +146,9 @@ class ChatStore {
             try {
                 const chatsData = await apiFetch('/api/chats/');
                 if (Array.isArray(chatsData) && chatsData.length > 0) {
+                    const chatIds = new Set(chatsData.map(c => c.id));
+                    this.pinnedChatIds = this.pinnedChatIds.filter(id => chatIds.has(id));
+                    this._savePinnedChatIds();
                     const seen = new Set();
                     this.chats = chatsData
                         .filter(c => {
@@ -214,6 +219,7 @@ class ChatStore {
     }
 
     _loadChatsFromLocalStorage() {
+        this._loadPinnedChatIds();
         const userId = this.getCurrentUserId();
         const saved = localStorage.getItem(`chats_${userId}`);
         if (saved) {
@@ -250,7 +256,7 @@ class ChatStore {
         return (chat.title && chat.title.trim()) ? chat.title.trim() : '';
     }
 
-    // Группировка чатов по периодам (Сегодня, Вчера, 7 дней, 30 дней)
+    // Группировка чатов по периодам (Закреплённые, Сегодня, Вчера, 7 дней, 30 дней)
     getChatsGroupedByPeriod() {
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -261,11 +267,16 @@ class ChatStore {
         const thirtyDaysAgo = new Date(todayStart);
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const groups = { today: [], yesterday: [], last7Days: [], last30Days: [] };
+        const groups = { pinned: [], today: [], yesterday: [], last7Days: [], last30Days: [] };
+        const pinnedSet = new Set(this.pinnedChatIds);
 
         for (const chat of this.chats) {
             if (!chat.messages || chat.messages.length === 0) continue;
             if (!chat.title || chat.title.trim() === '' || chat.title.trim() === 'Новый чат') continue;
+            if (pinnedSet.has(chat.id)) {
+                groups.pinned.push(chat);
+                continue;
+            }
             let date = chat.createdAt ? new Date(chat.createdAt) : new Date();
             if (isNaN(date.getTime())) date = new Date();
             if (date >= todayStart) {
@@ -279,7 +290,54 @@ class ChatStore {
             }
         }
 
+        // Порядок закреплённых — по порядку закрепления (первый закреплённый сверху)
+        groups.pinned.sort((a, b) => {
+            const ia = this.pinnedChatIds.indexOf(a.id);
+            const ib = this.pinnedChatIds.indexOf(b.id);
+            return (ia >= 0 ? ia : 999) - (ib >= 0 ? ib : 999);
+        });
+
         return groups;
+    }
+
+    // Закрепить/открепить чат
+    togglePinChat(chatId) {
+        const idx = this.pinnedChatIds.indexOf(chatId);
+        if (idx >= 0) {
+            this.pinnedChatIds = this.pinnedChatIds.filter(id => id !== chatId);
+        } else {
+            this.pinnedChatIds = [...this.pinnedChatIds, chatId];
+        }
+        this._savePinnedChatIds();
+    }
+
+    isChatPinned(chatId) {
+        return this.pinnedChatIds.includes(chatId);
+    }
+
+    _savePinnedChatIds() {
+        const userId = this.getCurrentUserId();
+        if (userId) {
+            try {
+                localStorage.setItem(`pinned_chats_${userId}`, JSON.stringify(this.pinnedChatIds));
+            } catch (e) {
+                console.error("Ошибка сохранения закреплённых чатов:", e);
+            }
+        }
+    }
+
+    _loadPinnedChatIds() {
+        const userId = this.getCurrentUserId();
+        if (!userId) return;
+        try {
+            const saved = localStorage.getItem(`pinned_chats_${userId}`);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                this.pinnedChatIds = Array.isArray(parsed) ? parsed : [];
+            }
+        } catch (e) {
+            this.pinnedChatIds = [];
+        }
     }
 
     // Переключение на чат (подгружает сообщения с сервера при необходимости)
@@ -357,6 +415,8 @@ class ChatStore {
                 return false;
             }
         }
+        this.pinnedChatIds = this.pinnedChatIds.filter(id => id !== chatId);
+        this._savePinnedChatIds();
         this.chats = this.chats.filter(c => c.id !== chatId);
         if (this.currentChatId === chatId) {
             this.currentChatId = this.chats[0]?.id ?? null;
