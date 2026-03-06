@@ -238,17 +238,14 @@ class ChatStore {
         }
     };
 
-    // Заголовок чата для боковой панели (до 28 символов — умещается полностью)
+    // Заголовок чата для боковой панели (обрезается CSS с ... как у DeepSeek)
     getChatTitle(chat) {
-        const maxLen = 28;
         if (chat.title && chat.title.trim() && chat.title !== "Новый чат") {
-            const t = chat.title.trim();
-            return t.length > maxLen ? t.slice(0, maxLen) + "…" : t;
+            return chat.title.trim();
         }
         const firstUserMsg = chat.messages?.find(m => m.user !== "Misa");
         if (firstUserMsg) {
-            const text = (firstUserMsg.content || "").replace(/\n/g, " ").trim();
-            return text.length > maxLen ? text.slice(0, maxLen) + "…" : text || "Новый чат";
+            return (firstUserMsg.content || "").replace(/\n/g, " ").trim() || "Новый чат";
         }
         return "Новый чат";
     }
