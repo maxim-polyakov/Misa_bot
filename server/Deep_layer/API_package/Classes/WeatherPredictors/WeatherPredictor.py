@@ -1,5 +1,6 @@
 import requests
 import logging
+from urllib.parse import quote
 from Deep_layer.API_package.Interfaces import IWeather
 from Core_layer.Bot_package.Classes.Token import Token
 
@@ -25,7 +26,8 @@ class WetherPredictor(IWeather.IWeather):
                 'select token from assistant_sets.tokens where botname = \'Weather\' and platformname = \'Weather\'')
             api = df['token'][0]
             # construct the api request url
-            url = 'https://api.openweathermap.org/data/2.5/weather?q=' + cls.city + '&units=metric&lang=ru&appid=' + api
+            city_encoded = quote(str(cls.city).strip())
+            url = 'https://api.openweathermap.org/data/2.5/weather?q=' + city_encoded + '&units=metric&lang=ru&appid=' + api
             # send request to the weather api and get the response in json format
             weather_data = requests.get(url, timeout=10).json()
             # check if the response contains valid weather data
