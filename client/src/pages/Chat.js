@@ -223,7 +223,9 @@ const Chat = observer(() => {
             <div className="messages-container" ref={messagesContainerRef}>
                 <div className="messages-content">
                     {chatStore.currentChat?.title && chatStore.messages.length > 0 && (
-                        <h2 className="chat-title-center">{chatStore.currentChat.title}</h2>
+                        <h2 key={chatStore.currentChatId} className="chat-title-center">
+                            {chatStore.currentChat.title}
+                        </h2>
                     )}
                     {chatStore.messages.length === 0 ? (
                         <div className="empty-chat">

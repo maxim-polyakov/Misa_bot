@@ -56,10 +56,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         if chat_id:
                             await self._join_chat_group(chat_id)
                             messages = await database_sync_to_async(_get_messages_sync)(chat_id)
+                            title = await database_sync_to_async(ChatService.get_title)(chat_id)
                             await self.send(text_data=json.dumps({
                                 'type': 'history',
                                 'chat_id': chat_id,
-                                'messages': messages
+                                'messages': messages,
+                                'title': title or ''
                             }, ensure_ascii=False))
                         return
                     if msg_type == 'join_chat':

@@ -484,6 +484,9 @@ class ChatStore {
                     timestamp: new Date(m.timestamp),
                     isImage: m.isImage
                 }));
+                if (data.title != null && data.title !== '') {
+                    chat.title = String(data.title).trim();
+                }
                 chat._messagesLoaded = true;
                 chat._pendingHistory = false;
                 this.saveChats();
