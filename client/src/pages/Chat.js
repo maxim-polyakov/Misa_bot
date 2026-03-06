@@ -223,15 +223,18 @@ const Chat = observer(() => {
                             </button>
                             <button
                                 type="button"
-                                className={`message-action-btn ${chatStore.getMessageFeedback(msg.id) === 'like' ? 'active' : ''}`}
+                                className={`message-action-btn message-action-btn-icon ${chatStore.getMessageFeedback(msg.id) === 'like' ? 'active filled' : ''}`}
                                 onClick={e => { e.stopPropagation(); chatStore.setMessageFeedback(msg.id, chatStore.getMessageFeedback(msg.id) === 'like' ? null : 'like'); }}
                                 title={t("like")}
                             >
-                                👍
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path className="icon-outline" fill="none" d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                                    <path className="icon-fill" fill="currentColor" stroke="none" d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                                </svg>
                             </button>
                             <button
                                 type="button"
-                                className={`message-action-btn ${chatStore.getMessageFeedback(msg.id) === 'dislike' ? 'active' : ''}`}
+                                className={`message-action-btn message-action-btn-icon ${chatStore.getMessageFeedback(msg.id) === 'dislike' ? 'active filled' : ''}`}
                                 onClick={e => {
                                     e.stopPropagation();
                                     if (chatStore.getMessageFeedback(msg.id) === 'dislike') {
@@ -244,7 +247,10 @@ const Chat = observer(() => {
                                 }}
                                 title={t("dislike")}
                             >
-                                👎
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path className="icon-outline" fill="none" d="M7 13V5a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h3a4 4 0 0 1 4 4v1a2 2 0 0 0 4 0v-5h3a2 2 0 0 0 2-2l-1-5a2 3 0 0 0-2-2h-7a3 3 0 0 0-3 3" />
+                                    <path className="icon-fill" fill="currentColor" stroke="none" d="M7 13V5a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h3a4 4 0 0 1 4 4v1a2 2 0 0 0 4 0v-5h3a2 2 0 0 0 2-2l-1-5a2 3 0 0 0-2-2h-7a3 3 0 0 0-3 3" />
+                                </svg>
                             </button>
                             <button
                                 type="button"
