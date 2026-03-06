@@ -35,6 +35,28 @@ class GptAnswer(IAnswer.IAnswer):
         Gpt.Gpt.import_history_from_db(user, chat_id)
 
     @classmethod
+    def generate_chat_title_from_message(cls, content):
+        """Сгенерировать заголовок по первому сообщению пользователя (сразу при отправке)."""
+        if not content or not str(content).strip():
+            return None
+        try:
+            text = str(content)[:500].replace('\n', ' ')
+            prompt = (
+                "По первому сообщению пользователя сгенерируй краткий заголовок чата (до 28 символов). "
+                "Заголовок должен отражать суть или тему. Для приветствий (привет, здравствуй и т.п.) — "
+                "'Приветствие и начало общения'. Только заголовок, без кавычек.\n\n"
+                f"Сообщение: {text.strip()}"
+            )
+            result = cls.__gpt.generate(prompt, "title_gen", is_command_check=True, chat_id=None)
+            if result and isinstance(result, str):
+                title = result.strip()[:28]
+                if title and len(title) > 2:
+                    return title
+        except Exception as e:
+            logging.warning(f"generate_chat_title_from_message error: {e}")
+        return None
+
+    @classmethod
     def generate_chat_title(cls, messages):
         """Сгенерировать контекстный заголовок чата из сообщений (как у DeepSeek)."""
         if not messages or len(messages) < 2:
@@ -49,13 +71,13 @@ class GptAnswer(IAnswer.IAnswer):
             if not context_parts:
                 return None
             prompt = (
-                "На основе диалога ниже сгенерируй краткий заголовок чата (до 40 символов). "
+                "На основе диалога ниже сгенерируй краткий заголовок чата (до 28 символов). "
                 "Заголовок должен отражать суть разговора. Только заголовок, без кавычек и пояснений.\n\n"
                 + "\n".join(context_parts)
             )
             result = cls.__gpt.generate(prompt, "title_gen", is_command_check=True, chat_id=None)
             if result and isinstance(result, str):
-                title = result.strip()[:40]
+                title = result.strip()[:28]
                 if title and len(title) > 2:
                     return title
         except Exception as e:

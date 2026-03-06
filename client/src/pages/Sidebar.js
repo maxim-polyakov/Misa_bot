@@ -121,6 +121,7 @@ const Sidebar = observer(() => {
                                                 key={chat.id}
                                                 className={`sidebar-chat-item ${chat.id === chatStore.currentChatId ? 'active' : ''}`}
                                                 onClick={() => handleSwitchChat(chat.id)}
+                                                title={chat.title || chat.messages?.find(m => m.user !== 'Misa')?.content || ''}
                                             >
                                                 <span className="sidebar-chat-icon">💬</span>
                                                 <span className="sidebar-chat-title">

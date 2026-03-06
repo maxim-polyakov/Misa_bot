@@ -140,6 +140,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             ChatService.save_message(chat_id, user, content, is_image=is_image)
             await self._broadcast_message(chat_id, user, content, is_image, exclude_self=True)
             await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
+            # Заголовок сразу по первому сообщению (привет -> Приветствие и начало общения)
+            if not is_image:
+                def _gen_title():
+                    t = GptAnswer.GptAnswer.generate_chat_title_from_message(content)
+                    if t and ChatService.update_title(chat_id, t):
+                        return t
+                    return None
+                title = await database_sync_to_async(_gen_title)()
+                if title:
+                    await self._broadcast_title(chat_id, title)
 
         try:
             message_monitor = MessageMonitorServer.MessageMonitorServer(user=user, message=content, chat_id=chat_id)

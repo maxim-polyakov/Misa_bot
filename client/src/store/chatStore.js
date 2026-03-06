@@ -238,16 +238,17 @@ class ChatStore {
         }
     };
 
-    // Заголовок чата: контекстный (от сервера) или первое сообщение
+    // Заголовок чата для боковой панели (до 28 символов — умещается полностью)
     getChatTitle(chat) {
+        const maxLen = 28;
         if (chat.title && chat.title.trim() && chat.title !== "Новый чат") {
             const t = chat.title.trim();
-            return t.length > 40 ? t.slice(0, 40) + "…" : t;
+            return t.length > maxLen ? t.slice(0, maxLen) + "…" : t;
         }
         const firstUserMsg = chat.messages?.find(m => m.user !== "Misa");
         if (firstUserMsg) {
             const text = (firstUserMsg.content || "").replace(/\n/g, " ").trim();
-            return text.length > 40 ? text.slice(0, 40) + "…" : text || "Новый чат";
+            return text.length > maxLen ? text.slice(0, maxLen) + "…" : text || "Новый чат";
         }
         return "Новый чат";
     }
