@@ -93,6 +93,35 @@ class ChatService:
             logging.error(f"ChatService.save_message error: {str(e)}")
 
     @classmethod
+    def get_message_by_id(cls, chat_id, message_id):
+        """Получить сообщение по id."""
+        try:
+            df = DB_Communication.DB_Communication().execute_query(
+                'SELECT id, "user", content, is_image FROM chat.chat_messages WHERE id = %s AND chat_id = %s',
+                (message_id, chat_id)
+            )
+            if df is None or df.empty:
+                return None
+            row = df.iloc[0]
+            return {'id': str(row['id']), 'user': str(row['user']), 'content': str(row['content']), 'is_image': bool(row.get('is_image', False))}
+        except Exception as e:
+            logging.error(f"ChatService.get_message_by_id error: {str(e)}")
+            return None
+
+    @classmethod
+    def update_message_content(cls, chat_id, message_id, content, is_image=False):
+        """Обновить контент сообщения (для regenerate)."""
+        try:
+            DB_Communication.DB_Communication().execute_update(
+                'UPDATE chat.chat_messages SET content = %s, is_image = %s WHERE id = %s AND chat_id = %s',
+                (content, is_image, message_id, chat_id)
+            )
+            return True
+        except Exception as e:
+            logging.error(f"ChatService.update_message_content error: {str(e)}")
+            return False
+
+    @classmethod
     def set_message_feedback(cls, chat_id, message_id, feedback, categories=None, comment=None):
         """Установить лайк/дизлайк для сообщения. feedback: 'like'|'dislike'|None. categories: list, comment: str."""
         try:

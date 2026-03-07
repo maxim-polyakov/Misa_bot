@@ -212,13 +212,15 @@ class Gpt(IGpt.IGpt):
             return list(cls._user_conversations.keys())
 
     @classmethod
-    def import_history_from_db(cls, user, chat_id):
-        """Импорт истории чата из БД в контекст GPT для данного чата."""
+    def import_history_from_db(cls, user, chat_id, exclude_last=0):
+        """Импорт истории чата из БД в контекст GPT. exclude_last: исключить последние N сообщений."""
         try:
             from Core_layer.Chat_package.Classes.ChatService import ChatService
             messages = ChatService.get_messages(chat_id)
             if not messages:
                 return
+            if exclude_last > 0:
+                messages = messages[:-exclude_last]
             key = _conversation_key(user, chat_id)
             history = []
             for m in messages:

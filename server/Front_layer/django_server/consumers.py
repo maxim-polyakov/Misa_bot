@@ -18,6 +18,14 @@ def _get_messages_sync(chat_id):
     return ChatService.get_messages(chat_id)
 
 
+def _clean_command_response(response):
+    """Убирает |command| из ответа, возвращает список частей."""
+    if not response or not isinstance(response, str):
+        return []
+    parts = response.replace('|command|\n', '\x00').replace('|command|', '\x00').split('\x00')
+    return [p.strip() for p in parts if p.strip()]
+
+
 class ChatConsumer(AsyncWebsocketConsumer):
     """WebSocket consumer с загрузкой истории и broadcast на все устройства."""
 
@@ -75,6 +83,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             await self._join_chat_group(chat_id)
                             await self._broadcast_clear_messages(chat_id)
                         return
+                    if msg_type == 'regenerate':
+                        chat_id = data.get('chat_id')
+                        message_id = data.get('message_id')
+                        user = data.get('user')
+                        if chat_id and message_id and user:
+                            asyncio.create_task(self._process_regenerate(chat_id, message_id, user))
+                        return
             except (json.JSONDecodeError, TypeError):
                 pass
 
@@ -119,6 +134,71 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if chat_id:
                 err_payload['chat_id'] = chat_id
             await self.send(text_data=json.dumps(err_payload, ensure_ascii=False))
+
+    async def _process_regenerate(self, chat_id, message_id, user):
+        """Перегенерировать ответ: обновить сообщение Misa, не добавляя новых."""
+        try:
+            await self._join_chat_group(chat_id)
+            await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
+
+            def _do_regenerate():
+                msg = ChatService.get_message_by_id(chat_id, message_id)
+                if not msg or str(msg.get('user', '')).strip() != 'Misa':
+                    return None, False
+                msgs = ChatService.get_messages(chat_id)
+                idx = next((i for i, m in enumerate(msgs) if str(m['id']) == str(message_id)), -1)
+                if idx < 1:
+                    return None, False
+                prev = msgs[idx - 1]
+                if str(prev.get('user', '')).strip() == 'Misa':
+                    return None, False
+                user_content = str(prev.get('content', '')).strip()
+                if not user_content:
+                    return None, False
+                GptAnswer.GptAnswer.import_history_from_db(user, chat_id, exclude_last=2)
+                response = MessageMonitorServer.MessageMonitorServer(user=user, message=user_content, chat_id=chat_id).monitor()
+                if not response:
+                    return None, False
+                cleaned = _clean_command_response(response)
+                msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else response)
+                is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned)
+                ChatService.update_message_content(chat_id, message_id, msg_to_save, is_img)
+                return (msg_to_save, is_img), True
+
+            result, ok = await database_sync_to_async(_do_regenerate)()
+            if ok and result:
+                msg_to_send, is_img = result
+                if self.is_file_path(msg_to_send):
+                    msg_to_send = self.convert_file_path_to_url(msg_to_send)
+                is_img_final = is_img or (isinstance(msg_to_send, str) and (msg_to_send.startswith('http') or msg_to_send.startswith('/images/')))
+                await self.channel_layer.group_send(f"chat_{chat_id}", {
+                    'type': 'chat_broadcast',
+                    'data': {
+                        'type': 'message_updated',
+                        'chat_id': chat_id,
+                        'message_id': message_id,
+                        'message': msg_to_send,
+                        'user': 'Misa',
+                        'isImage': is_img_final,
+                    }
+                })
+            else:
+                await self.send(text_data=json.dumps({
+                    'type': 'error',
+                    'chat_id': chat_id,
+                    'message': 'Ошибка перегенерации',
+                }, ensure_ascii=False))
+        except Exception as e:
+            import traceback
+            logger.error(f"Regenerate error: {str(e)}\n{traceback.format_exc()}")
+            await self.send(text_data=json.dumps({
+                'type': 'error',
+                'chat_id': chat_id,
+                'message': 'Ошибка перегенерации',
+                'detail': str(e),
+            }, ensure_ascii=False))
+        finally:
+            await self._broadcast_typing(chat_id, is_typing=False, exclude_self=True)
 
     async def _join_chat_group(self, chat_id):
         group = f"chat_{chat_id}"

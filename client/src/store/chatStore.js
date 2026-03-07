@@ -729,22 +729,41 @@ class ChatStore {
                 this.saveChats();
             }
         }
+        else if (data.type === 'message_updated') {
+            const chat = this.chats.find(c => c.id === data.chat_id);
+            const msg = chat?.messages?.find(m => m.id === data.message_id);
+            if (msg) {
+                msg.content = data.message || msg.content;
+                msg.isImage = data.isImage ?? msg.isImage;
+                this.loadingChatIds = this.loadingChatIds.filter(id => id !== data.chat_id);
+                this.saveChats();
+            }
+        }
         else {
             console.log("Неизвестный тип сообщения:", data);
         }
     };
 
     regenerateReply(msgId) {
+        if (!this.isConnected || !this.socket || !this.currentChatId) return false;
         const chat = this.currentChat;
-        if (!chat?.messages) return false;
-        const idx = chat.messages.findIndex(m => m.id === msgId);
-        if (idx < 1) return false;
-        const misaMsg = chat.messages[idx];
-        const prevMsg = chat.messages[idx - 1];
-        if (misaMsg?.user !== 'Misa' || prevMsg?.user === 'Misa') return false;
-        chat.messages = chat.messages.slice(0, idx);
-        this.saveChats();
-        return this.sendMessage(prevMsg.content);
+        const msg = chat?.messages?.find(m => m.id === msgId);
+        if (!msg || msg.user !== 'Misa') return false;
+        if (!this.loadingChatIds.includes(this.currentChatId)) {
+            this.loadingChatIds = [...this.loadingChatIds, this.currentChatId];
+        }
+        try {
+            this.socket.send(JSON.stringify({
+                type: 'regenerate',
+                chat_id: this.currentChatId,
+                message_id: msgId,
+                user: this.user,
+            }));
+            return true;
+        } catch (e) {
+            this.loadingChatIds = this.loadingChatIds.filter(id => id !== this.currentChatId);
+            return false;
+        }
     }
 
     async sendMessage(content) {

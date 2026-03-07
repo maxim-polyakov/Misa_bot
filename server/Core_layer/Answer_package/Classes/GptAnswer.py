@@ -30,9 +30,9 @@ class GptAnswer(IAnswer.IAnswer):
         cls.__gpt.clear_conversation_history(user)
 
     @classmethod
-    def import_history_from_db(cls, user, chat_id):
-        """Импорт истории чата из БД в контекст GPT для данного чата."""
-        Gpt.Gpt.import_history_from_db(user, chat_id)
+    def import_history_from_db(cls, user, chat_id, exclude_last=0):
+        """Импорт истории чата из БД в контекст GPT. exclude_last: исключить последние N сообщений."""
+        Gpt.Gpt.import_history_from_db(user, chat_id, exclude_last)
 
     @classmethod
     def generate_chat_title_from_message(cls, content):
