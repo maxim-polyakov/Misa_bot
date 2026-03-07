@@ -834,6 +834,13 @@ body {
     box-sizing: border-box;
 }
 
+/* Поле ввода по центру при пустом чате */
+.input-container-centered {
+    margin-top: 2rem;
+    width: 100%;
+    max-width: 42rem;
+}
+
 /* Textarea styles (DeepSeek-style) */
 .message-textarea {
     flex: 1;

@@ -329,6 +329,52 @@ const Chat = observer(() => {
         setFeedbackComment("");
     };
 
+    const inputBlock = !isShareMode ? (
+        <>
+            <textarea
+                ref={textareaRef}
+                value={message}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder={t("placeholder")}
+                rows={1}
+                style={{ minHeight: '40px', maxHeight: '150px', resize: 'none' }}
+                disabled={chatStore.isChatLoading(chatStore.currentChatId) || !chatStore.isConnected}
+                className="message-textarea"
+            />
+            <button
+                onClick={handleSendMessage}
+                disabled={!message.trim() || chatStore.isChatLoading(chatStore.currentChatId) || !chatStore.isConnected}
+                className="send-button"
+                title="Отправить сообщение"
+            >
+                ➤
+            </button>
+        </>
+    ) : null;
+
+    const shareBarBlock = isShareMode ? (
+        <div className="share-bar">
+            <button type="button" className="share-bar-btn" onClick={() => chatStore.selectAllMessages()}>
+                {t("selectAll")}
+            </button>
+            <span className="share-bar-count">
+                {chatStore.selectedMessageIds.length} {t("selectedTurns")}
+            </span>
+            <button type="button" className="share-bar-btn" onClick={() => chatStore.endShareMode()}>
+                {t("cancel")}
+            </button>
+            <button
+                type="button"
+                className="share-bar-btn share-bar-btn-primary"
+                onClick={handleCreateLink}
+                title={t("createPublicLink")}
+            >
+                ⎘ {t("createPublicLink")}
+            </button>
+        </div>
+    ) : null;
+
     return (
         <div className="chat-container">
             {/* Плавающие кнопки поверх чата */}
@@ -379,6 +425,9 @@ const Chat = observer(() => {
                                 <h2 className="empty-chat-title">{t("startChat")}</h2>
                             </div>
                             <p className="empty-chat-hint">{t("startHint")}</p>
+                            <div className="input-container input-container-centered">
+                                {inputBlock}
+                            </div>
                         </div>
                     ) : (
                         chatStore.messages.map(renderMessage)
@@ -437,55 +486,11 @@ const Chat = observer(() => {
                 </div>
             )}
 
-            <div className="input-container">
-                {isShareMode ? (
-                    <div className="share-bar">
-                        <button type="button" className="share-bar-btn" onClick={() => chatStore.selectAllMessages()}>
-                            {t("selectAll")}
-                        </button>
-                        <span className="share-bar-count">
-                            {chatStore.selectedMessageIds.length} {t("selectedTurns")}
-                        </span>
-                        <button type="button" className="share-bar-btn" onClick={() => chatStore.endShareMode()}>
-                            {t("cancel")}
-                        </button>
-                        <button
-                            type="button"
-                            className="share-bar-btn share-bar-btn-primary"
-                            onClick={handleCreateLink}
-                            title={t("createPublicLink")}
-                        >
-                            ⎘ {t("createPublicLink")}
-                        </button>
-                    </div>
-                ) : (
-                    <>
-                <textarea
-                    ref={textareaRef}
-                    value={message}
-                    onChange={handleInputChange}
-                    onKeyPress={handleKeyPress}
-                    placeholder={t("placeholder")}
-                    rows={1}
-                    style={{
-                        minHeight: '40px',
-                        maxHeight: '150px',
-                        resize: 'none',
-                    }}
-                    disabled={chatStore.isChatLoading(chatStore.currentChatId) || !chatStore.isConnected}
-                    className="message-textarea"
-                />
-                <button
-                    onClick={handleSendMessage}
-                    disabled={!message.trim() || chatStore.isChatLoading(chatStore.currentChatId) || !chatStore.isConnected}
-                    className="send-button"
-                    title="Отправить сообщение"
-                >
-                    ➤
-                </button>
-                    </>
-                )}
-            </div>
+            {chatStore.messages.length > 0 && (
+                <div className="input-container">
+                    {shareBarBlock || inputBlock}
+                </div>
+            )}
 
             {chatStore.error && (
                 <div className="error-message">
