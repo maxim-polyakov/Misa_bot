@@ -35,6 +35,28 @@ class ChatStore {
         makeAutoObservable(this);
         this.loadUserFromStorage();
         this.loadChats();
+        if (typeof document !== 'undefined') {
+            this._setupVisibilityReconnect();
+        }
+    }
+
+    _setupVisibilityReconnect() {
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState !== 'visible') return;
+            if (!this.isAuth) return;
+            const socketDead = this.socket && (this.socket.readyState === WebSocket.CLOSING || this.socket.readyState === WebSocket.CLOSED);
+            const needReconnect = !this.isConnected && !this.isConnecting;
+            if (socketDead) {
+                this.socket = null;
+                this.isConnected = false;
+                this.isConnecting = false;
+            }
+            if (needReconnect || socketDead) {
+                this.reconnectAttempts = 0;
+                this.reconnectDelay = 1000;
+                setTimeout(() => this.connect(), 300);
+            }
+        });
     }
 
     get messages() {
