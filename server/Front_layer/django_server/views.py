@@ -83,6 +83,15 @@ def oauth_token(request):
     ctrlr = Controller.Controller()
     return ctrlr.oauth_token(request)
 
+
+@swagger_auto_schema(method='post', operation_summary='Google ID token (Android)', tags=['Auth'])
+@api_view(['POST'])
+@csrf_exempt
+def google_id_token(request):
+    ctrlr = Controller.Controller()
+    return ctrlr.google_id_token(request)
+
+
 @swagger_auto_schema(method='get', operation_summary='Проверка JWT', tags=['Auth'])
 @api_view(['GET'])
 @csrf_exempt

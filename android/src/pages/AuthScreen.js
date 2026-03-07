@@ -5,12 +5,13 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { login, sendRegistrationCode, verifyRegistrationCode } from "../api/userApi";
+import Constants from "expo-constants";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { login, sendRegistrationCode, verifyRegistrationCode, loginWithGoogleIdToken } from "../api/userApi";
 import { useUser } from "../context/UserContext";
 import { useStores } from "../store/rootStoreContext";
 
@@ -23,6 +24,34 @@ export default function AuthScreen() {
   const [step, setStep] = useState("login"); // login | register | verify
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const signInWithGoogle = async () => {
+    const webClientId = Constants.expoConfig?.extra?.googleWebClientId;
+    if (!webClientId) {
+      setError("Google Sign-In не настроен (добавьте EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID в .env)");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      const idToken = response?.type === "success" ? response?.data?.idToken : null;
+      if (!idToken) {
+        setLoading(false);
+        return;
+      }
+      const data = await loginWithGoogleIdToken(idToken);
+      chatStore.setUser(data.email, data.user_id ?? data.id);
+      setUser(data);
+      setIsAuth(true);
+      chatStore.connect();
+    } catch (err) {
+      setError(err.message || "Ошибка входа через Google");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const signIn = async () => {
     if (!email.trim() || !password.trim()) {
@@ -98,11 +127,21 @@ export default function AuthScreen() {
         {loading ? (
           <ActivityIndicator size="large" style={styles.loader} />
         ) : (
-          <TouchableOpacity style={styles.btn} onPress={signIn}>
-            <Text style={styles.btnText}>
-              {step === "login" ? "Войти" : step === "register" ? "Отправить код" : "Подтвердить"}
-            </Text>
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity style={styles.btn} onPress={signIn}>
+              <Text style={styles.btnText}>
+                {step === "login" ? "Войти" : step === "register" ? "Отправить код" : "Подтвердить"}
+              </Text>
+            </TouchableOpacity>
+            {step === "login" && (
+              <TouchableOpacity
+                style={styles.btnGoogle}
+                onPress={signInWithGoogle}
+              >
+                <Text style={styles.btnGoogleText}>Войти через Google</Text>
+              </TouchableOpacity>
+            )}
+          </>
         )}
         <TouchableOpacity
           style={styles.link}
@@ -167,6 +206,20 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  btnGoogle: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 14,
+    alignItems: "center",
+    marginTop: 12,
+  },
+  btnGoogleText: {
+    color: "#333",
     fontSize: 16,
     fontWeight: "600",
   },

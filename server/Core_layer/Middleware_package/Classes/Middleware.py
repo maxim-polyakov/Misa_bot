@@ -27,7 +27,7 @@ class Middleware(IMiddleware.IMiddleware):
             public_paths = [
                 '/auth/register/', '/auth/register/send-code/', '/auth/register/verify/',
                 '/auth/login/', '/auth/forgot-password/send-code/', '/auth/forgot-password/verify/',
-                '/auth/oauth/google/', '/auth/oauth/callback', '/auth/oauth-token/',
+                '/auth/oauth/google/', '/auth/oauth/callback', '/auth/oauth-token/', '/auth/google-id-token/',
                 '/images/misaimg.png',
                 '/swagger/', '/swagger-ui/', '/swagger-ui/index.html', '/redoc/', '/swagger.json',
                 '/accounts/login/',  # DRF "Django Login" редирект — не блокировать

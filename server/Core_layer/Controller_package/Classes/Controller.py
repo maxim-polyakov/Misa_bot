@@ -788,6 +788,56 @@ class Controller(IController.IController):
         return JsonResponse({'jwt': jwt_token})
 
     @classmethod
+    def google_id_token(cls, request):
+        """
+        Вход через Google ID token (для Android/iOS).
+        POST /auth/google-id-token/ body: {"id_token": "..."}
+        """
+        if not GOOGLE_AUTH_AVAILABLE:
+            return cls.error_response("Google OAuth not configured", 500)
+
+        try:
+            data = json.loads(request.body) if request.body else {}
+            id_token_raw = data.get('id_token') or data.get('idToken')
+            if not id_token_raw:
+                return cls.error_response("id_token is required", 400)
+
+            client_ids = [c for c in [os.getenv('GOOGLE_CLIENT_ID'), os.getenv('GOOGLE_CLIENT_ID_ANDROID')] if c]
+            if not client_ids:
+                return cls.error_response("Google OAuth not configured", 500)
+
+            idinfo = None
+            for cid in client_ids:
+                try:
+                    idinfo = id_token.verify_oauth2_token(id_token_raw, google_requests.Request(), cid)
+                    break
+                except ValueError:
+                    continue
+            if idinfo is None:
+                return cls.error_response("Invalid or expired token", 401)
+
+            email = idinfo.get('email', '').strip().lower()
+            display_name = idinfo.get('name') or idinfo.get('given_name') or email.split('@')[0] or 'User'
+            picture = idinfo.get('picture')
+
+            if not email:
+                return cls.error_response("Email not found in token", 400)
+
+            user_id, user_email, display_name, picture = cls._get_or_create_google_user(email, display_name, picture)
+            jwt_token = cls.generate_jwt_token(user_id, user_email, display_name, picture)
+
+            return cls.success_response({
+                'token': jwt_token,
+                'user': {'id': user_id, 'email': user_email, 'display_name': display_name, 'picture': picture}
+            }, "OK", 200)
+        except ValueError as e:
+            logging.warning(f"Google id_token verify: {e}")
+            return cls.error_response("Invalid or expired token", 401)
+        except Exception as e:
+            logging.error(f"google_id_token error: {str(e)}", exc_info=True)
+            return cls.error_response(str(e), 500)
+
+    @classmethod
     def logout_all(cls, request):
         """Выход со всех устройств: помечает все токены пользователя как недействительные"""
         try:

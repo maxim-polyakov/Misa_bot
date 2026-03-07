@@ -1,6 +1,14 @@
 export default {
   expo: {
     name: "Misa AI",
+    plugins: [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          iosUrlScheme: process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME || "com.googleusercontent.apps.placeholder",
+        },
+      ],
+    ],
     slug: "misa-android",
     version: "1.0.0",
     orientation: "portrait",
@@ -25,6 +33,7 @@ export default {
     extra: {
       apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://misaapi.baxic.ru",
       apiWss: process.env.EXPO_PUBLIC_API_WSS || "wss://misaapi.baxic.ru/ws/chat/misa/",
+      googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || "",
       eas: {
         projectId: "f515349c-4ff2-4dd9-aaaa-3c9287c5c793",
       },

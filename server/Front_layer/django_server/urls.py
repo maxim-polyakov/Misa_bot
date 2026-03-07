@@ -27,6 +27,7 @@ api_patterns_for_schema = [
     path('auth/oauth/google/', views.oauth_google_redirect, name='oauth_google_redirect'),
     path('auth/oauth/callback', views.oauth_google_callback, name='oauth_google_callback'),
     path('auth/oauth-token/', views.oauth_token, name='oauth_token'),
+    path('auth/google-id-token/', views.google_id_token, name='google_id_token'),
     path('auth/check/', views.check, name='check'),
     path('auth/logout-all/', views.logout_all, name='logout_all'),
     path('api/chats/', views.chats_list_or_create, name='chats_list_or_create'),
@@ -65,6 +66,7 @@ urlpatterns = [
     path('auth/oauth/google/', views.oauth_google_redirect, name='oauth_google_redirect'),
     path('auth/oauth/callback', views.oauth_google_callback, name='oauth_google_callback'),
     path('auth/oauth-token/', views.oauth_token, name='oauth_token'),
+    path('auth/google-id-token/', views.google_id_token, name='google_id_token'),
     path('auth/check/', views.check, name="check"),
     path('auth/logout-all/', views.logout_all, name='logout_all'),
     # Swagger (drf-yasg)

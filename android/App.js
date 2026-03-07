@@ -3,6 +3,8 @@ import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { observer } from "mobx-react-lite";
 import { jwtDecode } from "jwt-decode";
+import Constants from "expo-constants";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { UserProvider, useUser } from "./src/context/UserContext";
 import { RootStoreProvider, useStores } from "./src/store/rootStoreContext";
 import { check } from "./src/api/userApi";
@@ -14,6 +16,13 @@ const AppContent = observer(() => {
   const { setUser, isAuth, setIsAuth } = useUser();
   const { chatStore } = useStores();
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const webClientId = Constants.expoConfig?.extra?.googleWebClientId;
+    if (webClientId) {
+      GoogleSignin.configure({ webClientId });
+    }
+  }, []);
 
   useEffect(() => {
     const init = async () => {

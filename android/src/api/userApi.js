@@ -52,6 +52,22 @@ export const verifyRegistrationCode = async (email, password, code) => {
   return { ...decoded, ...user };
 };
 
+export const loginWithGoogleIdToken = async (idToken) => {
+  const res = await fetch(`${API_URL}/auth/google-id-token/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id_token: idToken }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (data.status === "error") throw new Error(data.message || "Ошибка входа через Google");
+  const token = data.data?.token;
+  if (!token) throw new Error("Нет токена");
+  await storage.setItem("token", token);
+  const decoded = jwtDecode(token);
+  const user = data.data?.user || {};
+  return { ...decoded, ...user };
+};
+
 export const check = async () => {
   const token = await storage.getItem("token");
   if (!token) return null;
