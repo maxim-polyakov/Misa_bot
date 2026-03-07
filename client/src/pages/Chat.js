@@ -365,7 +365,7 @@ const Chat = observer(() => {
             )}
 
             {/* Контейнер для сообщений с прокруткой */}
-            <div className="messages-container" ref={messagesContainerRef}>
+            <div className={`messages-container ${chatStore.messages.length === 0 ? 'chat-empty' : ''}`} ref={messagesContainerRef}>
                 <div className="messages-content">
                     {chatStore.currentChat?.title && chatStore.messages.length > 0 && (
                         <h2 key={chatStore.currentChatId} className="chat-title-center">
@@ -374,9 +374,11 @@ const Chat = observer(() => {
                     )}
                     {chatStore.messages.length === 0 ? (
                         <div className="empty-chat">
-                            <div className="empty-icon">💬</div>
-                            <p>{t("startChat")}</p>
-                            <small>{t("startHint")}</small>
+                            <div className="empty-chat-header">
+                                <img src="/favicon.ico" alt="Misa" className="empty-chat-logo" />
+                                <h2 className="empty-chat-title">{t("startChat")}</h2>
+                            </div>
+                            <p className="empty-chat-hint">{t("startHint")}</p>
                         </div>
                     ) : (
                         chatStore.messages.map(renderMessage)

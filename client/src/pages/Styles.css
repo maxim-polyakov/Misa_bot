@@ -217,6 +217,11 @@ body {
     padding: 3.5rem 1.5rem 1.5rem;
 }
 
+.messages-container.chat-empty .messages-content {
+    flex: 1;
+    min-height: 100%;
+}
+
 .chat-title-center {
     text-align: center;
     font-size: 1.25rem;
@@ -908,7 +913,7 @@ body {
     cursor: not-allowed;
 }
 
-/* ===== EMPTY CHAT STYLES ===== */
+/* ===== EMPTY CHAT STYLES (как у DeepSeek — по центру, логотип слева) ===== */
 .empty-chat {
     text-align: center;
     color: var(--text-secondary);
@@ -918,26 +923,33 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    min-height: 50vh;
 }
 
-.empty-icon {
-    font-size: 3.5rem;
-    margin-bottom: 1.25rem;
-    opacity: 0.7;
-    color: var(--accent-color);
+.empty-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
 }
 
-.empty-chat p {
-    font-size: 1.25rem;
-    margin-top: 0.5rem;
+.empty-chat-logo {
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: contain;
+}
+
+.empty-chat-title {
+    font-size: 1.5rem;
+    font-weight: 600;
     color: var(--text-primary);
-    font-weight: 500;
+    margin: 0;
 }
 
-.empty-chat small {
+.empty-chat-hint {
     font-size: 0.9375rem;
     color: var(--text-secondary);
-    margin-top: 0.25rem;
+    margin-top: 0.5rem;
 }
 
 /* ===== ERROR MESSAGE STYLES ===== */
@@ -2332,11 +2344,16 @@ button:active {
         padding: 2rem 1rem;
     }
 
-    .empty-icon {
-        font-size: 2rem;
+    .empty-chat-logo {
+        width: 2rem;
+        height: 2rem;
     }
 
-    .empty-chat p {
+    .empty-chat-title {
+        font-size: 1.125rem;
+    }
+
+    .empty-chat-hint {
         font-size: 0.8rem;
     }
 
