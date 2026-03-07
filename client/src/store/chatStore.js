@@ -763,6 +763,9 @@ class ChatStore {
         else if (data.type === 'ping') {
             this.socket?.readyState === WebSocket.OPEN && this.socket.send(JSON.stringify({ type: 'pong' }));
         }
+        else if (data.type === 'pong') {
+            // keepalive — игнорируем
+        }
         else if (data.type === 'messages_cleared') {
             const chatId = data.chat_id;
             const chat = this.chats.find(c => c.id === chatId);
