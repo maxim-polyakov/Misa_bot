@@ -93,6 +93,20 @@ class ChatService:
             logging.error(f"ChatService.save_message error: {str(e)}")
 
     @classmethod
+    def get_last_message_id(cls, chat_id):
+        """ID последнего сообщения в чате."""
+        try:
+            df = DB_Communication.DB_Communication().execute_query(
+                'SELECT id FROM chat.chat_messages WHERE chat_id = %s ORDER BY timestamp DESC LIMIT 1',
+                (chat_id,)
+            )
+            if df is not None and not df.empty:
+                return int(df.iloc[0]['id'])
+        except Exception as e:
+            logging.error(f"ChatService.get_last_message_id error: {str(e)}")
+        return None
+
+    @classmethod
     def get_message_by_id(cls, chat_id, message_id):
         """Получить сообщение по id."""
         try:

@@ -142,30 +142,43 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
 
             def _do_regenerate():
-                msg = ChatService.get_message_by_id(chat_id, message_id)
-                if not msg or str(msg.get('user', '')).strip() != 'Misa':
-                    return None, False
-                msgs = ChatService.get_messages(chat_id)
-                idx = next((i for i, m in enumerate(msgs) if str(m['id']) == str(message_id)), -1)
-                if idx < 1:
-                    return None, False
-                prev = msgs[idx - 1]
-                if str(prev.get('user', '')).strip() == 'Misa':
-                    return None, False
-                user_content = str(prev.get('content', '')).strip()
-                if not user_content:
-                    return None, False
-                GptAnswer.GptAnswer.import_history_from_db(user, chat_id, exclude_last=2)
-                response = MessageMonitorServer.MessageMonitorServer(user=user, message=user_content, chat_id=chat_id).monitor()
-                if not response:
-                    return None, False
-                cleaned = _clean_command_response(response)
-                msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else response)
-                is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned)
-                ChatService.update_message_content(chat_id, message_id, msg_to_save, is_img)
-                return (msg_to_save, is_img), True
+                try:
+                    msg = ChatService.get_message_by_id(chat_id, message_id)
+                    db_message_id = message_id
+                    if not msg:
+                        msgs_db = ChatService.get_messages(chat_id)
+                        if len(msgs_db) >= 2 and str(msgs_db[-1].get('user', '')).strip() == 'Misa':
+                            db_message_id = str(msgs_db[-1]['id'])
+                            msg = ChatService.get_message_by_id(chat_id, db_message_id)
+                        if not msg:
+                            logger.warning(f"Regenerate: message {message_id} not found in chat {chat_id}")
+                            return None, False, "Сообщение не найдено в БД (обновите чат и попробуйте снова)"
+                    if str(msg.get('user', '')).strip() != 'Misa':
+                        return None, False, "Сообщение не от Misa"
+                    msgs = ChatService.get_messages(chat_id)
+                    idx = next((i for i, m in enumerate(msgs) if str(m['id']) == str(db_message_id)), -1)
+                    if idx < 1:
+                        return None, False, "Нет предыдущего сообщения пользователя"
+                    prev = msgs[idx - 1]
+                    if str(prev.get('user', '')).strip() == 'Misa':
+                        return None, False, "Предыдущее сообщение не от пользователя"
+                    user_content = str(prev.get('content', '')).strip()
+                    if not user_content:
+                        return None, False, "Пустой запрос пользователя"
+                    GptAnswer.GptAnswer.import_history_from_db(user, chat_id, exclude_last=2)
+                    response = MessageMonitorServer.MessageMonitorServer(user=user, message=user_content, chat_id=chat_id).monitor()
+                    if not response:
+                        return None, False, "Пустой ответ от модели"
+                    cleaned = _clean_command_response(response)
+                    msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else response)
+                    is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned)
+                    ChatService.update_message_content(chat_id, db_message_id, msg_to_save, is_img)
+                    return (msg_to_save, is_img), True, None
+                except Exception as e:
+                    logger.exception(f"Regenerate _do_regenerate: {e}")
+                    return None, False, str(e)
 
-            result, ok = await database_sync_to_async(_do_regenerate)()
+            result, ok, err_msg = await database_sync_to_async(_do_regenerate)()
             if ok and result:
                 msg_to_send, is_img = result
                 if self.is_file_path(msg_to_send):
@@ -187,6 +200,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'type': 'error',
                     'chat_id': chat_id,
                     'message': 'Ошибка перегенерации',
+                    'detail': err_msg or 'Неизвестная ошибка',
                 }, ensure_ascii=False))
         except Exception as e:
             import traceback
