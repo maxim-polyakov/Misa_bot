@@ -11,7 +11,7 @@ import SettingsModal from "./SettingsModal";
 
 const Sidebar = observer(() => {
     const { user } = useContext(Context);
-    const { t } = useLocale();
+    const { t, locale } = useLocale();
     const { chatStore } = useStores();
     const { closeSidebar, sidebarExpanded, toggleSidebar } = useMenuToggle();
     const navigate = useNavigate();
@@ -164,13 +164,18 @@ const Sidebar = observer(() => {
                     <div className="sidebar-chats">
                         {(() => {
                             const groups = chatStore.getChatsGroupedByPeriod();
-                            const sections = [
+                            const monthFormatter = new Intl.DateTimeFormat(locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'long', year: 'numeric' });
+                            const fixedSections = [
                                 { key: 'pinned', label: t('pinned'), chats: groups.pinned },
                                 { key: 'today', label: t('today'), chats: groups.today },
                                 { key: 'yesterday', label: t('yesterday'), chats: groups.yesterday },
                                 { key: 'last7Days', label: t('last7Days'), chats: groups.last7Days },
-                                { key: 'last30Days', label: t('last30Days'), chats: groups.last30Days },
                             ];
+                            const olderSections = (groups.olderByMonth || []).map(({ key, year, month, chats }) => {
+                                const label = monthFormatter.format(new Date(year, month, 1));
+                                return { key: `older-${key}`, label: label.charAt(0).toUpperCase() + label.slice(1), chats };
+                            });
+                            const sections = [...fixedSections, ...olderSections];
                             return sections
                                 .filter(({ chats }) => chats.length > 0)
                                 .map(({ key, label, chats }) => (

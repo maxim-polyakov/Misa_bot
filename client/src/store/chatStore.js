@@ -357,7 +357,7 @@ class ChatStore {
         const thirtyDaysAgo = new Date(todayStart);
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const groups = { pinned: [], today: [], yesterday: [], last7Days: [], last30Days: [] };
+        const groups = { pinned: [], today: [], yesterday: [], last7Days: [], olderByMonth: {} };
         const pinnedSet = new Set(this.pinnedChatIds);
 
         for (const chat of this.chats) {
@@ -375,9 +375,20 @@ class ChatStore {
                 groups.yesterday.push(chat);
             } else if (date >= sevenDaysAgo) {
                 groups.last7Days.push(chat);
-            } else if (date >= thirtyDaysAgo) {
-                groups.last30Days.push(chat);
+            } else if (date < thirtyDaysAgo) {
+                const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                if (!groups.olderByMonth[key]) groups.olderByMonth[key] = { year: date.getFullYear(), month: date.getMonth(), chats: [] };
+                groups.olderByMonth[key].chats.push(chat);
             }
+        }
+
+        // Сортировка чатов внутри каждой месячной группы (новые сверху)
+        for (const key of Object.keys(groups.olderByMonth)) {
+            groups.olderByMonth[key].chats.sort((a, b) => {
+                const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                return db - da;
+            });
         }
 
         // Порядок закреплённых — по порядку закрепления (первый закреплённый сверху)
@@ -386,6 +397,11 @@ class ChatStore {
             const ib = this.pinnedChatIds.indexOf(b.id);
             return (ia >= 0 ? ia : 999) - (ib >= 0 ? ib : 999);
         });
+
+        // Преобразуем olderByMonth в массив, отсортированный по дате (новые месяцы сверху)
+        groups.olderByMonth = Object.entries(groups.olderByMonth)
+            .sort(([a], [b]) => b.localeCompare(a))
+            .map(([key, val]) => ({ key, year: val.year, month: val.month, chats: val.chats }));
 
         return groups;
     }

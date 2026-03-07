@@ -1119,6 +1119,7 @@ body {
 
 .sidebar-chats {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     margin: 0.5rem 0;
@@ -1126,6 +1127,23 @@ body {
     flex-direction: column;
     gap: 0.75rem;
     min-width: 0;
+}
+
+.sidebar-chats::-webkit-scrollbar {
+    width: 0.375rem;
+}
+
+.sidebar-chats::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-chats::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 0.25rem;
+}
+
+.sidebar-chats::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
 }
 
 .sidebar-chats-group {
