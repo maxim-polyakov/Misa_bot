@@ -32,13 +32,6 @@ const Chat = observer(() => {
         scrollToBottom();
     }, [chatStore.messages, chatStore.isChatLoading(chatStore.currentChatId)]);
 
-    // Подгрузка чатов из БД при открытии страницы (на случай если первая загрузка не прошла)
-    useEffect(() => {
-        if (chatStore.isAuth) {
-            chatStore.loadChats();
-        }
-    }, [chatStore.isAuth]);
-
     // Подключаемся к группе чата при открытии — чтобы получать broadcast на других устройствах
     useEffect(() => {
         if (chatStore.currentChatId && chatStore.isConnected) {
