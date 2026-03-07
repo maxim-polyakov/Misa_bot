@@ -89,6 +89,8 @@ else:
         },
     }
 CORS_ALLOW_ALL_ORIGINS = True
+# Разрешённые клиенты: web (client/), android (android/)
+ALLOWED_CLIENTS = ['web', 'android']
 
 # REST Framework: отключаем SessionAuthentication по умолчанию для API
 # (иначе Swagger и другие API показывают Django Login)
