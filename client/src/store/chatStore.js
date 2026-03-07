@@ -40,6 +40,13 @@ class ChatStore {
         }
     }
 
+    _clearPingInterval() {
+        if (this._pingIntervalId) {
+            clearInterval(this._pingIntervalId);
+            this._pingIntervalId = null;
+        }
+    }
+
     _setupVisibilityReconnect() {
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState !== 'visible') return;
@@ -617,6 +624,7 @@ class ChatStore {
 
         try {
             const wsUrl = process.env.REACT_APP_API_WSS;
+            this._clearPingInterval();
             if (this.socket) {
                 this.socket.close(1000, "Reconnecting");
                 this.socket = null;
@@ -630,6 +638,12 @@ class ChatStore {
                 this.reconnectAttempts = 0;
                 this.reconnectDelay = 1000;
                 console.log("WebSocket соединение установлено");
+                this._clearPingInterval();
+                this._pingIntervalId = setInterval(() => {
+                    if (this.socket?.readyState === WebSocket.OPEN) {
+                        this.socket.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 30000);
             };
 
             this.socket.onmessage = (event) => {
@@ -642,6 +656,7 @@ class ChatStore {
             };
 
             this.socket.onclose = (event) => {
+                this._clearPingInterval();
                 this.isConnected = false;
                 this.isConnecting = false;
                 console.log("WebSocket соединение закрыто", event.code, event.reason);
@@ -744,6 +759,9 @@ class ChatStore {
             if (this.currentChatId) {
                 this._loadChatMessagesViaWebSocket(this.currentChatId);
             }
+        }
+        else if (data.type === 'ping') {
+            this.socket?.readyState === WebSocket.OPEN && this.socket.send(JSON.stringify({ type: 'pong' }));
         }
         else if (data.type === 'messages_cleared') {
             const chatId = data.chat_id;
@@ -859,6 +877,7 @@ class ChatStore {
     };
 
     disconnect() {
+        this._clearPingInterval();
         if (this.socket) {
             this.socket.close(1000, "Пользователь закрыл соединение");
             this.socket = null;

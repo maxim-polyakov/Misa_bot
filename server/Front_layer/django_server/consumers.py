@@ -26,18 +26,41 @@ def _clean_command_response(response):
     return [p.strip() for p in parts if p.strip()]
 
 
+PING_INTERVAL = 30  # секунд — keepalive для предотвращения разрыва при неактивности
+
+
 class ChatConsumer(AsyncWebsocketConsumer):
     """WebSocket consumer с загрузкой истории и broadcast на все устройства."""
 
     async def connect(self):
         self.chat_groups = set()  # chat_id, к которым подключен
+        self._ping_task = None
         await self.accept()
         await self.send(text_data=json.dumps({
             'type': 'connection_established',
             'message': 'WebSocket соединение установлено'
         }))
+        self._ping_task = asyncio.create_task(self._ping_loop())
+
+    async def _ping_loop(self):
+        """Периодическая отправка ping для keepalive (прокси, мобильные браузеры)."""
+        try:
+            while True:
+                await asyncio.sleep(PING_INTERVAL)
+                try:
+                    await self.send(text_data=json.dumps({'type': 'ping'}))
+                except Exception:
+                    break
+        except asyncio.CancelledError:
+            pass
 
     async def disconnect(self, close_code):
+        if self._ping_task:
+            self._ping_task.cancel()
+            try:
+                await self._ping_task
+            except asyncio.CancelledError:
+                pass
         for chat_id in list(self.chat_groups):
             await self.channel_layer.group_discard(f"chat_{chat_id}", self.channel_name)
 
@@ -76,6 +99,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         chat_id = data.get('chat_id')
                         if chat_id:
                             await self._join_chat_group(chat_id)
+                        return
+                    if msg_type == 'pong':
+                        return
+                    if msg_type == 'ping':
+                        await self.send(text_data=json.dumps({'type': 'pong'}))
                         return
                     if msg_type == 'clear_messages':
                         chat_id = data.get('chat_id')
