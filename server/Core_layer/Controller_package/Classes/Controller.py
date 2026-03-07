@@ -865,7 +865,10 @@ class Controller(IController.IController):
                 "SELECT id, title, created_at FROM chat.chats WHERE user_id = %s ORDER BY created_at DESC",
                 (user_id,)
             )
-            if df is None or df.empty:
+            if df is None:
+                logging.error("chats_list: execute_query returned None (DB error)")
+                return cls.error_response("Database error", 500)
+            if df.empty:
                 return cls.success_response([])
             chats = []
             for _, row in df.iterrows():
