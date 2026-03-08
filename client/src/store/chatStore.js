@@ -801,10 +801,10 @@ class ChatStore {
         }
         else if (data.type === 'message_updated') {
             const chat = this.chats.find(c => c.id === data.chat_id);
-            const msg = chat?.messages?.find(m => m.id === data.message_id);
-            if (msg) {
-                msg.content = data.message || msg.content;
-                msg.isImage = data.isImage ?? msg.isImage;
+            const idx = chat?.messages?.findIndex(m => m.id === data.message_id);
+            if (chat && idx >= 0) {
+                const msg = chat.messages[idx];
+                chat.messages[idx] = { ...msg, content: data.message ?? msg.content, isImage: data.isImage ?? msg.isImage };
                 this.loadingChatIds = this.loadingChatIds.filter(id => id !== data.chat_id);
                 this.saveChats();
             }

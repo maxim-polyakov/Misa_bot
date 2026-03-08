@@ -16,7 +16,10 @@ import {
   useWindowDimensions,
   Alert,
   AppState,
+  Modal,
+  Pressable,
 } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
 import { useStores } from "../store/rootStoreContext";
@@ -83,6 +86,9 @@ function ChatScreen() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [copiedMsgId, setCopiedMsgId] = useState(null);
+  const [feedbackModalMsgId, setFeedbackModalMsgId] = useState(null);
+  const [feedbackCategories, setFeedbackCategories] = useState([]);
+  const [feedbackComment, setFeedbackComment] = useState("");
   const sidebarAnim = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -149,6 +155,13 @@ function ChatScreen() {
     } catch (e) {}
   };
 
+  const FEEDBACK_CATEGORIES = [
+    { id: "harmful", label: "Вредно / Небезопасно" },
+    { id: "fake", label: "Неверно" },
+    { id: "unhelpful", label: "Бесполезно" },
+    { id: "others", label: "Другое" },
+  ];
+
   const handleLike = (msg) => {
     const current = chatStore.getMessageFeedback(msg.id);
     chatStore.setMessageFeedback(msg.id, current === "like" ? null : "like");
@@ -156,7 +169,39 @@ function ChatScreen() {
 
   const handleDislike = (msg) => {
     const current = chatStore.getMessageFeedback(msg.id);
-    chatStore.setMessageFeedback(msg.id, current === "dislike" ? null : "dislike");
+    if (current === "dislike") {
+      chatStore.setMessageFeedback(msg.id, null);
+    } else {
+      setFeedbackModalMsgId(msg.id);
+      setFeedbackCategories(msg.feedbackCategories || []);
+      setFeedbackComment(msg.feedbackComment || "");
+    }
+  };
+
+  const toggleFeedbackCategory = (id) => {
+    setFeedbackCategories((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
+  };
+
+  const handleFeedbackSubmit = async () => {
+    if (feedbackModalMsgId) {
+      await chatStore.setMessageFeedback(
+        feedbackModalMsgId,
+        "dislike",
+        feedbackCategories,
+        feedbackComment
+      );
+      setFeedbackModalMsgId(null);
+      setFeedbackCategories([]);
+      setFeedbackComment("");
+    }
+  };
+
+  const handleFeedbackCancel = () => {
+    setFeedbackModalMsgId(null);
+    setFeedbackCategories([]);
+    setFeedbackComment("");
   };
 
   const handleRegenerate = (msg) => {
@@ -238,13 +283,21 @@ function ChatScreen() {
                 style={[styles.msgActionBtn, feedback === "like" && styles.msgActionActive]}
                 onPress={() => handleLike(item)}
               >
-                <Text style={styles.msgActionIcon}>👍</Text>
+                <MaterialCommunityIcons
+                  name={feedback === "like" ? "thumb-up" : "thumb-up-outline"}
+                  size={18}
+                  color={feedback === "like" ? COLORS.accentColor : COLORS.textSecondary}
+                />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.msgActionBtn, feedback === "dislike" && styles.msgActionActive]}
                 onPress={() => handleDislike(item)}
               >
-                <Text style={styles.msgActionIcon}>👎</Text>
+                <MaterialCommunityIcons
+                  name={feedback === "dislike" ? "thumb-down" : "thumb-down-outline"}
+                  size={18}
+                  color={feedback === "dislike" ? "#ef4444" : COLORS.textSecondary}
+                />
               </TouchableOpacity>
             </View>
           )}
@@ -451,6 +504,57 @@ function ChatScreen() {
         </KeyboardAvoidingView>
       </View>
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      <Modal
+        visible={!!feedbackModalMsgId}
+        transparent
+        animationType="fade"
+        onRequestClose={handleFeedbackCancel}
+      >
+        <Pressable style={styles.feedbackOverlay} onPress={handleFeedbackCancel}>
+          <Pressable style={styles.feedbackModal} onPress={() => {}}>
+            <Text style={styles.feedbackTitle}>Обратная связь</Text>
+            <View style={styles.feedbackCategories}>
+              {FEEDBACK_CATEGORIES.map(({ id, label }) => (
+                <TouchableOpacity
+                  key={id}
+                  style={[
+                    styles.feedbackPill,
+                    feedbackCategories.includes(id) && styles.feedbackPillActive,
+                  ]}
+                  onPress={() => toggleFeedbackCategory(id)}
+                >
+                  <Text
+                    style={[
+                      styles.feedbackPillText,
+                      feedbackCategories.includes(id) && styles.feedbackPillTextActive,
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TextInput
+              style={styles.feedbackTextarea}
+              placeholder="Мы ценим вашу обратную связь. Поделитесь комментариями и предложениями."
+              placeholderTextColor={COLORS.textSecondary}
+              value={feedbackComment}
+              onChangeText={setFeedbackComment}
+              multiline
+              numberOfLines={4}
+            />
+            <View style={styles.feedbackActions}>
+              <TouchableOpacity style={styles.feedbackBtnCancel} onPress={handleFeedbackCancel}>
+                <Text style={styles.feedbackBtnCancelText}>Отмена</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.feedbackBtnSubmit} onPress={handleFeedbackSubmit}>
+                <Text style={styles.feedbackBtnSubmitText}>Отправить</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -841,6 +945,90 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   typingText: { color: COLORS.textSecondary, fontSize: 14 },
+  feedbackOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  feedbackModal: {
+    backgroundColor: COLORS.secondaryBg,
+    borderRadius: 16,
+    padding: 20,
+    width: "100%",
+    maxWidth: 360,
+    borderWidth: 1,
+    borderColor: COLORS.borderColor,
+  },
+  feedbackTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: COLORS.textPrimary,
+    marginBottom: 16,
+  },
+  feedbackCategories: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 16,
+  },
+  feedbackPill: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: COLORS.borderColor,
+  },
+  feedbackPillActive: {
+    backgroundColor: "rgba(74,144,226,0.25)",
+    borderColor: COLORS.accentColor,
+  },
+  feedbackPillText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  feedbackPillTextActive: {
+    color: COLORS.accentColor,
+  },
+  feedbackTextarea: {
+    borderWidth: 1,
+    borderColor: COLORS.borderColor,
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 15,
+    color: COLORS.textPrimary,
+    backgroundColor: COLORS.primaryBg,
+    minHeight: 100,
+    textAlignVertical: "top",
+    marginBottom: 16,
+  },
+  feedbackActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 12,
+  },
+  feedbackBtnCancel: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  feedbackBtnCancelText: {
+    color: COLORS.textSecondary,
+    fontSize: 16,
+  },
+  feedbackBtnSubmit: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.accentColor,
+  },
+  feedbackBtnSubmitText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });
 
 export default observer(ChatScreen);

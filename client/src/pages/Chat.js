@@ -156,7 +156,7 @@ const Chat = observer(() => {
             ? `${process.env.REACT_APP_API_URL}${messageContent}`
             : messageContent;
 
-        const cacheKey = `img_${msg.id}`;
+        const cacheKey = `img_${msg.id}_${imageUrl}`;
 
         const renderContent = () => {
             if (wasImage) {
