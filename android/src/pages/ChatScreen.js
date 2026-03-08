@@ -38,6 +38,43 @@ const COLORS = {
   sidebarBg: "#2a2a2d",
 };
 
+const getBlockType = (language) => {
+  const lang = (language || "plaintext").toLowerCase();
+  const typeMap = {
+    json: "json", yaml: "yaml", yml: "yaml", xml: "xml",
+    bash: "bash", sh: "bash", shell: "bash", sql: "sql",
+    md: "md", markdown: "md", diff: "diff",
+    warning: "warning", warn: "warning", error: "error", err: "error",
+    quote: "quote", citation: "quote", output: "output", log: "output",
+  };
+  return typeMap[lang] || "code";
+};
+
+const parseMessageContent = (content) => {
+  if (!content || typeof content !== "string") return [{ type: "text", content: "" }];
+  const parts = [];
+  const regex = /```\s*([\w+-]*)\s*\r?\n([\s\S]*?)```/g;
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: "text", content: content.slice(lastIndex, match.index) });
+    }
+    const language = match[1] || "plaintext";
+    parts.push({
+      type: "code",
+      language,
+      blockType: getBlockType(language),
+      content: match[2].trim(),
+    });
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < content.length) {
+    parts.push({ type: "text", content: content.slice(lastIndex) });
+  }
+  return parts.length ? parts : [{ type: "text", content }];
+};
+
 function ChatScreen() {
   const { chatStore } = useStores();
   const { user, setIsAuth } = useUser();
@@ -126,6 +163,41 @@ function ChatScreen() {
     chatStore.regenerateReply(msg.id);
   };
 
+  const renderMessageContent = (content, isUser) => {
+    const parsed = parseMessageContent(content);
+    return (
+      <View style={styles.msgContentWrap}>
+        {parsed.map((part, i) =>
+          part.type === "text" ? (
+            <Text key={i} style={[styles.msgText, isUser && styles.msgTextUser]}>
+              {part.content}
+            </Text>
+          ) : (
+            <View
+              key={i}
+              style={[
+                styles.codeBlock,
+                styles[`codeBlock_${part.blockType}`] || styles.codeBlock_code,
+                isUser && styles.codeBlockUser,
+              ]}
+            >
+              <View
+                style={[
+                  styles.codeBlockHeaderWrap,
+                  styles[`codeBlockHeader_${part.blockType}`] || styles.codeBlockHeader_code,
+                  isUser && styles.codeBlockHeaderWrapUser,
+                ]}
+              >
+                <Text style={styles.codeBlockHeader}>{part.language}</Text>
+              </View>
+              <Text style={[styles.msgText, styles.codeBlockText, isUser && styles.codeBlockTextUser]}>{part.content}</Text>
+            </View>
+          )
+        )}
+      </View>
+    );
+  };
+
   const renderMessage = ({ item }) => {
     const isUser = item.user !== "Misa";
     const isImage = item.isImage || (item.content && /^https?:\/\//.test(item.content));
@@ -143,7 +215,7 @@ function ChatScreen() {
               resizeMode="contain"
             />
           ) : (
-            <Text style={[styles.msgText, isUser && styles.msgTextUser]}>{item.content}</Text>
+            renderMessageContent(item.content, isUser)
           )}
           <Text style={styles.msgTime}>
             {new Date(item.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -576,8 +648,71 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.borderColor,
   },
+  msgContentWrap: { gap: 8 },
   msgText: { fontSize: 16, color: COLORS.textPrimary },
   msgTextUser: { color: "#fff" },
+  codeBlock: {
+    backgroundColor: "#0d1117",
+    borderWidth: 2,
+    borderColor: COLORS.accentColor,
+    borderRadius: 8,
+    marginTop: 12,
+    marginBottom: 4,
+    overflow: "hidden",
+  },
+  codeBlockUser: {
+    backgroundColor: "rgba(0,0,0,0.4)",
+    borderColor: "rgba(255,255,255,0.25)",
+  },
+  codeBlockHeaderWrap: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "rgba(74,144,226,0.15)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(74,144,226,0.3)",
+  },
+  codeBlockHeader: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+  },
+  codeBlockHeaderWrapUser: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderBottomColor: "rgba(255,255,255,0.15)",
+  },
+  codeBlockHeader_code: {},
+  codeBlockHeader_json: { backgroundColor: "rgba(167,139,250,0.15)", borderBottomColor: "rgba(167,139,250,0.3)" },
+  codeBlockHeader_yaml: { backgroundColor: "rgba(52,211,153,0.15)", borderBottomColor: "rgba(52,211,153,0.3)" },
+  codeBlockHeader_xml: { backgroundColor: "rgba(245,158,11,0.15)", borderBottomColor: "rgba(245,158,11,0.3)" },
+  codeBlockHeader_bash: { backgroundColor: "rgba(249,115,22,0.15)", borderBottomColor: "rgba(249,115,22,0.3)" },
+  codeBlockHeader_sql: { backgroundColor: "rgba(34,197,94,0.15)", borderBottomColor: "rgba(34,197,94,0.3)" },
+  codeBlockHeader_md: { backgroundColor: "rgba(59,130,246,0.15)", borderBottomColor: "rgba(59,130,246,0.3)" },
+  codeBlockHeader_diff: { backgroundColor: "rgba(107,114,128,0.2)", borderBottomColor: "rgba(107,114,128,0.3)" },
+  codeBlockHeader_warning: { backgroundColor: "rgba(245,158,11,0.2)", borderBottomColor: "rgba(245,158,11,0.4)" },
+  codeBlockHeader_error: { backgroundColor: "rgba(239,68,68,0.2)", borderBottomColor: "rgba(239,68,68,0.4)" },
+  codeBlockHeader_quote: { backgroundColor: "rgba(148,163,184,0.1)", borderBottomColor: "rgba(148,163,184,0.2)" },
+  codeBlockHeader_output: { backgroundColor: "rgba(100,116,139,0.15)", borderBottomColor: "rgba(100,116,139,0.25)" },
+  codeBlock_code: {},
+  codeBlock_json: { borderColor: "#a78bfa" },
+  codeBlock_yaml: { borderColor: "#34d399" },
+  codeBlock_xml: { borderColor: "#f59e0b" },
+  codeBlock_bash: { borderColor: "#f97316" },
+  codeBlock_sql: { borderColor: "#22c55e" },
+  codeBlock_md: { borderColor: "#3b82f6" },
+  codeBlock_diff: { borderColor: "#6b7280" },
+  codeBlock_warning: { borderColor: "#f59e0b" },
+  codeBlock_error: { borderColor: "#ef4444" },
+  codeBlock_quote: { borderColor: "#94a3b8", borderLeftWidth: 4 },
+  codeBlock_output: { borderColor: "#64748b" },
+  codeBlockText: {
+    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+    fontSize: 13,
+    lineHeight: 22,
+    color: "#e6edf3",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  codeBlockTextUser: { color: "rgba(255,255,255,0.95)" },
   msgTime: {
     fontSize: 11,
     color: COLORS.textSecondary,
