@@ -15,6 +15,7 @@ import {
   ScrollView,
   useWindowDimensions,
   Alert,
+  AppState,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
@@ -64,6 +65,15 @@ function ChatScreen() {
       chatStore.ensureJoinedToChat(chatStore.currentChatId);
     }
   }, [chatStore.currentChatId, chatStore.isConnected]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active" && chatStore.isAuth) {
+        chatStore.loadChats();
+      }
+    });
+    return () => sub?.remove?.();
+  }, [chatStore.isAuth]);
 
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });
@@ -178,15 +188,19 @@ function ChatScreen() {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <View style={[styles.emptyLogoWrap, isSmallScreen && styles.emptyLogoWrapSmall]}>
-        <Image
-          source={require("../../assets/misa.png")}
-          style={[styles.emptyLogo, isSmallScreen && styles.emptyLogoSmall]}
-          resizeMode="cover"
-        />
+      <View style={[styles.emptyHeader, isSmallScreen && styles.emptyHeaderSmall]}>
+        <View style={[styles.emptyLogoWrap, isSmallScreen && styles.emptyLogoWrapSmall]}>
+          <Image
+            source={require("../../assets/misa.png")}
+            style={[styles.emptyLogo, isSmallScreen && styles.emptyLogoSmall]}
+            resizeMode="contain"
+          />
+        </View>
+        <View style={styles.emptyTextBlock}>
+          <Text style={[styles.emptyTitle, isSmallScreen && styles.emptyTitleSmall]}>Начните общение с Misa AI</Text>
+          <Text style={[styles.emptyHint, isSmallScreen && styles.emptyHintSmall]}>Задайте вопрос или поделитесь мыслями</Text>
+        </View>
       </View>
-      <Text style={[styles.emptyTitle, isSmallScreen && styles.emptyTitleSmall]}>Начните общение с Misa AI</Text>
-      <Text style={[styles.emptyHint, isSmallScreen && styles.emptyHintSmall]}>Задайте вопрос или поделитесь мыслями</Text>
     </ScrollView>
   );
 
@@ -217,7 +231,7 @@ function ChatScreen() {
           <Image
             source={require("../../assets/misa.png")}
             style={styles.sidebarLogo}
-            resizeMode="cover"
+            resizeMode="contain"
           />
         </View>
         <Text style={styles.sidebarBrand}>Misa AI Чат</Text>
@@ -395,13 +409,12 @@ const styles = StyleSheet.create({
   },
   sidebarLogoWrap: {
     width: 28,
-    height: 28,
-    borderRadius: 14,
+    height: 42,
     overflow: "hidden",
   },
   sidebarLogo: {
     width: 28,
-    height: 28,
+    height: 42,
   },
   sidebarBrand: {
     flex: 1,
@@ -598,42 +611,49 @@ const styles = StyleSheet.create({
   emptyChatSmall: {
     paddingVertical: 16,
   },
+  emptyHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    maxWidth: 340,
+  },
+  emptyHeaderSmall: {
+    gap: 12,
+  },
   emptyLogoWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 80,
+    height: 120,
     overflow: "hidden",
-    marginBottom: 16,
   },
   emptyLogoWrapSmall: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginBottom: 12,
+    width: 64,
+    height: 96,
   },
   emptyLogo: {
-    width: 48,
-    height: 48,
+    width: 80,
+    height: 120,
   },
   emptyLogoSmall: {
-    width: 40,
-    height: 40,
+    width: 64,
+    height: 96,
+  },
+  emptyTextBlock: {
+    flex: 1,
+    minWidth: 0,
   },
   emptyTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "600",
     color: COLORS.textPrimary,
-    marginBottom: 8,
-    textAlign: "center",
+    marginBottom: 6,
   },
   emptyTitleSmall: {
-    fontSize: 20,
-    marginBottom: 6,
+    fontSize: 18,
+    marginBottom: 4,
   },
   emptyHint: {
     fontSize: 15,
     color: COLORS.textSecondary,
-    textAlign: "center",
   },
   emptyHintSmall: {
     fontSize: 14,

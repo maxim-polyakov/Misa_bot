@@ -63,6 +63,7 @@ class ChatStore {
                 this.reconnectDelay = 1000;
                 setTimeout(() => this.connect(), 300);
             }
+            if (API_URL) setTimeout(() => this.loadChats(), 500);
         });
     }
 
@@ -260,7 +261,14 @@ class ChatStore {
             }
             this._loadChatsInProgress = true;
             try {
-                const chatsData = await apiFetch('/api/chats/');
+                let chatsData;
+                try {
+                    chatsData = await apiFetch('/api/chats/');
+                } catch (firstErr) {
+                    console.warn("Повтор загрузки чатов через 1 сек:", firstErr?.message);
+                    await new Promise(r => setTimeout(r, 1000));
+                    chatsData = await apiFetch('/api/chats/');
+                }
                 if (Array.isArray(chatsData) && chatsData.length > 0) {
                     const chatIds = new Set(chatsData.map(c => c.id));
                     this.pinnedChatIds = this.pinnedChatIds.filter(id => chatIds.has(id));

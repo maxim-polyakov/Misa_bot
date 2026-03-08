@@ -115,7 +115,7 @@ class ChatStore {
     }
   }
 
-  async loadChats() {
+  async loadChats(retryCount = 0) {
     const userId = await this.getCurrentUserId();
     if (!userId) {
       this.chats = [];
@@ -123,9 +123,18 @@ class ChatStore {
       return;
     }
     if (!API_URL) return;
+    const maxRetries = 2;
     try {
       const chatsData = await apiFetch("/api/chats/");
-      if (Array.isArray(chatsData) && chatsData.length > 0) {
+      if (!Array.isArray(chatsData)) {
+        console.warn("loadChats: unexpected response format", typeof chatsData);
+        if (retryCount < maxRetries) {
+          await new Promise((r) => setTimeout(r, 1000));
+          return this.loadChats(retryCount + 1);
+        }
+        return;
+      }
+      if (chatsData.length > 0) {
         this.chats = chatsData.map((c) => ({
           id: c.id,
           title: c.title || "Новый чат",
@@ -141,8 +150,13 @@ class ChatStore {
       }
     } catch (e) {
       console.warn("Ошибка загрузки чатов:", e);
-      this.chats = [];
-      await this.newChat();
+      if (retryCount < maxRetries) {
+        await new Promise((r) => setTimeout(r, 1000));
+        return this.loadChats(retryCount + 1);
+      }
+      if (this.chats.length === 0) {
+        await this.newChat();
+      }
     }
   }
 
