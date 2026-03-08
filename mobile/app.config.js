@@ -29,6 +29,7 @@ export default {
     },
     android: {
       package: "ru.baxic.misa",
+      versionCode: 2,
       softwareKeyboardLayoutMode: "resize",
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",
