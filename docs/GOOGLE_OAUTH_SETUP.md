@@ -73,5 +73,7 @@ https://console.cloud.google.com/apis/credentials
    - Package name: `ru.baxic.misa` (bundleIdentifier из app.config.js)
    - (опционально) App Store ID, Team ID, Key ID для production
 2. Добавьте в `server/.env`: `GOOGLE_CLIENT_ID_IOS` — iOS Client ID из Google Console.
-3. Добавьте в `android/.env`: `EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` — reversed iOS Client ID (например `com.googleusercontent.apps.906407442864-xxxxx`).
+3. Добавьте в `android/.env`:
+   - `EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` — reversed iOS Client ID (например `com.googleusercontent.apps.906407442864-xxxxx`)
+   - `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` — полный iOS Client ID (например `906407442864-xxxxx.apps.googleusercontent.com`)
 4. Сервер проверяет id_token через `GOOGLE_CLIENT_ID_IOS` и возвращает JWT.

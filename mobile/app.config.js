@@ -23,6 +23,9 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "ru.baxic.misa",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
       package: "ru.baxic.misa",
@@ -38,6 +41,7 @@ export default {
       apiWss: process.env.EXPO_PUBLIC_API_WSS || "wss://misaapi.baxic.ru/ws/chat/misa/",
       webAppUrl: process.env.EXPO_PUBLIC_WEB_APP_URL || "https://misa.baxic.ru",
       googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || "",
+      googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || "",
       eas: {
         projectId: "f515349c-4ff2-4dd9-aaaa-3c9287c5c793",
       },
