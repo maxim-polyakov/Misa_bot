@@ -7,9 +7,8 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
-  Platform,
+  FlatList,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import { observer } from "mobx-react-lite";
 import JSZip from "jszip";
 import * as FileSystem from "expo-file-system";
@@ -51,6 +50,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState("profile");
   const [theme, setThemeState] = useState(THEMES.DARK);
   const [locale, setLocaleState] = useState("ru");
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
   const displayName = user?.display_name;
   const email = user?.email || chatStore?.user || "";
@@ -61,6 +61,8 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
     if (isOpen) {
       getTheme().then(setThemeState);
       getLanguage().then(setLocaleState);
+    } else {
+      setLangDropdownOpen(false);
     }
   }, [isOpen]);
 
@@ -237,22 +239,40 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                 </View>
                 <View style={styles.langBlock}>
                   <Text style={styles.themeLabel}>Язык</Text>
-                  <View style={styles.pickerWrap}>
-                    <Picker
-                      selectedValue={locale}
-                      onValueChange={async (code) => {
-                        await setLanguage(code);
-                        setLocaleState(code);
-                      }}
-                      style={styles.picker}
-                      dropdownIconColor={COLORS.textPrimary}
-                      mode="dropdown"
+                  <TouchableOpacity
+                    style={styles.pickerWrap}
+                    onPress={() => setLangDropdownOpen(true)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.pickerText}>{LANGUAGES.find((l) => l.code === locale)?.label || "Русский"}</Text>
+                    <Text style={styles.pickerChevron}>▼</Text>
+                  </TouchableOpacity>
+                  <Modal visible={langDropdownOpen} transparent animationType="fade">
+                    <TouchableOpacity
+                      style={styles.langDropdownOverlay}
+                      activeOpacity={1}
+                      onPress={() => setLangDropdownOpen(false)}
                     >
-                      {LANGUAGES.map((lang) => (
-                        <Picker.Item key={lang.code} label={lang.label} value={lang.code} color={COLORS.textPrimary} />
-                      ))}
-                    </Picker>
-                  </View>
+                      <View style={styles.langDropdown} onStartShouldSetResponder={() => true}>
+                        <FlatList
+                          data={LANGUAGES}
+                          keyExtractor={(item) => item.code}
+                          renderItem={({ item }) => (
+                            <TouchableOpacity
+                              style={[styles.langDropdownItem, locale === item.code && styles.langDropdownItemActive]}
+                              onPress={async () => {
+                                await setLanguage(item.code);
+                                setLocaleState(item.code);
+                                setLangDropdownOpen(false);
+                              }}
+                            >
+                              <Text style={styles.langDropdownItemText}>{item.label}</Text>
+                            </TouchableOpacity>
+                          )}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  </Modal>
                 </View>
               </View>
             )}
@@ -408,15 +428,47 @@ const styles = StyleSheet.create({
   themeBtnText: { fontSize: 14, color: COLORS.textPrimary },
   langBlock: { marginBottom: 16 },
   pickerWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.borderColor,
     backgroundColor: "rgba(255,255,255,0.06)",
+  },
+  pickerText: { fontSize: 15, color: COLORS.textPrimary },
+  pickerChevron: { fontSize: 12, color: COLORS.textSecondary },
+  langDropdownOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  langDropdown: {
+    width: "100%",
+    maxWidth: 280,
+    maxHeight: 300,
+    backgroundColor: COLORS.secondaryBg,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.borderColor,
     overflow: "hidden",
   },
-  picker: {
+  langDropdownItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.borderColor,
+  },
+  langDropdownItemActive: {
+    backgroundColor: "rgba(74,144,226,0.15)",
+  },
+  langDropdownItemText: {
+    fontSize: 16,
     color: COLORS.textPrimary,
-    height: Platform.OS === "android" ? 48 : 44,
   },
   dataBlock: {
     marginBottom: 24,
