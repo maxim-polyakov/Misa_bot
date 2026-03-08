@@ -18,6 +18,7 @@ import {
   AppState,
   Modal,
   Pressable,
+  Share,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -89,6 +90,9 @@ function ChatScreen() {
   const [feedbackModalMsgId, setFeedbackModalMsgId] = useState(null);
   const [feedbackCategories, setFeedbackCategories] = useState([]);
   const [feedbackComment, setFeedbackComment] = useState("");
+  const [chatMenuOpen, setChatMenuOpen] = useState(null);
+  const [renameModalChatId, setRenameModalChatId] = useState(null);
+  const [renameInputValue, setRenameInputValue] = useState("");
   const sidebarAnim = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -208,6 +212,70 @@ function ChatScreen() {
     chatStore.regenerateReply(msg.id);
   };
 
+  const handleShareMessage = async (chatId) => {
+    const url = chatStore.getShareLink(chatId ?? chatStore.currentChatId);
+    try {
+      await Share.share({
+        message: url,
+        url: Platform.OS === "ios" ? url : undefined,
+        title: "Поделиться чатом Misa AI",
+      });
+    } catch (e) {
+      await Clipboard.setStringAsync(url);
+      Alert.alert("Ссылка скопирована", "Ссылка на чат скопирована в буфер обмена.");
+    }
+  };
+
+  const handleChatMenuToggle = (chatId) => {
+    setChatMenuOpen((prev) => (prev === chatId ? null : chatId));
+  };
+
+  const handleRename = (chat) => {
+    setChatMenuOpen(null);
+    setRenameModalChatId(chat.id);
+    setRenameInputValue(chatStore.getChatTitle(chat));
+  };
+
+  const handleRenameSubmit = async () => {
+    if (renameModalChatId && renameInputValue.trim()) {
+      await chatStore.renameChat(renameModalChatId, renameInputValue.trim());
+      setRenameModalChatId(null);
+      setRenameInputValue("");
+    }
+  };
+
+  const handlePin = (chatId) => {
+    chatStore.togglePinChat(chatId);
+    setChatMenuOpen(null);
+  };
+
+  const handleShareFromMenu = async (chatId) => {
+    setChatMenuOpen(null);
+    setSidebarOpen(false);
+    setProfileOpen(false);
+    await handleShareMessage(chatId);
+  };
+
+  const handleDelete = (chatId) => {
+    setChatMenuOpen(null);
+    Alert.alert(
+      "Удалить чат?",
+      "Чат будет удалён безвозвратно.",
+      [
+        { text: "Отмена", style: "cancel" },
+        {
+          text: "Удалить",
+          style: "destructive",
+          onPress: async () => {
+            await chatStore.deleteChat(chatId);
+            setSidebarOpen(false);
+            setProfileOpen(false);
+          },
+        },
+      ]
+    );
+  };
+
   const renderMessageContent = (content, isUser) => {
     const parsed = parseMessageContent(content);
     return (
@@ -299,6 +367,9 @@ function ChatScreen() {
                   color={feedback === "dislike" ? "#ef4444" : COLORS.textSecondary}
                 />
               </TouchableOpacity>
+              <TouchableOpacity style={styles.msgActionBtn} onPress={handleShareMessage}>
+                <Text style={styles.msgActionIcon}>↗</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -367,22 +438,70 @@ function ChatScreen() {
       <TouchableOpacity style={styles.newChatBtn} onPress={() => { chatStore.newChat(); setSidebarOpen(false); setProfileOpen(false); }}>
         <Text style={styles.newChatBtnText}>+ Новый чат</Text>
       </TouchableOpacity>
-      <View style={styles.chatList}>
-        {chatStore.chats
-          .filter((c) => (c.messages?.length ?? 0) > 0)
-          .map((c) => (
-          <TouchableOpacity
-            key={c.id}
-            style={[styles.chatItem, c.id === chatStore.currentChatId && styles.chatItemActive]}
-            onPress={() => { chatStore.switchChat(c.id); setSidebarOpen(false); setProfileOpen(false); }}
-          >
-            <Text style={styles.chatItemIcon}>💬</Text>
-            <Text numberOfLines={1} style={styles.chatItemTitle}>
-              {chatStore.getChatTitle(c)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <ScrollView style={styles.chatList} showsVerticalScrollIndicator={false}>
+        {(() => {
+          const groups = chatStore.getChatsGroupedByPeriod();
+          const monthFormatter = new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric" });
+          const sections = [
+            { key: "pinned", label: "Закреплённые", chats: groups.pinned },
+            { key: "today", label: "Сегодня", chats: groups.today },
+            { key: "yesterday", label: "Вчера", chats: groups.yesterday },
+            { key: "last7Days", label: "7 дней", chats: groups.last7Days },
+            ...(groups.olderByMonth || []).map(({ key, year, month, chats }) => {
+              const label = monthFormatter.format(new Date(year, month, 1));
+              return { key: `older-${key}`, label: label.charAt(0).toUpperCase() + label.slice(1), chats };
+            }),
+          ];
+          return sections
+            .filter((s) => s.chats?.length > 0)
+            .map((section) => (
+              <View key={section.key} style={styles.chatGroup}>
+                <Text style={styles.chatGroupTitle}>{section.label}</Text>
+                {section.chats.map((c) => (
+          <View key={c.id} style={styles.chatItemWrap}>
+            <TouchableOpacity
+              style={[styles.chatItem, c.id === chatStore.currentChatId && styles.chatItemActive]}
+              onPress={() => { chatStore.switchChat(c.id); setSidebarOpen(false); setProfileOpen(false); setChatMenuOpen(null); }}
+            >
+              <Text style={styles.chatItemIcon}>💬</Text>
+              <Text numberOfLines={1} style={styles.chatItemTitle}>
+                {chatStore.getChatTitle(c)}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.chatItemMenuBtn}
+              onPress={() => handleChatMenuToggle(c.id)}
+            >
+              <Text style={styles.chatItemMenuBtnText}>⋯</Text>
+            </TouchableOpacity>
+            {chatMenuOpen === c.id && (
+              <View style={styles.chatMenu}>
+                <TouchableOpacity style={styles.chatMenuItem} onPress={() => handleRename(c)}>
+                  <Text style={styles.chatMenuItemIcon}>✎</Text>
+                  <Text style={styles.chatMenuItemText}>Переименовать</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.chatMenuItem} onPress={() => handlePin(c.id)}>
+                  <Text style={styles.chatMenuItemIcon}>📌</Text>
+                  <Text style={styles.chatMenuItemText}>
+                    {chatStore.isChatPinned(c.id) ? "Открепить" : "Закрепить"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.chatMenuItem} onPress={() => handleShareFromMenu(c.id)}>
+                  <Text style={styles.chatMenuItemIcon}>⎘</Text>
+                  <Text style={styles.chatMenuItemText}>Поделиться</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.chatMenuItem, styles.chatMenuItemDelete]} onPress={() => handleDelete(c.id)}>
+                  <Text style={styles.chatMenuItemIcon}>🗑</Text>
+                  <Text style={[styles.chatMenuItemText, styles.chatMenuItemDeleteText]}>Удалить</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+                ))}
+              </View>
+            ));
+        })()}
+      </ScrollView>
       <View style={styles.sidebarFooter}>
         {profileOpen && (
           <View style={styles.profilePanel}>
@@ -505,6 +624,30 @@ function ChatScreen() {
       </View>
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
+      <Modal visible={!!renameModalChatId} transparent animationType="fade">
+        <Pressable style={styles.feedbackOverlay} onPress={() => { setRenameModalChatId(null); setRenameInputValue(""); }}>
+          <Pressable style={styles.renameModal} onPress={() => {}}>
+            <Text style={styles.feedbackTitle}>Переименовать чат</Text>
+            <TextInput
+              style={styles.renameInput}
+              value={renameInputValue}
+              onChangeText={setRenameInputValue}
+              placeholder="Название чата"
+              placeholderTextColor={COLORS.textSecondary}
+              autoFocus
+            />
+            <View style={styles.feedbackActions}>
+              <TouchableOpacity style={styles.feedbackBtnCancel} onPress={() => { setRenameModalChatId(null); setRenameInputValue(""); }}>
+                <Text style={styles.feedbackBtnCancelText}>Отмена</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.feedbackBtnSubmit} onPress={handleRenameSubmit}>
+                <Text style={styles.feedbackBtnSubmitText}>Сохранить</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
       <Modal
         visible={!!feedbackModalMsgId}
         transparent
@@ -622,12 +765,27 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12,
   },
+  chatGroup: {
+    marginBottom: 16,
+  },
+  chatGroupTitle: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  chatItemWrap: {
+    position: "relative",
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
   chatItem: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
     borderRadius: 8,
-    marginBottom: 4,
   },
   chatItemActive: {
     backgroundColor: COLORS.messageBg,
@@ -640,6 +798,68 @@ const styles = StyleSheet.create({
     flex: 1,
     color: COLORS.textPrimary,
     fontSize: 14,
+  },
+  chatItemMenuBtn: {
+    padding: 8,
+    marginLeft: 4,
+  },
+  chatItemMenuBtnText: {
+    color: COLORS.textSecondary,
+    fontSize: 18,
+  },
+  chatMenu: {
+    position: "absolute",
+    top: "100%",
+    right: 0,
+    marginTop: 4,
+    backgroundColor: COLORS.secondaryBg,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.borderColor,
+    minWidth: 180,
+    zIndex: 10,
+    overflow: "hidden",
+  },
+  chatMenuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  chatMenuItemIcon: {
+    fontSize: 16,
+    marginRight: 10,
+    color: COLORS.textSecondary,
+  },
+  chatMenuItemText: {
+    color: COLORS.textPrimary,
+    fontSize: 15,
+  },
+  chatMenuItemDelete: {
+    borderTopWidth: 1,
+    borderTopColor: COLORS.borderColor,
+  },
+  chatMenuItemDeleteText: {
+    color: "#ef4444",
+  },
+  renameModal: {
+    backgroundColor: COLORS.secondaryBg,
+    borderRadius: 16,
+    padding: 20,
+    width: "100%",
+    maxWidth: 360,
+    borderWidth: 1,
+    borderColor: COLORS.borderColor,
+  },
+  renameInput: {
+    borderWidth: 1,
+    borderColor: COLORS.borderColor,
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    backgroundColor: COLORS.primaryBg,
+    marginBottom: 16,
   },
   sidebarFooter: {
     position: "relative",
