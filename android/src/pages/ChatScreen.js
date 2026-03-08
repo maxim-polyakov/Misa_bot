@@ -182,7 +182,7 @@ function ChatScreen() {
         <Image
           source={require("../../assets/misa.png")}
           style={[styles.emptyLogo, isSmallScreen && styles.emptyLogoSmall]}
-          resizeMode="contain"
+          resizeMode="cover"
         />
       </View>
       <Text style={[styles.emptyTitle, isSmallScreen && styles.emptyTitleSmall]}>Начните общение с Misa AI</Text>
@@ -215,7 +215,7 @@ function ChatScreen() {
       <View style={styles.sidebarHeader}>
         <View style={styles.sidebarLogoWrap}>
           <Image
-            source={require("../../assets/icon.png")}
+            source={require("../../assets/misa.png")}
             style={styles.sidebarLogo}
             resizeMode="cover"
           />
@@ -396,15 +396,12 @@ const styles = StyleSheet.create({
   sidebarLogoWrap: {
     width: 28,
     height: 28,
-    borderRadius: 6,
+    borderRadius: 14,
     overflow: "hidden",
   },
   sidebarLogo: {
     width: 28,
-    height: 42,
-    position: "absolute",
-    top: 0,
-    left: 0,
+    height: 28,
   },
   sidebarBrand: {
     flex: 1,
@@ -602,24 +599,25 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   emptyLogoWrap: {
-    width: 160,
-    height: 200,
-    marginBottom: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  emptyLogoWrapSmall: {
-    width: 120,
-    height: 150,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    overflow: "hidden",
     marginBottom: 16,
   },
+  emptyLogoWrapSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginBottom: 12,
+  },
   emptyLogo: {
-    width: 160,
-    height: 200,
+    width: 48,
+    height: 48,
   },
   emptyLogoSmall: {
-    width: 120,
-    height: 150,
+    width: 40,
+    height: 40,
   },
   emptyTitle: {
     fontSize: 24,

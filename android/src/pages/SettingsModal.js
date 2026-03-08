@@ -7,7 +7,9 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
+  Platform,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { observer } from "mobx-react-lite";
 import JSZip from "jszip";
 import * as FileSystem from "expo-file-system";
@@ -235,19 +237,21 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                 </View>
                 <View style={styles.langBlock}>
                   <Text style={styles.themeLabel}>Язык</Text>
-                  <View style={styles.langOptions}>
-                    {LANGUAGES.map((lang) => (
-                      <TouchableOpacity
-                        key={lang.code}
-                        style={[styles.langBtn, locale === lang.code && styles.themeBtnActive]}
-                        onPress={async () => {
-                          await setLanguage(lang.code);
-                          setLocaleState(lang.code);
-                        }}
-                      >
-                        <Text style={styles.langBtnText}>{lang.label}</Text>
-                      </TouchableOpacity>
-                    ))}
+                  <View style={styles.pickerWrap}>
+                    <Picker
+                      selectedValue={locale}
+                      onValueChange={async (code) => {
+                        await setLanguage(code);
+                        setLocaleState(code);
+                      }}
+                      style={styles.picker}
+                      dropdownIconColor={COLORS.textPrimary}
+                      mode="dropdown"
+                    >
+                      {LANGUAGES.map((lang) => (
+                        <Picker.Item key={lang.code} label={lang.label} value={lang.code} color={COLORS.textPrimary} />
+                      ))}
+                    </Picker>
                   </View>
                 </View>
               </View>
@@ -403,16 +407,17 @@ const styles = StyleSheet.create({
   themeIcon: { fontSize: 18, marginRight: 8 },
   themeBtnText: { fontSize: 14, color: COLORS.textPrimary },
   langBlock: { marginBottom: 16 },
-  langOptions: { flexDirection: "row", gap: 8 },
-  langBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+  pickerWrap: {
     borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.06)",
     borderWidth: 1,
     borderColor: COLORS.borderColor,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    overflow: "hidden",
   },
-  langBtnText: { fontSize: 14, color: COLORS.textPrimary },
+  picker: {
+    color: COLORS.textPrimary,
+    height: Platform.OS === "android" ? 48 : 44,
+  },
   dataBlock: {
     marginBottom: 24,
     padding: 16,
