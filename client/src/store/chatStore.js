@@ -262,12 +262,15 @@ class ChatStore {
             this._loadChatsInProgress = true;
             try {
                 let chatsData;
-                try {
-                    chatsData = await apiFetch('/api/chats/');
-                } catch (firstErr) {
-                    console.warn("Повтор загрузки чатов через 1 сек:", firstErr?.message);
-                    await new Promise(r => setTimeout(r, 1000));
-                    chatsData = await apiFetch('/api/chats/');
+                for (;;) {
+                    if (!this.isAuth) return;
+                    try {
+                        chatsData = await apiFetch('/api/chats/');
+                        break;
+                    } catch (err) {
+                        console.warn("Ошибка загрузки чатов, повтор через 1 сек:", err?.message);
+                        await new Promise(r => setTimeout(r, 1000));
+                    }
                 }
                 if (Array.isArray(chatsData) && chatsData.length > 0) {
                     const chatIds = new Set(chatsData.map(c => c.id));

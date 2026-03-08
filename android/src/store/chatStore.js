@@ -115,7 +115,7 @@ class ChatStore {
     }
   }
 
-  async loadChats(retryCount = 0) {
+  async loadChats() {
     const userId = await this.getCurrentUserId();
     if (!userId) {
       this.chats = [];
@@ -123,39 +123,36 @@ class ChatStore {
       return;
     }
     if (!API_URL) return;
-    const maxRetries = 2;
-    try {
-      const chatsData = await apiFetch("/api/chats/");
-      if (!Array.isArray(chatsData)) {
-        console.warn("loadChats: unexpected response format", typeof chatsData);
-        if (retryCount < maxRetries) {
+    for (;;) {
+      if (!this.isAuth) return;
+      try {
+        const chatsData = await apiFetch("/api/chats/");
+        if (!Array.isArray(chatsData)) {
+          console.warn("loadChats: unexpected response format", typeof chatsData);
           await new Promise((r) => setTimeout(r, 1000));
-          return this.loadChats(retryCount + 1);
+          continue;
+        }
+        if (chatsData.length > 0) {
+          this.chats = chatsData.map((c) => ({
+            id: c.id,
+            title: c.title || "Новый чат",
+            messages: [],
+            createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
+            _messagesLoaded: false,
+          }));
+          this.currentChatId = this.chats[0].id;
+          this._loadChatMessagesIfNeeded(this.chats[0].id);
+        } else {
+          this.chats = [];
+          await this.newChat();
         }
         return;
-      }
-      if (chatsData.length > 0) {
-        this.chats = chatsData.map((c) => ({
-          id: c.id,
-          title: c.title || "Новый чат",
-          messages: [],
-          createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
-          _messagesLoaded: false,
-        }));
-        this.currentChatId = this.chats[0].id;
-        this._loadChatMessagesIfNeeded(this.chats[0].id);
-      } else {
-        this.chats = [];
-        await this.newChat();
-      }
-    } catch (e) {
-      console.warn("Ошибка загрузки чатов:", e);
-      if (retryCount < maxRetries) {
+      } catch (e) {
+        console.warn("Ошибка загрузки чатов:", e);
+        if (this.chats.length === 0) {
+          await this.newChat();
+        }
         await new Promise((r) => setTimeout(r, 1000));
-        return this.loadChats(retryCount + 1);
-      }
-      if (this.chats.length === 0) {
-        await this.newChat();
       }
     }
   }
