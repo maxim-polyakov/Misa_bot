@@ -180,9 +180,9 @@ function ChatScreen() {
     >
       <View style={[styles.emptyLogoWrap, isSmallScreen && styles.emptyLogoWrapSmall]}>
         <Image
-          source={require("../../assets/icon.png")}
+          source={require("../../assets/misa.png")}
           style={[styles.emptyLogo, isSmallScreen && styles.emptyLogoSmall]}
-          resizeMode="cover"
+          resizeMode="contain"
         />
       </View>
       <Text style={[styles.emptyTitle, isSmallScreen && styles.emptyTitleSmall]}>Начните общение с Misa AI</Text>
@@ -602,28 +602,24 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   emptyLogoWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    overflow: "hidden",
-    marginBottom: 16,
+    width: 160,
+    height: 200,
+    marginBottom: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyLogoWrapSmall: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginBottom: 12,
+    width: 120,
+    height: 150,
+    marginBottom: 16,
   },
   emptyLogo: {
-    width: 48,
-    height: 72,
-    position: "absolute",
-    top: 0,
-    left: 0,
+    width: 160,
+    height: 200,
   },
   emptyLogoSmall: {
-    width: 40,
-    height: 60,
+    width: 120,
+    height: 150,
   },
   emptyTitle: {
     fontSize: 24,

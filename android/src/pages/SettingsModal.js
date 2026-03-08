@@ -160,19 +160,20 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
               <Text style={styles.closeText}>×</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.nav}>
-            {SETTINGS_TABS.map((tab) => (
-              <TouchableOpacity
-                key={tab.id}
-                style={[styles.navItem, activeTab === tab.id && styles.navItemActive]}
-                onPress={() => setActiveTab(tab.id)}
-              >
-                <Text style={styles.navIcon}>{tab.icon}</Text>
-                <Text style={styles.navLabel}>{tab.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.body}>
+            <View style={styles.nav}>
+              {SETTINGS_TABS.map((tab) => (
+                <TouchableOpacity
+                  key={tab.id}
+                  style={[styles.navItem, activeTab === tab.id && styles.navItemActive]}
+                  onPress={() => setActiveTab(tab.id)}
+                >
+                  <Text style={styles.navIcon}>{tab.icon}</Text>
+                  <Text style={[styles.navLabel, activeTab === tab.id && styles.navLabelActive]}>{tab.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
             {activeTab === "profile" && (
               <View style={styles.section}>
                 {isGoogleUser && displayName && (
@@ -274,7 +275,8 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                 <Text style={styles.placeholderText}>Misa AI Чат</Text>
               </View>
             )}
-          </ScrollView>
+            </ScrollView>
+          </View>
         </View>
       </View>
     </Modal>
@@ -291,8 +293,9 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: "100%",
-    maxWidth: 400,
-    maxHeight: "85%",
+    maxWidth: 560,
+    height: "85%",
+    minHeight: 320,
     backgroundColor: COLORS.secondaryBg,
     borderRadius: 12,
     borderWidth: 1,
@@ -314,29 +317,36 @@ const styles = StyleSheet.create({
   },
   closeBtn: { padding: 8 },
   closeText: { fontSize: 24, color: COLORS.textPrimary },
-  nav: {
+  body: {
+    flex: 1,
     flexDirection: "row",
-    flexWrap: "wrap",
-    padding: 12,
-    gap: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderColor,
+    minHeight: 0,
+  },
+  nav: {
+    width: 140,
+    paddingVertical: 12,
+    paddingHorizontal: 0,
+    borderRightWidth: 1,
+    borderRightColor: COLORS.borderColor,
+    gap: 2,
   },
   navItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    gap: 8,
   },
   navItemActive: {
-    backgroundColor: "rgba(74,144,226,0.2)",
+    backgroundColor: "rgba(74,144,226,0.15)",
   },
-  navIcon: { fontSize: 16, marginRight: 6 },
-  navLabel: { fontSize: 14, color: COLORS.textPrimary },
+  navIcon: { fontSize: 16 },
+  navLabel: { fontSize: 14, color: COLORS.textSecondary },
+  navLabelActive: { color: COLORS.accentColor },
   content: {
     flex: 1,
-    padding: 16,
+    padding: 20,
+    minWidth: 0,
   },
   section: { marginBottom: 24 },
   row: {
