@@ -29,5 +29,8 @@
     "react-native-safe-area-context": "^5.7.0",
     "react-native-screens": "^4.24.0"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "sharp": "^0.34.5"
+  }
 }
