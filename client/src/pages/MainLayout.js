@@ -1,5 +1,6 @@
 import { useState, useContext, createContext, useMemo, useCallback, useEffect } from "react";
 import { Context } from "../index";
+import { useStores } from "../store/rootStoreContext";
 import Sidebar from "../pages/Sidebar";
 import "./Styles.css";
 
@@ -18,6 +19,13 @@ const SIDEBAR_COLLAPSED_KEY = "misa_sidebar_collapsed";
 
 const MainLayout = ({ children }) => {
     const { user } = useContext(Context);
+    const { chatStore } = useStores();
+
+    useEffect(() => {
+        if (user?.isAuth && chatStore?.loadChats) {
+            chatStore.loadChats();
+        }
+    }, [user?.isAuth, chatStore]);
     const [sidebarExpanded, setSidebarExpanded] = useState(() => {
         if (typeof window === "undefined") return true;
         if (window.innerWidth <= 768) return false;

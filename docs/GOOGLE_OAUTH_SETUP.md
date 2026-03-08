@@ -33,9 +33,10 @@ https://console.cloud.google.com/apis/credentials
    - Нажмите **"Создать"**
 
 8. Создайте `server/.env` (скопируйте из `server/.env.example`) и заполните:
-   - `GOOGLE_CLIENT_ID` — Web Client ID из Google Console (для веб OAuth и проверки id_token с Android)
+   - `GOOGLE_CLIENT_ID` — Web Client ID из Google Console (для веб OAuth и проверки id_token)
    - `GOOGLE_CLIENT_SECRET` — Client Secret из Google Console
-   - `GOOGLE_CLIENT_ID_ANDROID` — (опционально) Android Client ID, если отличается от Web
+   - `GOOGLE_CLIENT_ID_ANDROID` — (опционально) Android Client ID для проверки id_token с Android
+   - `GOOGLE_CLIENT_ID_IOS` — (опционально) iOS Client ID для проверки id_token с iOS
    - `API_BASE_URL` — базовый URL API (например `https://misaapi.baxic.ru`)
    - `FRONTEND_URL` — URL фронтенда для редиректа после OAuth (например `https://ваш-клиент.ru` или `http://localhost:3000`)
 
@@ -65,3 +66,14 @@ https://console.cloud.google.com/apis/credentials
 3. Сервер проверяет токен через `GOOGLE_CLIENT_ID` (или `GOOGLE_CLIENT_ID_ANDROID`) и возвращает JWT.
 4. Требуется OAuth-клиент типа **Android** с package `ru.baxic.misa` и SHA-1 в Google Console.
 5. `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` в `android/.env` должен совпадать с Web Client ID.
+
+## iOS: вход через Google
+
+1. Создайте OAuth-клиент типа **iOS** в Google Console:
+   - Package name: `ru.baxic.misa` (bundleIdentifier из app.config.js)
+   - (опционально) App Store ID, Team ID, Key ID для production
+2. Добавьте в `server/.env`: `GOOGLE_CLIENT_ID_IOS` — iOS Client ID из Google Console.
+3. Добавьте в `android/.env`:
+   - `EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` — reversed iOS Client ID (например `com.googleusercontent.apps.906407442864-xxxxx`)
+   - `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` — полный iOS Client ID (например `906407442864-xxxxx.apps.googleusercontent.com`)
+4. Сервер проверяет id_token через `GOOGLE_CLIENT_ID_IOS` и возвращает JWT.

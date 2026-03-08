@@ -212,6 +212,26 @@ export const check = async () => {
             localStorage.removeItem("currentUserId");
             localStorage.removeItem("userProfile");
             localStorage.setItem("userIsAuth", "false");
+            return null;
+        }
+        // При сетевой ошибке (сервер недоступен, пересборка) — не очищаем данные,
+        // возвращаем пользователя из токена, если он ещё действителен
+        const token = localStorage.getItem("token");
+        if (token) {
+            try {
+                const decoded = jwtDecode(token);
+                if (decoded.exp && decoded.exp * 1000 > Date.now()) {
+                    const stored = JSON.parse(localStorage.getItem("userProfile") || "{}");
+                    return {
+                        ...decoded,
+                        user_id: decoded.user_id ?? decoded.id,
+                        display_name: decoded.display_name ?? stored.display_name ?? decoded.email?.split("@")[0],
+                        picture: decoded.picture ?? stored.picture,
+                    };
+                }
+            } catch {
+                /* token invalid */
+            }
         }
         return null;
     }

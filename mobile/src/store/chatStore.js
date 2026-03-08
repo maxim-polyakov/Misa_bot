@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { API_URL, API_WSS } from "../config";
+import { API_URL, API_WSS, WEB_APP_URL } from "../config";
 import { apiFetch } from "../api/http";
 import { storage } from "../storage";
 
@@ -7,6 +7,7 @@ const generateId = () => Date.now().toString(36) + Math.random().toString(36).sl
 
 class ChatStore {
   chats = [];
+  pinnedChatIds = [];
   currentChatId = null;
   isConnected = false;
   isConnecting = false;
@@ -123,26 +124,48 @@ class ChatStore {
       return;
     }
     if (!API_URL) return;
-    try {
-      const chatsData = await apiFetch("/api/chats/");
-      if (Array.isArray(chatsData) && chatsData.length > 0) {
-        this.chats = chatsData.map((c) => ({
-          id: c.id,
-          title: c.title || "Новый чат",
-          messages: [],
-          createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
-          _messagesLoaded: false,
-        }));
-        this.currentChatId = this.chats[0].id;
-        this._loadChatMessagesIfNeeded(this.chats[0].id);
-      } else {
-        this.chats = [];
-        await this.newChat();
+    for (;;) {
+      if (!this.isAuth) return;
+      try {
+        const chatsData = await apiFetch("/api/chats/");
+        if (!Array.isArray(chatsData)) {
+          console.warn("loadChats: unexpected response format", typeof chatsData);
+          await new Promise((r) => setTimeout(r, 1000));
+          continue;
+        }
+        if (chatsData.length > 0) {
+          await this._loadPinnedChatIds();
+          const chatIds = new Set(chatsData.map((c) => c.id));
+          this.pinnedChatIds = this.pinnedChatIds.filter((id) => chatIds.has(id));
+          this._savePinnedChatIds();
+          this.chats = chatsData.map((c) => ({
+            id: c.id,
+            title: c.title || "Новый чат",
+            messages: [],
+            createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
+            _messagesLoaded: false,
+          }));
+          const pinnedSet = new Set(this.pinnedChatIds);
+          this.chats.sort((a, b) => {
+            const ia = this.pinnedChatIds.indexOf(a.id);
+            const ib = this.pinnedChatIds.indexOf(b.id);
+            return (ia >= 0 ? ia : 999) - (ib >= 0 ? ib : 999);
+          });
+          const keepCurrent = this.currentChatId && chatIds.has(this.currentChatId);
+          if (!keepCurrent) this.currentChatId = this.chats[0].id;
+          this._loadChatMessagesIfNeeded(this.currentChatId);
+        } else {
+          this.chats = [];
+          await this.newChat();
+        }
+        return;
+      } catch (e) {
+        console.warn("Ошибка загрузки чатов:", e);
+        if (this.chats.length === 0) {
+          await this.newChat();
+        }
+        await new Promise((r) => setTimeout(r, 1000));
       }
-    } catch (e) {
-      console.warn("Ошибка загрузки чатов:", e);
-      this.chats = [];
-      await this.newChat();
     }
   }
 
@@ -352,6 +375,150 @@ class ChatStore {
   getMessageFeedback(msgId) {
     const msg = this.currentChat?.messages?.find((m) => m.id === msgId);
     return msg?.feedback ?? null;
+  }
+
+  getShareLink(chatId, messageIds) {
+    const id = typeof chatId === "string" ? chatId : this.currentChatId;
+    if (!id || typeof id !== "string") return WEB_APP_URL;
+    let url = `${WEB_APP_URL.replace(/\/$/, "")}/share/${encodeURIComponent(id)}`;
+    if (Array.isArray(messageIds) && messageIds.length > 0) {
+      url += `?msg=${encodeURIComponent(messageIds.join(","))}`;
+    }
+    return url;
+  }
+
+  async _loadPinnedChatIds() {
+    try {
+      const userId = await this.getCurrentUserId();
+      if (userId) {
+        const raw = await storage.getItem(`pinned_chats_${userId}`);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          this.pinnedChatIds = Array.isArray(parsed) ? parsed : [];
+          return;
+        }
+      }
+    } catch (e) {}
+    this.pinnedChatIds = [];
+  }
+
+  async _savePinnedChatIds() {
+    try {
+      const userId = await this.getCurrentUserId();
+      if (userId) {
+        await storage.setItem(`pinned_chats_${userId}`, JSON.stringify(this.pinnedChatIds));
+      }
+    } catch (e) {}
+  }
+
+  togglePinChat(chatId) {
+    const idx = this.pinnedChatIds.indexOf(chatId);
+    if (idx >= 0) {
+      this.pinnedChatIds = this.pinnedChatIds.filter((id) => id !== chatId);
+    } else {
+      this.pinnedChatIds = [...this.pinnedChatIds, chatId];
+    }
+    this._savePinnedChatIds();
+  }
+
+  isChatPinned(chatId) {
+    return this.pinnedChatIds.includes(chatId);
+  }
+
+  getChatsGroupedByPeriod() {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterdayStart = new Date(todayStart);
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+    const sevenDaysAgo = new Date(todayStart);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const groups = { pinned: [], today: [], yesterday: [], last7Days: [], olderByMonth: {} };
+    const pinnedSet = new Set(this.pinnedChatIds);
+
+    for (const chat of this.chats) {
+      const title = chat?.title?.trim() || "";
+      const hasContent = (chat.messages?.length ?? 0) > 0 || (title && title !== "Новый чат");
+      if (!hasContent) continue;
+      if (pinnedSet.has(chat.id)) {
+        groups.pinned.push(chat);
+        continue;
+      }
+      let date = chat.createdAt ? new Date(chat.createdAt) : new Date();
+      if (isNaN(date.getTime())) date = new Date();
+      if (date >= todayStart) {
+        groups.today.push(chat);
+      } else if (date >= yesterdayStart) {
+        groups.yesterday.push(chat);
+      } else if (date >= sevenDaysAgo) {
+        groups.last7Days.push(chat);
+      } else {
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+        if (!groups.olderByMonth[key])
+          groups.olderByMonth[key] = { year: date.getFullYear(), month: date.getMonth(), chats: [] };
+        groups.olderByMonth[key].chats.push(chat);
+      }
+    }
+
+    for (const key of Object.keys(groups.olderByMonth)) {
+      groups.olderByMonth[key].chats.sort((a, b) => {
+        const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return db - da;
+      });
+    }
+
+    groups.pinned.sort((a, b) => {
+      const ia = this.pinnedChatIds.indexOf(a.id);
+      const ib = this.pinnedChatIds.indexOf(b.id);
+      return (ia >= 0 ? ia : 999) - (ib >= 0 ? ib : 999);
+    });
+
+    groups.olderByMonth = Object.entries(groups.olderByMonth)
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([key, val]) => ({ key, year: val.year, month: val.month, chats: val.chats }));
+
+    return groups;
+  }
+
+  async renameChat(chatId, newTitle) {
+    const chat = this.chats.find((c) => c.id === chatId);
+    if (!chat) return false;
+    const title = (newTitle || "").trim().slice(0, 500) || "Новый чат";
+    if (API_URL) {
+      try {
+        await apiFetch(`/api/chats/${chatId}/`, {
+          method: "PATCH",
+          body: JSON.stringify({ title }),
+        });
+      } catch (e) {
+        console.warn("Ошибка переименования чата:", e);
+        return false;
+      }
+    }
+    chat.title = title;
+    this.saveChats();
+    return true;
+  }
+
+  async deleteChat(chatId) {
+    if (API_URL) {
+      try {
+        await apiFetch(`/api/chats/${chatId}/delete/`, { method: "DELETE" });
+      } catch (e) {
+        console.warn("Ошибка удаления чата:", e);
+        return false;
+      }
+    }
+    this.pinnedChatIds = this.pinnedChatIds.filter((id) => id !== chatId);
+    this._savePinnedChatIds();
+    this.chats = this.chats.filter((c) => c.id !== chatId);
+    if (this.currentChatId === chatId) {
+      this.currentChatId = this.chats[0]?.id ?? null;
+      if (this.chats.length === 0) this.newChat();
+    }
+    this.saveChats();
+    return true;
   }
 
   async setMessageFeedback(msgId, feedback, categories = null, comment = null) {

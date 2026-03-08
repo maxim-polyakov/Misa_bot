@@ -53,7 +53,7 @@ const Auth = observer(() => {
         exchangeOAuthCode(code)
             .then((data) => {
                 chatStore.setIsAuth(true);
-                chatStore.setUser(data.email, data.user_id);
+                chatStore.setUser(data.email, data.user_id ?? data.id);
                 user.setUser(data);
                 user.setIsAuth(true);
                 chatStore.connect();
@@ -100,7 +100,7 @@ const Auth = observer(() => {
                 try {
                     const data = await login(email, password);
                     chatStore.setIsAuth(true);
-                    chatStore.setUser(data.email, data.user_id);
+                    chatStore.setUser(data.email, data.user_id ?? data.id);
                     user.setUser(data);
                     user.setIsAuth(true);
                     chatStore.connect();

@@ -31,7 +31,7 @@ const VerifyCode = observer(() => {
             setError("");
             const data = await verifyRegistrationCode(email, password, code.trim());
             chatStore.setIsAuth(true);
-            chatStore.setUser(data.email, data.user_id);
+            chatStore.setUser(data.email, data.user_id ?? data.id);
             user.setUser(data);
             user.setIsAuth(true);
             chatStore.connect();

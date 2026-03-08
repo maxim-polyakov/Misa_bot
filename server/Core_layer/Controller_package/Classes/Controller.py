@@ -802,7 +802,11 @@ class Controller(IController.IController):
             if not id_token_raw:
                 return cls.error_response("id_token is required", 400)
 
-            client_ids = [c for c in [os.getenv('GOOGLE_CLIENT_ID'), os.getenv('GOOGLE_CLIENT_ID_ANDROID')] if c]
+            client_ids = [c for c in [
+                os.getenv('GOOGLE_CLIENT_ID'),
+                os.getenv('GOOGLE_CLIENT_ID_ANDROID'),
+                os.getenv('GOOGLE_CLIENT_ID_IOS'),
+            ] if c]
             if not client_ids:
                 return cls.error_response("Google OAuth not configured", 500)
 
@@ -915,7 +919,10 @@ class Controller(IController.IController):
                 "SELECT id, title, created_at FROM chat.chats WHERE user_id = %s ORDER BY created_at DESC",
                 (user_id,)
             )
-            if df is None or df.empty:
+            if df is None:
+                logging.error("chats_list: DB query returned None (connection/query error)")
+                return cls.error_response("Database error, please retry", 500)
+            if df.empty:
                 return cls.success_response([])
             chats = []
             for _, row in df.iterrows():
@@ -955,7 +962,7 @@ class Controller(IController.IController):
 
     @classmethod
     def chats_share_public(cls, request, chat_id):
-        """GET /api/chats/<id>/share/ — публичный просмотр чата (без авторизации)"""
+        """GET /api/chats/<id>/share/ — публичный просмотр чата (без авторизации). ?msg=id1,id2 — только выбранные сообщения."""
         try:
             df_chat = cls.__dbc.execute_query(
                 "SELECT id, title FROM chat.chats WHERE id = %s",
@@ -965,6 +972,11 @@ class Controller(IController.IController):
                 return cls.error_response("Chat not found", 404)
             title = str(df_chat.iloc[0].get('title', '')).strip() or 'Новый чат'
             messages = ChatService.get_messages(chat_id)
+            msg_param = request.GET.get('msg') if hasattr(request, 'GET') else None
+            if msg_param:
+                msg_ids = {m.strip() for m in msg_param.split(',') if m.strip()}
+                if msg_ids:
+                    messages = [m for m in messages if str(m.get('id', '')) in msg_ids]
             return cls.success_response({'id': chat_id, 'title': title, 'messages': messages})
         except Exception as e:
             logging.error(f"chats_share_public error: {str(e)}")

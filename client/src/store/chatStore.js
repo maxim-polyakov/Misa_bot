@@ -1,4 +1,5 @@
 import { makeAutoObservable } from "mobx";
+import { jwtDecode } from "jwt-decode";
 
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 const API_URL = process.env.REACT_APP_API_URL || '';
@@ -63,6 +64,7 @@ class ChatStore {
                 this.reconnectDelay = 1000;
                 setTimeout(() => this.connect(), 300);
             }
+            if (API_URL) setTimeout(() => this.loadChats(), 500);
         });
     }
 
@@ -165,18 +167,32 @@ class ChatStore {
         const base = typeof window !== 'undefined' ? window.location.origin : '';
         const chatId = this.shareModeForChatId || this.currentChatId;
         if (!chatId) return base;
-        return `${base}/share/${encodeURIComponent(chatId)}`;
+        let url = `${base}/share/${encodeURIComponent(chatId)}`;
+        if (this.selectedMessageIds?.length > 0) {
+            url += `?msg=${encodeURIComponent(this.selectedMessageIds.join(','))}`;
+        }
+        return url;
     }
 
     // Получение ID текущего пользователя
     getCurrentUserId() {
-        // Пробуем получить из rootStore.user, если есть
-        if (this.rootStore?.user?.getCurrentUserId) {
-            return this.rootStore.user.getCurrentUserId();
-        }
-        // Или из локального состояния
         const id = localStorage.getItem('currentUserId');
-        return this.user?.user_id || id
+        if (id) return id;
+        if (this.user?.user_id) return this.user.user_id;
+        // Fallback: извлекаем user_id из JWT
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const decoded = jwtDecode(token);
+                const uid = decoded?.user_id ?? decoded?.id;
+                if (uid != null) {
+                    const s = String(uid);
+                    if (!localStorage.getItem('currentUserId')) localStorage.setItem('currentUserId', s);
+                    return s;
+                }
+            }
+        } catch {}
+        return null;
     };
 
     // Загрузка пользователя из localStorage
@@ -260,7 +276,35 @@ class ChatStore {
             }
             this._loadChatsInProgress = true;
             try {
-                const chatsData = await apiFetch('/api/chats/');
+                let chatsData;
+                for (let attempt = 0; attempt < 10; attempt++) {
+                    if (!this.isAuth) return;
+                    try {
+                        const res = await fetch(`${API_URL}/api/chats/`, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...(localStorage.getItem('token') && { Authorization: `Bearer ${localStorage.getItem('token')}` }),
+                            },
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (data.status === 'error') throw new Error(data.message || 'API error');
+                        if (res.status === 401) {
+                            this.clearUserFromStorage();
+                            this.isAuth = false;
+                            return;
+                        }
+                        chatsData = data.data;
+                        break;
+                    } catch (err) {
+                        console.warn("Ошибка загрузки чатов, повтор через 1 сек:", err?.message);
+                        await new Promise(r => setTimeout(r, 1000));
+                    }
+                }
+                if (chatsData === undefined) {
+                    console.warn("Не удалось загрузить чаты после нескольких попыток");
+                    this._loadChatsFromLocalStorage();
+                    return;
+                }
                 if (Array.isArray(chatsData) && chatsData.length > 0) {
                     const chatIds = new Set(chatsData.map(c => c.id));
                     this.pinnedChatIds = this.pinnedChatIds.filter(id => chatIds.has(id));
@@ -281,6 +325,7 @@ class ChatStore {
                         }));
                     this.currentChatId = this.chats[0].id;
                     this._loadChatMessagesIfNeeded(this.chats[0].id);
+                    this._loadAllChatMessagesInBackground();
                 } else {
                     this.chats = [];
                     await this.newChat();
@@ -329,6 +374,31 @@ class ChatStore {
         if (!chat) return;
         this.socket.send(JSON.stringify({ type: 'load_history', chat_id: chatId }));
         chat._pendingHistory = true;
+    }
+
+    _loadAllChatMessagesInBackground() {
+        if (!API_URL) return;
+        const toLoad = this.chats.filter(c => !c._messagesLoaded && !c._pendingHistory);
+        toLoad.forEach((chat) => {
+            apiFetch(`/api/chats/${chat.id}/messages/`)
+                .then((msgs) => {
+                    const c = this.chats.find((x) => x.id === chat.id);
+                    if (c && !c._messagesLoaded) {
+                        c.messages = (msgs || []).map((m) => ({
+                            id: String(m.id),
+                            content: m.content,
+                            user: m.user,
+                            timestamp: new Date(m.timestamp),
+                            isImage: m.isImage,
+                            feedback: m.feedback && (m.feedback === 'like' || m.feedback === 'dislike') ? m.feedback : null,
+                            feedbackCategories: m.feedbackCategories ?? null,
+                            feedbackComment: m.feedbackComment ?? null,
+                        }));
+                        c._messagesLoaded = true;
+                    }
+                })
+                .catch((e) => console.warn(`Ошибка загрузки сообщений чата ${chat.id}:`, e?.message));
+        });
     }
 
     /** Подключиться к группе чата для получения broadcast (сообщения, typing) на всех устройствах */
@@ -390,8 +460,6 @@ class ChatStore {
         const pinnedSet = new Set(this.pinnedChatIds);
 
         for (const chat of this.chats) {
-            if (!chat.messages || chat.messages.length === 0) continue;
-            if (!chat.title || chat.title.trim() === '' || chat.title.trim() === 'Новый чат') continue;
             if (pinnedSet.has(chat.id)) {
                 groups.pinned.push(chat);
                 continue;
@@ -790,10 +858,10 @@ class ChatStore {
         }
         else if (data.type === 'message_updated') {
             const chat = this.chats.find(c => c.id === data.chat_id);
-            const msg = chat?.messages?.find(m => m.id === data.message_id);
-            if (msg) {
-                msg.content = data.message || msg.content;
-                msg.isImage = data.isImage ?? msg.isImage;
+            const idx = chat?.messages?.findIndex(m => m.id === data.message_id);
+            if (chat && idx >= 0) {
+                const msg = chat.messages[idx];
+                chat.messages[idx] = { ...msg, content: data.message ?? msg.content, isImage: data.isImage ?? msg.isImage };
                 this.loadingChatIds = this.loadingChatIds.filter(id => id !== data.chat_id);
                 this.saveChats();
             }

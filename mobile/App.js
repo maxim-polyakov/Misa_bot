@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, View, StyleSheet } from "react-native";
+import { ActivityIndicator, View, StyleSheet, Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { observer } from "mobx-react-lite";
 import { jwtDecode } from "jwt-decode";
@@ -21,8 +21,12 @@ const AppContent = observer(() => {
   useEffect(() => {
     try {
       const webClientId = Constants.expoConfig?.extra?.googleWebClientId;
-      if (webClientId) {
-        GoogleSignin.configure({ webClientId });
+      const iosClientId = Constants.expoConfig?.extra?.googleIosClientId;
+      if (webClientId || iosClientId) {
+        GoogleSignin.configure({
+          webClientId: webClientId || undefined,
+          iosClientId: Platform.OS === "ios" ? iosClientId || undefined : undefined,
+        });
       }
     } catch (e) {
       console.warn("Google Sign-In init:", e?.message);

@@ -37,8 +37,14 @@ export default function AuthScreen() {
 
   const signInWithGoogle = async () => {
     const webClientId = Constants.expoConfig?.extra?.googleWebClientId;
-    if (!webClientId) {
-      setError("Google Sign-In не настроен (добавьте EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID в .env)");
+    const iosClientId = Constants.expoConfig?.extra?.googleIosClientId;
+    const hasConfig = Platform.OS === "ios" ? (webClientId || iosClientId) : webClientId;
+    if (!hasConfig) {
+      setError(
+        Platform.OS === "ios"
+          ? "Google Sign-In не настроен (добавьте EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID и EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID в .env)"
+          : "Google Sign-In не настроен (добавьте EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID в .env)"
+      );
       return;
     }
     setLoading(true);

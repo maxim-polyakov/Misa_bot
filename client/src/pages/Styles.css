@@ -590,9 +590,12 @@ body {
 /* ===== ПУБЛИЧНАЯ СТРАНИЦА ШАРИНГА (как у DeepSeek) ===== */
 .share-chat-page {
     min-height: 100dvh;
+    height: 100vh; /* fallback */
+    height: 100dvh;
     background: var(--primary-bg);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 /* Верхняя панель — логотип слева, badge справа */
@@ -633,10 +636,14 @@ body {
 /* Основной контент */
 .share-chat-body {
     flex: 1;
+    min-height: 0;
     padding: 2rem 1.5rem;
     max-width: 48rem;
     margin: 0 auto;
     width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 .share-chat-title {
