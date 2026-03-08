@@ -958,7 +958,7 @@ class Controller(IController.IController):
 
     @classmethod
     def chats_share_public(cls, request, chat_id):
-        """GET /api/chats/<id>/share/ — публичный просмотр чата (без авторизации)"""
+        """GET /api/chats/<id>/share/ — публичный просмотр чата (без авторизации). ?msg=id1,id2 — только выбранные сообщения."""
         try:
             df_chat = cls.__dbc.execute_query(
                 "SELECT id, title FROM chat.chats WHERE id = %s",
@@ -968,6 +968,11 @@ class Controller(IController.IController):
                 return cls.error_response("Chat not found", 404)
             title = str(df_chat.iloc[0].get('title', '')).strip() or 'Новый чат'
             messages = ChatService.get_messages(chat_id)
+            msg_param = request.GET.get('msg') if hasattr(request, 'GET') else None
+            if msg_param:
+                msg_ids = {m.strip() for m in msg_param.split(',') if m.strip()}
+                if msg_ids:
+                    messages = [m for m in messages if str(m.get('id', '')) in msg_ids]
             return cls.success_response({'id': chat_id, 'title': title, 'messages': messages})
         except Exception as e:
             logging.error(f"chats_share_public error: {str(e)}")

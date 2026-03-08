@@ -377,10 +377,14 @@ class ChatStore {
     return msg?.feedback ?? null;
   }
 
-  getShareLink(chatId) {
+  getShareLink(chatId, messageIds) {
     const id = typeof chatId === "string" ? chatId : this.currentChatId;
     if (!id || typeof id !== "string") return WEB_APP_URL;
-    return `${WEB_APP_URL.replace(/\/$/, "")}/share/${encodeURIComponent(id)}`;
+    let url = `${WEB_APP_URL.replace(/\/$/, "")}/share/${encodeURIComponent(id)}`;
+    if (Array.isArray(messageIds) && messageIds.length > 0) {
+      url += `?msg=${encodeURIComponent(messageIds.join(","))}`;
+    }
+    return url;
   }
 
   async _loadPinnedChatIds() {

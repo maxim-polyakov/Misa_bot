@@ -166,7 +166,11 @@ class ChatStore {
         const base = typeof window !== 'undefined' ? window.location.origin : '';
         const chatId = this.shareModeForChatId || this.currentChatId;
         if (!chatId) return base;
-        return `${base}/share/${encodeURIComponent(chatId)}`;
+        let url = `${base}/share/${encodeURIComponent(chatId)}`;
+        if (this.selectedMessageIds?.length > 0) {
+            url += `?msg=${encodeURIComponent(this.selectedMessageIds.join(','))}`;
+        }
+        return url;
     }
 
     // Получение ID текущего пользователя

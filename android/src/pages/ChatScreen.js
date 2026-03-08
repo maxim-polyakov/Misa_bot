@@ -212,8 +212,21 @@ function ChatScreen() {
     chatStore.regenerateReply(msg.id);
   };
 
-  const handleShareMessage = async (chatId) => {
-    const url = chatStore.getShareLink(chatId ?? chatStore.currentChatId);
+  const handleShareMessage = async (chatId, msg) => {
+    let messageIds = null;
+    if (msg && msg.user === "Misa") {
+      const chat = chatStore.chats.find((c) => c.id === (chatId ?? chatStore.currentChatId));
+      const idx = chat?.messages?.findIndex((m) => m.id === msg.id);
+      if (idx != null && idx >= 0) {
+        const ids = [msg.id];
+        if (idx > 0) {
+          const prev = chat.messages[idx - 1];
+          if (prev?.user !== "Misa") ids.unshift(prev.id);
+        }
+        messageIds = ids;
+      }
+    }
+    const url = chatStore.getShareLink(chatId ?? chatStore.currentChatId, messageIds);
     try {
       await Share.share({
         message: url,
@@ -367,7 +380,7 @@ function ChatScreen() {
                   color={feedback === "dislike" ? "#ef4444" : COLORS.textSecondary}
                 />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.msgActionBtn} onPress={() => handleShareMessage()}>
+              <TouchableOpacity style={styles.msgActionBtn} onPress={() => handleShareMessage(chatStore.currentChatId, item)}>
                 <Text style={styles.msgActionIcon}>↗</Text>
               </TouchableOpacity>
             </View>

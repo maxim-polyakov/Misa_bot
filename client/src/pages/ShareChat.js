@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import CachedImage from "./CachedImage";
 import { useLocale } from "../contexts/LocaleContext";
 import "./Styles.css";
@@ -49,6 +49,7 @@ const parseMessageContent = (content) => {
 
 const ShareChat = () => {
     const { chatId } = useParams();
+    const [searchParams] = useSearchParams();
     const { t } = useLocale();
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
@@ -60,9 +61,11 @@ const ShareChat = () => {
             setError('No chat ID');
             return;
         }
+        const msgIds = searchParams.get('msg');
+        const shareUrl = `${API_URL}/api/chats/${encodeURIComponent(chatId)}/share/${msgIds ? `?msg=${encodeURIComponent(msgIds)}` : ''}`;
         const fetchChat = async () => {
             try {
-                const res = await fetch(`${API_URL}/api/chats/${encodeURIComponent(chatId)}/share/`);
+                const res = await fetch(shareUrl);
                 const json = await res.json().catch(() => ({}));
                 if (json.status === 'error') {
                     setError(json.message || 'Chat not found');
@@ -79,7 +82,7 @@ const ShareChat = () => {
             }
         };
         fetchChat();
-    }, [chatId]);
+    }, [chatId, searchParams]);
 
     // Обновляем title для SEO и превью при шаринге (хук должен быть до любых return)
     useEffect(() => {
@@ -88,6 +91,13 @@ const ShareChat = () => {
             return () => { document.title = 'Misa AI Chat'; };
         }
     }, [data?.title]);
+
+    // Прокрутка в начало при загрузке контента
+    useEffect(() => {
+        if (data && !loading) {
+            window.scrollTo(0, 0);
+        }
+    }, [data, loading]);
 
     const renderMessage = (msg) => {
         const messageUser = msg.user;
