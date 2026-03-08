@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { observer } from "mobx-react-lite";
 import { jwtDecode } from "jwt-decode";
 import Constants from "expo-constants";
@@ -18,9 +19,13 @@ const AppContent = observer(() => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const webClientId = Constants.expoConfig?.extra?.googleWebClientId;
-    if (webClientId) {
-      GoogleSignin.configure({ webClientId });
+    try {
+      const webClientId = Constants.expoConfig?.extra?.googleWebClientId;
+      if (webClientId) {
+        GoogleSignin.configure({ webClientId });
+      }
+    } catch (e) {
+      console.warn("Google Sign-In init:", e?.message);
     }
   }, []);
 
@@ -75,12 +80,14 @@ const AppContent = observer(() => {
 
 export default function App() {
   return (
-    <UserProvider>
-      <RootStoreProvider>
-        <AppContent />
-        <StatusBar style="auto" />
-      </RootStoreProvider>
-    </UserProvider>
+    <SafeAreaProvider>
+      <UserProvider>
+        <RootStoreProvider>
+          <AppContent />
+          <StatusBar style="auto" />
+        </RootStoreProvider>
+      </UserProvider>
+    </SafeAreaProvider>
   );
 }
 

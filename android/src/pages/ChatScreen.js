@@ -173,7 +173,13 @@ function ChatScreen() {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <Image source={require("../../assets/icon.png")} style={[styles.emptyLogo, isSmallScreen && styles.emptyLogoSmall]} />
+      <View style={[styles.emptyLogoWrap, isSmallScreen && styles.emptyLogoWrapSmall]}>
+        <Image
+          source={require("../../assets/icon.png")}
+          style={[styles.emptyLogo, isSmallScreen && styles.emptyLogoSmall]}
+          resizeMode="cover"
+        />
+      </View>
       <Text style={[styles.emptyTitle, isSmallScreen && styles.emptyTitleSmall]}>Начните общение с Misa AI</Text>
       <Text style={[styles.emptyHint, isSmallScreen && styles.emptyHintSmall]}>Задайте вопрос или поделитесь мыслями</Text>
     </ScrollView>
@@ -202,7 +208,13 @@ function ChatScreen() {
   const renderSidebar = () => (
     <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarTranslate }] }]}>
       <View style={styles.sidebarHeader}>
-        <Image source={require("../../assets/icon.png")} style={styles.sidebarLogo} />
+        <View style={styles.sidebarLogoWrap}>
+          <Image
+            source={require("../../assets/icon.png")}
+            style={styles.sidebarLogo}
+            resizeMode="cover"
+          />
+        </View>
         <Text style={styles.sidebarBrand}>Misa AI Чат</Text>
         <TouchableOpacity style={styles.sidebarCloseBtn} onPress={() => setSidebarOpen(false)}>
           <Text style={styles.sidebarCloseText}>✕</Text>
@@ -344,10 +356,18 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
-  sidebarLogo: {
+  sidebarLogoWrap: {
     width: 28,
     height: 28,
     borderRadius: 6,
+    overflow: "hidden",
+  },
+  sidebarLogo: {
+    width: 28,
+    height: 42,
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
   sidebarBrand: {
     flex: 1,
@@ -500,16 +520,29 @@ const styles = StyleSheet.create({
   emptyChatSmall: {
     paddingVertical: 16,
   },
-  emptyLogo: {
+  emptyLogoWrap: {
     width: 48,
     height: 48,
-    borderRadius: 8,
+    borderRadius: 24,
+    overflow: "hidden",
     marginBottom: 16,
+  },
+  emptyLogoWrapSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginBottom: 12,
+  },
+  emptyLogo: {
+    width: 48,
+    height: 72,
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
   emptyLogoSmall: {
     width: 40,
-    height: 40,
-    marginBottom: 12,
+    height: 60,
   },
   emptyTitle: {
     fontSize: 24,
