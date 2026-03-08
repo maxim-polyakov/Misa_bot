@@ -43,6 +43,13 @@ class ChatStore {
     return this.loadingChatIds.includes(chatId);
   }
 
+  getChatTitle(chat) {
+    if (chat?.title && chat.title !== "Новый чат") return chat.title;
+    const firstUser = chat?.messages?.find((m) => m.user !== "Misa");
+    if (firstUser?.content) return firstUser.content.slice(0, 40) + (firstUser.content.length > 40 ? "…" : "");
+    return "Новый чат";
+  }
+
   async getCurrentUserId() {
     return this._userId || (await storage.getItem("currentUserId"));
   }
@@ -270,6 +277,9 @@ class ChatStore {
           user: m.user,
           timestamp: new Date(m.timestamp),
           isImage: m.isImage,
+          feedback: m.feedback,
+          feedbackCategories: m.feedbackCategories,
+          feedbackComment: m.feedbackComment,
         }));
         if (data.title != null && data.title !== "") chat.title = String(data.title).trim();
         chat._messagesLoaded = true;
@@ -297,6 +307,60 @@ class ChatStore {
         this.loadingChatIds = this.loadingChatIds.filter((id) => id !== data.chat_id);
         this.saveChats();
       }
+    }
+  }
+
+  getMessageFeedback(msgId) {
+    const msg = this.currentChat?.messages?.find((m) => m.id === msgId);
+    return msg?.feedback ?? null;
+  }
+
+  async setMessageFeedback(msgId, feedback, categories = null, comment = null) {
+    const chat = this.currentChat;
+    const idx = chat?.messages?.findIndex((m) => m.id === msgId);
+    if (idx == null || idx < 0) return;
+    const msg = chat.messages[idx];
+    const prev = msg?.feedback ?? null;
+    chat.messages[idx] = {
+      ...msg,
+      feedback,
+      feedbackCategories: feedback === "dislike" ? categories || [] : null,
+      feedbackComment: feedback === "dislike" ? comment || null : null,
+    };
+    this.saveChats();
+    if (API_URL) {
+      try {
+        await apiFetch(`/api/chats/${this.currentChatId}/messages/${msgId}/feedback/`, {
+          method: "PATCH",
+          body: JSON.stringify({ feedback, categories: categories || [], comment: comment || "" }),
+        });
+      } catch (e) {
+        chat.messages[idx] = { ...msg, feedback: prev };
+        this.saveChats();
+      }
+    }
+  }
+
+  regenerateReply(msgId) {
+    if (!this.isConnected || !this.socket || !this.currentChatId) return false;
+    const msg = this.currentChat?.messages?.find((m) => m.id === msgId);
+    if (!msg || msg.user !== "Misa") return false;
+    if (!this.loadingChatIds.includes(this.currentChatId)) {
+      this.loadingChatIds = [...this.loadingChatIds, this.currentChatId];
+    }
+    try {
+      this.socket.send(
+        JSON.stringify({
+          type: "regenerate",
+          chat_id: this.currentChatId,
+          message_id: msgId,
+          user: this.user,
+        })
+      );
+      return true;
+    } catch (e) {
+      this.loadingChatIds = this.loadingChatIds.filter((id) => id !== this.currentChatId);
+      return false;
     }
   }
 

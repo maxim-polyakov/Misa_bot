@@ -52,6 +52,33 @@ export const verifyRegistrationCode = async (email, password, code) => {
   return { ...decoded, ...user };
 };
 
+export const sendForgotPasswordCode = async (email) => {
+  const res = await fetch(`${API_URL}/auth/forgot-password/send-code/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (data.status === "error") throw new Error(data.message || "Не удалось отправить код");
+  return data;
+};
+
+export const verifyForgotPasswordCode = async (email, code, newPassword) => {
+  const res = await fetch(`${API_URL}/auth/forgot-password/verify/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, code, new_password: newPassword }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (data.status === "error") throw new Error(data.message || "Неверный или истёкший код");
+  const token = data.data?.token;
+  if (!token) throw new Error("Нет токена");
+  await storage.setItem("token", token);
+  const decoded = jwtDecode(token);
+  const user = data.data?.user || {};
+  return { ...decoded, ...user };
+};
+
 export const loginWithGoogleIdToken = async (idToken) => {
   const res = await fetch(`${API_URL}/auth/google-id-token/`, {
     method: "POST",
