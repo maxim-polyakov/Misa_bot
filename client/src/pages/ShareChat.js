@@ -193,9 +193,11 @@ const ShareChat = () => {
             </header>
 
             <div className="share-chat-body">
-                <h1 className="share-chat-title">{data.title || 'Чат'}</h1>
-                <div className="share-chat-messages">
-                    {(data.messages || []).map(renderMessage)}
+                <div className="share-chat-body-inner">
+                    <h1 className="share-chat-title">{data.title || 'Чат'}</h1>
+                    <div className="share-chat-messages">
+                        {(data.messages || []).map(renderMessage)}
+                    </div>
                 </div>
             </div>
 
