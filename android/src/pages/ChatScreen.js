@@ -367,7 +367,7 @@ function ChatScreen() {
                   color={feedback === "dislike" ? "#ef4444" : COLORS.textSecondary}
                 />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.msgActionBtn} onPress={handleShareMessage}>
+              <TouchableOpacity style={styles.msgActionBtn} onPress={() => handleShareMessage()}>
                 <Text style={styles.msgActionIcon}>↗</Text>
               </TouchableOpacity>
             </View>
