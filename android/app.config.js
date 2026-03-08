@@ -20,7 +20,10 @@ export default {
       resizeMode: "contain",
       backgroundColor: "#ffffff",
     },
-    ios: { supportsTablet: true },
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: "ru.baxic.misa",
+    },
     android: {
       package: "ru.baxic.misa",
       softwareKeyboardLayoutMode: "resize",

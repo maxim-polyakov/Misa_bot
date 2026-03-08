@@ -802,7 +802,11 @@ class Controller(IController.IController):
             if not id_token_raw:
                 return cls.error_response("id_token is required", 400)
 
-            client_ids = [c for c in [os.getenv('GOOGLE_CLIENT_ID'), os.getenv('GOOGLE_CLIENT_ID_ANDROID')] if c]
+            client_ids = [c for c in [
+                os.getenv('GOOGLE_CLIENT_ID'),
+                os.getenv('GOOGLE_CLIENT_ID_ANDROID'),
+                os.getenv('GOOGLE_CLIENT_ID_IOS'),
+            ] if c]
             if not client_ids:
                 return cls.error_response("Google OAuth not configured", 500)
 
