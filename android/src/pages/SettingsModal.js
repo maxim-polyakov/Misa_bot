@@ -276,7 +276,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
             )}
           </ScrollView>
         </View>
-      </TouchableOpacity>
+      </View>
     </Modal>
   );
 });
