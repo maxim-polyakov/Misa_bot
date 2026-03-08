@@ -74,6 +74,40 @@ class ChatStore {
     storage.removeItem("userProfile");
   }
 
+  clearUserFromStorage() {
+    this.logout();
+  }
+
+  async deleteAllChats() {
+    if (API_URL) {
+      try {
+        for (const chat of [...this.chats]) {
+          await apiFetch(`/api/chats/${chat.id}/delete/`, { method: "DELETE" });
+        }
+      } catch (e) {
+        console.warn("Ошибка удаления чатов:", e);
+      }
+    }
+    this.chats = [];
+    await this.newChat();
+  }
+
+  getConversationsExportData() {
+    return {
+      exportedAt: new Date().toISOString(),
+      conversations: this.chats.map((c) => ({
+        id: c.id,
+        title: c.title,
+        createdAt: c.createdAt,
+        messages: (c.messages || []).map((m) => ({
+          content: m.content,
+          user: m.user,
+          timestamp: m.timestamp,
+        })),
+      })),
+    };
+  }
+
   _clearPingInterval() {
     if (this._pingIntervalId) {
       clearInterval(this._pingIntervalId);
@@ -168,6 +202,11 @@ class ChatStore {
   }
 
   async newChat() {
+    const emptyChat = this.chats.find((c) => !c.messages || c.messages.length === 0);
+    if (emptyChat) {
+      this.switchChat(emptyChat.id);
+      return;
+    }
     let id = generateId();
     if (API_URL) {
       try {

@@ -95,6 +95,15 @@ export const loginWithGoogleIdToken = async (idToken) => {
   return { ...decoded, ...user };
 };
 
+export const logoutAll = async () => {
+  try {
+    const headers = await getAuthHeaders();
+    await fetch(`${API_URL}/auth/logout-all/`, { method: "POST", headers });
+  } catch (e) {
+    console.warn("logoutAll error:", e);
+  }
+};
+
 export const check = async () => {
   const token = await storage.getItem("token");
   if (!token) return null;

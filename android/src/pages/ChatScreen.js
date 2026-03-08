@@ -14,12 +14,14 @@ import {
   Animated,
   ScrollView,
   useWindowDimensions,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
 import { useStores } from "../store/rootStoreContext";
 import { useUser } from "../context/UserContext";
 import { API_URL } from "../config";
+import SettingsModal from "./SettingsModal";
 
 const SIDEBAR_WIDTH = 280;
 
@@ -40,6 +42,8 @@ function ChatScreen() {
   const { user, setIsAuth } = useUser();
   const [message, setMessage] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [copiedMsgId, setCopiedMsgId] = useState(null);
   const sidebarAnim = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
@@ -49,6 +53,7 @@ function ChatScreen() {
   const isSmallScreen = screenHeight < 600 || screenWidth < 360;
 
   const handleLogout = () => {
+    setProfileOpen(false);
     setSidebarOpen(false);
     chatStore.logout();
     setIsAuth(false);
@@ -216,19 +221,21 @@ function ChatScreen() {
           />
         </View>
         <Text style={styles.sidebarBrand}>Misa AI Чат</Text>
-        <TouchableOpacity style={styles.sidebarCloseBtn} onPress={() => setSidebarOpen(false)}>
+        <TouchableOpacity style={styles.sidebarCloseBtn} onPress={() => { setSidebarOpen(false); setProfileOpen(false); }}>
           <Text style={styles.sidebarCloseText}>✕</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.newChatBtn} onPress={() => { chatStore.newChat(); setSidebarOpen(false); }}>
+      <TouchableOpacity style={styles.newChatBtn} onPress={() => { chatStore.newChat(); setSidebarOpen(false); setProfileOpen(false); }}>
         <Text style={styles.newChatBtnText}>+ Новый чат</Text>
       </TouchableOpacity>
       <View style={styles.chatList}>
-        {chatStore.chats.map((c) => (
+        {chatStore.chats
+          .filter((c) => (c.messages?.length ?? 0) > 0)
+          .map((c) => (
           <TouchableOpacity
             key={c.id}
             style={[styles.chatItem, c.id === chatStore.currentChatId && styles.chatItemActive]}
-            onPress={() => { chatStore.switchChat(c.id); setSidebarOpen(false); }}
+            onPress={() => { chatStore.switchChat(c.id); setSidebarOpen(false); setProfileOpen(false); }}
           >
             <Text style={styles.chatItemIcon}>💬</Text>
             <Text numberOfLines={1} style={styles.chatItemTitle}>
@@ -238,13 +245,42 @@ function ChatScreen() {
         ))}
       </View>
       <View style={styles.sidebarFooter}>
-        <TouchableOpacity style={styles.profileBtn} onPress={handleLogout}>
-          <Text style={styles.profileAvatar}>
-            {(user?.display_name || user?.email || "?")[0].toUpperCase()}
-          </Text>
+        {profileOpen && (
+          <View style={styles.profilePanel}>
+            <TouchableOpacity
+              style={styles.profileItem}
+              onPress={() => { setProfileOpen(false); setSidebarOpen(false); setSettingsOpen(true); }}
+            >
+              <Text style={styles.profileItemIcon}>⚙</Text>
+              <Text style={styles.profileItemText}>Настройки</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.profileItem}
+              onPress={() => { setProfileOpen(false); Alert.alert("Помощь", "Обратная связь: напишите нам на support@misa.ai"); }}
+            >
+              <Text style={styles.profileItemIcon}>?</Text>
+              <Text style={styles.profileItemText}>Помощь и отзыв</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.profileItem, styles.profileItemLogout]} onPress={handleLogout}>
+              <Text style={styles.profileItemIcon}>→</Text>
+              <Text style={styles.profileItemText}>Выйти</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        <TouchableOpacity style={styles.profileBtn} onPress={() => setProfileOpen(!profileOpen)}>
+          {user?.picture ? (
+            <Image source={{ uri: user.picture }} style={styles.profileAvatarImg} />
+          ) : (
+            <View style={styles.profileAvatar}>
+              <Text style={styles.profileAvatarText}>
+                {(user?.display_name || user?.email || "?")[0].toUpperCase()}
+              </Text>
+            </View>
+          )}
           <Text style={styles.profileName} numberOfLines={1}>
             {user?.display_name || user?.email || "Пользователь"}
           </Text>
+          <Text style={styles.profileDots}>⋯</Text>
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -290,7 +326,7 @@ function ChatScreen() {
         style={[styles.overlay, { opacity: overlayOpacity }]}
         pointerEvents={sidebarOpen ? "auto" : "none"}
       >
-        <TouchableOpacity style={StyleSheet.absoluteFill} onPress={() => setSidebarOpen(false)} activeOpacity={1} />
+        <TouchableOpacity style={StyleSheet.absoluteFill} onPress={() => { setSidebarOpen(false); setProfileOpen(false); }} activeOpacity={1} />
       </Animated.View>
 
       {renderSidebar()}
@@ -328,6 +364,7 @@ function ChatScreen() {
           {inputBlock}
         </KeyboardAvoidingView>
       </View>
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </View>
   );
 }
@@ -419,6 +456,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   sidebarFooter: {
+    position: "relative",
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: COLORS.borderColor,
@@ -432,17 +470,60 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     backgroundColor: COLORS.accentColor,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  profileAvatarText: {
     color: COLORS.textPrimary,
     fontSize: 16,
     fontWeight: "600",
-    textAlign: "center",
-    lineHeight: 36,
+  },
+  profileAvatarImg: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     marginRight: 10,
   },
   profileName: {
     flex: 1,
     color: COLORS.textPrimary,
     fontSize: 14,
+  },
+  profileDots: {
+    color: COLORS.textSecondary,
+    fontSize: 18,
+    marginLeft: 4,
+  },
+  profilePanel: {
+    position: "absolute",
+    bottom: 56,
+    left: 16,
+    right: 16,
+    backgroundColor: COLORS.secondaryBg,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.borderColor,
+    overflow: "hidden",
+  },
+  profileItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  profileItemIcon: {
+    fontSize: 16,
+    marginRight: 10,
+    color: COLORS.textSecondary,
+  },
+  profileItemText: {
+    color: COLORS.textPrimary,
+    fontSize: 15,
+  },
+  profileItemLogout: {
+    borderTopWidth: 1,
+    borderTopColor: COLORS.borderColor,
   },
   main: { flex: 1 },
   header: {

@@ -2,6 +2,7 @@ export default {
   expo: {
     name: "Misa AI",
     plugins: [
+      "expo-sharing",
       [
         "@react-native-google-signin/google-signin",
         {
