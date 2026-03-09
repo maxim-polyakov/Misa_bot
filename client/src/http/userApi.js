@@ -183,12 +183,19 @@ export const deleteAccount = async () => {
     if (!token) {
         throw new Error("Authentication required");
     }
+    const baseURL = process.env.REACT_APP_API_URL || "";
+    const url = `${baseURL.replace(/\/$/, "")}/auth/delete-account/`;
     try {
-        const { data } = await $authhost.post("auth/delete-account/", {}, {
-            headers: { Authorization: `Bearer ${token}` },
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
         });
-        if (data?.status === "error") {
-            throw new Error(data?.message || "Не удалось удалить аккаунт");
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.status === "error") {
+            throw new Error(data.message || "Не удалось удалить аккаунт");
         }
     } catch (error) {
         throw new Error(extractApiError(error));
