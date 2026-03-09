@@ -9,6 +9,8 @@ import {
   Alert,
   FlatList,
   Platform,
+  ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { observer } from "mobx-react-lite";
 import JSZip from "jszip";
@@ -45,6 +47,9 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
   const { t, locale, setLanguage: setLocale } = useLocale();
   const [activeTab, setActiveTab] = useState("general");
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const styles = useMemo(() => createStyles(colors), [colors]);
   const SETTINGS_TABS = useMemo(() => getSettingsTabs(t), [t]);
 
@@ -66,29 +71,25 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
     setIsAuth(false);
   };
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      t("deleteAccount"),
-      t("deleteAccountConfirm"),
-      [
-        { text: t("cancel"), style: "cancel" },
-        {
-          text: t("delete"),
-          style: "destructive",
-          onPress: async () => {
-            onClose();
-            try {
-              await deleteAccount();
-            } catch (e) {
-              Alert.alert(t("error"), e?.message || t("deleteAccountFailed"));
-              return;
-            }
-            chatStore.clearUserFromStorage();
-            setIsAuth(false);
-          },
-        },
-      ]
-    );
+  const handleDeleteAccountClick = () => {
+    setDeleteError(null);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteAccountConfirm = async () => {
+    setDeleteLoading(true);
+    setDeleteError(null);
+    try {
+      await deleteAccount();
+      setDeleteConfirmOpen(false);
+      onClose();
+      chatStore.clearUserFromStorage();
+      setIsAuth(false);
+    } catch (e) {
+      setDeleteError(e?.message || t("deleteAccountFailed"));
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const handleExport = async () => {
@@ -186,6 +187,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
+    <>
     <Modal visible={isOpen} transparent animationType="fade">
       <View style={styles.overlay}>
         <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
@@ -239,7 +241,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                 </View>
                 <View style={[styles.row, styles.rowActions]}>
                   <Text style={styles.label}>{t("deleteAccount")}</Text>
-                  <TouchableOpacity style={styles.btnDelete} onPress={handleDeleteAccount}>
+                  <TouchableOpacity style={styles.btnDelete} onPress={handleDeleteAccountClick}>
                     <Text style={styles.btnDeleteText}>{t("delete")}</Text>
                   </TouchableOpacity>
                 </View>
@@ -338,6 +340,44 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
         </View>
       </View>
     </Modal>
+
+    <Modal visible={deleteConfirmOpen} transparent animationType="fade">
+      <View style={[StyleSheet.absoluteFill, styles.overlay]}>
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          activeOpacity={1}
+          onPress={() => !deleteLoading && setDeleteConfirmOpen(false)}
+        />
+        <View style={styles.deleteConfirmModal} onStartShouldSetResponder={() => true}>
+          <Text style={styles.feedbackTitle}>{t("deleteAccount")}</Text>
+          <Text style={styles.deleteConfirmText}>{t("deleteAccountConfirm")}</Text>
+          {deleteError ? (
+            <Text style={styles.deleteConfirmError}>{deleteError}</Text>
+          ) : null}
+          <View style={styles.feedbackActions}>
+            <TouchableOpacity
+              style={styles.feedbackBtnCancel}
+              onPress={() => !deleteLoading && setDeleteConfirmOpen(false)}
+              disabled={deleteLoading}
+            >
+              <Text style={styles.feedbackBtnCancelText}>{t("cancel")}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.feedbackBtnSubmit}
+              onPress={handleDeleteAccountConfirm}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.feedbackBtnSubmitText}>{t("delete")}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    </>
   );
 });
 
@@ -492,6 +532,59 @@ const createStyles = (colors) =>
     btnDeleteAllText: { color: "#ef4444", fontWeight: "600" },
     placeholder: { padding: 24, alignItems: "center" },
     placeholderText: { fontSize: 18, color: colors.textSecondary },
+    deleteConfirmModal: {
+      backgroundColor: colors.secondaryBg,
+      borderRadius: 16,
+      padding: 20,
+      width: "100%",
+      maxWidth: 360,
+      borderWidth: 1,
+      borderColor: colors.borderColor,
+    },
+    deleteConfirmText: {
+      fontSize: 15,
+      color: colors.textPrimary,
+      marginBottom: 16,
+      lineHeight: 22,
+    },
+    deleteConfirmError: {
+      fontSize: 14,
+      color: "#ef4444",
+      marginBottom: 16,
+    },
+    feedbackTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: colors.textPrimary,
+      marginBottom: 16,
+    },
+    feedbackActions: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      gap: 12,
+    },
+    feedbackBtnCancel: {
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 10,
+    },
+    feedbackBtnCancelText: {
+      color: colors.textSecondary,
+      fontSize: 16,
+    },
+    feedbackBtnSubmit: {
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 10,
+      backgroundColor: "#ef4444",
+      minWidth: 80,
+      alignItems: "center",
+    },
+    feedbackBtnSubmitText: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: "600",
+    },
   });
 
 export default SettingsModal;

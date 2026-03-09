@@ -1757,6 +1757,54 @@ body {
     font-size: 0.875rem;
 }
 
+.settings-confirm-modal {
+    width: min(90vw, 400px);
+}
+
+.settings-confirm-body {
+    padding: 1.25rem;
+}
+
+.settings-confirm-text {
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+    margin: 0 0 1rem;
+    line-height: 1.5;
+}
+
+.settings-confirm-error {
+    color: var(--error-color);
+    font-size: 0.875rem;
+    margin: 0 0 1rem;
+}
+
+.settings-confirm-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.settings-btn-cancel {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+}
+
+.settings-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.settings-btn-cancel:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .settings-data-section {
     display: flex;
     flex-direction: column;

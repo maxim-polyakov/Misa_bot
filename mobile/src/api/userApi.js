@@ -105,7 +105,14 @@ export const logoutAll = async () => {
 };
 
 export const deleteAccount = async () => {
-  const headers = await getAuthHeaders();
+  const token = await storage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
   const res = await fetch(`${API_URL}/auth/delete-account/`, { method: "POST", headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.status === "error") {

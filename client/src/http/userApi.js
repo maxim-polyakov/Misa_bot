@@ -179,8 +179,14 @@ export const logoutAll = async () => {
  * Удаление аккаунта: удаляет пользователя на сервере (необратимо)
  */
 export const deleteAccount = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        throw new Error("Authentication required");
+    }
     try {
-        const { data } = await $authhost.post("auth/delete-account/");
+        const { data } = await $authhost.post("auth/delete-account/", {}, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
         if (data?.status === "error") {
             throw new Error(data?.message || "Не удалось удалить аккаунт");
         }
