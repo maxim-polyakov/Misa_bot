@@ -109,6 +109,15 @@ def logout_all(request):
     return ctrlr.logout_all(request)
 
 
+@swagger_auto_schema(method='post', operation_summary='Удаление аккаунта', tags=['Auth'])
+@api_view(['POST'])
+@csrf_exempt
+def delete_account(request):
+    """Удаление аккаунта пользователя (необратимо)"""
+    ctrlr = Controller.Controller()
+    return ctrlr.delete_account(request)
+
+
 # Chat API (требует JWT)
 @swagger_auto_schema(method='get', operation_summary='Список чатов', tags=['Chats'])
 @swagger_auto_schema(method='post', operation_summary='Создать чат', tags=['Chats'])

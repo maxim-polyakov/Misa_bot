@@ -861,6 +861,25 @@ class Controller(IController.IController):
             return cls.error_response(str(e), 500)
 
     @classmethod
+    def delete_account(cls, request):
+        """Удаление аккаунта: удаляет пользователя из auth.users (чаты удаляются CASCADE)"""
+        try:
+            user = getattr(request, 'user', None)
+            if user is None:
+                return cls.error_response("Authentication required", 401)
+            user_id = getattr(user, 'id', None)
+            if user_id is None:
+                return cls.error_response("Authentication required", 401)
+            delete_sql = "DELETE FROM auth.users WHERE id = %s"
+            cls.__dbc.execute_update(delete_sql, (user_id,))
+            cache.delete(f"auth_user:{user_id}")
+            cache.delete(f"auth_user_full:{user_id}")
+            return cls.success_response(None, "Account deleted", 200)
+        except Exception as e:
+            logging.error(f"delete_account error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
     def check(cls, request):
         """Проверка аутентификации пользователя с обновлением токена"""
         try:

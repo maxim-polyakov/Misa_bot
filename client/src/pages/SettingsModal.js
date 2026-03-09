@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 import JSZip from "jszip";
 import { Context } from "../index.js";
 import { useStores } from "../store/rootStoreContext";
-import { logoutAll } from "../http/userApi";
+import { logoutAll, deleteAccount } from "../http/userApi";
 import { useLocale } from "../contexts/LocaleContext";
 import { getTheme, setTheme, THEMES } from "../utils/theme.js";
 import { getLanguage, LANGUAGES } from "../utils/locale.js";
@@ -64,11 +64,20 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
         navigate("/login", { replace: true });
     };
 
-    const handleDeleteAccount = () => {
-        if (window.confirm("Вы уверены, что хотите удалить аккаунт? Это действие необратимо.")) {
-            handleLogout();
-            // TODO: вызов API удаления аккаунта
+    const handleDeleteAccount = async () => {
+        if (!window.confirm(t("deleteAccountConfirm"))) return;
+        onClose();
+        try {
+            await deleteAccount();
+        } catch (e) {
+            alert(e?.message || t("error"));
+            return;
         }
+        chatStore.clearUserFromStorage();
+        chatStore.logout();
+        user?.setUser({});
+        user?.setIsAuth(false);
+        navigate("/login", { replace: true });
     };
 
     if (!isOpen) return null;

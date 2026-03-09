@@ -16,6 +16,7 @@ export const translations = {
         logoutAll: "Выйти со всех устройств",
         logout: "Выйти",
         deleteAccount: "Удалить аккаунт",
+        deleteAccountConfirm: "Вы уверены, что хотите удалить аккаунт? Это действие необратимо.",
         delete: "Удалить",
         newChat: "Новый чат",
         placeholder: "Введите ваше сообщение... (Shift+Enter для переноса строки)",
@@ -71,6 +72,7 @@ export const translations = {
         feedbackOthers: "Другое",
         feedbackPlaceholder: "Мы ценим вашу обратную связь. Поделитесь комментариями и предложениями, чтобы помочь нам стать лучше.",
         submit: "Отправить",
+        error: "Ошибка",
     },
     en: {
         settings: "Settings",
@@ -89,6 +91,7 @@ export const translations = {
         logoutAll: "Log out of all devices",
         logout: "Log out",
         deleteAccount: "Delete account",
+        deleteAccountConfirm: "Are you sure you want to delete your account? This action cannot be undone.",
         delete: "Delete",
         newChat: "New chat",
         placeholder: "Type your message... (Shift+Enter for new line)",
@@ -144,5 +147,6 @@ export const translations = {
         feedbackOthers: "Others",
         feedbackPlaceholder: "We appreciate your feedback. Please share any comments or suggestions that you have to help us improve.",
         submit: "Submit",
+        error: "Error",
     },
 };

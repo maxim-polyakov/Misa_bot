@@ -175,6 +175,20 @@ export const logoutAll = async () => {
     }
 };
 
+/**
+ * Удаление аккаунта: удаляет пользователя на сервере (необратимо)
+ */
+export const deleteAccount = async () => {
+    try {
+        const { data } = await $authhost.post("auth/delete-account/");
+        if (data?.status === "error") {
+            throw new Error(data?.message || "Не удалось удалить аккаунт");
+        }
+    } catch (error) {
+        throw new Error(extractApiError(error));
+    }
+};
+
 export const check = async () => {
     try {
         // Проверяем наличие токена в localStorage перед запросом

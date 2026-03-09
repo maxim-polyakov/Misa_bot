@@ -18,7 +18,7 @@ import { useStores } from "../store/rootStoreContext";
 import { useUser } from "../context/UserContext";
 import { API_URL } from "../config";
 import { apiFetch } from "../api/http";
-import { logoutAll } from "../api/userApi";
+import { logoutAll, deleteAccount } from "../api/userApi";
 import { THEMES } from "../utils/theme";
 import { LANGUAGES } from "../utils/locale";
 import { useTheme } from "../context/ThemeContext";
@@ -72,7 +72,21 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
       t("deleteAccountConfirm"),
       [
         { text: t("cancel"), style: "cancel" },
-        { text: t("delete"), style: "destructive", onPress: () => handleLogout() },
+        {
+          text: t("delete"),
+          style: "destructive",
+          onPress: async () => {
+            onClose();
+            try {
+              await deleteAccount();
+            } catch (e) {
+              Alert.alert(t("error"), e?.message || t("deleteAccountFailed"));
+              return;
+            }
+            chatStore.clearUserFromStorage();
+            setIsAuth(false);
+          },
+        },
       ]
     );
   };

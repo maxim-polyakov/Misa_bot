@@ -72,6 +72,7 @@ export const translations = {
     help: "Помощь",
     error: "Ошибка",
     exportFailed: "Не удалось экспортировать данные",
+    deleteAccountFailed: "Не удалось удалить аккаунт",
     fileSaved: "Файл сохранён",
   },
   en: {
@@ -147,6 +148,7 @@ export const translations = {
     help: "Help",
     error: "Error",
     exportFailed: "Failed to export data",
+    deleteAccountFailed: "Failed to delete account",
     fileSaved: "File saved",
   },
 };
