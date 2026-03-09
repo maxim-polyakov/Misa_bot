@@ -8,6 +8,7 @@ import Constants from "expo-constants";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { UserProvider, useUser } from "./src/context/UserContext";
 import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
+import { LocaleProvider } from "./src/context/LocaleContext";
 import { RootStoreProvider, useStores } from "./src/store/rootStoreContext";
 import { check } from "./src/api/userApi";
 import { storage } from "./src/storage";
@@ -97,11 +98,13 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <UserProvider>
-          <RootStoreProvider>
-            <AppWithTheme />
-          </RootStoreProvider>
-        </UserProvider>
+        <LocaleProvider>
+          <UserProvider>
+            <RootStoreProvider>
+              <AppWithTheme />
+            </RootStoreProvider>
+          </UserProvider>
+        </LocaleProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

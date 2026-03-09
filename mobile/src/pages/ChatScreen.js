@@ -26,6 +26,7 @@ import * as Clipboard from "expo-clipboard";
 import { useStores } from "../store/rootStoreContext";
 import { useUser } from "../context/UserContext";
 import { useTheme } from "../context/ThemeContext";
+import { useLocale } from "../context/LocaleContext";
 import { API_URL } from "../config";
 import SettingsModal from "./SettingsModal";
 
@@ -72,6 +73,7 @@ function ChatScreen() {
   const { chatStore } = useStores();
   const { user, setIsAuth } = useUser();
   const { colors } = useTheme();
+  const { t, locale } = useLocale();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [message, setMessage] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -151,10 +153,10 @@ function ChatScreen() {
   };
 
   const FEEDBACK_CATEGORIES = [
-    { id: "harmful", label: "Вредно / Небезопасно" },
-    { id: "fake", label: "Неверно" },
-    { id: "unhelpful", label: "Бесполезно" },
-    { id: "others", label: "Другое" },
+    { id: "harmful", label: t("feedbackHarmful") },
+    { id: "fake", label: t("feedbackFake") },
+    { id: "unhelpful", label: t("feedbackUnhelpful") },
+    { id: "others", label: t("feedbackOthers") },
   ];
 
   const handleLike = (msg) => {
@@ -222,11 +224,11 @@ function ChatScreen() {
       await Share.share({
         message: url,
         url: Platform.OS === "ios" ? url : undefined,
-        title: "Поделиться чатом Misa AI",
+        title: t("shareChatTitle"),
       });
     } catch (e) {
       await Clipboard.setStringAsync(url);
-      Alert.alert("Ссылка скопирована", "Ссылка на чат скопирована в буфер обмена.");
+      Alert.alert(t("linkCopied"), t("linkCopiedDesc"));
     }
   };
 
@@ -263,12 +265,12 @@ function ChatScreen() {
   const handleDelete = (chatId) => {
     setChatMenuOpen(null);
     Alert.alert(
-      "Удалить чат?",
-      "Чат будет удалён безвозвратно.",
+      t("confirmDeleteChat"),
+      t("confirmDeleteChatDesc"),
       [
-        { text: "Отмена", style: "cancel" },
+        { text: t("cancel"), style: "cancel" },
         {
-          text: "Удалить",
+          text: t("delete"),
           style: "destructive",
           onPress: async () => {
             await chatStore.deleteChat(chatId);
@@ -397,8 +399,8 @@ function ChatScreen() {
           />
         </View>
         <View style={styles.emptyTextBlock}>
-          <Text style={[styles.emptyTitle, isSmallScreen && styles.emptyTitleSmall]}>Начните общение с Misa AI</Text>
-          <Text style={[styles.emptyHint, isSmallScreen && styles.emptyHintSmall]}>Задайте вопрос или поделитесь мыслями</Text>
+          <Text style={[styles.emptyTitle, isSmallScreen && styles.emptyTitleSmall]}>{t("startChat")}</Text>
+          <Text style={[styles.emptyHint, isSmallScreen && styles.emptyHintSmall]}>{t("startHint")}</Text>
         </View>
       </View>
     </ScrollView>
@@ -416,7 +418,7 @@ function ChatScreen() {
         chatStore.isLoading ? (
           <View style={styles.typing}>
             <ActivityIndicator size="small" color={colors.accentColor} />
-            <Text style={styles.typingText}>Misa печатает...</Text>
+            <Text style={styles.typingText}>{t("typing")}</Text>
           </View>
         ) : null
       }
@@ -434,23 +436,23 @@ function ChatScreen() {
             resizeMode="contain"
           />
         </View>
-        <Text style={styles.sidebarBrand}>Misa AI Чат</Text>
+        <Text style={styles.sidebarBrand}>{t("misaChat")}</Text>
         <TouchableOpacity style={styles.sidebarCloseBtn} onPress={() => { setSidebarOpen(false); setProfileOpen(false); }}>
           <Text style={styles.sidebarCloseText}>✕</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.newChatBtn} onPress={() => { chatStore.newChat(); setSidebarOpen(false); setProfileOpen(false); }}>
-        <Text style={styles.newChatBtnText}>+ Новый чат</Text>
+        <TouchableOpacity style={styles.newChatBtn} onPress={() => { chatStore.newChat(); setSidebarOpen(false); setProfileOpen(false); }}>
+        <Text style={styles.newChatBtnText}>+ {t("newChat")}</Text>
       </TouchableOpacity>
       <ScrollView style={styles.chatList} showsVerticalScrollIndicator={false}>
         {(() => {
           const groups = chatStore.getChatsGroupedByPeriod();
-          const monthFormatter = new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric" });
+          const monthFormatter = new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "en-US", { month: "long", year: "numeric" });
           const sections = [
-            { key: "pinned", label: "Закреплённые", chats: groups.pinned },
-            { key: "today", label: "Сегодня", chats: groups.today },
-            { key: "yesterday", label: "Вчера", chats: groups.yesterday },
-            { key: "last7Days", label: "7 дней", chats: groups.last7Days },
+            { key: "pinned", label: t("pinned"), chats: groups.pinned },
+            { key: "today", label: t("today"), chats: groups.today },
+            { key: "yesterday", label: t("yesterday"), chats: groups.yesterday },
+            { key: "last7Days", label: t("last7Days"), chats: groups.last7Days },
             ...(groups.olderByMonth || []).map(({ key, year, month, chats }) => {
               const label = monthFormatter.format(new Date(year, month, 1));
               return { key: `older-${key}`, label: label.charAt(0).toUpperCase() + label.slice(1), chats };
@@ -482,21 +484,21 @@ function ChatScreen() {
               <View style={styles.chatMenu}>
                 <TouchableOpacity style={styles.chatMenuItem} onPress={() => handleRename(c)}>
                   <Text style={styles.chatMenuItemIcon}>✎</Text>
-                  <Text style={styles.chatMenuItemText}>Переименовать</Text>
+                  <Text style={styles.chatMenuItemText}>{t("rename")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.chatMenuItem} onPress={() => handlePin(c.id)}>
                   <Text style={styles.chatMenuItemIcon}>📌</Text>
                   <Text style={styles.chatMenuItemText}>
-                    {chatStore.isChatPinned(c.id) ? "Открепить" : "Закрепить"}
+                    {chatStore.isChatPinned(c.id) ? t("unpin") : t("pin")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.chatMenuItem} onPress={() => handleShareFromMenu(c.id)}>
                   <Text style={styles.chatMenuItemIcon}>⎘</Text>
-                  <Text style={styles.chatMenuItemText}>Поделиться</Text>
+                  <Text style={styles.chatMenuItemText}>{t("share")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.chatMenuItem, styles.chatMenuItemDelete]} onPress={() => handleDelete(c.id)}>
                   <Text style={styles.chatMenuItemIcon}>🗑</Text>
-                  <Text style={[styles.chatMenuItemText, styles.chatMenuItemDeleteText]}>Удалить</Text>
+                  <Text style={[styles.chatMenuItemText, styles.chatMenuItemDeleteText]}>{t("delete")}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -514,18 +516,18 @@ function ChatScreen() {
               onPress={() => { setProfileOpen(false); setSidebarOpen(false); setSettingsOpen(true); }}
             >
               <Text style={styles.profileItemIcon}>⚙</Text>
-              <Text style={styles.profileItemText}>Настройки</Text>
+              <Text style={styles.profileItemText}>{t("settings")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.profileItem}
-              onPress={() => { setProfileOpen(false); Alert.alert("Помощь", "Обратная связь: напишите нам на support@misa.ai"); }}
+              onPress={() => { setProfileOpen(false); Alert.alert(t("help"), "Обратная связь: напишите нам на support@misa.ai"); }}
             >
               <Text style={styles.profileItemIcon}>?</Text>
-              <Text style={styles.profileItemText}>Помощь и отзыв</Text>
+              <Text style={styles.profileItemText}>{t("helpFeedback")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.profileItem, styles.profileItemLogout]} onPress={handleLogout}>
               <Text style={styles.profileItemIcon}>→</Text>
-              <Text style={styles.profileItemText}>Выйти</Text>
+              <Text style={styles.profileItemText}>{t("logout")}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -535,12 +537,12 @@ function ChatScreen() {
           ) : (
             <View style={styles.profileAvatar}>
               <Text style={styles.profileAvatarText}>
-                {(user?.display_name || user?.email || "?")[0].toUpperCase()}
+                {(user?.display_name || user?.email || t("user"))[0].toUpperCase()}
               </Text>
             </View>
           )}
           <Text style={styles.profileName} numberOfLines={1}>
-            {user?.display_name || user?.email || "Пользователь"}
+            {user?.display_name || user?.email || t("user")}
           </Text>
           <Text style={styles.profileDots}>⋯</Text>
         </TouchableOpacity>
@@ -561,7 +563,7 @@ function ChatScreen() {
     >
       <TextInput
         style={[styles.input, isSmallScreen && styles.inputSmall]}
-        placeholder="Введите сообщение..."
+        placeholder={t("placeholder")}
         placeholderTextColor={colors.textSecondary}
         value={message}
         onChangeText={setMessage}
@@ -610,7 +612,7 @@ function ChatScreen() {
           <View style={styles.errorBar}>
             <Text style={styles.errorText}>{chatStore.error}</Text>
             <TouchableOpacity onPress={() => chatStore.connect()}>
-              <Text style={styles.retryText}>Повторить</Text>
+              <Text style={styles.retryText}>{t("reconnect")}</Text>
             </TouchableOpacity>
           </View>
         ) : null}
@@ -631,21 +633,21 @@ function ChatScreen() {
       <Modal visible={!!renameModalChatId} transparent animationType="fade">
         <Pressable style={styles.feedbackOverlay} onPress={() => { setRenameModalChatId(null); setRenameInputValue(""); }}>
           <Pressable style={styles.renameModal} onPress={() => {}}>
-            <Text style={styles.feedbackTitle}>Переименовать чат</Text>
+            <Text style={styles.feedbackTitle}>{t("renameChat")}</Text>
             <TextInput
               style={styles.renameInput}
               value={renameInputValue}
               onChangeText={setRenameInputValue}
-              placeholder="Название чата"
+              placeholder={t("chatName")}
               placeholderTextColor={colors.textSecondary}
               autoFocus
             />
             <View style={styles.feedbackActions}>
               <TouchableOpacity style={styles.feedbackBtnCancel} onPress={() => { setRenameModalChatId(null); setRenameInputValue(""); }}>
-                <Text style={styles.feedbackBtnCancelText}>Отмена</Text>
+                <Text style={styles.feedbackBtnCancelText}>{t("cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.feedbackBtnSubmit} onPress={handleRenameSubmit}>
-                <Text style={styles.feedbackBtnSubmitText}>Сохранить</Text>
+                <Text style={styles.feedbackBtnSubmitText}>{t("save")}</Text>
               </TouchableOpacity>
             </View>
           </Pressable>
@@ -660,7 +662,7 @@ function ChatScreen() {
       >
         <Pressable style={styles.feedbackOverlay} onPress={handleFeedbackCancel}>
           <Pressable style={styles.feedbackModal} onPress={() => {}}>
-            <Text style={styles.feedbackTitle}>Обратная связь</Text>
+            <Text style={styles.feedbackTitle}>{t("feedback")}</Text>
             <View style={styles.feedbackCategories}>
               {FEEDBACK_CATEGORIES.map(({ id, label }) => (
                 <TouchableOpacity
@@ -684,7 +686,7 @@ function ChatScreen() {
             </View>
             <TextInput
               style={styles.feedbackTextarea}
-              placeholder="Мы ценим вашу обратную связь. Поделитесь комментариями и предложениями."
+              placeholder={t("feedbackPlaceholder")}
               placeholderTextColor={colors.textSecondary}
               value={feedbackComment}
               onChangeText={setFeedbackComment}
@@ -693,10 +695,10 @@ function ChatScreen() {
             />
             <View style={styles.feedbackActions}>
               <TouchableOpacity style={styles.feedbackBtnCancel} onPress={handleFeedbackCancel}>
-                <Text style={styles.feedbackBtnCancelText}>Отмена</Text>
+                <Text style={styles.feedbackBtnCancelText}>{t("cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.feedbackBtnSubmit} onPress={handleFeedbackSubmit}>
-                <Text style={styles.feedbackBtnSubmitText}>Отправить</Text>
+                <Text style={styles.feedbackBtnSubmitText}>{t("submit")}</Text>
               </TouchableOpacity>
             </View>
           </Pressable>

@@ -20,8 +20,9 @@ import { API_URL } from "../config";
 import { apiFetch } from "../api/http";
 import { logoutAll } from "../api/userApi";
 import { THEMES } from "../utils/theme";
-import { getLanguage, setLanguage, LANGUAGES } from "../utils/locale";
+import { LANGUAGES } from "../utils/locale";
 import { useTheme } from "../context/ThemeContext";
+import { useLocale } from "../context/LocaleContext";
 
 const maskEmail = (e) => {
   if (!e || !e.includes("@")) return "-";
@@ -30,21 +31,22 @@ const maskEmail = (e) => {
   return local.slice(0, 2) + "*".repeat(Math.min(local.length - 2, 5)) + local.slice(-2) + "@" + domain;
 };
 
-const SETTINGS_TABS = [
-  { id: "general", label: "Общие", icon: "⚙" },
-  { id: "profile", label: "Профиль", icon: "👤" },
-  { id: "data", label: "Данные", icon: "📊" },
-  { id: "about", label: "О приложении", icon: "ℹ" },
+const getSettingsTabs = (t) => [
+  { id: "general", label: t("general"), icon: "⚙" },
+  { id: "profile", label: t("profile"), icon: "👤" },
+  { id: "data", label: t("data"), icon: "📊" },
+  { id: "about", label: t("about"), icon: "ℹ" },
 ];
 
 const SettingsModal = observer(({ isOpen, onClose }) => {
   const { chatStore } = useStores();
   const { user, setIsAuth } = useUser();
   const { colors, theme, setTheme: setThemeFromContext } = useTheme();
+  const { t, locale, setLanguage: setLocale } = useLocale();
   const [activeTab, setActiveTab] = useState("general");
-  const [locale, setLocaleState] = useState("ru");
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const SETTINGS_TABS = useMemo(() => getSettingsTabs(t), [t]);
 
   const displayName = user?.display_name;
   const email = user?.email || chatStore?.user || "";
@@ -52,11 +54,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
   const isGoogleUser = !!picture;
 
   useEffect(() => {
-    if (isOpen) {
-      getLanguage().then(setLocaleState);
-    } else {
-      setLangDropdownOpen(false);
-    }
+    if (!isOpen) setLangDropdownOpen(false);
   }, [isOpen]);
 
   const handleLogout = async (fromAllDevices = false) => {
@@ -70,11 +68,11 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      "Удалить аккаунт",
-      "Вы уверены, что хотите удалить аккаунт? Это действие необратимо.",
+      t("deleteAccount"),
+      t("deleteAccountConfirm"),
       [
-        { text: "Отмена", style: "cancel" },
-        { text: "Удалить", style: "destructive", onPress: () => handleLogout() },
+        { text: t("cancel"), style: "cancel" },
+        { text: t("delete"), style: "destructive", onPress: () => handleLogout() },
       ]
     );
   };
@@ -112,12 +110,9 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
       zip.file("conversations.json", JSON.stringify(conversationsData, null, 2));
       zip.file("user.json", JSON.stringify(userData, null, 2));
       const blob = await zip.generateAsync({ type: "base64" });
-      const dir =
-        Platform.OS === "android"
-          ? FileSystem.cacheDirectory
-          : FileSystem.documentDirectory || FileSystem.cacheDirectory;
+      const dir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
       if (!dir) {
-        throw new Error("Нет доступа к хранилищу");
+        throw new Error("Storage access denied");
       }
       const path = dir + `misa_data-${dateStr}.zip`;
       await FileSystem.writeAsStringAsync(path, blob, { encoding: FileSystem.EncodingType.Base64 });
@@ -126,25 +121,25 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
         // ExpoSharing.shareAsync требует file:// URI, content:// не поддерживается
         await Sharing.shareAsync(path, {
           mimeType: "application/zip",
-          dialogTitle: "Экспорт чатов Misa",
+          dialogTitle: "Misa " + t("exportData"),
         });
       } else {
-        Alert.alert("Экспорт", "Файл сохранён: " + path);
+        Alert.alert(t("exportData"), t("fileSaved") + ": " + path);
       }
     } catch (e) {
       console.error("Export error:", e);
-      Alert.alert("Ошибка", e?.message || "Не удалось экспортировать данные");
+      Alert.alert(t("error"), e?.message || t("exportFailed"));
     }
   };
 
   const handleDeleteAllChats = () => {
     Alert.alert(
-      "Удалить все чаты",
-      "Вы уверены, что хотите удалить все чаты? Это действие необратимо.",
+      t("deleteAllChats"),
+      t("confirmDeleteAllChats"),
       [
-        { text: "Отмена", style: "cancel" },
+        { text: t("cancel"), style: "cancel" },
         {
-          text: "Удалить всё",
+          text: t("deleteAllButton"),
           style: "destructive",
           onPress: async () => {
             await chatStore.deleteAllChats();
@@ -163,7 +158,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
         <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
         <View style={styles.modal} onStartShouldSetResponder={() => true}>
           <View style={styles.header}>
-            <Text style={styles.title}>Настройки</Text>
+            <Text style={styles.title}>{t("settings")}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <Text style={styles.closeText}>×</Text>
             </TouchableOpacity>
@@ -186,7 +181,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
               <View style={styles.section}>
                 {isGoogleUser && displayName && (
                   <View style={styles.row}>
-                    <Text style={styles.label}>Имя</Text>
+                    <Text style={styles.label}>{t("name")}</Text>
                     <View style={styles.valueRow}>
                       <Text style={styles.value}>{displayName}</Text>
                       <View style={styles.googleBadge}>
@@ -196,23 +191,23 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                   </View>
                 )}
                 <View style={styles.row}>
-                  <Text style={styles.label}>Email</Text>
+                  <Text style={styles.label}>{t("email")}</Text>
                   <Text style={styles.value}>{maskEmail(email) || "-"}</Text>
                 </View>
                 <View style={styles.row}>
-                  <Text style={styles.label}>Телефон</Text>
+                  <Text style={styles.label}>{t("phone")}</Text>
                   <Text style={styles.value}>-</Text>
                 </View>
                 <View style={[styles.row, styles.rowActions]}>
-                  <Text style={styles.label}>Выйти со всех устройств</Text>
+                  <Text style={styles.label}>{t("logoutAll")}</Text>
                   <TouchableOpacity style={styles.btnLogout} onPress={() => handleLogout(true)}>
-                    <Text style={styles.btnLogoutText}>Выйти</Text>
+                    <Text style={styles.btnLogoutText}>{t("logout")}</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={[styles.row, styles.rowActions]}>
-                  <Text style={styles.label}>Удалить аккаунт</Text>
+                  <Text style={styles.label}>{t("deleteAccount")}</Text>
                   <TouchableOpacity style={styles.btnDelete} onPress={handleDeleteAccount}>
-                    <Text style={styles.btnDeleteText}>Удалить</Text>
+                    <Text style={styles.btnDeleteText}>{t("delete")}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -220,7 +215,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
             {activeTab === "general" && (
               <View style={styles.section}>
                 <View style={styles.themeBlock}>
-                  <Text style={styles.themeLabel}>Тема</Text>
+                  <Text style={styles.themeLabel}>{t("theme")}</Text>
                   <View style={styles.themeOptions}>
                     {[THEMES.LIGHT, THEMES.DARK, THEMES.SYSTEM].map((t) => (
                       <TouchableOpacity
@@ -238,14 +233,14 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                           {t === THEMES.LIGHT ? "☀" : t === THEMES.DARK ? "🌙" : "💻"}
                         </Text>
                         <Text style={styles.themeBtnText}>
-                          {t === THEMES.LIGHT ? "Светлая" : t === THEMES.DARK ? "Тёмная" : "Системная"}
+                          {t === THEMES.LIGHT ? t("themeLight") : t === THEMES.DARK ? t("themeDark") : t("themeSystem")}
                         </Text>
                       </TouchableOpacity>
                     ))}
                   </View>
                 </View>
                 <View style={styles.langBlock}>
-                  <Text style={styles.themeLabel}>Язык</Text>
+                  <Text style={styles.themeLabel}>{t("language")}</Text>
                   <TouchableOpacity
                     style={styles.pickerWrap}
                     onPress={() => setLangDropdownOpen(true)}
@@ -268,8 +263,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                             <TouchableOpacity
                               style={[styles.langDropdownItem, locale === item.code && styles.langDropdownItemActive]}
                               onPress={async () => {
-                                await setLanguage(item.code);
-                                setLocaleState(item.code);
+                                await setLocale(item.code);
                                 setLangDropdownOpen(false);
                               }}
                             >
@@ -286,24 +280,24 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
             {activeTab === "data" && (
               <View style={styles.section}>
                 <View style={styles.dataBlock}>
-                  <Text style={styles.dataTitle}>Экспорт данных</Text>
-                  <Text style={styles.dataDesc}>Скачайте все чаты в формате JSON.</Text>
+                  <Text style={styles.dataTitle}>{t("exportData")}</Text>
+                  <Text style={styles.dataDesc}>{t("exportDataDesc")}</Text>
                   <TouchableOpacity style={styles.btnExport} onPress={handleExport}>
-                    <Text style={styles.btnExportText}>Экспортировать</Text>
+                    <Text style={styles.btnExportText}>{t("exportButton")}</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.dataBlock}>
-                  <Text style={styles.dataTitle}>Удалить все чаты</Text>
-                  <Text style={styles.dataDesc}>Безвозвратно удалить всю историю чатов.</Text>
+                  <Text style={styles.dataTitle}>{t("deleteAllChats")}</Text>
+                  <Text style={styles.dataDesc}>{t("deleteAllChatsDesc")}</Text>
                   <TouchableOpacity style={styles.btnDeleteAll} onPress={handleDeleteAllChats}>
-                    <Text style={styles.btnDeleteAllText}>Удалить всё</Text>
+                    <Text style={styles.btnDeleteAllText}>{t("deleteAllButton")}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             )}
             {activeTab === "about" && (
               <View style={styles.placeholder}>
-                <Text style={styles.placeholderText}>Misa AI Чат</Text>
+                <Text style={styles.placeholderText}>{t("misaChat")}</Text>
               </View>
             )}
             </ScrollView>
