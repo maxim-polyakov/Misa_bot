@@ -459,7 +459,11 @@ class ChatStore {
         const groups = { pinned: [], today: [], yesterday: [], last7Days: [], olderByMonth: {} };
         const pinnedSet = new Set(this.pinnedChatIds);
 
-        for (const chat of this.chats) {
+        const chatsWithMessages = this.chats.filter(
+            (c) => c.messages && Array.isArray(c.messages) && c.messages.length > 0
+        );
+
+        for (const chat of chatsWithMessages) {
             if (pinnedSet.has(chat.id)) {
                 groups.pinned.push(chat);
                 continue;
