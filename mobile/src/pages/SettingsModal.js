@@ -217,23 +217,23 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                 <View style={styles.themeBlock}>
                   <Text style={styles.themeLabel}>{t("theme")}</Text>
                   <View style={styles.themeOptions}>
-                    {[THEMES.LIGHT, THEMES.DARK, THEMES.SYSTEM].map((t) => (
+                    {[THEMES.LIGHT, THEMES.DARK, THEMES.SYSTEM].map((themeKey) => (
                       <TouchableOpacity
-                        key={t}
+                        key={themeKey}
                         style={[
                           styles.themeBtn,
-                          theme === t && styles.themeBtnActive,
-                          { borderColor: theme === t ? colors.accentColor : colors.borderColor, backgroundColor: theme === t ? "rgba(74,144,226,0.25)" : "rgba(128,128,128,0.1)" },
+                          theme === themeKey && styles.themeBtnActive,
+                          { borderColor: theme === themeKey ? colors.accentColor : colors.borderColor, backgroundColor: theme === themeKey ? "rgba(74,144,226,0.25)" : "rgba(128,128,128,0.1)" },
                         ]}
                         onPress={async () => {
-                          await setThemeFromContext(t);
+                          await setThemeFromContext(themeKey);
                         }}
                       >
                         <Text style={styles.themeIcon}>
-                          {t === THEMES.LIGHT ? "☀" : t === THEMES.DARK ? "🌙" : "💻"}
+                          {themeKey === THEMES.LIGHT ? "☀" : themeKey === THEMES.DARK ? "🌙" : "💻"}
                         </Text>
                         <Text style={styles.themeBtnText}>
-                          {t === THEMES.LIGHT ? t("themeLight") : t === THEMES.DARK ? t("themeDark") : t("themeSystem")}
+                          {themeKey === THEMES.LIGHT ? t("themeLight") : themeKey === THEMES.DARK ? t("themeDark") : t("themeSystem")}
                         </Text>
                       </TouchableOpacity>
                     ))}
