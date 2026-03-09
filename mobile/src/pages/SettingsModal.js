@@ -10,7 +10,6 @@ import {
   FlatList,
   Platform,
   ActivityIndicator,
-  Pressable,
 } from "react-native";
 import { observer } from "mobx-react-lite";
 import JSZip from "jszip";
@@ -213,9 +212,9 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
             </View>
             <ScrollView
               style={styles.content}
-              contentContainerStyle={Platform.OS === "ios" ? { paddingBottom: 40 } : undefined}
               showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
+              keyboardShouldPersistTaps="always"
+              directionalLockEnabled={Platform.OS === "ios"}
             >
             {activeTab === "profile" && (
               <View style={styles.section}>
@@ -246,19 +245,9 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                 </View>
                 <View style={[styles.row, styles.rowActions]}>
                   <Text style={styles.label}>{t("deleteAccount")}</Text>
-                  {Platform.OS === "ios" ? (
-                    <Pressable
-                      style={styles.btnDelete}
-                      onPress={handleDeleteAccountClick}
-                      hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-                    >
-                      <Text style={styles.btnDeleteText}>{t("delete")}</Text>
-                    </Pressable>
-                  ) : (
-                    <TouchableOpacity style={styles.btnDelete} onPress={handleDeleteAccountClick}>
-                      <Text style={styles.btnDeleteText}>{t("delete")}</Text>
-                    </TouchableOpacity>
-                  )}
+                  <TouchableOpacity style={styles.btnDelete} onPress={handleDeleteAccountClick}>
+                    <Text style={styles.btnDeleteText}>{t("delete")}</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             )}
