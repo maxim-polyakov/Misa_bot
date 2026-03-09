@@ -181,24 +181,20 @@ export const logoutAll = async () => {
 export const deleteAccount = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-        throw new Error("Authentication required");
+        throw new Error("Authentication required: токен не найден в localStorage. Войдите снова.");
     }
-    const baseURL = process.env.REACT_APP_API_URL || "";
-    const url = `${baseURL.replace(/\/$/, "")}/auth/delete-account/`;
     try {
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
+        const { data } = await $authhost.post("auth/delete-account/", {}, {
+            headers: { Authorization: `Bearer ${token}` },
         });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || data.status === "error") {
-            throw new Error(data.message || "Не удалось удалить аккаунт");
+        if (data?.status === "error") {
+            const detail = data?.detail ? ` (${data.detail})` : "";
+            throw new Error((data?.message || "Не удалось удалить аккаунт") + detail);
         }
     } catch (error) {
-        throw new Error(extractApiError(error));
+        const msg = extractApiError(error);
+        const detail = error?.response?.data?.detail ? ` (${error.response.data.detail})` : "";
+        throw new Error(msg + detail);
     }
 };
 
