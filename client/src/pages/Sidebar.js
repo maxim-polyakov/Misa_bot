@@ -164,7 +164,8 @@ const Sidebar = observer(() => {
                     <div className="sidebar-chats">
                         {(() => {
                             const groups = chatStore.getChatsGroupedByPeriod();
-                            const monthFormatter = new Intl.DateTimeFormat(locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'long', year: 'numeric' });
+                            const localeMap = { ru: 'ru-RU', en: 'en-US', de: 'de-DE' };
+                            const monthFormatter = new Intl.DateTimeFormat(localeMap[locale] || 'en-US', { month: 'long', year: 'numeric' });
                             const fixedSections = [
                                 { key: 'pinned', label: t('pinned'), chats: groups.pinned },
                                 { key: 'today', label: t('today'), chats: groups.today },

@@ -447,7 +447,8 @@ function ChatScreen() {
       <ScrollView style={styles.chatList} showsVerticalScrollIndicator={false}>
         {(() => {
           const groups = chatStore.getChatsGroupedByPeriod();
-          const monthFormatter = new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "en-US", { month: "long", year: "numeric" });
+          const localeMap = { ru: "ru-RU", en: "en-US", de: "de-DE" };
+          const monthFormatter = new Intl.DateTimeFormat(localeMap[locale] || "en-US", { month: "long", year: "numeric" });
           const sections = [
             { key: "pinned", label: t("pinned"), chats: groups.pinned },
             { key: "today", label: t("today"), chats: groups.today },
@@ -471,7 +472,7 @@ function ChatScreen() {
             >
               <Text style={styles.chatItemIcon}>💬</Text>
               <Text numberOfLines={1} style={styles.chatItemTitle}>
-                {chatStore.getChatTitle(c)}
+                {chatStore.getChatTitle(c) === "Новый чат" ? t("newChat") : chatStore.getChatTitle(c)}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -601,7 +602,11 @@ function ChatScreen() {
             <Text style={styles.menuBtnText}>☰</Text>
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isSmallScreen && styles.headerTitleSmall]} numberOfLines={1}>
-            {chatStore.currentChat?.title || "Misa AI"}
+            {chatStore.currentChat?.title && chatStore.currentChat.title.trim() && chatStore.currentChat.title !== "Новый чат"
+              ? chatStore.currentChat.title
+              : chatStore.currentChat
+                ? t("newChat")
+                : "Misa AI"}
           </Text>
           <TouchableOpacity onPress={() => chatStore.newChat()} style={styles.newChatBtnHeader}>
             <Text style={styles.newChatBtnHeaderText}>+</Text>
