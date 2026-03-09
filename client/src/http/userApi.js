@@ -6,7 +6,10 @@ const extractApiError = (error) => {
         const m = error.response.data.match(/Error: (.+?)(<br>|\n|$)/);
         return m?.[1]?.trim() || "Ошибка";
     }
-    return error.response?.data?.message || error.message || "Ошибка";
+    const data = error.response?.data;
+    const msg = data?.message || error.message || "Ошибка";
+    const detail = data?.detail ? ` (${data.detail})` : "";
+    return msg + detail;
 };
 
 export const sendRegistrationCode = async (email, password) => {
@@ -192,9 +195,7 @@ export const deleteAccount = async () => {
             throw new Error((data?.message || "Не удалось удалить аккаунт") + detail);
         }
     } catch (error) {
-        const msg = extractApiError(error);
-        const detail = error?.response?.data?.detail ? ` (${error.response.data.detail})` : "";
-        throw new Error(msg + detail);
+        throw new Error(extractApiError(error));
     }
 };
 

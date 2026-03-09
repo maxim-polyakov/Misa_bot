@@ -129,11 +129,11 @@ class Controller(IController.IController):
                 )
 
     @classmethod
-    def error_response(cls, message="Error", status=400):
-        return JsonResponse({
-            'status': 'error',
-            'message': message
-        }, status=status)
+    def error_response(cls, message="Error", status=400, detail=None):
+        data = {'status': 'error', 'message': message}
+        if detail is not None:
+            data['detail'] = str(detail)
+        return JsonResponse(data, status=status)
 
     @classmethod
     def generate_jwt_token(cls, user_id, email, display_name=None, picture=None):
@@ -866,10 +866,10 @@ class Controller(IController.IController):
         try:
             user = getattr(request, 'user', None)
             if user is None:
-                return cls.error_response("Authentication required", 401)
+                return cls.error_response("Authentication required", 401, detail="request.user не установлен (middleware не прошёл или не установил user)")
             user_id = getattr(user, 'id', None)
             if user_id is None:
-                return cls.error_response("Authentication required", 401)
+                return cls.error_response("Authentication required", 401, detail="user.id отсутствует")
             delete_sql = "DELETE FROM auth.users WHERE id = %s"
             cls.__dbc.execute_update(delete_sql, (user_id,))
             cache.delete(f"auth_user:{user_id}")
