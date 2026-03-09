@@ -246,13 +246,19 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                 </View>
                 <View style={[styles.row, styles.rowActions]}>
                   <Text style={styles.label}>{t("deleteAccount")}</Text>
-                  <Pressable
-                    style={styles.btnDelete}
-                    onPress={handleDeleteAccountClick}
-                    hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-                  >
-                    <Text style={styles.btnDeleteText}>{t("delete")}</Text>
-                  </Pressable>
+                  {Platform.OS === "ios" ? (
+                    <Pressable
+                      style={styles.btnDelete}
+                      onPress={handleDeleteAccountClick}
+                      hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+                    >
+                      <Text style={styles.btnDeleteText}>{t("delete")}</Text>
+                    </Pressable>
+                  ) : (
+                    <TouchableOpacity style={styles.btnDelete} onPress={handleDeleteAccountClick}>
+                      <Text style={styles.btnDeleteText}>{t("delete")}</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             )}
