@@ -3,6 +3,7 @@ const STORAGE_KEY = "misa_locale";
 export const LANGUAGES = [
     { code: "ru", label: "Русский" },
     { code: "en", label: "English" },
+    { code: "de", label: "Deutsch" },
 ];
 
 export const getLanguage = () => {

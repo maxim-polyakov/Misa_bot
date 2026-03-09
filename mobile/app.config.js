@@ -2,15 +2,17 @@ export default {
   expo: {
     name: "Misa AI",
     plugins: [
+      "expo-localization",
       [
         "@react-native-google-signin/google-signin",
         {
           iosUrlScheme: process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME || "com.googleusercontent.apps.placeholder",
         },
       ],
+      ["expo-file-system", { enableFileSharing: true }],
     ],
     slug: "misa-android",
-    version: "1.0.0",
+    version: "1.0.1",
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
@@ -28,7 +30,7 @@ export default {
     },
     android: {
       package: "ru.baxic.misa",
-      versionCode: 2,
+      versionCode: 4,
       softwareKeyboardLayoutMode: "resize",
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",

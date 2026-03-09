@@ -104,6 +104,23 @@ export const logoutAll = async () => {
   }
 };
 
+export const deleteAccount = async () => {
+  const token = await storage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required: токен не найден. Войдите снова.");
+  }
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+  const res = await fetch(`${API_URL}/auth/delete-account/`, { method: "POST", headers });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.status === "error") {
+    const detail = data?.detail ? ` (${data.detail})` : "";
+    throw new Error((data?.message || "Не удалось удалить аккаунт") + detail);
+  }
+};
+
 export const check = async () => {
   const token = await storage.getItem("token");
   if (!token) return null;

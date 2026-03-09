@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,27 +8,23 @@ import {
   StyleSheet,
   Alert,
   FlatList,
+  Platform,
+  ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { observer } from "mobx-react-lite";
 import JSZip from "jszip";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { useStores } from "../store/rootStoreContext";
 import { useUser } from "../context/UserContext";
 import { API_URL } from "../config";
 import { apiFetch } from "../api/http";
-import { logoutAll } from "../api/userApi";
-import { getTheme, setTheme, THEMES } from "../utils/theme";
-import { getLanguage, setLanguage, LANGUAGES } from "../utils/locale";
-
-const COLORS = {
-  primaryBg: "#1c1c1e",
-  secondaryBg: "#2c2c2e",
-  borderColor: "#3a3a3c",
-  textPrimary: "#ffffff",
-  textSecondary: "#8e8e93",
-  accentColor: "#4a90e2",
-};
+import { logoutAll, deleteAccount } from "../api/userApi";
+import { THEMES } from "../utils/theme";
+import { LANGUAGES } from "../utils/locale";
+import { useTheme } from "../context/ThemeContext";
+import { useLocale } from "../context/LocaleContext";
 
 const maskEmail = (e) => {
   if (!e || !e.includes("@")) return "-";
@@ -37,20 +33,25 @@ const maskEmail = (e) => {
   return local.slice(0, 2) + "*".repeat(Math.min(local.length - 2, 5)) + local.slice(-2) + "@" + domain;
 };
 
-const SETTINGS_TABS = [
-  { id: "general", label: "Общие", icon: "⚙" },
-  { id: "profile", label: "Профиль", icon: "👤" },
-  { id: "data", label: "Данные", icon: "📊" },
-  { id: "about", label: "О приложении", icon: "ℹ" },
+const getSettingsTabs = (t) => [
+  { id: "general", label: t("general"), icon: "⚙" },
+  { id: "profile", label: t("profile"), icon: "👤" },
+  { id: "data", label: t("data"), icon: "📊" },
+  { id: "about", label: t("about"), icon: "ℹ" },
 ];
 
 const SettingsModal = observer(({ isOpen, onClose }) => {
   const { chatStore } = useStores();
   const { user, setIsAuth } = useUser();
-  const [activeTab, setActiveTab] = useState("profile");
-  const [theme, setThemeState] = useState(THEMES.DARK);
-  const [locale, setLocaleState] = useState("ru");
+  const { colors, theme, setTheme: setThemeFromContext } = useTheme();
+  const { t, locale, setLanguage: setLocale } = useLocale();
+  const [activeTab, setActiveTab] = useState("general");
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const SETTINGS_TABS = useMemo(() => getSettingsTabs(t), [t]);
 
   const displayName = user?.display_name;
   const email = user?.email || chatStore?.user || "";
@@ -58,12 +59,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
   const isGoogleUser = !!picture;
 
   useEffect(() => {
-    if (isOpen) {
-      getTheme().then(setThemeState);
-      getLanguage().then(setLocaleState);
-    } else {
-      setLangDropdownOpen(false);
-    }
+    if (!isOpen) setLangDropdownOpen(false);
   }, [isOpen]);
 
   const handleLogout = async (fromAllDevices = false) => {
@@ -75,20 +71,31 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
     setIsAuth(false);
   };
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      "Удалить аккаунт",
-      "Вы уверены, что хотите удалить аккаунт? Это действие необратимо.",
-      [
-        { text: "Отмена", style: "cancel" },
-        { text: "Удалить", style: "destructive", onPress: () => handleLogout() },
-      ]
-    );
+  const handleDeleteAccountClick = () => {
+    setDeleteError(null);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteAccountConfirm = async () => {
+    setDeleteLoading(true);
+    setDeleteError(null);
+    try {
+      await deleteAccount();
+      setDeleteConfirmOpen(false);
+      onClose();
+      chatStore.clearUserFromStorage();
+      setIsAuth(false);
+    } catch (e) {
+      setDeleteError(e?.message || t("deleteAccountFailed"));
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const handleExport = async () => {
     try {
       const dateStr = new Date().toISOString().slice(0, 10);
+      const fileName = `misa_data-${dateStr}.zip`;
       let conversationsData = chatStore.getConversationsExportData();
       let userData = {
         exportedAt: new Date().toISOString(),
@@ -119,28 +126,54 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
       zip.file("conversations.json", JSON.stringify(conversationsData, null, 2));
       zip.file("user.json", JSON.stringify(userData, null, 2));
       const blob = await zip.generateAsync({ type: "base64" });
-      const path = FileSystem.cacheDirectory + `misa_data-${dateStr}.zip`;
-      await FileSystem.writeAsStringAsync(path, blob, { encoding: FileSystem.EncodingType.Base64 });
-      const canShare = await Sharing.isAvailableAsync();
-      if (canShare) {
-        await Sharing.shareAsync(path, { mimeType: "application/zip" });
+      const dir = FileSystem.cacheDirectory;
+      if (!dir) {
+        throw new Error("Storage access denied");
+      }
+      const tempPath = dir + fileName;
+      await FileSystem.writeAsStringAsync(tempPath, blob, { encoding: FileSystem.EncodingType.Base64 });
+
+      if (Platform.OS === "android" && FileSystem.StorageAccessFramework) {
+        const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+        if (!permissions.granted) {
+          return;
+        }
+        const parentUri = permissions.directoryUri;
+        const baseName = fileName.replace(/\.zip$/i, "");
+        const destUri = await FileSystem.StorageAccessFramework.createFileAsync(parentUri, baseName, "application/zip");
+        await FileSystem.StorageAccessFramework.writeAsStringAsync(destUri, blob, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        await FileSystem.deleteAsync(tempPath, { idempotent: true });
+        Alert.alert(t("exportData"), t("fileSaved"));
       } else {
-        Alert.alert("Экспорт", "Файл сохранён: " + path);
+        const canShare = await Sharing.isAvailableAsync();
+        if (canShare) {
+          await Sharing.shareAsync(tempPath, {
+            mimeType: "application/zip",
+            dialogTitle: "Misa " + t("exportData"),
+          });
+        } else {
+          const docDir = FileSystem.documentDirectory || dir;
+          const persistPath = docDir + fileName;
+          await FileSystem.moveAsync({ from: tempPath, to: persistPath });
+          Alert.alert(t("exportData"), t("fileSaved") + ": " + persistPath);
+        }
       }
     } catch (e) {
       console.error("Export error:", e);
-      Alert.alert("Ошибка", "Не удалось экспортировать данные");
+      Alert.alert(t("error"), e?.message || t("exportFailed"));
     }
   };
 
   const handleDeleteAllChats = () => {
     Alert.alert(
-      "Удалить все чаты",
-      "Вы уверены, что хотите удалить все чаты? Это действие необратимо.",
+      t("deleteAllChats"),
+      t("confirmDeleteAllChats"),
       [
-        { text: "Отмена", style: "cancel" },
+        { text: t("cancel"), style: "cancel" },
         {
-          text: "Удалить всё",
+          text: t("deleteAllButton"),
           style: "destructive",
           onPress: async () => {
             await chatStore.deleteAllChats();
@@ -154,12 +187,13 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
+    <>
     <Modal visible={isOpen} transparent animationType="fade">
       <View style={styles.overlay}>
         <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
         <View style={styles.modal} onStartShouldSetResponder={() => true}>
           <View style={styles.header}>
-            <Text style={styles.title}>Настройки</Text>
+            <Text style={styles.title}>{t("settings")}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <Text style={styles.closeText}>×</Text>
             </TouchableOpacity>
@@ -182,7 +216,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
               <View style={styles.section}>
                 {isGoogleUser && displayName && (
                   <View style={styles.row}>
-                    <Text style={styles.label}>Имя</Text>
+                    <Text style={styles.label}>{t("name")}</Text>
                     <View style={styles.valueRow}>
                       <Text style={styles.value}>{displayName}</Text>
                       <View style={styles.googleBadge}>
@@ -192,23 +226,23 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                   </View>
                 )}
                 <View style={styles.row}>
-                  <Text style={styles.label}>Email</Text>
+                  <Text style={styles.label}>{t("email")}</Text>
                   <Text style={styles.value}>{maskEmail(email) || "-"}</Text>
                 </View>
                 <View style={styles.row}>
-                  <Text style={styles.label}>Телефон</Text>
+                  <Text style={styles.label}>{t("phone")}</Text>
                   <Text style={styles.value}>-</Text>
                 </View>
                 <View style={[styles.row, styles.rowActions]}>
-                  <Text style={styles.label}>Выйти со всех устройств</Text>
+                  <Text style={styles.label}>{t("logoutAll")}</Text>
                   <TouchableOpacity style={styles.btnLogout} onPress={() => handleLogout(true)}>
-                    <Text style={styles.btnLogoutText}>Выйти</Text>
+                    <Text style={styles.btnLogoutText}>{t("logout")}</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={[styles.row, styles.rowActions]}>
-                  <Text style={styles.label}>Удалить аккаунт</Text>
-                  <TouchableOpacity style={styles.btnDelete} onPress={handleDeleteAccount}>
-                    <Text style={styles.btnDeleteText}>Удалить</Text>
+                  <Text style={styles.label}>{t("deleteAccount")}</Text>
+                  <TouchableOpacity style={styles.btnDelete} onPress={handleDeleteAccountClick}>
+                    <Text style={styles.btnDeleteText}>{t("delete")}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -216,29 +250,32 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
             {activeTab === "general" && (
               <View style={styles.section}>
                 <View style={styles.themeBlock}>
-                  <Text style={styles.themeLabel}>Тема</Text>
+                  <Text style={styles.themeLabel}>{t("theme")}</Text>
                   <View style={styles.themeOptions}>
-                    {[THEMES.LIGHT, THEMES.DARK, THEMES.SYSTEM].map((t) => (
+                    {[THEMES.LIGHT, THEMES.DARK, THEMES.SYSTEM].map((themeKey) => (
                       <TouchableOpacity
-                        key={t}
-                        style={[styles.themeBtn, theme === t && styles.themeBtnActive]}
+                        key={themeKey}
+                        style={[
+                          styles.themeBtn,
+                          theme === themeKey && styles.themeBtnActive,
+                          { borderColor: theme === themeKey ? colors.accentColor : colors.borderColor, backgroundColor: theme === themeKey ? "rgba(74,144,226,0.25)" : "rgba(128,128,128,0.1)" },
+                        ]}
                         onPress={async () => {
-                          await setTheme(t);
-                          setThemeState(t);
+                          await setThemeFromContext(themeKey);
                         }}
                       >
                         <Text style={styles.themeIcon}>
-                          {t === THEMES.LIGHT ? "☀" : t === THEMES.DARK ? "🌙" : "💻"}
+                          {themeKey === THEMES.LIGHT ? "☀" : themeKey === THEMES.DARK ? "🌙" : "💻"}
                         </Text>
                         <Text style={styles.themeBtnText}>
-                          {t === THEMES.LIGHT ? "Светлая" : t === THEMES.DARK ? "Тёмная" : "Системная"}
+                          {themeKey === THEMES.LIGHT ? t("themeLight") : themeKey === THEMES.DARK ? t("themeDark") : t("themeSystem")}
                         </Text>
                       </TouchableOpacity>
                     ))}
                   </View>
                 </View>
                 <View style={styles.langBlock}>
-                  <Text style={styles.themeLabel}>Язык</Text>
+                  <Text style={styles.themeLabel}>{t("language")}</Text>
                   <TouchableOpacity
                     style={styles.pickerWrap}
                     onPress={() => setLangDropdownOpen(true)}
@@ -261,8 +298,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                             <TouchableOpacity
                               style={[styles.langDropdownItem, locale === item.code && styles.langDropdownItemActive]}
                               onPress={async () => {
-                                await setLanguage(item.code);
-                                setLocaleState(item.code);
+                                await setLocale(item.code);
                                 setLangDropdownOpen(false);
                               }}
                             >
@@ -279,24 +315,24 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
             {activeTab === "data" && (
               <View style={styles.section}>
                 <View style={styles.dataBlock}>
-                  <Text style={styles.dataTitle}>Экспорт данных</Text>
-                  <Text style={styles.dataDesc}>Скачайте все чаты в формате JSON.</Text>
+                  <Text style={styles.dataTitle}>{t("exportData")}</Text>
+                  <Text style={styles.dataDesc}>{t("exportDataDesc")}</Text>
                   <TouchableOpacity style={styles.btnExport} onPress={handleExport}>
-                    <Text style={styles.btnExportText}>Экспортировать</Text>
+                    <Text style={styles.btnExportText}>{t("exportButton")}</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.dataBlock}>
-                  <Text style={styles.dataTitle}>Удалить все чаты</Text>
-                  <Text style={styles.dataDesc}>Безвозвратно удалить всю историю чатов.</Text>
+                  <Text style={styles.dataTitle}>{t("deleteAllChats")}</Text>
+                  <Text style={styles.dataDesc}>{t("deleteAllChatsDesc")}</Text>
                   <TouchableOpacity style={styles.btnDeleteAll} onPress={handleDeleteAllChats}>
-                    <Text style={styles.btnDeleteAllText}>Удалить всё</Text>
+                    <Text style={styles.btnDeleteAllText}>{t("deleteAllButton")}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             )}
             {activeTab === "about" && (
               <View style={styles.placeholder}>
-                <Text style={styles.placeholderText}>Misa AI Чат</Text>
+                <Text style={styles.placeholderText}>{t("misaChat")}</Text>
               </View>
             )}
             </ScrollView>
@@ -304,203 +340,251 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
         </View>
       </View>
     </Modal>
+
+    <Modal visible={deleteConfirmOpen} transparent animationType="fade">
+      <View style={[StyleSheet.absoluteFill, styles.overlay]}>
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          activeOpacity={1}
+          onPress={() => !deleteLoading && setDeleteConfirmOpen(false)}
+        />
+        <View style={styles.deleteConfirmModal} onStartShouldSetResponder={() => true}>
+          <Text style={styles.feedbackTitle}>{t("deleteAccount")}</Text>
+          <Text style={styles.deleteConfirmText}>{t("deleteAccountConfirm")}</Text>
+          {deleteError ? (
+            <Text style={styles.deleteConfirmError}>{deleteError}</Text>
+          ) : null}
+          <View style={styles.feedbackActions}>
+            <TouchableOpacity
+              style={styles.feedbackBtnCancel}
+              onPress={() => !deleteLoading && setDeleteConfirmOpen(false)}
+              disabled={deleteLoading}
+            >
+              <Text style={styles.feedbackBtnCancelText}>{t("cancel")}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.feedbackBtnSubmit}
+              onPress={handleDeleteAccountConfirm}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.feedbackBtnSubmitText}>{t("delete")}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    </>
   );
 });
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  modal: {
-    width: "100%",
-    maxWidth: 560,
-    height: "85%",
-    minHeight: 320,
-    backgroundColor: COLORS.secondaryBg,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-    overflow: "hidden",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderColor,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: COLORS.textPrimary,
-  },
-  closeBtn: { padding: 8 },
-  closeText: { fontSize: 24, color: COLORS.textPrimary },
-  body: {
-    flex: 1,
-    flexDirection: "row",
-    minHeight: 0,
-  },
-  nav: {
-    width: 140,
-    paddingVertical: 12,
-    paddingHorizontal: 0,
-    borderRightWidth: 1,
-    borderRightColor: COLORS.borderColor,
-    gap: 2,
-  },
-  navItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  navItemActive: {
-    backgroundColor: "rgba(74,144,226,0.15)",
-  },
-  navIcon: { fontSize: 16 },
-  navLabel: { fontSize: 14, color: COLORS.textSecondary },
-  navLabelActive: { color: COLORS.accentColor },
-  content: {
-    flex: 1,
-    padding: 20,
-    minWidth: 0,
-  },
-  section: { marginBottom: 24 },
-  row: {
-    marginBottom: 16,
-  },
-  rowActions: { marginTop: 8 },
-  label: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginBottom: 4,
-  },
-  value: { fontSize: 15, color: COLORS.textPrimary },
-  valueRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  googleBadge: {
-    backgroundColor: "#4285F4",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  googleBadgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
-  btnLogout: {
-    alignSelf: "flex-start",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: "rgba(74,144,226,0.3)",
-    borderRadius: 8,
-  },
-  btnLogoutText: { color: COLORS.accentColor, fontWeight: "500" },
-  btnDelete: {
-    alignSelf: "flex-start",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: "rgba(239,68,68,0.2)",
-    borderRadius: 8,
-  },
-  btnDeleteText: { color: "#ef4444", fontWeight: "500" },
-  themeBlock: { marginBottom: 20 },
-  themeLabel: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 10 },
-  themeOptions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  themeBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-  },
-  themeBtnActive: {
-    backgroundColor: "rgba(74,144,226,0.25)",
-    borderColor: COLORS.accentColor,
-  },
-  themeIcon: { fontSize: 18, marginRight: 8 },
-  themeBtnText: { fontSize: 14, color: COLORS.textPrimary },
-  langBlock: { marginBottom: 16 },
-  pickerWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-    backgroundColor: "rgba(255,255,255,0.06)",
-  },
-  pickerText: { fontSize: 15, color: COLORS.textPrimary },
-  pickerChevron: { fontSize: 12, color: COLORS.textSecondary },
-  langDropdownOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  langDropdown: {
-    width: "100%",
-    maxWidth: 280,
-    maxHeight: 300,
-    backgroundColor: COLORS.secondaryBg,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-    overflow: "hidden",
-  },
-  langDropdownItem: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderColor,
-  },
-  langDropdownItemActive: {
-    backgroundColor: "rgba(74,144,226,0.15)",
-  },
-  langDropdownItemText: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
-  },
-  dataBlock: {
-    marginBottom: 24,
-    padding: 16,
-    backgroundColor: "rgba(255,255,255,0.04)",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-  },
-  dataTitle: { fontSize: 16, fontWeight: "600", color: COLORS.textPrimary, marginBottom: 6 },
-  dataDesc: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 12 },
-  btnExport: {
-    alignSelf: "flex-start",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.accentColor,
-    borderRadius: 8,
-  },
-  btnExportText: { color: "#fff", fontWeight: "600" },
-  btnDeleteAll: {
-    alignSelf: "flex-start",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: "rgba(239,68,68,0.3)",
-    borderRadius: 8,
-  },
-  btnDeleteAllText: { color: "#ef4444", fontWeight: "600" },
-  placeholder: {
-    padding: 24,
-    alignItems: "center",
-  },
-  placeholderText: { fontSize: 18, color: COLORS.textSecondary },
-});
+const createStyles = (colors) =>
+  StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.6)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+    },
+    modal: {
+      width: "100%",
+      maxWidth: 560,
+      height: "85%",
+      minHeight: 320,
+      backgroundColor: colors.secondaryBg,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.borderColor,
+      overflow: "hidden",
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderColor,
+    },
+    title: { fontSize: 20, fontWeight: "600", color: colors.textPrimary },
+    closeBtn: { padding: 8 },
+    closeText: { fontSize: 24, color: colors.textPrimary },
+    body: { flex: 1, flexDirection: "row", minHeight: 0 },
+    nav: {
+      width: 140,
+      paddingVertical: 12,
+      paddingHorizontal: 0,
+      borderRightWidth: 1,
+      borderRightColor: colors.borderColor,
+      gap: 2,
+    },
+    navItem: { flexDirection: "row", alignItems: "center", paddingVertical: 10, paddingHorizontal: 16, gap: 8 },
+    navItemActive: { backgroundColor: "rgba(74,144,226,0.15)" },
+    navIcon: { fontSize: 16 },
+    navLabel: { fontSize: 14, color: colors.textSecondary },
+    navLabelActive: { color: colors.accentColor },
+    content: { flex: 1, padding: 20, minWidth: 0 },
+    section: { marginBottom: 24 },
+    row: { marginBottom: 16 },
+    rowActions: { marginTop: 8 },
+    label: { fontSize: 13, color: colors.textSecondary, marginBottom: 4 },
+    value: { fontSize: 15, color: colors.textPrimary },
+    valueRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+    googleBadge: { backgroundColor: "#4285F4", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+    googleBadgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+    btnLogout: {
+      alignSelf: "flex-start",
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      backgroundColor: "rgba(74,144,226,0.3)",
+      borderRadius: 8,
+    },
+    btnLogoutText: { color: colors.accentColor, fontWeight: "500" },
+    btnDelete: {
+      alignSelf: "flex-start",
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      backgroundColor: "rgba(239,68,68,0.2)",
+      borderRadius: 8,
+    },
+    btnDeleteText: { color: "#ef4444", fontWeight: "500" },
+    themeBlock: { marginBottom: 20 },
+    themeLabel: { fontSize: 14, color: colors.textSecondary, marginBottom: 10 },
+    themeOptions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    themeBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+      borderRadius: 8,
+      borderWidth: 1,
+    },
+    themeBtnActive: {},
+    themeIcon: { fontSize: 18, marginRight: 8 },
+    themeBtnText: { fontSize: 14, color: colors.textPrimary },
+    langBlock: { marginBottom: 16 },
+    pickerWrap: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.borderColor,
+      backgroundColor: "rgba(128,128,128,0.1)",
+    },
+    pickerText: { fontSize: 15, color: colors.textPrimary },
+    pickerChevron: { fontSize: 12, color: colors.textSecondary },
+    langDropdownOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+    },
+    langDropdown: {
+      width: "100%",
+      maxWidth: 280,
+      maxHeight: 300,
+      backgroundColor: colors.secondaryBg,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.borderColor,
+      overflow: "hidden",
+    },
+    langDropdownItem: {
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderColor,
+    },
+    langDropdownItemActive: { backgroundColor: "rgba(74,144,226,0.15)" },
+    langDropdownItemText: { fontSize: 16, color: colors.textPrimary },
+    dataBlock: {
+      marginBottom: 24,
+      padding: 16,
+      backgroundColor: "rgba(128,128,128,0.06)",
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.borderColor,
+    },
+    dataTitle: { fontSize: 16, fontWeight: "600", color: colors.textPrimary, marginBottom: 6 },
+    dataDesc: { fontSize: 13, color: colors.textSecondary, marginBottom: 12 },
+    btnExport: {
+      alignSelf: "flex-start",
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      backgroundColor: colors.accentColor,
+      borderRadius: 8,
+    },
+    btnExportText: { color: "#fff", fontWeight: "600" },
+    btnDeleteAll: {
+      alignSelf: "flex-start",
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      backgroundColor: "rgba(239,68,68,0.3)",
+      borderRadius: 8,
+    },
+    btnDeleteAllText: { color: "#ef4444", fontWeight: "600" },
+    placeholder: { padding: 24, alignItems: "center" },
+    placeholderText: { fontSize: 18, color: colors.textSecondary },
+    deleteConfirmModal: {
+      backgroundColor: colors.secondaryBg,
+      borderRadius: 16,
+      padding: 20,
+      width: "100%",
+      maxWidth: 360,
+      borderWidth: 1,
+      borderColor: colors.borderColor,
+    },
+    deleteConfirmText: {
+      fontSize: 15,
+      color: colors.textPrimary,
+      marginBottom: 16,
+      lineHeight: 22,
+    },
+    deleteConfirmError: {
+      fontSize: 14,
+      color: "#ef4444",
+      marginBottom: 16,
+    },
+    feedbackTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: colors.textPrimary,
+      marginBottom: 16,
+    },
+    feedbackActions: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      gap: 12,
+    },
+    feedbackBtnCancel: {
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 10,
+    },
+    feedbackBtnCancelText: {
+      color: colors.textSecondary,
+      fontSize: 16,
+    },
+    feedbackBtnSubmit: {
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 10,
+      backgroundColor: "#ef4444",
+      minWidth: 80,
+      alignItems: "center",
+    },
+    feedbackBtnSubmitText: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: "600",
+    },
+  });
 
 export default SettingsModal;

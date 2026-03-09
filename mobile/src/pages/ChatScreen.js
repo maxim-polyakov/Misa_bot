@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { observer } from "mobx-react-lite";
 import {
   View,
@@ -25,22 +25,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
 import { useStores } from "../store/rootStoreContext";
 import { useUser } from "../context/UserContext";
+import { useTheme } from "../context/ThemeContext";
+import { useLocale } from "../context/LocaleContext";
 import { API_URL } from "../config";
 import SettingsModal from "./SettingsModal";
 
 const SIDEBAR_WIDTH = 280;
-
-const COLORS = {
-  primaryBg: "#1c1c1e",
-  secondaryBg: "#2c2c2e",
-  messageBg: "#2c2c2e",
-  userMessageBg: "#4a90e2",
-  borderColor: "#3a3a3c",
-  textPrimary: "#ffffff",
-  textSecondary: "#8e8e93",
-  accentColor: "#4a90e2",
-  sidebarBg: "#2a2a2d",
-};
 
 const getBlockType = (language) => {
   const lang = (language || "plaintext").toLowerCase();
@@ -82,6 +72,9 @@ const parseMessageContent = (content) => {
 function ChatScreen() {
   const { chatStore } = useStores();
   const { user, setIsAuth } = useUser();
+  const { colors } = useTheme();
+  const { t, locale } = useLocale();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [message, setMessage] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -160,10 +153,10 @@ function ChatScreen() {
   };
 
   const FEEDBACK_CATEGORIES = [
-    { id: "harmful", label: "Вредно / Небезопасно" },
-    { id: "fake", label: "Неверно" },
-    { id: "unhelpful", label: "Бесполезно" },
-    { id: "others", label: "Другое" },
+    { id: "harmful", label: t("feedbackHarmful") },
+    { id: "fake", label: t("feedbackFake") },
+    { id: "unhelpful", label: t("feedbackUnhelpful") },
+    { id: "others", label: t("feedbackOthers") },
   ];
 
   const handleLike = (msg) => {
@@ -231,11 +224,11 @@ function ChatScreen() {
       await Share.share({
         message: url,
         url: Platform.OS === "ios" ? url : undefined,
-        title: "Поделиться чатом Misa AI",
+        title: t("shareChatTitle"),
       });
     } catch (e) {
       await Clipboard.setStringAsync(url);
-      Alert.alert("Ссылка скопирована", "Ссылка на чат скопирована в буфер обмена.");
+      Alert.alert(t("linkCopied"), t("linkCopiedDesc"));
     }
   };
 
@@ -272,12 +265,12 @@ function ChatScreen() {
   const handleDelete = (chatId) => {
     setChatMenuOpen(null);
     Alert.alert(
-      "Удалить чат?",
-      "Чат будет удалён безвозвратно.",
+      t("confirmDeleteChat"),
+      t("confirmDeleteChatDesc"),
       [
-        { text: "Отмена", style: "cancel" },
+        { text: t("cancel"), style: "cancel" },
         {
-          text: "Удалить",
+          text: t("delete"),
           style: "destructive",
           onPress: async () => {
             await chatStore.deleteChat(chatId);
@@ -367,7 +360,7 @@ function ChatScreen() {
                 <MaterialCommunityIcons
                   name={feedback === "like" ? "thumb-up" : "thumb-up-outline"}
                   size={18}
-                  color={feedback === "like" ? COLORS.accentColor : COLORS.textSecondary}
+                  color={feedback === "like" ? colors.accentColor : colors.textSecondary}
                 />
               </TouchableOpacity>
               <TouchableOpacity
@@ -377,7 +370,7 @@ function ChatScreen() {
                 <MaterialCommunityIcons
                   name={feedback === "dislike" ? "thumb-down" : "thumb-down-outline"}
                   size={18}
-                  color={feedback === "dislike" ? "#ef4444" : COLORS.textSecondary}
+                  color={feedback === "dislike" ? "#ef4444" : colors.textSecondary}
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.msgActionBtn} onPress={() => handleShareMessage(chatStore.currentChatId, item)}>
@@ -406,8 +399,8 @@ function ChatScreen() {
           />
         </View>
         <View style={styles.emptyTextBlock}>
-          <Text style={[styles.emptyTitle, isSmallScreen && styles.emptyTitleSmall]}>Начните общение с Misa AI</Text>
-          <Text style={[styles.emptyHint, isSmallScreen && styles.emptyHintSmall]}>Задайте вопрос или поделитесь мыслями</Text>
+          <Text style={[styles.emptyTitle, isSmallScreen && styles.emptyTitleSmall]}>{t("startChat")}</Text>
+          <Text style={[styles.emptyHint, isSmallScreen && styles.emptyHintSmall]}>{t("startHint")}</Text>
         </View>
       </View>
     </ScrollView>
@@ -424,8 +417,8 @@ function ChatScreen() {
       ListFooterComponent={
         chatStore.isLoading ? (
           <View style={styles.typing}>
-            <ActivityIndicator size="small" color={COLORS.accentColor} />
-            <Text style={styles.typingText}>Misa печатает...</Text>
+            <ActivityIndicator size="small" color={colors.accentColor} />
+            <Text style={styles.typingText}>{t("typing")}</Text>
           </View>
         ) : null
       }
@@ -434,7 +427,7 @@ function ChatScreen() {
   );
 
   const renderSidebar = () => (
-    <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarTranslate }] }]}>
+    <Animated.View style={[styles.sidebar, { paddingBottom: insets.bottom, transform: [{ translateX: sidebarTranslate }] }]}>
       <View style={styles.sidebarHeader}>
         <View style={styles.sidebarLogoWrap}>
           <Image
@@ -443,23 +436,24 @@ function ChatScreen() {
             resizeMode="contain"
           />
         </View>
-        <Text style={styles.sidebarBrand}>Misa AI Чат</Text>
+        <Text style={styles.sidebarBrand}>{t("misaChat")}</Text>
         <TouchableOpacity style={styles.sidebarCloseBtn} onPress={() => { setSidebarOpen(false); setProfileOpen(false); }}>
           <Text style={styles.sidebarCloseText}>✕</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.newChatBtn} onPress={() => { chatStore.newChat(); setSidebarOpen(false); setProfileOpen(false); }}>
-        <Text style={styles.newChatBtnText}>+ Новый чат</Text>
+        <TouchableOpacity style={styles.newChatBtn} onPress={() => { chatStore.newChat(); setSidebarOpen(false); setProfileOpen(false); }}>
+        <Text style={styles.newChatBtnText}>+ {t("newChat")}</Text>
       </TouchableOpacity>
       <ScrollView style={styles.chatList} showsVerticalScrollIndicator={false}>
         {(() => {
           const groups = chatStore.getChatsGroupedByPeriod();
-          const monthFormatter = new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric" });
+          const localeMap = { ru: "ru-RU", en: "en-US", de: "de-DE" };
+          const monthFormatter = new Intl.DateTimeFormat(localeMap[locale] || "en-US", { month: "long", year: "numeric" });
           const sections = [
-            { key: "pinned", label: "Закреплённые", chats: groups.pinned },
-            { key: "today", label: "Сегодня", chats: groups.today },
-            { key: "yesterday", label: "Вчера", chats: groups.yesterday },
-            { key: "last7Days", label: "7 дней", chats: groups.last7Days },
+            { key: "pinned", label: t("pinned"), chats: groups.pinned },
+            { key: "today", label: t("today"), chats: groups.today },
+            { key: "yesterday", label: t("yesterday"), chats: groups.yesterday },
+            { key: "last7Days", label: t("last7Days"), chats: groups.last7Days },
             ...(groups.olderByMonth || []).map(({ key, year, month, chats }) => {
               const label = monthFormatter.format(new Date(year, month, 1));
               return { key: `older-${key}`, label: label.charAt(0).toUpperCase() + label.slice(1), chats };
@@ -478,7 +472,7 @@ function ChatScreen() {
             >
               <Text style={styles.chatItemIcon}>💬</Text>
               <Text numberOfLines={1} style={styles.chatItemTitle}>
-                {chatStore.getChatTitle(c)}
+                {chatStore.getChatTitle(c) === "Новый чат" ? t("newChat") : chatStore.getChatTitle(c)}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -491,21 +485,21 @@ function ChatScreen() {
               <View style={styles.chatMenu}>
                 <TouchableOpacity style={styles.chatMenuItem} onPress={() => handleRename(c)}>
                   <Text style={styles.chatMenuItemIcon}>✎</Text>
-                  <Text style={styles.chatMenuItemText}>Переименовать</Text>
+                  <Text style={styles.chatMenuItemText}>{t("rename")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.chatMenuItem} onPress={() => handlePin(c.id)}>
                   <Text style={styles.chatMenuItemIcon}>📌</Text>
                   <Text style={styles.chatMenuItemText}>
-                    {chatStore.isChatPinned(c.id) ? "Открепить" : "Закрепить"}
+                    {chatStore.isChatPinned(c.id) ? t("unpin") : t("pin")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.chatMenuItem} onPress={() => handleShareFromMenu(c.id)}>
                   <Text style={styles.chatMenuItemIcon}>⎘</Text>
-                  <Text style={styles.chatMenuItemText}>Поделиться</Text>
+                  <Text style={styles.chatMenuItemText}>{t("share")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.chatMenuItem, styles.chatMenuItemDelete]} onPress={() => handleDelete(c.id)}>
                   <Text style={styles.chatMenuItemIcon}>🗑</Text>
-                  <Text style={[styles.chatMenuItemText, styles.chatMenuItemDeleteText]}>Удалить</Text>
+                  <Text style={[styles.chatMenuItemText, styles.chatMenuItemDeleteText]}>{t("delete")}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -523,18 +517,18 @@ function ChatScreen() {
               onPress={() => { setProfileOpen(false); setSidebarOpen(false); setSettingsOpen(true); }}
             >
               <Text style={styles.profileItemIcon}>⚙</Text>
-              <Text style={styles.profileItemText}>Настройки</Text>
+              <Text style={styles.profileItemText}>{t("settings")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.profileItem}
-              onPress={() => { setProfileOpen(false); Alert.alert("Помощь", "Обратная связь: напишите нам на support@misa.ai"); }}
+              onPress={() => { setProfileOpen(false); Alert.alert(t("help"), "Обратная связь: напишите нам на support@misa.ai"); }}
             >
               <Text style={styles.profileItemIcon}>?</Text>
-              <Text style={styles.profileItemText}>Помощь и отзыв</Text>
+              <Text style={styles.profileItemText}>{t("helpFeedback")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.profileItem, styles.profileItemLogout]} onPress={handleLogout}>
               <Text style={styles.profileItemIcon}>→</Text>
-              <Text style={styles.profileItemText}>Выйти</Text>
+              <Text style={styles.profileItemText}>{t("logout")}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -544,12 +538,12 @@ function ChatScreen() {
           ) : (
             <View style={styles.profileAvatar}>
               <Text style={styles.profileAvatarText}>
-                {(user?.display_name || user?.email || "?")[0].toUpperCase()}
+                {(user?.display_name || user?.email || t("user"))[0].toUpperCase()}
               </Text>
             </View>
           )}
           <Text style={styles.profileName} numberOfLines={1}>
-            {user?.display_name || user?.email || "Пользователь"}
+            {user?.display_name || user?.email || t("user")}
           </Text>
           <Text style={styles.profileDots}>⋯</Text>
         </TouchableOpacity>
@@ -564,14 +558,14 @@ function ChatScreen() {
     <View
       style={[
         styles.inputRow,
-        { backgroundColor: COLORS.primaryBg, borderTopColor: COLORS.borderColor, paddingBottom: inputPaddingBottom },
+        { backgroundColor: colors.primaryBg, borderTopColor: colors.borderColor, paddingBottom: inputPaddingBottom },
         isSmallScreen && styles.inputRowSmall,
       ]}
     >
       <TextInput
         style={[styles.input, isSmallScreen && styles.inputSmall]}
-        placeholder="Введите сообщение..."
-        placeholderTextColor={COLORS.textSecondary}
+        placeholder={t("placeholder")}
+        placeholderTextColor={colors.textSecondary}
         value={message}
         onChangeText={setMessage}
         multiline
@@ -603,12 +597,16 @@ function ChatScreen() {
       {renderSidebar()}
 
       <View style={[styles.main, { paddingTop: insets.top }]}>
-        <View style={[styles.header, { backgroundColor: COLORS.primaryBg, borderBottomColor: COLORS.borderColor }]}>
+        <View style={[styles.header, { backgroundColor: colors.primaryBg, borderBottomColor: colors.borderColor }]}>
           <TouchableOpacity onPress={() => setSidebarOpen(true)} style={styles.menuBtn}>
             <Text style={styles.menuBtnText}>☰</Text>
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isSmallScreen && styles.headerTitleSmall]} numberOfLines={1}>
-            {chatStore.currentChat?.title || "Misa AI"}
+            {chatStore.currentChat?.title && chatStore.currentChat.title.trim() && chatStore.currentChat.title !== "Новый чат"
+              ? chatStore.currentChat.title
+              : chatStore.currentChat
+                ? t("newChat")
+                : "Misa AI"}
           </Text>
           <TouchableOpacity onPress={() => chatStore.newChat()} style={styles.newChatBtnHeader}>
             <Text style={styles.newChatBtnHeaderText}>+</Text>
@@ -619,13 +617,13 @@ function ChatScreen() {
           <View style={styles.errorBar}>
             <Text style={styles.errorText}>{chatStore.error}</Text>
             <TouchableOpacity onPress={() => chatStore.connect()}>
-              <Text style={styles.retryText}>Повторить</Text>
+              <Text style={styles.retryText}>{t("reconnect")}</Text>
             </TouchableOpacity>
           </View>
         ) : null}
 
         <KeyboardAvoidingView
-          style={[styles.container, { backgroundColor: COLORS.primaryBg }]}
+          style={[styles.container, { backgroundColor: colors.primaryBg }]}
           behavior={Platform.OS === "ios" ? "padding" : "padding"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         >
@@ -640,21 +638,21 @@ function ChatScreen() {
       <Modal visible={!!renameModalChatId} transparent animationType="fade">
         <Pressable style={styles.feedbackOverlay} onPress={() => { setRenameModalChatId(null); setRenameInputValue(""); }}>
           <Pressable style={styles.renameModal} onPress={() => {}}>
-            <Text style={styles.feedbackTitle}>Переименовать чат</Text>
+            <Text style={styles.feedbackTitle}>{t("renameChat")}</Text>
             <TextInput
               style={styles.renameInput}
               value={renameInputValue}
               onChangeText={setRenameInputValue}
-              placeholder="Название чата"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholder={t("chatName")}
+              placeholderTextColor={colors.textSecondary}
               autoFocus
             />
             <View style={styles.feedbackActions}>
               <TouchableOpacity style={styles.feedbackBtnCancel} onPress={() => { setRenameModalChatId(null); setRenameInputValue(""); }}>
-                <Text style={styles.feedbackBtnCancelText}>Отмена</Text>
+                <Text style={styles.feedbackBtnCancelText}>{t("cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.feedbackBtnSubmit} onPress={handleRenameSubmit}>
-                <Text style={styles.feedbackBtnSubmitText}>Сохранить</Text>
+                <Text style={styles.feedbackBtnSubmitText}>{t("save")}</Text>
               </TouchableOpacity>
             </View>
           </Pressable>
@@ -669,7 +667,7 @@ function ChatScreen() {
       >
         <Pressable style={styles.feedbackOverlay} onPress={handleFeedbackCancel}>
           <Pressable style={styles.feedbackModal} onPress={() => {}}>
-            <Text style={styles.feedbackTitle}>Обратная связь</Text>
+            <Text style={styles.feedbackTitle}>{t("feedback")}</Text>
             <View style={styles.feedbackCategories}>
               {FEEDBACK_CATEGORIES.map(({ id, label }) => (
                 <TouchableOpacity
@@ -693,8 +691,8 @@ function ChatScreen() {
             </View>
             <TextInput
               style={styles.feedbackTextarea}
-              placeholder="Мы ценим вашу обратную связь. Поделитесь комментариями и предложениями."
-              placeholderTextColor={COLORS.textSecondary}
+              placeholder={t("feedbackPlaceholder")}
+              placeholderTextColor={colors.textSecondary}
               value={feedbackComment}
               onChangeText={setFeedbackComment}
               multiline
@@ -702,10 +700,10 @@ function ChatScreen() {
             />
             <View style={styles.feedbackActions}>
               <TouchableOpacity style={styles.feedbackBtnCancel} onPress={handleFeedbackCancel}>
-                <Text style={styles.feedbackBtnCancelText}>Отмена</Text>
+                <Text style={styles.feedbackBtnCancelText}>{t("cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.feedbackBtnSubmit} onPress={handleFeedbackSubmit}>
-                <Text style={styles.feedbackBtnSubmitText}>Отправить</Text>
+                <Text style={styles.feedbackBtnSubmitText}>{t("submit")}</Text>
               </TouchableOpacity>
             </View>
           </Pressable>
@@ -715,7 +713,8 @@ function ChatScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) =>
+  StyleSheet.create({
   wrapper: { flex: 1 },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -728,10 +727,11 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: SIDEBAR_WIDTH,
-    backgroundColor: COLORS.sidebarBg,
+    backgroundColor: colors.sidebarBg,
     zIndex: 101,
     borderRightWidth: 1,
-    borderRightColor: COLORS.borderColor,
+    borderRightColor: colors.borderColor,
+    flexDirection: "column",
   },
   sidebarHeader: {
     flexDirection: "row",
@@ -752,13 +752,13 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
   },
   sidebarCloseBtn: {
     padding: 8,
   },
   sidebarCloseText: {
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     fontSize: 18,
   },
   newChatBtn: {
@@ -771,11 +771,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   newChatBtnText: {
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     fontSize: 16,
   },
   chatList: {
     flex: 1,
+    minHeight: 0,
     paddingHorizontal: 12,
   },
   chatGroup: {
@@ -783,7 +784,7 @@ const styles = StyleSheet.create({
   },
   chatGroupTitle: {
     fontSize: 12,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     marginBottom: 8,
     paddingHorizontal: 4,
   },
@@ -801,7 +802,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   chatItemActive: {
-    backgroundColor: COLORS.messageBg,
+    backgroundColor: colors.messageBg,
   },
   chatItemIcon: {
     fontSize: 16,
@@ -809,7 +810,7 @@ const styles = StyleSheet.create({
   },
   chatItemTitle: {
     flex: 1,
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     fontSize: 14,
   },
   chatItemMenuBtn: {
@@ -817,7 +818,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   chatItemMenuBtnText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 18,
   },
   chatMenu: {
@@ -825,10 +826,10 @@ const styles = StyleSheet.create({
     top: "100%",
     right: 0,
     marginTop: 4,
-    backgroundColor: COLORS.secondaryBg,
+    backgroundColor: colors.secondaryBg,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: COLORS.borderColor,
+    borderColor: colors.borderColor,
     minWidth: 180,
     zIndex: 10,
     overflow: "hidden",
@@ -842,43 +843,45 @@ const styles = StyleSheet.create({
   chatMenuItemIcon: {
     fontSize: 16,
     marginRight: 10,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   chatMenuItemText: {
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     fontSize: 15,
   },
   chatMenuItemDelete: {
     borderTopWidth: 1,
-    borderTopColor: COLORS.borderColor,
+    borderTopColor: colors.borderColor,
   },
   chatMenuItemDeleteText: {
     color: "#ef4444",
   },
   renameModal: {
-    backgroundColor: COLORS.secondaryBg,
+    backgroundColor: colors.secondaryBg,
     borderRadius: 16,
     padding: 20,
     width: "100%",
     maxWidth: 360,
     borderWidth: 1,
-    borderColor: COLORS.borderColor,
+    borderColor: colors.borderColor,
   },
   renameInput: {
     borderWidth: 1,
-    borderColor: COLORS.borderColor,
+    borderColor: colors.borderColor,
     borderRadius: 12,
     padding: 12,
     fontSize: 16,
-    color: COLORS.textPrimary,
-    backgroundColor: COLORS.primaryBg,
+    color: colors.textPrimary,
+    backgroundColor: colors.primaryBg,
     marginBottom: 16,
   },
   sidebarFooter: {
     position: "relative",
     padding: 16,
+    paddingBottom: 16,
     borderTopWidth: 1,
-    borderTopColor: COLORS.borderColor,
+    borderTopColor: colors.borderColor,
+    flexShrink: 0,
   },
   profileBtn: {
     flexDirection: "row",
@@ -888,13 +891,13 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: COLORS.accentColor,
+    backgroundColor: colors.accentColor,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 10,
   },
   profileAvatarText: {
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -906,11 +909,11 @@ const styles = StyleSheet.create({
   },
   profileName: {
     flex: 1,
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     fontSize: 14,
   },
   profileDots: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 18,
     marginLeft: 4,
   },
@@ -919,10 +922,10 @@ const styles = StyleSheet.create({
     bottom: 56,
     left: 16,
     right: 16,
-    backgroundColor: COLORS.secondaryBg,
+    backgroundColor: colors.secondaryBg,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: COLORS.borderColor,
+    borderColor: colors.borderColor,
     overflow: "hidden",
   },
   profileItem: {
@@ -934,15 +937,15 @@ const styles = StyleSheet.create({
   profileItemIcon: {
     fontSize: 16,
     marginRight: 10,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   profileItemText: {
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     fontSize: 15,
   },
   profileItemLogout: {
     borderTopWidth: 1,
-    borderTopColor: COLORS.borderColor,
+    borderTopColor: colors.borderColor,
   },
   main: { flex: 1 },
   header: {
@@ -953,11 +956,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   menuBtn: { padding: 8, marginRight: 8 },
-  menuBtnText: { fontSize: 22, color: COLORS.textPrimary },
-  headerTitle: { flex: 1, fontSize: 18, fontWeight: "600", color: COLORS.textPrimary },
+  menuBtnText: { fontSize: 22, color: colors.textPrimary },
+  headerTitle: { flex: 1, fontSize: 18, fontWeight: "600", color: colors.textPrimary },
   headerTitleSmall: { fontSize: 16 },
   newChatBtnHeader: { padding: 8 },
-  newChatBtnHeaderText: { fontSize: 24, fontWeight: "300", color: COLORS.textPrimary },
+  newChatBtnHeaderText: { fontSize: 24, fontWeight: "300", color: colors.textPrimary },
   errorBar: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -966,7 +969,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   errorText: { color: "#ef4444", flex: 1 },
-  retryText: { color: COLORS.accentColor, fontWeight: "600" },
+  retryText: { color: colors.accentColor, fontWeight: "600" },
   container: { flex: 1, minHeight: 0 },
   contentArea: { flex: 1, minHeight: 0 },
   flatList: { flex: 1 },
@@ -979,19 +982,19 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 16,
   },
-  bubbleUser: { backgroundColor: COLORS.userMessageBg },
+  bubbleUser: { backgroundColor: colors.userMessageBg },
   bubbleMisa: {
-    backgroundColor: COLORS.messageBg,
+    backgroundColor: colors.messageBg,
     borderWidth: 1,
-    borderColor: COLORS.borderColor,
+    borderColor: colors.borderColor,
   },
   msgContentWrap: { gap: 8 },
-  msgText: { fontSize: 16, color: COLORS.textPrimary },
+  msgText: { fontSize: 16, color: colors.textPrimary },
   msgTextUser: { color: "#fff" },
   codeBlock: {
     backgroundColor: "#0d1117",
     borderWidth: 2,
-    borderColor: COLORS.accentColor,
+    borderColor: colors.accentColor,
     borderRadius: 8,
     marginTop: 12,
     marginBottom: 4,
@@ -1010,7 +1013,7 @@ const styles = StyleSheet.create({
   },
   codeBlockHeader: {
     fontSize: 12,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
   },
   codeBlockHeaderWrapUser: {
@@ -1052,7 +1055,7 @@ const styles = StyleSheet.create({
   codeBlockTextUser: { color: "rgba(255,255,255,0.95)" },
   msgTime: {
     fontSize: 11,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     marginTop: 8,
   },
   msgActions: {
@@ -1069,7 +1072,7 @@ const styles = StyleSheet.create({
   },
   msgActionIcon: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   msgImage: { width: 200, height: 200, borderRadius: 8 },
   emptyScroll: { flex: 1 },
@@ -1116,7 +1119,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 22,
     fontWeight: "600",
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     marginBottom: 6,
   },
   emptyTitleSmall: {
@@ -1125,7 +1128,7 @@ const styles = StyleSheet.create({
   },
   emptyHint: {
     fontSize: 15,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   emptyHintSmall: {
     fontSize: 14,
@@ -1146,14 +1149,14 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: COLORS.borderColor,
+    borderColor: colors.borderColor,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 12,
     maxHeight: 120,
     fontSize: 16,
-    backgroundColor: COLORS.secondaryBg,
-    color: COLORS.textPrimary,
+    backgroundColor: colors.secondaryBg,
+    color: colors.textPrimary,
   },
   inputSmall: {
     paddingHorizontal: 12,
@@ -1165,11 +1168,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: COLORS.accentColor,
+    backgroundColor: colors.accentColor,
     justifyContent: "center",
     alignItems: "center",
   },
-  sendBtnDisabled: { backgroundColor: COLORS.borderColor, opacity: 0.5 },
+  sendBtnDisabled: { backgroundColor: colors.borderColor, opacity: 0.5 },
   sendBtnText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
   typing: {
     flexDirection: "row",
@@ -1177,7 +1180,7 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: 8,
   },
-  typingText: { color: COLORS.textSecondary, fontSize: 14 },
+  typingText: { color: colors.textSecondary, fontSize: 14 },
   feedbackOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -1186,18 +1189,18 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   feedbackModal: {
-    backgroundColor: COLORS.secondaryBg,
+    backgroundColor: colors.secondaryBg,
     borderRadius: 16,
     padding: 20,
     width: "100%",
     maxWidth: 360,
     borderWidth: 1,
-    borderColor: COLORS.borderColor,
+    borderColor: colors.borderColor,
   },
   feedbackTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     marginBottom: 16,
   },
   feedbackCategories: {
@@ -1212,27 +1215,27 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.08)",
     borderWidth: 1,
-    borderColor: COLORS.borderColor,
+    borderColor: colors.borderColor,
   },
   feedbackPillActive: {
     backgroundColor: "rgba(74,144,226,0.25)",
-    borderColor: COLORS.accentColor,
+    borderColor: colors.accentColor,
   },
   feedbackPillText: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   feedbackPillTextActive: {
-    color: COLORS.accentColor,
+    color: colors.accentColor,
   },
   feedbackTextarea: {
     borderWidth: 1,
-    borderColor: COLORS.borderColor,
+    borderColor: colors.borderColor,
     borderRadius: 12,
     padding: 12,
     fontSize: 15,
-    color: COLORS.textPrimary,
-    backgroundColor: COLORS.primaryBg,
+    color: colors.textPrimary,
+    backgroundColor: colors.primaryBg,
     minHeight: 100,
     textAlignVertical: "top",
     marginBottom: 16,
@@ -1248,20 +1251,20 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   feedbackBtnCancelText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 16,
   },
   feedbackBtnSubmit: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,
-    backgroundColor: COLORS.accentColor,
+    backgroundColor: colors.accentColor,
   },
   feedbackBtnSubmitText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },
-});
+  });
 
 export default observer(ChatScreen);

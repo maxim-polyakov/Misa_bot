@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 import JSZip from "jszip";
 import { Context } from "../index.js";
 import { useStores } from "../store/rootStoreContext";
-import { logoutAll } from "../http/userApi";
+import { logoutAll, deleteAccount } from "../http/userApi";
 import { useLocale } from "../contexts/LocaleContext";
 import { getTheme, setTheme, THEMES } from "../utils/theme.js";
 import { getLanguage, LANGUAGES } from "../utils/locale.js";
@@ -19,6 +19,9 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
     const [activeTab, setActiveTab] = useState("profile");
     const [theme, setThemeState] = useState(getTheme);
     const [locale, setLocaleState] = useState(getLanguage);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [deleteError, setDeleteError] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     const SETTINGS_TABS = [
         { id: "general", label: t("general"), icon: "⚙" },
@@ -64,16 +67,33 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
         navigate("/login", { replace: true });
     };
 
-    const handleDeleteAccount = () => {
-        if (window.confirm("Вы уверены, что хотите удалить аккаунт? Это действие необратимо.")) {
-            handleLogout();
-            // TODO: вызов API удаления аккаунта
+    const handleDeleteAccountClick = () => {
+        setDeleteError(null);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleDeleteAccountConfirm = async () => {
+        setDeleteLoading(true);
+        setDeleteError(null);
+        try {
+            await deleteAccount();
+            setDeleteConfirmOpen(false);
+            onClose();
+            chatStore.clearUserFromStorage();
+            chatStore.logout();
+            user?.setUser({});
+            user?.setIsAuth(false);
+            navigate("/login", { replace: true });
+        } catch (e) {
+            setDeleteError(e?.message || t("error"));
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
     if (!isOpen) return null;
 
-    return createPortal(
+    const settingsContent = createPortal(
         <div className="settings-modal-overlay" onClick={onClose}>
             <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
                     <div className="settings-modal-header">
@@ -124,7 +144,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                             </div>
                             <div className="settings-profile-row settings-profile-row-actions">
                                 <span className="settings-profile-label">{t("deleteAccount")}</span>
-                                <button type="button" className="settings-btn-delete" onClick={handleDeleteAccount}>
+                                <button type="button" className="settings-btn-delete" onClick={handleDeleteAccountClick}>
                                     {t("delete")}
                                 </button>
                             </div>
@@ -264,6 +284,49 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
             </div>
         </div>,
         document.body
+    );
+
+    const deleteConfirmModal = deleteConfirmOpen && createPortal(
+        <div className="settings-modal-overlay" onClick={() => !deleteLoading && setDeleteConfirmOpen(false)}>
+            <div className="settings-modal settings-confirm-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="settings-modal-header">
+                    <h2 className="settings-modal-title">{t("deleteAccount")}</h2>
+                    <button type="button" className="settings-modal-close" onClick={() => !deleteLoading && setDeleteConfirmOpen(false)} aria-label="Закрыть">
+                        ×
+                    </button>
+                </div>
+                <div className="settings-confirm-body">
+                    <p className="settings-confirm-text">{t("deleteAccountConfirm")}</p>
+                    {deleteError && <p className="settings-confirm-error">{deleteError}</p>}
+                    <div className="settings-confirm-actions">
+                        <button
+                            type="button"
+                            className="settings-btn-cancel"
+                            onClick={() => !deleteLoading && setDeleteConfirmOpen(false)}
+                            disabled={deleteLoading}
+                        >
+                            {t("cancel")}
+                        </button>
+                        <button
+                            type="button"
+                            className="settings-btn-delete"
+                            onClick={handleDeleteAccountConfirm}
+                            disabled={deleteLoading}
+                        >
+                            {deleteLoading ? "..." : t("delete")}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>,
+        document.body
+    );
+
+    return (
+        <>
+            {settingsContent}
+            {deleteConfirmModal}
+        </>
     );
 });
 

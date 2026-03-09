@@ -30,6 +30,7 @@ api_patterns_for_schema = [
     path('auth/google-id-token/', views.google_id_token, name='google_id_token'),
     path('auth/check/', views.check, name='check'),
     path('auth/logout-all/', views.logout_all, name='logout_all'),
+    path('auth/delete-account/', views.delete_account, name='delete_account'),
     path('api/chats/', views.chats_list_or_create, name='chats_list_or_create'),
     path('api/chats/export/', views.chats_export, name='chats_export'),
     path('api/chats/<str:chat_id>/share/', views.chats_share_public, name='chats_share_public'),
@@ -69,6 +70,7 @@ urlpatterns = [
     path('auth/google-id-token/', views.google_id_token, name='google_id_token'),
     path('auth/check/', views.check, name="check"),
     path('auth/logout-all/', views.logout_all, name='logout_all'),
+    path('auth/delete-account/', views.delete_account, name='delete_account'),
     # Swagger (drf-yasg)
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('swagger-ui/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

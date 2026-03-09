@@ -129,11 +129,11 @@ class Controller(IController.IController):
                 )
 
     @classmethod
-    def error_response(cls, message="Error", status=400):
-        return JsonResponse({
-            'status': 'error',
-            'message': message
-        }, status=status)
+    def error_response(cls, message="Error", status=400, detail=None):
+        data = {'status': 'error', 'message': message}
+        if detail is not None:
+            data['detail'] = str(detail)
+        return JsonResponse(data, status=status)
 
     @classmethod
     def generate_jwt_token(cls, user_id, email, display_name=None, picture=None):
@@ -858,6 +858,35 @@ class Controller(IController.IController):
             return cls.success_response(None, "Logged out from all devices", 200)
         except Exception as e:
             logging.error(f"logout_all error: {str(e)}")
+            return cls.error_response(str(e), 500)
+
+    @classmethod
+    def delete_account(cls, request):
+        """Удаление аккаунта: удаляет пользователя из auth.users (чаты удаляются CASCADE)"""
+        try:
+            user = getattr(request, 'user', None)
+            if user is None:
+                return cls.error_response("Authentication required", 401, detail="request.user не установлен (middleware не прошёл или не установил user)")
+            user_id = (
+                getattr(user, 'id', None)
+                or getattr(user, 'pk', None)
+                or (getattr(user, '__dict__', {}).get('id'))
+            )
+            if user_id is None:
+                auth_header = request.headers.get('Authorization') or request.META.get('HTTP_AUTHORIZATION', '')
+                if auth_header.startswith('Bearer '):
+                    payload = cls.verify_jwt_token(auth_header.split(' ')[1])
+                    if payload and 'user_id' in payload:
+                        user_id = payload['user_id']
+            if user_id is None:
+                return cls.error_response("Authentication required", 401, detail="user.id отсутствует")
+            delete_sql = "DELETE FROM auth.users WHERE id = %s"
+            cls.__dbc.execute_update(delete_sql, (user_id,))
+            cache.delete(f"auth_user:{user_id}")
+            cache.delete(f"auth_user_full:{user_id}")
+            return cls.success_response(None, "Account deleted", 200)
+        except Exception as e:
+            logging.error(f"delete_account error: {str(e)}")
             return cls.error_response(str(e), 500)
 
     @classmethod

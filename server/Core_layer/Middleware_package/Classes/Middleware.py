@@ -42,12 +42,23 @@ class Middleware(IMiddleware.IMiddleware):
                 return self.get_response(request)
 
             # Проверяем аутентификацию для других путей
-            auth_header = request.headers.get('Authorization', '')
+            # Fallback: некоторые прокси (nginx) передают заголовок в META как HTTP_AUTHORIZATION
+            auth_header = (
+                request.headers.get('Authorization')
+                or request.META.get('HTTP_AUTHORIZATION')
+                or ''
+            )
 
             if not auth_header.startswith('Bearer '):
+                detail = (
+                    'заголовок Authorization отсутствует'
+                    if not auth_header
+                    else 'неверный формат (ожидается Bearer <token>)'
+                )
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'Authentication required'
+                    'message': 'Authentication required',
+                    'detail': detail,
                 }, status=401)
 
             token = auth_header.split(' ')[1]

@@ -6,7 +6,10 @@ const extractApiError = (error) => {
         const m = error.response.data.match(/Error: (.+?)(<br>|\n|$)/);
         return m?.[1]?.trim() || "Ошибка";
     }
-    return error.response?.data?.message || error.message || "Ошибка";
+    const data = error.response?.data;
+    const msg = data?.message || error.message || "Ошибка";
+    const detail = data?.detail ? ` (${data.detail})` : "";
+    return msg + detail;
 };
 
 export const sendRegistrationCode = async (email, password) => {
@@ -172,6 +175,27 @@ export const logoutAll = async () => {
     } catch (error) {
         console.warn("logoutAll API error:", error?.response?.data || error?.message);
         // Продолжаем локальный выход даже при ошибке API
+    }
+};
+
+/**
+ * Удаление аккаунта: удаляет пользователя на сервере (необратимо)
+ */
+export const deleteAccount = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        throw new Error("Authentication required: токен не найден в localStorage. Войдите снова.");
+    }
+    try {
+        const { data } = await $authhost.post("auth/delete-account/", {}, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        if (data?.status === "error") {
+            const detail = data?.detail ? ` (${data.detail})` : "";
+            throw new Error((data?.message || "Не удалось удалить аккаунт") + detail);
+        }
+    } catch (error) {
+        throw new Error(extractApiError(error));
     }
 };
 
