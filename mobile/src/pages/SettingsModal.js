@@ -80,6 +80,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
   const handleExport = async () => {
     try {
       const dateStr = new Date().toISOString().slice(0, 10);
+      const fileName = `misa_data-${dateStr}.zip`;
       let conversationsData = chatStore.getConversationsExportData();
       let userData = {
         exportedAt: new Date().toISOString(),
@@ -110,21 +111,39 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
       zip.file("conversations.json", JSON.stringify(conversationsData, null, 2));
       zip.file("user.json", JSON.stringify(userData, null, 2));
       const blob = await zip.generateAsync({ type: "base64" });
-      const dir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+      const dir = FileSystem.cacheDirectory;
       if (!dir) {
         throw new Error("Storage access denied");
       }
-      const path = dir + `misa_data-${dateStr}.zip`;
-      await FileSystem.writeAsStringAsync(path, blob, { encoding: FileSystem.EncodingType.Base64 });
-      const canShare = await Sharing.isAvailableAsync();
-      if (canShare) {
-        // ExpoSharing.shareAsync требует file:// URI, content:// не поддерживается
-        await Sharing.shareAsync(path, {
-          mimeType: "application/zip",
-          dialogTitle: "Misa " + t("exportData"),
+      const tempPath = dir + fileName;
+      await FileSystem.writeAsStringAsync(tempPath, blob, { encoding: FileSystem.EncodingType.Base64 });
+
+      if (Platform.OS === "android" && FileSystem.StorageAccessFramework) {
+        const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+        if (!permissions.granted) {
+          return;
+        }
+        const parentUri = permissions.directoryUri;
+        const baseName = fileName.replace(/\.zip$/i, "");
+        const destUri = await FileSystem.StorageAccessFramework.createFileAsync(parentUri, baseName, "application/zip");
+        await FileSystem.StorageAccessFramework.writeAsStringAsync(destUri, blob, {
+          encoding: FileSystem.EncodingType.Base64,
         });
+        await FileSystem.deleteAsync(tempPath, { idempotent: true });
+        Alert.alert(t("exportData"), t("fileSaved"));
       } else {
-        Alert.alert(t("exportData"), t("fileSaved") + ": " + path);
+        const canShare = await Sharing.isAvailableAsync();
+        if (canShare) {
+          await Sharing.shareAsync(tempPath, {
+            mimeType: "application/zip",
+            dialogTitle: "Misa " + t("exportData"),
+          });
+        } else {
+          const docDir = FileSystem.documentDirectory || dir;
+          const persistPath = docDir + fileName;
+          await FileSystem.moveAsync({ from: tempPath, to: persistPath });
+          Alert.alert(t("exportData"), t("fileSaved") + ": " + persistPath);
+        }
       }
     } catch (e) {
       console.error("Export error:", e);
