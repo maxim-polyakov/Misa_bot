@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import Constants from "expo-constants";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { UserProvider, useUser } from "./src/context/UserContext";
+import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
 import { RootStoreProvider, useStores } from "./src/store/rootStoreContext";
 import { check } from "./src/api/userApi";
 import { storage } from "./src/storage";
@@ -82,15 +83,26 @@ const AppContent = observer(() => {
   return isAuth ? <ChatScreen /> : <AuthScreen />;
 });
 
+const AppWithTheme = () => {
+  const { isDark } = useTheme();
+  return (
+    <>
+      <AppContent />
+      <StatusBar style={isDark ? "light" : "dark"} />
+    </>
+  );
+};
+
 export default function App() {
   return (
     <SafeAreaProvider>
-      <UserProvider>
-        <RootStoreProvider>
-          <AppContent />
-          <StatusBar style="auto" />
-        </RootStoreProvider>
-      </UserProvider>
+      <ThemeProvider>
+        <UserProvider>
+          <RootStoreProvider>
+            <AppWithTheme />
+          </RootStoreProvider>
+        </UserProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

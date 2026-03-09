@@ -8,6 +8,7 @@ export default {
           iosUrlScheme: process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME || "com.googleusercontent.apps.placeholder",
         },
       ],
+      ["expo-file-system", { enableFileSharing: true }],
     ],
     slug: "misa-android",
     version: "1.0.0",
@@ -28,7 +29,7 @@ export default {
     },
     android: {
       package: "ru.baxic.misa",
-      versionCode: 2,
+      versionCode: 3,
       softwareKeyboardLayoutMode: "resize",
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",

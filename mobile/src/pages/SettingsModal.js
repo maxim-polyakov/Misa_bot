@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,27 +8,20 @@ import {
   StyleSheet,
   Alert,
   FlatList,
+  Platform,
 } from "react-native";
 import { observer } from "mobx-react-lite";
 import JSZip from "jszip";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { useStores } from "../store/rootStoreContext";
 import { useUser } from "../context/UserContext";
 import { API_URL } from "../config";
 import { apiFetch } from "../api/http";
 import { logoutAll } from "../api/userApi";
-import { getTheme, setTheme, THEMES } from "../utils/theme";
+import { THEMES } from "../utils/theme";
 import { getLanguage, setLanguage, LANGUAGES } from "../utils/locale";
-
-const COLORS = {
-  primaryBg: "#1c1c1e",
-  secondaryBg: "#2c2c2e",
-  borderColor: "#3a3a3c",
-  textPrimary: "#ffffff",
-  textSecondary: "#8e8e93",
-  accentColor: "#4a90e2",
-};
+import { useTheme } from "../context/ThemeContext";
 
 const maskEmail = (e) => {
   if (!e || !e.includes("@")) return "-";
@@ -47,10 +40,11 @@ const SETTINGS_TABS = [
 const SettingsModal = observer(({ isOpen, onClose }) => {
   const { chatStore } = useStores();
   const { user, setIsAuth } = useUser();
-  const [activeTab, setActiveTab] = useState("profile");
-  const [theme, setThemeState] = useState(THEMES.DARK);
+  const { colors, theme, setTheme: setThemeFromContext } = useTheme();
+  const [activeTab, setActiveTab] = useState("general");
   const [locale, setLocaleState] = useState("ru");
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const displayName = user?.display_name;
   const email = user?.email || chatStore?.user || "";
@@ -59,7 +53,6 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen) {
-      getTheme().then(setThemeState);
       getLanguage().then(setLocaleState);
     } else {
       setLangDropdownOpen(false);
@@ -119,17 +112,28 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
       zip.file("conversations.json", JSON.stringify(conversationsData, null, 2));
       zip.file("user.json", JSON.stringify(userData, null, 2));
       const blob = await zip.generateAsync({ type: "base64" });
-      const path = FileSystem.cacheDirectory + `misa_data-${dateStr}.zip`;
+      const dir =
+        Platform.OS === "android"
+          ? FileSystem.cacheDirectory
+          : FileSystem.documentDirectory || FileSystem.cacheDirectory;
+      if (!dir) {
+        throw new Error("Нет доступа к хранилищу");
+      }
+      const path = dir + `misa_data-${dateStr}.zip`;
       await FileSystem.writeAsStringAsync(path, blob, { encoding: FileSystem.EncodingType.Base64 });
       const canShare = await Sharing.isAvailableAsync();
       if (canShare) {
-        await Sharing.shareAsync(path, { mimeType: "application/zip" });
+        // ExpoSharing.shareAsync требует file:// URI, content:// не поддерживается
+        await Sharing.shareAsync(path, {
+          mimeType: "application/zip",
+          dialogTitle: "Экспорт чатов Misa",
+        });
       } else {
         Alert.alert("Экспорт", "Файл сохранён: " + path);
       }
     } catch (e) {
       console.error("Export error:", e);
-      Alert.alert("Ошибка", "Не удалось экспортировать данные");
+      Alert.alert("Ошибка", e?.message || "Не удалось экспортировать данные");
     }
   };
 
@@ -221,10 +225,13 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                     {[THEMES.LIGHT, THEMES.DARK, THEMES.SYSTEM].map((t) => (
                       <TouchableOpacity
                         key={t}
-                        style={[styles.themeBtn, theme === t && styles.themeBtnActive]}
+                        style={[
+                          styles.themeBtn,
+                          theme === t && styles.themeBtnActive,
+                          { borderColor: theme === t ? colors.accentColor : colors.borderColor, backgroundColor: theme === t ? "rgba(74,144,226,0.25)" : "rgba(128,128,128,0.1)" },
+                        ]}
                         onPress={async () => {
-                          await setTheme(t);
-                          setThemeState(t);
+                          await setThemeFromContext(t);
                         }}
                       >
                         <Text style={styles.themeIcon}>
@@ -307,200 +314,157 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
   );
 });
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  modal: {
-    width: "100%",
-    maxWidth: 560,
-    height: "85%",
-    minHeight: 320,
-    backgroundColor: COLORS.secondaryBg,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-    overflow: "hidden",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderColor,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: COLORS.textPrimary,
-  },
-  closeBtn: { padding: 8 },
-  closeText: { fontSize: 24, color: COLORS.textPrimary },
-  body: {
-    flex: 1,
-    flexDirection: "row",
-    minHeight: 0,
-  },
-  nav: {
-    width: 140,
-    paddingVertical: 12,
-    paddingHorizontal: 0,
-    borderRightWidth: 1,
-    borderRightColor: COLORS.borderColor,
-    gap: 2,
-  },
-  navItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  navItemActive: {
-    backgroundColor: "rgba(74,144,226,0.15)",
-  },
-  navIcon: { fontSize: 16 },
-  navLabel: { fontSize: 14, color: COLORS.textSecondary },
-  navLabelActive: { color: COLORS.accentColor },
-  content: {
-    flex: 1,
-    padding: 20,
-    minWidth: 0,
-  },
-  section: { marginBottom: 24 },
-  row: {
-    marginBottom: 16,
-  },
-  rowActions: { marginTop: 8 },
-  label: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginBottom: 4,
-  },
-  value: { fontSize: 15, color: COLORS.textPrimary },
-  valueRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  googleBadge: {
-    backgroundColor: "#4285F4",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  googleBadgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
-  btnLogout: {
-    alignSelf: "flex-start",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: "rgba(74,144,226,0.3)",
-    borderRadius: 8,
-  },
-  btnLogoutText: { color: COLORS.accentColor, fontWeight: "500" },
-  btnDelete: {
-    alignSelf: "flex-start",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: "rgba(239,68,68,0.2)",
-    borderRadius: 8,
-  },
-  btnDeleteText: { color: "#ef4444", fontWeight: "500" },
-  themeBlock: { marginBottom: 20 },
-  themeLabel: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 10 },
-  themeOptions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  themeBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-  },
-  themeBtnActive: {
-    backgroundColor: "rgba(74,144,226,0.25)",
-    borderColor: COLORS.accentColor,
-  },
-  themeIcon: { fontSize: 18, marginRight: 8 },
-  themeBtnText: { fontSize: 14, color: COLORS.textPrimary },
-  langBlock: { marginBottom: 16 },
-  pickerWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-    backgroundColor: "rgba(255,255,255,0.06)",
-  },
-  pickerText: { fontSize: 15, color: COLORS.textPrimary },
-  pickerChevron: { fontSize: 12, color: COLORS.textSecondary },
-  langDropdownOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  langDropdown: {
-    width: "100%",
-    maxWidth: 280,
-    maxHeight: 300,
-    backgroundColor: COLORS.secondaryBg,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-    overflow: "hidden",
-  },
-  langDropdownItem: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderColor,
-  },
-  langDropdownItemActive: {
-    backgroundColor: "rgba(74,144,226,0.15)",
-  },
-  langDropdownItemText: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
-  },
-  dataBlock: {
-    marginBottom: 24,
-    padding: 16,
-    backgroundColor: "rgba(255,255,255,0.04)",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-  },
-  dataTitle: { fontSize: 16, fontWeight: "600", color: COLORS.textPrimary, marginBottom: 6 },
-  dataDesc: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 12 },
-  btnExport: {
-    alignSelf: "flex-start",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.accentColor,
-    borderRadius: 8,
-  },
-  btnExportText: { color: "#fff", fontWeight: "600" },
-  btnDeleteAll: {
-    alignSelf: "flex-start",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: "rgba(239,68,68,0.3)",
-    borderRadius: 8,
-  },
-  btnDeleteAllText: { color: "#ef4444", fontWeight: "600" },
-  placeholder: {
-    padding: 24,
-    alignItems: "center",
-  },
-  placeholderText: { fontSize: 18, color: COLORS.textSecondary },
-});
+const createStyles = (colors) =>
+  StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.6)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+    },
+    modal: {
+      width: "100%",
+      maxWidth: 560,
+      height: "85%",
+      minHeight: 320,
+      backgroundColor: colors.secondaryBg,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.borderColor,
+      overflow: "hidden",
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderColor,
+    },
+    title: { fontSize: 20, fontWeight: "600", color: colors.textPrimary },
+    closeBtn: { padding: 8 },
+    closeText: { fontSize: 24, color: colors.textPrimary },
+    body: { flex: 1, flexDirection: "row", minHeight: 0 },
+    nav: {
+      width: 140,
+      paddingVertical: 12,
+      paddingHorizontal: 0,
+      borderRightWidth: 1,
+      borderRightColor: colors.borderColor,
+      gap: 2,
+    },
+    navItem: { flexDirection: "row", alignItems: "center", paddingVertical: 10, paddingHorizontal: 16, gap: 8 },
+    navItemActive: { backgroundColor: "rgba(74,144,226,0.15)" },
+    navIcon: { fontSize: 16 },
+    navLabel: { fontSize: 14, color: colors.textSecondary },
+    navLabelActive: { color: colors.accentColor },
+    content: { flex: 1, padding: 20, minWidth: 0 },
+    section: { marginBottom: 24 },
+    row: { marginBottom: 16 },
+    rowActions: { marginTop: 8 },
+    label: { fontSize: 13, color: colors.textSecondary, marginBottom: 4 },
+    value: { fontSize: 15, color: colors.textPrimary },
+    valueRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+    googleBadge: { backgroundColor: "#4285F4", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+    googleBadgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+    btnLogout: {
+      alignSelf: "flex-start",
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      backgroundColor: "rgba(74,144,226,0.3)",
+      borderRadius: 8,
+    },
+    btnLogoutText: { color: colors.accentColor, fontWeight: "500" },
+    btnDelete: {
+      alignSelf: "flex-start",
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      backgroundColor: "rgba(239,68,68,0.2)",
+      borderRadius: 8,
+    },
+    btnDeleteText: { color: "#ef4444", fontWeight: "500" },
+    themeBlock: { marginBottom: 20 },
+    themeLabel: { fontSize: 14, color: colors.textSecondary, marginBottom: 10 },
+    themeOptions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    themeBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+      borderRadius: 8,
+      borderWidth: 1,
+    },
+    themeBtnActive: {},
+    themeIcon: { fontSize: 18, marginRight: 8 },
+    themeBtnText: { fontSize: 14, color: colors.textPrimary },
+    langBlock: { marginBottom: 16 },
+    pickerWrap: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.borderColor,
+      backgroundColor: "rgba(128,128,128,0.1)",
+    },
+    pickerText: { fontSize: 15, color: colors.textPrimary },
+    pickerChevron: { fontSize: 12, color: colors.textSecondary },
+    langDropdownOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+    },
+    langDropdown: {
+      width: "100%",
+      maxWidth: 280,
+      maxHeight: 300,
+      backgroundColor: colors.secondaryBg,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.borderColor,
+      overflow: "hidden",
+    },
+    langDropdownItem: {
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderColor,
+    },
+    langDropdownItemActive: { backgroundColor: "rgba(74,144,226,0.15)" },
+    langDropdownItemText: { fontSize: 16, color: colors.textPrimary },
+    dataBlock: {
+      marginBottom: 24,
+      padding: 16,
+      backgroundColor: "rgba(128,128,128,0.06)",
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.borderColor,
+    },
+    dataTitle: { fontSize: 16, fontWeight: "600", color: colors.textPrimary, marginBottom: 6 },
+    dataDesc: { fontSize: 13, color: colors.textSecondary, marginBottom: 12 },
+    btnExport: {
+      alignSelf: "flex-start",
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      backgroundColor: colors.accentColor,
+      borderRadius: 8,
+    },
+    btnExportText: { color: "#fff", fontWeight: "600" },
+    btnDeleteAll: {
+      alignSelf: "flex-start",
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      backgroundColor: "rgba(239,68,68,0.3)",
+      borderRadius: 8,
+    },
+    btnDeleteAllText: { color: "#ef4444", fontWeight: "600" },
+    placeholder: { padding: 24, alignItems: "center" },
+    placeholderText: { fontSize: 18, color: colors.textSecondary },
+  });
 
 export default SettingsModal;
