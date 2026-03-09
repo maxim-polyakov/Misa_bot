@@ -2,7 +2,6 @@ export default {
   expo: {
     name: "Misa AI",
     plugins: [
-      "expo-sharing",
       [
         "@react-native-google-signin/google-signin",
         {
@@ -29,6 +28,7 @@ export default {
     },
     android: {
       package: "ru.baxic.misa",
+      versionCode: 2,
       softwareKeyboardLayoutMode: "resize",
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",
