@@ -867,7 +867,17 @@ class Controller(IController.IController):
             user = getattr(request, 'user', None)
             if user is None:
                 return cls.error_response("Authentication required", 401, detail="request.user не установлен (middleware не прошёл или не установил user)")
-            user_id = getattr(user, 'id', None)
+            user_id = (
+                getattr(user, 'id', None)
+                or getattr(user, 'pk', None)
+                or (getattr(user, '__dict__', {}).get('id'))
+            )
+            if user_id is None:
+                auth_header = request.headers.get('Authorization') or request.META.get('HTTP_AUTHORIZATION', '')
+                if auth_header.startswith('Bearer '):
+                    payload = cls.verify_jwt_token(auth_header.split(' ')[1])
+                    if payload and 'user_id' in payload:
+                        user_id = payload['user_id']
             if user_id is None:
                 return cls.error_response("Authentication required", 401, detail="user.id отсутствует")
             delete_sql = "DELETE FROM auth.users WHERE id = %s"
