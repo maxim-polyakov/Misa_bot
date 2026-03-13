@@ -453,7 +453,6 @@ class ChatStore {
         const todayNum = toDateNum(now);
         const yesterdayNum = toDateNum(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
         const sevenDaysAgoNum = toDateNum(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7));
-        const thirtyDaysAgoNum = toDateNum(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30));
 
         const groups = { pinned: [], today: [], yesterday: [], last7Days: [], olderByMonth: {} };
         const pinnedSet = new Set(this.pinnedChatIds);
@@ -476,7 +475,7 @@ class ChatStore {
                 groups.yesterday.push(chat);
             } else if (dateNum >= sevenDaysAgoNum) {
                 groups.last7Days.push(chat);
-            } else if (date < thirtyDaysAgo) {
+            } else {
                 const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                 if (!groups.olderByMonth[key]) groups.olderByMonth[key] = { year: date.getFullYear(), month: date.getMonth(), chats: [] };
                 groups.olderByMonth[key].chats.push(chat);
