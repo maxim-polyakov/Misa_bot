@@ -96,3 +96,16 @@ export const setLanguage = (code) => {
         window.dispatchEvent(new CustomEvent("localechange", { detail: code }));
     }
 };
+
+export const RTL_CODES = new Set(["ar", "he", "fa", "ur", "yi"]);
+
+export const getIntlLocale = (code) => {
+    const map = { zh: "zh-CN", "zh-TW": "zh-TW", pt: "pt-BR", nb: "nb-NO", pa: "pa-IN" };
+    return map[code] || code;
+};
+
+export const applyDocumentLocale = (code) => {
+    if (typeof document === "undefined") return;
+    document.documentElement.lang = getIntlLocale(code);
+    document.documentElement.dir = RTL_CODES.has(code) ? "rtl" : "ltr";
+};

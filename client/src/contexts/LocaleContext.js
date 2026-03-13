@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { getLanguage, setLanguage as setLocale } from "../utils/locale.js";
+import { getLanguage, setLanguage as setLocale, applyDocumentLocale } from "../utils/locale.js";
 import { translations } from "../utils/translations.js";
 
 export const LocaleContext = createContext(null);
@@ -12,6 +12,10 @@ export const useLocale = () => {
 
 export const LocaleProvider = ({ children }) => {
     const [locale, setLocaleState] = useState(getLanguage);
+
+    useEffect(() => {
+        applyDocumentLocale(locale);
+    }, [locale]);
 
     useEffect(() => {
         const handleChange = () => setLocaleState(getLanguage());

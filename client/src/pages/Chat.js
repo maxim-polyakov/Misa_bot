@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useStores } from "../store/rootStoreContext";
 import { useLocale } from "../contexts/LocaleContext";
+import { getIntlLocale } from "../utils/locale.js";
 import { useMenuToggle } from "./MainLayout";
 import CachedImage from "./CachedImage";
 import "./Styles.css";
@@ -10,7 +11,7 @@ import { imageDB } from "./ImageDB";
 
 const Chat = observer(() => {
     const { chatStore } = useStores();
-    const { t } = useLocale();
+    const { t, locale } = useLocale();
     const [searchParams, setSearchParams] = useSearchParams();
     const { toggleSidebar, sidebarExpanded } = useMenuToggle();
     const [message, setMessage] = useState("");
@@ -201,7 +202,7 @@ const Chat = observer(() => {
                     )}
                     {renderContent()}
                     <div className="message-time">
-                        {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        {new Date(msg.timestamp).toLocaleTimeString(getIntlLocale(locale), {hour: '2-digit', minute:'2-digit'})}
                     </div>
                     {messageUser === 'Misa' && (
                         <div className="message-actions" onClick={e => e.stopPropagation()}>

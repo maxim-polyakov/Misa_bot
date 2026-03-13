@@ -27,6 +27,7 @@ import { useStores } from "../store/rootStoreContext";
 import { useUser } from "../context/UserContext";
 import { useTheme } from "../context/ThemeContext";
 import { useLocale } from "../context/LocaleContext";
+import { getIntlLocale } from "../utils/locale";
 import { API_URL } from "../config";
 import SettingsModal from "./SettingsModal";
 
@@ -337,7 +338,7 @@ function ChatScreen() {
             renderMessageContent(item.content, isUser)
           )}
           <Text style={styles.msgTime}>
-            {new Date(item.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            {new Date(item.timestamp).toLocaleTimeString(getIntlLocale(locale), { hour: "2-digit", minute: "2-digit" })}
           </Text>
           {!isUser && (
             <View style={styles.msgActions}>
@@ -447,8 +448,8 @@ function ChatScreen() {
       <ScrollView style={styles.chatList} showsVerticalScrollIndicator={false}>
         {(() => {
           const groups = chatStore.getChatsGroupedByPeriod();
-          const localeMap = { ru: "ru-RU", en: "en-US", de: "de-DE" };
-          const monthFormatter = new Intl.DateTimeFormat(localeMap[locale] || "en-US", { month: "long", year: "numeric" });
+          const intlLocale = getIntlLocale(locale);
+          const monthFormatter = new Intl.DateTimeFormat(intlLocale, { month: "long", year: "numeric" });
           const sections = [
             { key: "pinned", label: t("pinned"), chats: groups.pinned },
             { key: "today", label: t("today"), chats: groups.today },

@@ -101,3 +101,9 @@ export const setLanguage = async (code) => {
     await storage.setItem(STORAGE_KEY, code);
   }
 };
+
+export const RTL_CODES = new Set(["ar", "he", "fa", "ur", "yi"]);
+export const getIntlLocale = (code) => {
+  const map = { zh: "zh-CN", "zh-TW": "zh-TW", pt: "pt-BR", nb: "nb-NO", pa: "pa-IN" };
+  return map[code] || code;
+};
