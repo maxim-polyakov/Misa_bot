@@ -446,15 +446,14 @@ class ChatStore {
     }
 
     // Группировка чатов по периодам (Закреплённые, Сегодня, Вчера, 7 дней, 30 дней)
+    // Сравнение по календарным датам в локальной timezone — избегаем ошибок с UTC
     getChatsGroupedByPeriod() {
         const now = new Date();
-        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const yesterdayStart = new Date(todayStart);
-        yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-        const sevenDaysAgo = new Date(todayStart);
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const thirtyDaysAgo = new Date(todayStart);
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const toDateNum = (d) => d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+        const todayNum = toDateNum(now);
+        const yesterdayNum = toDateNum(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
+        const sevenDaysAgoNum = toDateNum(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7));
+        const thirtyDaysAgoNum = toDateNum(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30));
 
         const groups = { pinned: [], today: [], yesterday: [], last7Days: [], olderByMonth: {} };
         const pinnedSet = new Set(this.pinnedChatIds);
@@ -470,11 +469,12 @@ class ChatStore {
             }
             let date = chat.createdAt ? new Date(chat.createdAt) : new Date();
             if (isNaN(date.getTime())) date = new Date();
-            if (date >= todayStart) {
+            const dateNum = toDateNum(date);
+            if (dateNum >= todayNum) {
                 groups.today.push(chat);
-            } else if (date >= yesterdayStart) {
+            } else if (dateNum >= yesterdayNum) {
                 groups.yesterday.push(chat);
-            } else if (date >= sevenDaysAgo) {
+            } else if (dateNum >= sevenDaysAgoNum) {
                 groups.last7Days.push(chat);
             } else if (date < thirtyDaysAgo) {
                 const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
