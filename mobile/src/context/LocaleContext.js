@@ -17,7 +17,7 @@ export const LocaleProvider = ({ children }) => {
     getLanguage().then(setLocaleState);
   }, []);
 
-  const t = (key) => translations[locale]?.[key] ?? translations.ru[key] ?? key;
+  const t = (key) => translations[locale]?.[key] ?? translations.en?.[key] ?? translations.ru?.[key] ?? key;
 
   const setLang = async (code) => {
     await setLocale(code);

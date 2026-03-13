@@ -19,7 +19,7 @@ export const LocaleProvider = ({ children }) => {
         return () => window.removeEventListener("localechange", handleChange);
     }, []);
 
-    const t = (key) => translations[locale]?.[key] ?? translations.ru[key] ?? key;
+    const t = (key) => translations[locale]?.[key] ?? translations.en?.[key] ?? translations.ru?.[key] ?? key;
     const setLang = (code) => {
         setLocale(code);
         setLocaleState(code);
