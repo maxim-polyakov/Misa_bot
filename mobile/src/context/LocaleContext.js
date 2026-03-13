@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { I18nManager } from "react-native";
+import { View, StyleSheet } from "react-native";
+import * as Updates from "expo-updates";
 import { getLanguage, getSystemLocaleSync, setLanguage as setLocale, RTL_CODES } from "../utils/locale";
 import { translations } from "../utils/translations";
 
@@ -11,35 +12,51 @@ export const useLocale = () => {
   return ctx;
 };
 
-const applyRTL = (code) => {
-  const needRTL = RTL_CODES.has(code);
-  if (I18nManager.isRTL !== needRTL) {
-    I18nManager.forceRTL(needRTL);
-    // RTL применяется после перезапуска приложения
-  }
-};
-
 export const LocaleProvider = ({ children }) => {
   const [locale, setLocaleState] = useState(getSystemLocaleSync);
+  const [updateChecked, setUpdateChecked] = useState(false);
 
   useEffect(() => {
     getLanguage().then((code) => {
       setLocaleState(code);
-      applyRTL(code);
     });
   }, []);
 
+  useEffect(() => {
+    if (updateChecked) return;
+    const runUpdateCheck = async () => {
+      try {
+        const check = await Updates.checkForUpdateAsync?.();
+        if (check?.isUpdateAvailable) {
+          await Updates.fetchUpdateAsync?.();
+        }
+      } catch {
+        // В dev expo-updates может быть недоступен
+      }
+      setUpdateChecked(true);
+    };
+    runUpdateCheck();
+  }, [updateChecked]);
+
   const t = (key) => translations[locale]?.[key] ?? key;
+  const isRTL = RTL_CODES.has(locale);
 
   const setLang = async (code) => {
     await setLocale(code);
     setLocaleState(code);
-    applyRTL(code);
   };
 
   return (
-    <LocaleContext.Provider value={{ locale, t, setLanguage: setLang }}>
-      {children}
+    <LocaleContext.Provider value={{ locale, t, setLanguage: setLang, isRTL }}>
+      <View style={[styles.root, { direction: isRTL ? "rtl" : "ltr" }]}>
+        {children}
+      </View>
     </LocaleContext.Provider>
   );
 };
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+});
