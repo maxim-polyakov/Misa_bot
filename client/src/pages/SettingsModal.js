@@ -14,11 +14,10 @@ import "./Styles.css";
 const SettingsModal = observer(({ isOpen, onClose }) => {
     const { user } = useContext(Context);
     const { chatStore } = useStores();
-    const { t, setLanguage: setLocale } = useLocale();
+    const { t, locale, setLanguage: setLocale } = useLocale();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("profile");
     const [theme, setThemeState] = useState(getTheme);
-    const [locale, setLocaleState] = useState(getLanguage);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [deleteError, setDeleteError] = useState(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
@@ -31,10 +30,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
     ];
 
     useEffect(() => {
-        if (isOpen) {
-            setThemeState(getTheme());
-            setLocaleState(getLanguage());
-        }
+        if (isOpen) setThemeState(getTheme());
     }, [isOpen]);
 
     useEffect(() => {
@@ -189,7 +185,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                                     <select
                                         className="settings-language-select"
                                         value={locale}
-                                        onChange={(e) => { setLocale(e.target.value); setLocaleState(e.target.value); }}
+                                        onChange={(e) => setLocale(e.target.value)}
                                     >
                                         {LANGUAGES.map((lang) => (
                                             <option key={lang.code} value={lang.code}>

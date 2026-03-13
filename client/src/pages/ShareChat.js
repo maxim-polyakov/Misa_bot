@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import CachedImage from "./CachedImage";
 import { useLocale } from "../contexts/LocaleContext";
+import { getIntlLocale } from "../utils/locale.js";
 import "./Styles.css";
 
 const API_URL = process.env.REACT_APP_API_URL || '';
@@ -50,7 +51,7 @@ const parseMessageContent = (content) => {
 const ShareChat = () => {
     const { chatId } = useParams();
     const [searchParams] = useSearchParams();
-    const { t } = useLocale();
+    const { t, locale } = useLocale();
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -144,7 +145,7 @@ const ShareChat = () => {
                 <div className="message-content">
                     {renderContent()}
                     <div className="message-time">
-                        {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                        {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString(getIntlLocale(locale), { hour: '2-digit', minute: '2-digit' }) : ''}
                     </div>
                 </div>
             </div>

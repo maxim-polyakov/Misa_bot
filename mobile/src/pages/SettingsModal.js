@@ -10,7 +10,6 @@ import {
   FlatList,
   Platform,
   ActivityIndicator,
-  Pressable,
 } from "react-native";
 import { observer } from "mobx-react-lite";
 import JSZip from "jszip";
@@ -211,7 +210,12 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
                 </TouchableOpacity>
               ))}
             </View>
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.content}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="always"
+              directionalLockEnabled={Platform.OS === "ios"}
+            >
             {activeTab === "profile" && (
               <View style={styles.section}>
                 {isGoogleUser && displayName && (

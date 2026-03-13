@@ -7,6 +7,7 @@ import "./Styles.css";
 import { useStores } from "../store/rootStoreContext";
 import { useMenuToggle } from "./MainLayout";
 import { useLocale } from "../contexts/LocaleContext";
+import { getIntlLocale } from "../utils/locale.js";
 import SettingsModal from "./SettingsModal";
 
 const Sidebar = observer(() => {
@@ -164,8 +165,8 @@ const Sidebar = observer(() => {
                     <div className="sidebar-chats">
                         {(() => {
                             const groups = chatStore.getChatsGroupedByPeriod();
-                            const localeMap = { ru: 'ru-RU', en: 'en-US', de: 'de-DE' };
-                            const monthFormatter = new Intl.DateTimeFormat(localeMap[locale] || 'en-US', { month: 'long', year: 'numeric' });
+                            const intlLocale = getIntlLocale(locale);
+                            const monthFormatter = new Intl.DateTimeFormat(intlLocale, { month: 'long', year: 'numeric' });
                             const fixedSections = [
                                 { key: 'pinned', label: t('pinned'), chats: groups.pinned },
                                 { key: 'today', label: t('today'), chats: groups.today },

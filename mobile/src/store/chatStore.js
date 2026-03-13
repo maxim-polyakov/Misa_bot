@@ -427,11 +427,10 @@ class ChatStore {
 
   getChatsGroupedByPeriod() {
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterdayStart = new Date(todayStart);
-    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-    const sevenDaysAgo = new Date(todayStart);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const toDateNum = (d) => d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    const todayNum = toDateNum(now);
+    const yesterdayNum = toDateNum(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
+    const sevenDaysAgoNum = toDateNum(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7));
 
     const groups = { pinned: [], today: [], yesterday: [], last7Days: [], olderByMonth: {} };
     const pinnedSet = new Set(this.pinnedChatIds);
@@ -444,13 +443,24 @@ class ChatStore {
         groups.pinned.push(chat);
         continue;
       }
-      let date = chat.createdAt ? new Date(chat.createdAt) : new Date();
+      // Используем время последней активности (макс. timestamp сообщений) для группировки
+      const msgs = chat.messages || [];
+      const getTs = (m) => {
+        const t = m?.timestamp;
+        if (!t) return 0;
+        if (t instanceof Date && !isNaN(t.getTime())) return t.getTime();
+        const d = new Date(t);
+        return isNaN(d.getTime()) ? 0 : d.getTime();
+      };
+      const maxTs = msgs.reduce((acc, m) => Math.max(acc, getTs(m)), 0);
+      let date = maxTs ? new Date(maxTs) : (msgs.length > 0 ? new Date() : (chat.createdAt ? new Date(chat.createdAt) : new Date()));
       if (isNaN(date.getTime())) date = new Date();
-      if (date >= todayStart) {
+      const dateNum = toDateNum(date);
+      if (dateNum >= todayNum) {
         groups.today.push(chat);
-      } else if (date >= yesterdayStart) {
+      } else if (dateNum >= yesterdayNum) {
         groups.yesterday.push(chat);
-      } else if (date >= sevenDaysAgo) {
+      } else if (dateNum >= sevenDaysAgoNum) {
         groups.last7Days.push(chat);
       } else {
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;

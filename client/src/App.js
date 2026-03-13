@@ -77,11 +77,9 @@ const App = observer(() => {
     }
 
     return (
-        <LocaleProvider>
-            <BrowserRouter>
-                <AppRouter />
-            </BrowserRouter>
-        </LocaleProvider>
+        <BrowserRouter>
+            <AppRouter />
+        </BrowserRouter>
     );
 });
 
