@@ -22,10 +22,12 @@ import {
 } from "../api/userApi";
 import { useUser } from "../context/UserContext";
 import { useStores } from "../store/rootStoreContext";
+import { useLocale } from "../context/LocaleContext";
 
 export default function AuthScreen() {
   const { setUser, setIsAuth } = useUser();
   const { chatStore } = useStores();
+  const { t } = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -183,37 +185,35 @@ export default function AuthScreen() {
   };
 
   const getTitle = () => {
-    if (step === "login") return "Авторизация";
-    if (step === "register") return "Регистрация";
-    if (step === "verify") return "Код подтверждения";
-    if (step === "forgot") return "Восстановление пароля";
-    if (step === "forgot_verify") return "Введите код";
-    return "Авторизация";
+    if (step === "login") return t("authSignIn");
+    if (step === "register") return t("authRegistration");
+    if (step === "verify") return t("authVerifyCode");
+    if (step === "forgot") return t("authForgotPassword");
+    if (step === "forgot_verify") return t("authEnterCode");
+    return t("authSignIn");
   };
 
   const renderForgotScreen = () => (
     <>
-      <Text style={styles.subtitle}>
-        Введите email, на который зарегистрирован аккаунт. Мы отправим код для сброса пароля.
-      </Text>
+      <Text style={styles.subtitle}>{t("authForgotSubtitle")}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Введите email"
+        placeholder={t("authPlaceholderEmail")}
         value={email}
-        onChangeText={(t) => { setEmail(t); setError(""); }}
+        onChangeText={(val) => { setEmail(val); setError(""); }}
         autoCapitalize="none"
         keyboardType="email-address"
       />
       <View style={styles.rowBetween}>
         <TouchableOpacity onPress={goBackFromForgot}>
-          <Text style={styles.linkText}>Назад к входу</Text>
+          <Text style={styles.linkText}>{t("authBackToSignIn")}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.btnOutline, styles.btnSuccess]}
           onPress={handleForgotRequest}
           disabled={loading || !email.trim()}
         >
-          <Text style={styles.btnOutlineText}>{loading ? "Отправка…" : "Отправить код"}</Text>
+          <Text style={styles.btnOutlineText}>{loading ? t("authSending") : t("authSendCode")}</Text>
         </TouchableOpacity>
       </View>
     </>
@@ -234,36 +234,36 @@ export default function AuthScreen() {
   const renderForgotVerifyScreen = () => (
     <>
       <View style={styles.subtitleRow}>
-        <Text style={styles.subtitle}>Код отправлен на {email} </Text>
+        <Text style={styles.subtitle}>{t("authCodeSentTo")} {email} </Text>
         <TouchableOpacity onPress={handleResendForgotCode} disabled={resendLoading}>
-          <Text style={styles.linkText}>{resendLoading ? "Отправка…" : "Отправить повторно"}</Text>
+          <Text style={styles.linkText}>{resendLoading ? t("authSending") : t("authResendCode")}</Text>
         </TouchableOpacity>
       </View>
       <TextInput
         style={styles.input}
-        placeholder="Введите 6-значный код"
+        placeholder={t("authEnter6DigitCode")}
         value={code}
-        onChangeText={(t) => { setCode(t.replace(/\D/g, "").slice(0, 6)); setError(""); }}
+        onChangeText={(val) => { setCode(val.replace(/\D/g, "").slice(0, 6)); setError(""); }}
         keyboardType="number-pad"
         maxLength={6}
       />
       <TextInput
         style={styles.input}
-        placeholder="Новый пароль (мин. 6 символов)"
+        placeholder={t("authNewPasswordPlaceholder")}
         value={newPassword}
-        onChangeText={(t) => { setNewPassword(t); setError(""); }}
+        onChangeText={(val) => { setNewPassword(val); setError(""); }}
         secureTextEntry
       />
       <View style={styles.rowBetween}>
         <TouchableOpacity onPress={() => { setStep("forgot"); setError(""); }}>
-          <Text style={styles.linkText}>Назад</Text>
+          <Text style={styles.linkText}>{t("authBack")}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.btnOutline, styles.btnSuccess]}
           onPress={handleForgotVerify}
           disabled={code.length !== 6 || newPassword.length < 6 || loading}
         >
-          <Text style={styles.btnOutlineText}>{loading ? "Сохранение…" : "Сбросить пароль"}</Text>
+          <Text style={styles.btnOutlineText}>{loading ? t("authSaving") : t("authResetPassword")}</Text>
         </TouchableOpacity>
       </View>
     </>
@@ -273,46 +273,46 @@ export default function AuthScreen() {
     <>
       <TextInput
         style={styles.input}
-        placeholder="Введите email"
+        placeholder={t("authPlaceholderEmail")}
         value={email}
-        onChangeText={(t) => { setEmail(t); setError(""); }}
+        onChangeText={(val) => { setEmail(val); setError(""); }}
         autoCapitalize="none"
         keyboardType="email-address"
         editable={step !== "verify"}
       />
       <TextInput
         style={styles.input}
-        placeholder="Введите пароль"
+        placeholder={t("authPlaceholderPassword")}
         value={password}
-        onChangeText={(t) => { setPassword(t); setError(""); }}
+        onChangeText={(val) => { setPassword(val); setError(""); }}
         secureTextEntry
         editable={step !== "verify"}
       />
       {step === "verify" && (
         <TextInput
           style={styles.input}
-          placeholder="Код из письма"
+          placeholder={t("authCodeFromEmail")}
           value={code}
-          onChangeText={(t) => { setCode(t); setError(""); }}
+          onChangeText={(val) => { setCode(val); setError(""); }}
           keyboardType="number-pad"
         />
       )}
       {step === "login" && (
         <TouchableOpacity style={styles.btnGoogle} onPress={signInWithGoogle}>
-          <Text style={styles.btnGoogleText}>Войти через Google</Text>
+          <Text style={styles.btnGoogleText}>{t("authSignInWithGoogle")}</Text>
         </TouchableOpacity>
       )}
       {step === "login" && (
         <View style={styles.forgotRow}>
           <TouchableOpacity onPress={goToForgot}>
-            <Text style={styles.linkText}>Забыл пароль</Text>
+            <Text style={styles.linkText}>{t("authForgotPasswordLink")}</Text>
           </TouchableOpacity>
         </View>
       )}
       <View style={styles.rowBetween}>
         <TouchableOpacity onPress={goBack}>
           <Text style={styles.linkText}>
-            {step === "login" ? "Нет аккаунта? Регистрация" : "Уже есть аккаунт? Войти"}
+            {step === "login" ? `${t("authNoAccount")} ${t("authRegistration")}` : `${t("authAlreadyHaveAccount")} ${t("authSignInButton")}`}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -326,7 +326,7 @@ export default function AuthScreen() {
           }
         >
           <Text style={styles.btnOutlineText}>
-            {loading ? "…" : step === "login" ? "Войти" : step === "register" ? "Зарегистрироваться" : step === "verify" ? "Подтвердить" : "Войти"}
+            {loading ? "…" : step === "login" ? t("authSignInButton") : step === "register" ? t("authRegisterButton") : step === "verify" ? t("authConfirmButton") : t("authSignInButton")}
           </Text>
         </TouchableOpacity>
       </View>

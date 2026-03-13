@@ -6,12 +6,14 @@ import { login, sendRegistrationCode, exchangeOAuthCode } from "../http/userApi.
 import { observer } from "mobx-react-lite";
 import { Context } from "../index.js";
 import { useStores } from "../store/rootStoreContext";
+import { useLocale } from "../contexts/LocaleContext";
 
 const API_URL = process.env.REACT_APP_API_URL || "";
 
 const Auth = observer(() => {
     const { user } = useContext(Context);
     const { chatStore } = useStores();
+    const { t } = useLocale();
     const location = useLocation();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -133,7 +135,7 @@ const Auth = observer(() => {
         >
             <Card style={{ width: 700 }} className="p-5">
                 <h2 className="m-auto text-center">
-                    {isLogin ? "Авторизация" : "Регистрация"}
+                    {isLogin ? t("authSignIn") : t("authRegistration")}
                 </h2>
 
                 {/* Отображение ошибок */}
@@ -146,7 +148,7 @@ const Auth = observer(() => {
                 <Form className="d-flex flex-column">
                     <Form.Control
                         className="mt-3"
-                        placeholder="Введите email"
+                        placeholder={t("authPlaceholderEmail")}
                         value={email}
                         onChange={(e) => {
                             setEmail(e.target.value);
@@ -156,7 +158,7 @@ const Auth = observer(() => {
                     />
                     <Form.Control
                         className="mt-2"
-                        placeholder="Введите пароль"
+                        placeholder={t("authPlaceholderPassword")}
                         value={password}
                         onChange={(e) => {
                             setPassword(e.target.value);
@@ -172,14 +174,14 @@ const Auth = observer(() => {
                                 className="btn btn-outline-secondary btn-lg"
                                 style={{ textDecoration: "none" }}
                             >
-                                Войти через Google
+                                {t("authSignInWithGoogle")}
                             </a>
                         </div>
                     )}
                     {isLogin && (
                         <div className="mt-2 text-end">
                             <Link to={FORGOT_PASSWORD_ROUTE} style={{ textDecoration: "none", fontSize: "0.9rem" }}>
-                                Забыл пароль
+                                {t("authForgotPasswordLink")}
                             </Link>
                         </div>
                     )}
@@ -187,26 +189,24 @@ const Auth = observer(() => {
                         <div>
                             {isLogin ? (
                                 <>
-                                    Нет аккаунта?
+                                    {t("authNoAccount")}{" "}
                                     <Link
                                         to={REGISTRATION_ROUTE}
                                         style={{ textDecoration: "none" }}
                                         onClick={() => swapMethod()}
                                     >
-                                        {" "}
-                                        Регистрация
+                                        {t("authRegistration")}
                                     </Link>
                                 </>
                             ) : (
                                 <>
-                                    Уже есть аккаунт?
+                                    {t("authAlreadyHaveAccount")}{" "}
                                     <Link
                                         to={LOGIN_ROUTE}
                                         style={{ textDecoration: "none" }}
                                         onClick={() => swapMethod()}
                                     >
-                                        {" "}
-                                        Войти
+                                        {t("authSignInButton")}
                                     </Link>
                                 </>
                             )}
@@ -216,7 +216,7 @@ const Auth = observer(() => {
                             onClick={signIn}
                             disabled={!email.trim() || !password.trim()} // Кнопка неактивна при пустых полях
                         >
-                            {isLogin ? "Войти" : "Зарегистрироваться"}
+                            {isLogin ? t("authSignInButton") : t("authRegisterButton")}
                         </Button>
                     </div>
                 </Form>

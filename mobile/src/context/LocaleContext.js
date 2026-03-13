@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { I18nManager } from "react-native";
-import { getLanguage, setLanguage as setLocale, RTL_CODES } from "../utils/locale";
+import { getLanguage, getSystemLocaleSync, setLanguage as setLocale, RTL_CODES } from "../utils/locale";
 import { translations } from "../utils/translations";
 
 export const LocaleContext = createContext(null);
@@ -20,7 +20,7 @@ const applyRTL = (code) => {
 };
 
 export const LocaleProvider = ({ children }) => {
-  const [locale, setLocaleState] = useState("ru");
+  const [locale, setLocaleState] = useState(getSystemLocaleSync);
 
   useEffect(() => {
     getLanguage().then((code) => {
@@ -29,7 +29,7 @@ export const LocaleProvider = ({ children }) => {
     });
   }, []);
 
-  const t = (key) => translations[locale]?.[key] ?? translations.en?.[key] ?? translations.ru?.[key] ?? key;
+  const t = (key) => translations[locale]?.[key] ?? key;
 
   const setLang = async (code) => {
     await setLocale(code);

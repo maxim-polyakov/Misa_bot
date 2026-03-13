@@ -82,9 +82,8 @@ export const LANGUAGES = [
   { code: "ig", label: "Igbo" },
 ];
 
-export const getLanguage = async () => {
-  const saved = await storage.getItem(STORAGE_KEY);
-  if (saved && LANGUAGES.some((l) => l.code === saved)) return saved;
+/** Синхронно возвращает системный язык — для начального рендера без задержки. */
+export const getSystemLocaleSync = () => {
   const locale = getLocales()[0];
   const full = locale?.languageTag || locale?.languageCode || "";
   const short = full.split("-")[0]?.slice(0, 2) || full.slice(0, 2) || "en";
@@ -93,7 +92,13 @@ export const getLanguage = async () => {
   if ((short === "zh" && (full.includes("Hant") || full.includes("TW"))) || full === "zh-TW")
     return "zh-TW";
   const prefix = LANGUAGES.find((l) => l.code === short || l.code.startsWith(short + "-"));
-  return prefix ? prefix.code : "en";
+  return prefix ? prefix.code : short || "en";
+};
+
+export const getLanguage = async () => {
+  const saved = await storage.getItem(STORAGE_KEY);
+  if (saved && LANGUAGES.some((l) => l.code === saved)) return saved;
+  return getSystemLocaleSync();
 };
 
 export const setLanguage = async (code) => {

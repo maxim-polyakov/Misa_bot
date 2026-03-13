@@ -1,0 +1,10 @@
+﻿import fs from "fs";
+const p = "scripts/add-auth-full.mjs";
+let s = fs.readFileSync(p, "utf8");
+const old1 = /    const repl = [`$][^`]+`;\s*\n    const re = new RegExp\([^;]+;\s*\n/m;
+s = s.replace(old1, "");
+const old2 = /    const pat = `[^`]+`;\s*\n    if \(new RegExp\(pat, "m"\)\.test\(content\)\) \{\s*\n      content = content\.replace\(new RegExp\(pat, "m"\), \(m, p1\) => \{\s*\n        count\+\+;\s*\n        return p1 \+ ",\\\\n" \+ lines\.map\(l => innerIndent \+ l\.split\(": "\)\[0\] \+ ": " \+ l\.split\(": "\)\[1\]\)\.join\(",\\\\n"\) \+ "\\\\n" \+ blockIndent \+ "\},";\s*\n      \}\);\s*\n    \}\s*\n  \}/ms;
+const new2 = "    const simplePat = /(authEnterCode: \"[^\"]*\")\\n(\\\\s+)\\\\},/m;\n    if (simplePat.test(content)) {\n      content = content.replace(simplePat, (m, p1, p2) => {\n        count++;\n        return p1 + \",\\\\n\" + lines.map(l => innerIndent + l.split(\": \")[0] + \": \" + l.split(\": \")[1]).join(\",\\\\n\") + \"\\\\n\" + p2 + \"},\";\n      });\n    }\n  }";
+s = s.replace(old2, new2);
+fs.writeFileSync(p, s);
+console.log("Fixed");
