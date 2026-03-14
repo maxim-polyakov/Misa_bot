@@ -74,7 +74,7 @@ function ChatScreen() {
   const { chatStore } = useStores();
   const { user, setIsAuth } = useUser();
   const { colors } = useTheme();
-  const { t, locale } = useLocale();
+  const { t, locale, isRTL } = useLocale();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [message, setMessage] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -130,7 +130,7 @@ function ChatScreen() {
 
   const sidebarTranslate = sidebarAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-SIDEBAR_WIDTH, 0],
+    outputRange: isRTL ? [SIDEBAR_WIDTH, 0] : [-SIDEBAR_WIDTH, 0],
   });
 
   const overlayOpacity = sidebarAnim.interpolate({
@@ -427,8 +427,12 @@ function ChatScreen() {
     />
   );
 
+  const sidebarPositionStyle = isRTL
+    ? { right: 0, borderLeftWidth: 1, borderLeftColor: colors.borderColor, borderRightWidth: 0 }
+    : { left: 0, borderRightWidth: 1, borderRightColor: colors.borderColor };
+
   const renderSidebar = () => (
-    <Animated.View style={[styles.sidebar, { paddingBottom: insets.bottom, transform: [{ translateX: sidebarTranslate }] }]}>
+    <Animated.View style={[styles.sidebar, sidebarPositionStyle, { paddingBottom: insets.bottom, transform: [{ translateX: sidebarTranslate }] }]}>
       <View style={styles.sidebarHeader}>
         <View style={styles.sidebarLogoWrap}>
           <Image
@@ -598,7 +602,7 @@ function ChatScreen() {
       {renderSidebar()}
 
       <View style={[styles.main, { paddingTop: insets.top }]}>
-        <View style={[styles.header, { backgroundColor: colors.primaryBg, borderBottomColor: colors.borderColor }]}>
+        <View style={[styles.header, { backgroundColor: colors.primaryBg, borderBottomColor: colors.borderColor }, isRTL && styles.headerRTL]}>
           <TouchableOpacity onPress={() => setSidebarOpen(true)} style={styles.menuBtn}>
             <Text style={styles.menuBtnText}>☰</Text>
           </TouchableOpacity>
@@ -724,14 +728,11 @@ const createStyles = (colors) =>
   },
   sidebar: {
     position: "absolute",
-    left: 0,
     top: 0,
     bottom: 0,
     width: SIDEBAR_WIDTH,
     backgroundColor: colors.sidebarBg,
     zIndex: 101,
-    borderRightWidth: 1,
-    borderRightColor: colors.borderColor,
     flexDirection: "column",
   },
   sidebarHeader: {
@@ -956,6 +957,7 @@ const createStyles = (colors) =>
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
+  headerRTL: { flexDirection: "row-reverse" },
   menuBtn: { padding: 8, marginRight: 8 },
   menuBtnText: { fontSize: 22, color: colors.textPrimary },
   headerTitle: { flex: 1, fontSize: 18, fontWeight: "600", color: colors.textPrimary },
