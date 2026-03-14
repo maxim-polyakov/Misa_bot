@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    Workaround for LNK1181: win10- path (empty platform).
+    Windows App SDK C.props sets _WindowsAppSDKFoundationPlatform from $(Platform),
+    but in some build contexts it can be empty. Fallback to x64.
+    See https://github.com/microsoft/react-native-windows/issues/14358
+  -->
+  <PropertyGroup>
+    <_WindowsAppSDKFoundationPlatform Condition="'$(_WindowsAppSDKFoundationPlatform)' == '' and '$(Platform)' == 'Win32'">x86</_WindowsAppSDKFoundationPlatform>
+    <_WindowsAppSDKFoundationPlatform Condition="'$(_WindowsAppSDKFoundationPlatform)' == '' and '$(Platform)' == 'x64'">x64</_WindowsAppSDKFoundationPlatform>
+    <_WindowsAppSDKFoundationPlatform Condition="'$(_WindowsAppSDKFoundationPlatform)' == '' and '$(Platform)' == 'ARM64'">arm64</_WindowsAppSDKFoundationPlatform>
+    <_WindowsAppSDKFoundationPlatform Condition="'$(_WindowsAppSDKFoundationPlatform)' == ''">x64</_WindowsAppSDKFoundationPlatform>
+    <_MrtCoreRuntimeIdentifier Condition="'$(_MrtCoreRuntimeIdentifier)' == '' and '$(Platform)' == 'Win32'">x86</_MrtCoreRuntimeIdentifier>
+    <_MrtCoreRuntimeIdentifier Condition="'$(_MrtCoreRuntimeIdentifier)' == '' and '$(Platform)' == 'x64'">x64</_MrtCoreRuntimeIdentifier>
+    <_MrtCoreRuntimeIdentifier Condition="'$(_MrtCoreRuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">arm64</_MrtCoreRuntimeIdentifier>
+    <_MrtCoreRuntimeIdentifier Condition="'$(_MrtCoreRuntimeIdentifier)' == ''">x64</_MrtCoreRuntimeIdentifier>
+  </PropertyGroup>
+</Project>
