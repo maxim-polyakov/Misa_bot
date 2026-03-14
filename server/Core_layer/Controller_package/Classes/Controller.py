@@ -743,12 +743,13 @@ class Controller(IController.IController):
             return None
 
         def _redirect(url):
-            if url.startswith('misa://'):
+            # HttpResponseRedirect не поддерживает кастомные схемы (misa:// и т.д.).
+            # Используем HttpResponse с Location для любых не-http(s) URL.
+            # v2: без allowed_schemes
+            if not (url.startswith('http://') or url.startswith('https://')):
                 r = HttpResponse(status=302)
                 r['Location'] = url
                 return r
-            if url.startswith('http://localhost:') or url.startswith('http://127.0.0.1:'):
-                return HttpResponseRedirect(url)
             return HttpResponseRedirect(url)
 
         if not GOOGLE_AUTH_AVAILABLE or Flow is None:
