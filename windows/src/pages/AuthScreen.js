@@ -21,6 +21,7 @@ import {
   exchangeOAuthCode,
 } from "../api/userApi";
 import { API_URL } from "../config";
+import { startOAuthCallbackServer } from "../utils/oauthCallbackServer";
 import { useUser } from "../context/UserContext";
 import { useStores } from "../store/rootStoreContext";
 import { useLocale } from "../context/LocaleContext";
@@ -154,56 +155,65 @@ export default function AuthScreen() {
     setError("");
   };
 
+  const handleOAuthResult = useCallback((result, isFromMisaUrl = false) => {
+    if (googleOAuthHandled.current) return;
+    if (result.error) {
+      googleOAuthHandled.current = true;
+      const messages = {
+        OAUTH_MISSING_DATA: "Не удалось получить данные от Google.",
+        OAUTH_AUTH_ERROR: "Ошибка входа через Google.",
+      };
+      let msg = messages[result.error] || "Ошибка входа через Google.";
+      if (result.detail) {
+        try {
+          msg += " " + decodeURIComponent(result.detail);
+        } catch {
+          msg += " " + result.detail;
+        }
+      } else {
+        msg += " Попробуйте позже.";
+      }
+      setError(msg);
+      setShowGoogleOAuthModal(false);
+      return;
+    }
+    if (result.code) {
+      googleOAuthHandled.current = true;
+      setGoogleOAuthLoading(true);
+      exchangeOAuthCode(result.code)
+        .then((data) => {
+          chatStore.setUser(data.email, data.user_id ?? data.id);
+          setUser(data);
+          setIsAuth(true);
+          chatStore.connect();
+          setShowGoogleOAuthModal(false);
+          setGoogleOAuthLoading(false);
+        })
+        .catch((err) => {
+          setError(err.message || "Ошибка входа через Google");
+          setShowGoogleOAuthModal(false);
+          setGoogleOAuthLoading(false);
+        });
+    }
+  }, [chatStore, setUser, setIsAuth]);
+
   const handleMisaUrl = useCallback((url) => {
     if (!url || !url.startsWith("misa://") || googleOAuthHandled.current) return;
     try {
       const u = new URL(url);
       const oauthError = u.searchParams.get("oauth_error");
       const oauthDetail = u.searchParams.get("oauth_detail");
-      if (oauthError) {
-        googleOAuthHandled.current = true;
-        const messages = {
-          OAUTH_MISSING_DATA: "Не удалось получить данные от Google.",
-          OAUTH_AUTH_ERROR: "Ошибка входа через Google.",
-        };
-        let msg = messages[oauthError] || "Ошибка входа через Google.";
-        if (oauthDetail) {
-          try {
-            msg += " " + decodeURIComponent(oauthDetail);
-          } catch {
-            msg += " " + oauthDetail;
-          }
-        } else {
-          msg += " Попробуйте позже.";
-        }
-        setError(msg);
-        setShowGoogleOAuthModal(false);
-        return;
-      }
       const code = u.searchParams.get("code");
       const oauth = u.searchParams.get("oauth");
-      if (oauth === "google" && code) {
-        googleOAuthHandled.current = true;
-        setGoogleOAuthLoading(true);
-        exchangeOAuthCode(code)
-          .then((data) => {
-            chatStore.setUser(data.email, data.user_id ?? data.id);
-            setUser(data);
-            setIsAuth(true);
-            chatStore.connect();
-            setShowGoogleOAuthModal(false);
-            setGoogleOAuthLoading(false);
-          })
-          .catch((err) => {
-            setError(err.message || "Ошибка входа через Google");
-            setShowGoogleOAuthModal(false);
-            setGoogleOAuthLoading(false);
-          });
+      if (oauthError) {
+        handleOAuthResult({ error: oauthError, detail: oauthDetail });
+      } else if (oauth === "google" && code) {
+        handleOAuthResult({ code });
       }
     } catch {
       /* ignore */
     }
-  }, [chatStore, setUser, setIsAuth]);
+  }, [handleOAuthResult]);
 
   useEffect(() => {
     if (Platform.OS !== "windows") return;
@@ -212,14 +222,22 @@ export default function AuthScreen() {
     return () => sub.remove();
   }, [handleMisaUrl]);
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     googleOAuthHandled.current = false;
     setError("");
-    if (Platform.OS === "windows") {
+    if (Platform.OS !== "windows") {
       setShowGoogleOAuthModal(true);
+      return;
+    }
+    setShowGoogleOAuthModal(true);
+    try {
+      const { port, getResult } = await startOAuthCallbackServer();
+      const redirectUri = `http://127.0.0.1:${port}/callback`;
+      Linking.openURL(`${API_URL}/auth/oauth/google/?redirect_uri=${encodeURIComponent(redirectUri)}`);
+      const result = await getResult();
+      handleOAuthResult(result);
+    } catch {
       Linking.openURL(`${API_URL}/auth/oauth/google/?redirect_uri=${encodeURIComponent("misa://oauth")}`);
-    } else {
-      setShowGoogleOAuthModal(true);
     }
   };
 

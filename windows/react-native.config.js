@@ -15,5 +15,10 @@ module.exports = {
         windows: null, // UWP требует RnwNewArch=false
       },
     },
+    'react-native-http-bridge': {
+      platforms: {
+        windows: null, // нет нативной реализации для Windows
+      },
+    },
   },
 };

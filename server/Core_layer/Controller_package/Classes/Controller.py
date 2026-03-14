@@ -688,7 +688,11 @@ class Controller(IController.IController):
 
         redirect_uri = request.GET.get('redirect_uri', '').strip()
         custom_state = None
-        if redirect_uri and redirect_uri.startswith('misa://'):
+        if redirect_uri and (
+            redirect_uri.startswith('misa://') or
+            redirect_uri.startswith('http://localhost:') or
+            redirect_uri.startswith('http://127.0.0.1:')
+        ):
             custom_state = base64.urlsafe_b64encode(redirect_uri.encode()).decode()
 
         callback_uri = f"{api_base}/auth/oauth/callback"
@@ -730,7 +734,9 @@ class Controller(IController.IController):
             if state:
                 try:
                     decoded = base64.urlsafe_b64decode(state.encode()).decode()
-                    if decoded.startswith('misa://'):
+                    if (decoded.startswith('misa://') or
+                            decoded.startswith('http://localhost:') or
+                            decoded.startswith('http://127.0.0.1:')):
                         return decoded
                 except Exception:
                     pass
@@ -741,6 +747,8 @@ class Controller(IController.IController):
                 r = HttpResponse(status=302)
                 r['Location'] = url
                 return r
+            if url.startswith('http://localhost:') or url.startswith('http://127.0.0.1:'):
+                return HttpResponseRedirect(url)
             return HttpResponseRedirect(url)
 
         if not GOOGLE_AUTH_AVAILABLE or Flow is None:
