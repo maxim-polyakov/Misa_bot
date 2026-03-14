@@ -1,11 +1,4 @@
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
-
-
-class MisaRedirect(HttpResponseRedirect):
-    """Редирект на misa:// для desktop OAuth callback."""
-    allowed_schemes = ['http', 'https', 'misa']
-
-
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
@@ -745,7 +738,9 @@ class Controller(IController.IController):
 
         def _redirect(url):
             if url.startswith('misa://'):
-                return MisaRedirect(url)
+                r = HttpResponse(status=302)
+                r['Location'] = url
+                return r
             return HttpResponseRedirect(url)
 
         if not GOOGLE_AUTH_AVAILABLE or Flow is None:
