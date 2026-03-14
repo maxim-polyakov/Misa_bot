@@ -81,7 +81,11 @@ export const verifyForgotPasswordCode = async (email, code, newPassword) => {
  * Вызывается после редиректа с Google с ?oauth=google&code=xxx
  */
 export const exchangeOAuthCode = async (code) => {
-  const res = await fetch(`${API_URL}/auth/oauth-token/?code=${encodeURIComponent(code)}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  const res = await fetch(`${API_URL}/auth/oauth-token/?code=${encodeURIComponent(code)}`, {
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timeout));
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const detail = data?.message ?? data?.data?.message ?? data?.detail ?? "Ошибка входа через Google";

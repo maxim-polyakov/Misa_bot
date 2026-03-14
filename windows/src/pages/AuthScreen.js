@@ -193,7 +193,8 @@ export default function AuthScreen() {
           setGoogleOAuthLoading(false);
         })
         .catch((err) => {
-          setError(err?.message || "Ошибка входа через Google");
+          const msg = err?.message || "Ошибка входа через Google";
+          setError(msg.includes("fetch") || msg.includes("network") || msg.includes("abort") ? "Нет связи с сервером. Проверьте интернет." : msg);
           setShowGoogleOAuthModal(false);
           setGoogleOAuthLoading(false);
         });
@@ -204,19 +205,27 @@ export default function AuthScreen() {
     const trimmed = (url || "").trim().replace(/^\uFEFF/, "");
     if (!trimmed || !trimmed.startsWith("misa://") || googleOAuthHandled.current) return;
     setShowGoogleOAuthModal(true);
+    let oauthError, oauthDetail, code, oauth;
     try {
       const u = new URL(trimmed);
-      const oauthError = u.searchParams.get("oauth_error");
-      const oauthDetail = u.searchParams.get("oauth_detail");
-      const code = u.searchParams.get("code");
-      const oauth = u.searchParams.get("oauth");
-      if (oauthError) {
-        handleOAuthResult({ error: oauthError, detail: oauthDetail });
-      } else if (oauth === "google" && code) {
-        handleOAuthResult({ code });
-      }
+      oauthError = u.searchParams.get("oauth_error");
+      oauthDetail = u.searchParams.get("oauth_detail");
+      code = u.searchParams.get("code");
+      oauth = u.searchParams.get("oauth");
     } catch {
-      /* ignore */
+      const codeM = trimmed.match(/[?&]code=([^&]*)/);
+      const oauthM = trimmed.match(/[?&]oauth=([^&]*)/);
+      const errM = trimmed.match(/[?&]oauth_error=([^&]*)/);
+      const detailM = trimmed.match(/[?&]oauth_detail=([^&]*)/);
+      code = codeM ? decodeURIComponent(codeM[1].replace(/\+/g, " ")) : null;
+      oauth = oauthM ? decodeURIComponent(oauthM[1]) : null;
+      oauthError = errM ? decodeURIComponent(errM[1]) : null;
+      oauthDetail = detailM ? decodeURIComponent(detailM[1]) : null;
+    }
+    if (oauthError) {
+      handleOAuthResult({ error: oauthError, detail: oauthDetail });
+    } else if (oauth === "google" && code) {
+      handleOAuthResult({ code });
     }
   }, [handleOAuthResult]);
 
