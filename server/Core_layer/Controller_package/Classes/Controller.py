@@ -736,16 +736,21 @@ class Controller(IController.IController):
                     pass
             return None
 
+        def _redirect(url):
+            if url.startswith('misa://'):
+                return HttpResponseRedirect(url, allowed_schemes=['http', 'https', 'misa'])
+            return HttpResponseRedirect(url)
+
         if not GOOGLE_AUTH_AVAILABLE or Flow is None:
             custom = _custom_redirect()
             url = f"{custom}?oauth_error=OAUTH_AUTH_ERROR" if custom else f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR"
-            return HttpResponseRedirect(url)
+            return _redirect(url)
 
         code = request.GET.get('code')
         if not code:
             custom = _custom_redirect()
             url = f"{custom}?oauth_error=OAUTH_MISSING_DATA" if custom else f"{frontend_url}/login?oauth_error=OAUTH_MISSING_DATA"
-            return HttpResponseRedirect(url)
+            return _redirect(url)
 
         client_id = os.getenv('GOOGLE_CLIENT_ID')
         client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
@@ -754,7 +759,7 @@ class Controller(IController.IController):
         if not client_id or not client_secret:
             custom = _custom_redirect()
             url = f"{custom}?oauth_error=OAUTH_AUTH_ERROR" if custom else f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR"
-            return HttpResponseRedirect(url)
+            return _redirect(url)
 
         callback_uri = f"{api_base}/auth/oauth/callback"
         client_config = {
@@ -795,7 +800,7 @@ class Controller(IController.IController):
                 redirect_url = f"{custom_redirect}?oauth=google&code={oauth_code}"
             else:
                 redirect_url = f"{frontend_url}/login?oauth=google&code={oauth_code}"
-            return HttpResponseRedirect(redirect_url)
+            return _redirect(redirect_url)
 
         except Exception as e:
             logging.error(f"OAuth callback error: {str(e)}", exc_info=True)
@@ -805,7 +810,7 @@ class Controller(IController.IController):
                 redirect_url = f"{custom_redirect}?oauth_error=OAUTH_AUTH_ERROR&oauth_detail={detail}"
             else:
                 redirect_url = f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR&oauth_detail={detail}"
-            return HttpResponseRedirect(redirect_url)
+            return _redirect(redirect_url)
 
     @classmethod
     def oauth_token(cls, request):
