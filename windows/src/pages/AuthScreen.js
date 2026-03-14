@@ -12,6 +12,7 @@ import {
   Modal,
   Linking,
 } from "react-native";
+import OAuthHelperModule from "../NativeOAuthHelper";
 import {
   login,
   sendRegistrationCode,
@@ -220,6 +221,19 @@ export default function AuthScreen() {
     Linking.getInitialURL().then((url) => url && handleMisaUrl(url));
     return () => sub.remove();
   }, [handleMisaUrl]);
+
+  useEffect(() => {
+    if (Platform.OS !== "windows" || !showGoogleOAuthModal || !OAuthHelperModule) return;
+    const interval = setInterval(() => {
+      try {
+        const url = OAuthHelperModule?.getPendingOAuthUrl?.();
+        if (url) handleMisaUrl(url);
+      } catch {
+        /* ignore */
+      }
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [showGoogleOAuthModal, handleMisaUrl]);
 
   const handleGoogleLogin = () => {
     googleOAuthHandled.current = false;

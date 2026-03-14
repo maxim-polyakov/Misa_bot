@@ -6,7 +6,7 @@
 
 #include "AutolinkedNativeModules.g.h"
 
-#include "NativeModules.h"
+#include "OAuthHelper.h"
 
 // A PackageProvider containing any turbo modules you define within this app project
 struct CompReactPackageProvider
@@ -17,8 +17,68 @@ struct CompReactPackageProvider
   }
 };
 
+namespace {
+constexpr wchar_t kMutexName[] = L"Global\\MisaWindows_SingleInstance_7D8F2E";
+constexpr wchar_t kWindowTitle[] = L"Misa AI";
+
+std::wstring GetPendingOAuthPath() {
+  wchar_t path[MAX_PATH];
+  if (FAILED(SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, path))) return {};
+  std::wstring dir(path);
+  dir += L"\\Misa";
+  CreateDirectoryW(dir.c_str(), NULL);
+  return dir + L"\\pending_oauth.txt";
+}
+
+std::wstring ExtractMisaUrlFromCommandLine() {
+  LPWSTR cmdLine = GetCommandLineW();
+  if (!cmdLine) return {};
+  std::wstring s(cmdLine);
+  size_t pos = s.find(L"misa://");
+  if (pos == std::wstring::npos) return {};
+  size_t end = s.find_first_of(L" \t", pos);
+  if (end == std::wstring::npos) end = s.length();
+  return s.substr(pos, end - pos);
+}
+
+bool TrySecondInstanceHandoff() {
+  HANDLE mutex = CreateMutexW(NULL, FALSE, kMutexName);
+  if (!mutex) return false;
+  if (GetLastError() == ERROR_ALREADY_EXISTS) {
+    std::wstring url = ExtractMisaUrlFromCommandLine();
+    if (!url.empty()) {
+      std::wstring path = GetPendingOAuthPath();
+      if (!path.empty()) {
+        HANDLE h = CreateFileW(path.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (h != INVALID_HANDLE_VALUE) {
+          int len = WideCharToMultiByte(CP_UTF8, 0, url.c_str(), (int)url.size(), NULL, 0, NULL, NULL);
+          if (len > 0) {
+            std::string utf8(len, 0);
+            WideCharToMultiByte(CP_UTF8, 0, url.c_str(), (int)url.size(), utf8.data(), len, NULL, NULL);
+            DWORD written;
+            WriteFile(h, utf8.c_str(), (DWORD)utf8.size(), &written, NULL);
+          }
+          CloseHandle(h);
+        }
+      }
+    }
+    HWND hwnd = FindWindowW(NULL, kWindowTitle);
+    if (hwnd) {
+      SetForegroundWindow(hwnd);
+      ShowWindow(hwnd, SW_RESTORE);
+    }
+    CloseHandle(mutex);
+    return true;
+  }
+  CloseHandle(mutex);
+  return false;
+}
+}  // namespace
+
 // The entry point of the Win32 application
 _Use_decl_annotations_ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE, PSTR /* commandLine */, int showCmd) {
+  if (TrySecondInstanceHandoff()) return 0;
+
   // Initialize WinRT
   winrt::init_apartment(winrt::apartment_type::single_threaded);
 

@@ -58,5 +58,15 @@
       "namespace": "MisaWindows",
       "template": "cpp-app"
     }
+  },
+  "codegenConfig": {
+    "name": "MisaOAuthHelperSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "windows": {
+      "namespace": "MisaOAuthHelperCodegen",
+      "outputDirectory": "windows/MisaWindows/codegen",
+      "separateDataTypes": true
+    }
   }
 }
