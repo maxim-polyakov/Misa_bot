@@ -7,6 +7,12 @@ Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "MisaWindows.Package", "Misa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MisaWindows", "MisaWindows\MisaWindows.vcxproj", "{50D8B3B6-6425-49C1-8552-FDA544ADAC0B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReactNativeAsyncStorage", "..\node_modules\@react-native-async-storage\async-storage\windows\ReactNativeAsyncStorage\ReactNativeAsyncStorage.vcxproj", "{4855D892-E16C-404D-8286-0089E0F7F9C4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Clipboard", "..\node_modules\@react-native-clipboard\clipboard\windows\Clipboard\Clipboard.vcxproj", "{99A938FA-9FF3-47A0-9256-195A06E7FDD1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RNScreens", "..\node_modules\react-native-screens\windows\RNScreens\RNScreens.vcxproj", "{D638F49E-29D2-4699-AC52-FACD82FA7138}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -53,6 +59,42 @@ Global
 		{50D8B3B6-6425-49C1-8552-FDA544ADAC0B}.Release|ARM64.ActiveCfg = Release|ARM64
 		{50D8B3B6-6425-49C1-8552-FDA544ADAC0B}.Release|ARM64.Build.0 = Release|ARM64
 		{50D8B3B6-6425-49C1-8552-FDA544ADAC0B}.Release|ARM64.Deploy.0 = Release|ARM64
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Debug|x64.ActiveCfg = Debug|x64
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Debug|x64.Build.0 = Debug|x64
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Debug|x86.ActiveCfg = Debug|Win32
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Debug|x86.Build.0 = Debug|Win32
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Debug|ARM64.Build.0 = Debug|ARM64
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Release|x64.ActiveCfg = Release|x64
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Release|x64.Build.0 = Release|x64
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Release|x86.ActiveCfg = Release|Win32
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Release|x86.Build.0 = Release|Win32
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Release|ARM64.ActiveCfg = Release|ARM64
+		{4855D892-E16C-404D-8286-0089E0F7F9C4}.Release|ARM64.Build.0 = Release|ARM64
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Debug|x64.ActiveCfg = Debug|x64
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Debug|x64.Build.0 = Debug|x64
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Debug|x86.ActiveCfg = Debug|Win32
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Debug|x86.Build.0 = Debug|Win32
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Debug|ARM64.Build.0 = Debug|ARM64
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Release|x64.ActiveCfg = Release|x64
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Release|x64.Build.0 = Release|x64
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Release|x86.ActiveCfg = Release|Win32
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Release|x86.Build.0 = Release|Win32
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Release|ARM64.ActiveCfg = Release|ARM64
+		{99A938FA-9FF3-47A0-9256-195A06E7FDD1}.Release|ARM64.Build.0 = Release|ARM64
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Debug|x64.ActiveCfg = Debug|x64
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Debug|x64.Build.0 = Debug|x64
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Debug|x86.ActiveCfg = Debug|Win32
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Debug|x86.Build.0 = Debug|Win32
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Debug|ARM64.Build.0 = Debug|ARM64
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Release|x64.ActiveCfg = Release|x64
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Release|x64.Build.0 = Release|x64
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Release|x86.ActiveCfg = Release|Win32
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Release|x86.Build.0 = Release|Win32
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Release|ARM64.ActiveCfg = Release|ARM64
+		{D638F49E-29D2-4699-AC52-FACD82FA7138}.Release|ARM64.Build.0 = Release|ARM64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

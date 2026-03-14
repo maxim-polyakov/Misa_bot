@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    Отключает проверку transitive-зависимостей Windows App SDK.
+    Библиотеки вроде @react-native-clipboard используют packages.config без явных
+    ссылок на Microsoft.WindowsAppSDK — зависимости приходят через react-native-windows.
+    См. https://github.com/microsoft/WindowsAppSDK/issues/1469
+  -->
+  <PropertyGroup>
+    <WindowsAppSDKVerifyTransitiveDependencies>false</WindowsAppSDKVerifyTransitiveDependencies>
+  </PropertyGroup>
+</Project>
