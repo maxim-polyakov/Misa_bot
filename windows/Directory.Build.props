@@ -9,10 +9,4 @@
   <PropertyGroup>
     <WindowsAppSDKVerifyTransitiveDependencies>false</WindowsAppSDKVerifyTransitiveDependencies>
   </PropertyGroup>
-  <!--
-    UseExperimentalNuget для всех проектов (включая native modules вроде RNScreens).
-    Иначе модули собирают Microsoft.ReactNative из исходников в target\, что даёт
-    MSB3271 (x86/x64 mismatch) при смешанной сборке.
-  -->
-  <Import Project="$(MSBuildThisFileDirectory)windows\ExperimentalFeatures.props" Condition="Exists('$(MSBuildThisFileDirectory)windows\ExperimentalFeatures.props')" />
 </Project>

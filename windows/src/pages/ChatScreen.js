@@ -20,14 +20,14 @@ import {
   Pressable,
   Share,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Clipboard from "@react-native-clipboard/clipboard";
+import Clipboard from "../utils/clipboard";
 import { useStores } from "../store/rootStoreContext";
 import { useUser } from "../context/UserContext";
 import { useTheme } from "../context/ThemeContext";
 import { useLocale } from "../context/LocaleContext";
-import { getIntlLocale } from "../utils/locale";
+import { getIntlLocale, formatMonthYear, formatTime } from "../utils/locale";
 import { API_URL } from "../config";
 import SettingsModal from "./SettingsModal";
 
@@ -124,7 +124,7 @@ function ChatScreen() {
     Animated.timing(sidebarAnim, {
       toValue: sidebarOpen ? 1 : 0,
       duration: 250,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== "windows",
     }).start();
   }, [sidebarOpen]);
 
@@ -338,7 +338,7 @@ function ChatScreen() {
             renderMessageContent(item.content, isUser)
           )}
           <Text style={styles.msgTime}>
-            {new Date(item.timestamp).toLocaleTimeString(getIntlLocale(locale), { hour: "2-digit", minute: "2-digit" })}
+            {formatTime(getIntlLocale(locale), new Date(item.timestamp))}
           </Text>
           {!isUser && (
             <View style={styles.msgActions}>
@@ -453,14 +453,13 @@ function ChatScreen() {
         {(() => {
           const groups = chatStore.getChatsGroupedByPeriod();
           const intlLocale = getIntlLocale(locale);
-          const monthFormatter = new Intl.DateTimeFormat(intlLocale, { month: "long", year: "numeric" });
           const sections = [
             { key: "pinned", label: t("pinned"), chats: groups.pinned },
             { key: "today", label: t("today"), chats: groups.today },
             { key: "yesterday", label: t("yesterday"), chats: groups.yesterday },
             { key: "last7Days", label: t("last7Days"), chats: groups.last7Days },
             ...(groups.olderByMonth || []).map(({ key, year, month, chats }) => {
-              const label = monthFormatter.format(new Date(year, month, 1));
+              const label = formatMonthYear(intlLocale, year, month);
               return { key: `older-${key}`, label: label.charAt(0).toUpperCase() + label.slice(1), chats };
             }),
           ];
@@ -720,7 +719,7 @@ function ChatScreen() {
 
 const createStyles = (colors) =>
   StyleSheet.create({
-  wrapper: { flex: 1 },
+  wrapper: { flex: 1, overflow: "visible" },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.5)",

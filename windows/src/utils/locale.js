@@ -103,3 +103,28 @@ export const getIntlLocale = (code) => {
   const map = { zh: "zh-CN", "zh-TW": "zh-TW", pt: "pt-BR", nb: "nb-NO", pa: "pa-IN" };
   return map[code] || code;
 };
+
+const MONTH_NAMES_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/**
+ * Format month and year. Uses Intl when available (not in RNW Hermes), else fallback.
+ */
+export const formatMonthYear = (locale, year, month) => {
+  const date = new Date(year, month, 1);
+  if (typeof Intl !== "undefined" && Intl.DateTimeFormat) {
+    return new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(date);
+  }
+  return `${MONTH_NAMES_EN[month]} ${year}`;
+};
+
+/**
+ * Format time (HH:MM). Uses Intl when available, else fallback.
+ */
+export const formatTime = (locale, date) => {
+  if (typeof Intl !== "undefined" && Intl.DateTimeFormat) {
+    return new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(date);
+  }
+  const h = date.getHours();
+  const m = date.getMinutes();
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+};

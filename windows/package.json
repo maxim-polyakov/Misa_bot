@@ -4,14 +4,13 @@
   "private": true,
   "scripts": {
     "lint": "eslint .",
-    "postinstall": "node scripts/patch-vsInstalls.js",
+    "postinstall": "node scripts/patch-vsInstalls.js && node scripts/copy-vector-icons-font.js",
     "start": "react-native start",
     "test": "jest",
-    "windows": "npx react-native run-windows",
+    "windows": "npx react-native run-windows --arch x86",
     "test:windows": "jest --config jest.config.windows.js"
   },
   "dependencies": {
-    "@expo/vector-icons": "^14.0.4",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-clipboard/clipboard": "1.14.0",
     "@react-navigation/native": "^7.1.33",
@@ -25,6 +24,7 @@
     "react-native-dotenv": "^3.4.11",
     "react-native-safe-area-context": "^5.7.0",
     "react-native-screens": "^4.24.0",
+    "react-native-vector-icons": "^10.3.0",
     "react-native-windows": "0.76.3"
   },
   "devDependencies": {

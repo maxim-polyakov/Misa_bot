@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { observer } from "mobx-react-lite";
-import Clipboard from "@react-native-clipboard/clipboard";
+import Clipboard from "../utils/clipboard";
 import { useStores } from "../store/rootStoreContext";
 import { useUser } from "../context/UserContext";
 import { API_URL } from "../config";
