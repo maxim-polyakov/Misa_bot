@@ -19,9 +19,6 @@ const rnwPath = fs.realpathSync(
 const config = {
   //
   resolver: {
-    extraNodeModules: {
-      http: path.resolve(__dirname, "src/polyfills/http.js"),
-    },
     blockList: [
       // This stops "npx @react-native-community/cli run-windows" from causing the metro server to crash if its already running
       new RegExp(

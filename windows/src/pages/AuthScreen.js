@@ -21,7 +21,6 @@ import {
   exchangeOAuthCode,
 } from "../api/userApi";
 import { API_URL } from "../config";
-import { startOAuthCallbackServer } from "../utils/oauthCallbackServer";
 import { useUser } from "../context/UserContext";
 import { useStores } from "../store/rootStoreContext";
 import { useLocale } from "../context/LocaleContext";
@@ -222,7 +221,7 @@ export default function AuthScreen() {
     return () => sub.remove();
   }, [handleMisaUrl]);
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     googleOAuthHandled.current = false;
     setError("");
     if (Platform.OS !== "windows") {
@@ -230,15 +229,7 @@ export default function AuthScreen() {
       return;
     }
     setShowGoogleOAuthModal(true);
-    try {
-      const { port, getResult } = await startOAuthCallbackServer();
-      const redirectUri = `http://127.0.0.1:${port}/callback`;
-      Linking.openURL(`${API_URL}/auth/oauth/google/?redirect_uri=${encodeURIComponent(redirectUri)}`);
-      const result = await getResult();
-      handleOAuthResult(result);
-    } catch {
-      Linking.openURL(`${API_URL}/auth/oauth/google/?redirect_uri=${encodeURIComponent("misa://oauth")}`);
-    }
+    Linking.openURL(`${API_URL}/auth/oauth/google/?redirect_uri=${encodeURIComponent("misa://oauth")}`);
   };
 
   const handleGoogleOAuthClose = () => {
