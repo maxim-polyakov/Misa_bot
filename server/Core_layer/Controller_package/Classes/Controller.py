@@ -1,4 +1,11 @@
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
+
+
+class MisaRedirect(HttpResponseRedirect):
+    """Редирект на misa:// и другие кастомные схемы (Django не принимает allowed_schemes в __init__)."""
+    allowed_schemes = ['http', 'https', 'misa']
+
+
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
@@ -743,9 +750,8 @@ class Controller(IController.IController):
             return None
 
         def _redirect(url):
-            # HttpResponseRedirect не поддерживает кастомные схемы (misa:// и т.д.).
-            # Используем HttpResponse с Location для любых не-http(s) URL.
-            # v2: без allowed_schemes
+            if url.startswith('misa://'):
+                return MisaRedirect(url)  # allowed_schemes как атрибут класса, не в __init__
             if not (url.startswith('http://') or url.startswith('https://')):
                 r = HttpResponse(status=302)
                 r['Location'] = url
