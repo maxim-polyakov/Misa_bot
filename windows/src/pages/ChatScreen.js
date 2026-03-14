@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { observer } from "mobx-react-lite";
 import {
   View,
@@ -30,8 +30,10 @@ import { useLocale } from "../context/LocaleContext";
 import { getIntlLocale, formatMonthYear, formatTime } from "../utils/locale";
 import { API_URL } from "../config";
 import SettingsModal from "./SettingsModal";
+import { storage } from "../storage";
 
 const SIDEBAR_WIDTH = 280;
+const SIDEBAR_COLLAPSED_KEY = "misa_sidebar_collapsed";
 
 const getBlockType = (language) => {
   const lang = (language || "plaintext").toLowerCase();
@@ -93,6 +95,22 @@ function ChatScreen() {
   const insets = useSafeAreaInsets();
 
   const isSmallScreen = screenHeight < 600 || screenWidth < 360;
+  const usePersistentSidebar = Platform.OS === "windows";
+
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  useEffect(() => {
+    if (!usePersistentSidebar) return;
+    storage.getItem(SIDEBAR_COLLAPSED_KEY).then((v) => {
+      if (v === "true") setSidebarExpanded(false);
+    });
+  }, [usePersistentSidebar]);
+  const toggleSidebar = useCallback(() => {
+    setSidebarExpanded((prev) => {
+      const next = !prev;
+      storage.setItem(SIDEBAR_COLLAPSED_KEY, (!next).toString());
+      return next;
+    });
+  }, []);
 
   const handleLogout = () => {
     setProfileOpen(false);
@@ -415,6 +433,7 @@ function ChatScreen() {
       renderItem={renderMessage}
       style={styles.flatList}
       contentContainerStyle={styles.messagesContent}
+      removeClippedSubviews={!usePersistentSidebar}
       ListFooterComponent={
         chatStore.isLoading ? (
           <View style={styles.typing}>
@@ -589,54 +608,222 @@ function ChatScreen() {
     </View>
   );
 
+  const sidebarContent = (
+    <>
+      <View style={styles.sidebarHeader}>
+        <View style={styles.sidebarLogoWrap}>
+          <Image source={require("../../assets/misa.png")} style={styles.sidebarLogo} resizeMode="contain" />
+        </View>
+        <Text style={styles.sidebarBrand}>{t("misaChat")}</Text>
+        {usePersistentSidebar ? (
+          <TouchableOpacity style={styles.sidebarToggleBtn} onPress={toggleSidebar} accessibilityLabel="Свернуть меню">
+            <Text style={styles.sidebarToggleText}>☰</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.sidebarCloseBtn} onPress={() => { setSidebarOpen(false); setProfileOpen(false); }}>
+            <Text style={styles.sidebarCloseText}>✕</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <TouchableOpacity style={styles.newChatBtn} onPress={() => { chatStore.newChat(); setSidebarOpen(false); setProfileOpen(false); }}>
+        <Text style={styles.newChatBtnText}>+ {t("newChat")}</Text>
+      </TouchableOpacity>
+      <ScrollView style={styles.chatList} showsVerticalScrollIndicator={false}>
+        {(() => {
+          const groups = chatStore.getChatsGroupedByPeriod();
+          const intlLocale = getIntlLocale(locale);
+          const sections = [
+            { key: "pinned", label: t("pinned"), chats: groups.pinned },
+            { key: "today", label: t("today"), chats: groups.today },
+            { key: "yesterday", label: t("yesterday"), chats: groups.yesterday },
+            { key: "last7Days", label: t("last7Days"), chats: groups.last7Days },
+            ...(groups.olderByMonth || []).map(({ key, year, month, chats }) => {
+              const label = formatMonthYear(intlLocale, year, month);
+              return { key: `older-${key}`, label: label.charAt(0).toUpperCase() + label.slice(1), chats };
+            }),
+          ];
+          return sections
+            .filter((s) => s.chats?.length > 0)
+            .map((section) => (
+              <View key={section.key} style={styles.chatGroup}>
+                <Text style={styles.chatGroupTitle}>{section.label}</Text>
+                {section.chats.map((c) => (
+                  <View key={c.id} style={styles.chatItemWrap}>
+                    <TouchableOpacity
+                      style={[styles.chatItem, c.id === chatStore.currentChatId && styles.chatItemActive]}
+                      onPress={() => { chatStore.switchChat(c.id); setSidebarOpen(false); setProfileOpen(false); setChatMenuOpen(null); }}
+                    >
+                      <Text style={styles.chatItemIcon}>💬</Text>
+                      <Text numberOfLines={1} style={styles.chatItemTitle}>
+                        {chatStore.getChatTitle(c) === "Новый чат" ? t("newChat") : chatStore.getChatTitle(c)}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.chatItemMenuBtn} onPress={() => handleChatMenuToggle(c.id)}>
+                      <Text style={styles.chatItemMenuBtnText}>⋯</Text>
+                    </TouchableOpacity>
+                    {chatMenuOpen === c.id && (
+                      <View style={styles.chatMenu}>
+                        <TouchableOpacity style={styles.chatMenuItem} onPress={() => handleRename(c)}>
+                          <Text style={styles.chatMenuItemIcon}>✎</Text>
+                          <Text style={styles.chatMenuItemText}>{t("rename")}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.chatMenuItem} onPress={() => handlePin(c.id)}>
+                          <Text style={styles.chatMenuItemIcon}>📌</Text>
+                          <Text style={styles.chatMenuItemText}>{chatStore.isChatPinned(c.id) ? t("unpin") : t("pin")}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.chatMenuItem} onPress={() => handleShareFromMenu(c.id)}>
+                          <Text style={styles.chatMenuItemIcon}>⎘</Text>
+                          <Text style={styles.chatMenuItemText}>{t("share")}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.chatMenuItem, styles.chatMenuItemDelete]} onPress={() => handleDelete(c.id)}>
+                          <Text style={styles.chatMenuItemIcon}>🗑</Text>
+                          <Text style={[styles.chatMenuItemText, styles.chatMenuItemDeleteText]}>{t("delete")}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+            ));
+        })()}
+      </ScrollView>
+      <View style={styles.sidebarFooter}>
+        {profileOpen && (
+          <View style={styles.profilePanel}>
+            <TouchableOpacity style={styles.profileItem} onPress={() => { setProfileOpen(false); setSidebarOpen(false); setSettingsOpen(true); }}>
+              <Text style={styles.profileItemIcon}>⚙</Text>
+              <Text style={styles.profileItemText}>{t("settings")}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.profileItem} onPress={() => { setProfileOpen(false); Alert.alert(t("help"), "Обратная связь: напишите нам на support@misa.ai"); }}>
+              <Text style={styles.profileItemIcon}>?</Text>
+              <Text style={styles.profileItemText}>{t("helpFeedback")}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.profileItem, styles.profileItemLogout]} onPress={handleLogout}>
+              <Text style={styles.profileItemIcon}>→</Text>
+              <Text style={styles.profileItemText}>{t("logout")}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        <TouchableOpacity style={styles.profileBtn} onPress={() => setProfileOpen(!profileOpen)}>
+          {user?.picture ? (
+            <Image source={{ uri: user.picture }} style={styles.profileAvatarImg} />
+          ) : (
+            <View style={styles.profileAvatar}>
+              <Text style={styles.profileAvatarText}>
+                {(user?.display_name || user?.email || t("user"))[0].toUpperCase()}
+              </Text>
+            </View>
+          )}
+          <Text style={styles.profileName} numberOfLines={1}>
+            {user?.display_name || user?.email || t("user")}
+          </Text>
+          <Text style={styles.profileDots}>⋯</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+
   return (
     <View style={styles.wrapper}>
-      <Animated.View
-        style={[styles.overlay, { opacity: overlayOpacity }]}
-        pointerEvents={sidebarOpen ? "auto" : "none"}
-      >
-        <TouchableOpacity style={StyleSheet.absoluteFill} onPress={() => { setSidebarOpen(false); setProfileOpen(false); }} activeOpacity={1} />
-      </Animated.View>
-
-      {renderSidebar()}
-
-      <View style={[styles.main, { paddingTop: insets.top }]}>
-        <View style={[styles.header, { backgroundColor: colors.primaryBg, borderBottomColor: colors.borderColor }, isRTL && styles.headerRTL]}>
-          <TouchableOpacity onPress={() => setSidebarOpen(true)} style={styles.menuBtn}>
-            <Text style={styles.menuBtnText}>☰</Text>
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, isSmallScreen && styles.headerTitleSmall]} numberOfLines={1}>
-            {chatStore.currentChat?.title && chatStore.currentChat.title.trim() && chatStore.currentChat.title !== "Новый чат"
-              ? chatStore.currentChat.title
-              : chatStore.currentChat
-                ? t("newChat")
-                : "Misa AI"}
-          </Text>
-          <TouchableOpacity onPress={() => chatStore.newChat()} style={styles.newChatBtnHeader}>
-            <Text style={styles.newChatBtnHeaderText}>+</Text>
-          </TouchableOpacity>
-        </View>
-
-        {chatStore.error ? (
+      {usePersistentSidebar ? (
+        <View style={styles.mainLayoutRow}>
+          {sidebarExpanded && (
+            <View
+              style={[
+                styles.sidebar,
+                styles.sidebarPersistent,
+                sidebarPositionStyle,
+                { paddingBottom: insets.bottom },
+              ]}
+            >
+              {sidebarContent}
+            </View>
+          )}
+          <View style={[styles.main, styles.mainWithSidebar, { paddingTop: insets.top }]}>
+            <View style={[styles.header, { backgroundColor: colors.primaryBg, borderBottomColor: colors.borderColor }, isRTL && styles.headerRTL]}>
+              <TouchableOpacity
+                onPress={toggleSidebar}
+                style={styles.menuBtn}
+                accessibilityRole="button"
+                accessibilityLabel={sidebarExpanded ? "Свернуть меню" : "Развернуть меню"}
+              >
+                <Text style={styles.menuBtnText}>☰</Text>
+              </TouchableOpacity>
+              <Text style={[styles.headerTitle, isSmallScreen && styles.headerTitleSmall]} numberOfLines={1}>
+                {chatStore.currentChat?.title && chatStore.currentChat.title.trim() && chatStore.currentChat.title !== "Новый чат"
+                  ? chatStore.currentChat.title
+                  : chatStore.currentChat
+                    ? t("newChat")
+                    : "Misa AI"}
+              </Text>
+              <TouchableOpacity onPress={() => chatStore.newChat()} style={styles.newChatBtnHeader}>
+                <Text style={styles.newChatBtnHeaderText}>+</Text>
+              </TouchableOpacity>
+            </View>
+            {chatStore.error ? (
           <View style={styles.errorBar}>
             <Text style={styles.errorText}>{chatStore.error}</Text>
             <TouchableOpacity onPress={() => chatStore.connect()}>
               <Text style={styles.retryText}>{t("reconnect")}</Text>
             </TouchableOpacity>
           </View>
-        ) : null}
-
-        <KeyboardAvoidingView
-          style={[styles.container, { backgroundColor: colors.primaryBg }]}
-          behavior={Platform.OS === "ios" ? "padding" : "padding"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-        >
-          <View style={styles.contentArea}>
-            {isEmpty ? renderEmptyChat() : renderMessagesList()}
+            ) : null}
+            <KeyboardAvoidingView
+              style={[styles.container, { backgroundColor: colors.primaryBg }]}
+              behavior={Platform.OS === "ios" ? "padding" : "padding"}
+              keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+            >
+              <View style={styles.contentArea}>
+                {isEmpty ? renderEmptyChat() : renderMessagesList()}
+              </View>
+              {inputBlock}
+            </KeyboardAvoidingView>
           </View>
-          {inputBlock}
-        </KeyboardAvoidingView>
-      </View>
+        </View>
+      ) : (
+        <>
+          <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]} pointerEvents={sidebarOpen ? "auto" : "none"}>
+            <TouchableOpacity style={StyleSheet.absoluteFill} onPress={() => { setSidebarOpen(false); setProfileOpen(false); }} activeOpacity={1} />
+          </Animated.View>
+          {renderSidebar()}
+          <View style={[styles.main, { paddingTop: insets.top }]}>
+            <View style={[styles.header, { backgroundColor: colors.primaryBg, borderBottomColor: colors.borderColor }, isRTL && styles.headerRTL]}>
+              <Pressable onPress={() => { setProfileOpen(false); setSidebarOpen(true); }} style={styles.menuBtn} accessibilityRole="button" hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                <Text style={styles.menuBtnText}>☰</Text>
+              </Pressable>
+              <Text style={[styles.headerTitle, isSmallScreen && styles.headerTitleSmall]} numberOfLines={1}>
+                {chatStore.currentChat?.title && chatStore.currentChat.title.trim() && chatStore.currentChat.title !== "Новый чат"
+                  ? chatStore.currentChat.title
+                  : chatStore.currentChat
+                    ? t("newChat")
+                    : "Misa AI"}
+              </Text>
+              <TouchableOpacity onPress={() => chatStore.newChat()} style={styles.newChatBtnHeader}>
+                <Text style={styles.newChatBtnHeaderText}>+</Text>
+              </TouchableOpacity>
+            </View>
+            {chatStore.error ? (
+              <View style={styles.errorBar}>
+                <Text style={styles.errorText}>{chatStore.error}</Text>
+                <TouchableOpacity onPress={() => chatStore.connect()}>
+                  <Text style={styles.retryText}>{t("reconnect")}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+            <KeyboardAvoidingView
+              style={[styles.container, { backgroundColor: colors.primaryBg }]}
+              behavior={Platform.OS === "ios" ? "padding" : "padding"}
+              keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+            >
+              <View style={styles.contentArea}>
+                {isEmpty ? renderEmptyChat() : renderMessagesList()}
+              </View>
+              {inputBlock}
+            </KeyboardAvoidingView>
+          </View>
+        </>
+      )}
+
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <Modal visible={!!renameModalChatId} transparent animationType="fade">
@@ -720,6 +907,12 @@ function ChatScreen() {
 const createStyles = (colors) =>
   StyleSheet.create({
   wrapper: { flex: 1, overflow: "visible" },
+  mainLayoutRow: { flex: 1, flexDirection: "row" },
+  sidebarPersistent: {
+    position: "relative",
+    flexShrink: 0,
+  },
+  mainWithSidebar: { flex: 1, minWidth: 0 },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -757,6 +950,15 @@ const createStyles = (colors) =>
   },
   sidebarCloseBtn: {
     padding: 8,
+  },
+  sidebarToggleBtn: {
+    padding: 8,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 8,
+  },
+  sidebarToggleText: {
+    color: colors.textPrimary,
+    fontSize: 18,
   },
   sidebarCloseText: {
     color: colors.textPrimary,
@@ -957,7 +1159,7 @@ const createStyles = (colors) =>
     borderBottomWidth: 1,
   },
   headerRTL: { flexDirection: "row-reverse" },
-  menuBtn: { padding: 8, marginRight: 8 },
+  menuBtn: { padding: 8, marginRight: 8, minWidth: 44, minHeight: 44, justifyContent: "center" },
   menuBtnText: { fontSize: 22, color: colors.textPrimary },
   headerTitle: { flex: 1, fontSize: 18, fontWeight: "600", color: colors.textPrimary },
   headerTitleSmall: { fontSize: 16 },

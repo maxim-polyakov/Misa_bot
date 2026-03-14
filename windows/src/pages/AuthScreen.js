@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Modal,
+  Linking,
 } from "react-native";
 import {
   login,
@@ -16,7 +18,9 @@ import {
   verifyRegistrationCode,
   sendForgotPasswordCode,
   verifyForgotPasswordCode,
+  exchangeOAuthCode,
 } from "../api/userApi";
+import { API_URL } from "../config";
 import { useUser } from "../context/UserContext";
 import { useStores } from "../store/rootStoreContext";
 import { useLocale } from "../context/LocaleContext";
@@ -33,6 +37,9 @@ export default function AuthScreen() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [showGoogleOAuthModal, setShowGoogleOAuthModal] = useState(false);
+  const [googleOAuthLoading, setGoogleOAuthLoading] = useState(false);
+  const googleOAuthHandled = useRef(false);
 
   const signIn = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -145,6 +152,81 @@ export default function AuthScreen() {
   const goBackFromForgot = () => {
     setStep("login");
     setError("");
+  };
+
+  const handleMisaUrl = useCallback((url) => {
+    if (!url || !url.startsWith("misa://") || googleOAuthHandled.current) return;
+    try {
+      const u = new URL(url);
+      const oauthError = u.searchParams.get("oauth_error");
+      const oauthDetail = u.searchParams.get("oauth_detail");
+      if (oauthError) {
+        googleOAuthHandled.current = true;
+        const messages = {
+          OAUTH_MISSING_DATA: "Не удалось получить данные от Google.",
+          OAUTH_AUTH_ERROR: "Ошибка входа через Google.",
+        };
+        let msg = messages[oauthError] || "Ошибка входа через Google.";
+        if (oauthDetail) {
+          try {
+            msg += " " + decodeURIComponent(oauthDetail);
+          } catch {
+            msg += " " + oauthDetail;
+          }
+        } else {
+          msg += " Попробуйте позже.";
+        }
+        setError(msg);
+        setShowGoogleOAuthModal(false);
+        return;
+      }
+      const code = u.searchParams.get("code");
+      const oauth = u.searchParams.get("oauth");
+      if (oauth === "google" && code) {
+        googleOAuthHandled.current = true;
+        setGoogleOAuthLoading(true);
+        exchangeOAuthCode(code)
+          .then((data) => {
+            chatStore.setUser(data.email, data.user_id ?? data.id);
+            setUser(data);
+            setIsAuth(true);
+            chatStore.connect();
+            setShowGoogleOAuthModal(false);
+            setGoogleOAuthLoading(false);
+          })
+          .catch((err) => {
+            setError(err.message || "Ошибка входа через Google");
+            setShowGoogleOAuthModal(false);
+            setGoogleOAuthLoading(false);
+          });
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [chatStore, setUser, setIsAuth]);
+
+  useEffect(() => {
+    if (Platform.OS !== "windows") return;
+    const sub = Linking.addEventListener("url", ({ url }) => handleMisaUrl(url));
+    Linking.getInitialURL().then((url) => url && handleMisaUrl(url));
+    return () => sub.remove();
+  }, [handleMisaUrl]);
+
+  const handleGoogleLogin = () => {
+    googleOAuthHandled.current = false;
+    setError("");
+    if (Platform.OS === "windows") {
+      setShowGoogleOAuthModal(true);
+      Linking.openURL(`${API_URL}/auth/oauth/google/?redirect_uri=${encodeURIComponent("misa://oauth")}`);
+    } else {
+      setShowGoogleOAuthModal(true);
+    }
+  };
+
+  const handleGoogleOAuthClose = () => {
+    setShowGoogleOAuthModal(false);
+    setGoogleOAuthLoading(false);
+    googleOAuthHandled.current = false;
   };
 
   const getTitle = () => {
@@ -267,6 +349,15 @@ export default function AuthScreen() {
           </TouchableOpacity>
         </View>
       )}
+      {step === "login" && (
+        <TouchableOpacity
+          style={styles.btnGoogle}
+          onPress={handleGoogleLogin}
+          disabled={loading}
+        >
+          <Text style={styles.btnGoogleText}>{t("authSignInWithGoogle")}</Text>
+        </TouchableOpacity>
+      )}
       <View style={styles.rowBetween}>
         <TouchableOpacity onPress={goBack}>
           <Text style={styles.linkText}>
@@ -314,6 +405,36 @@ export default function AuthScreen() {
           )}
         </View>
       </ScrollView>
+
+      <Modal
+        visible={showGoogleOAuthModal}
+        animationType="slide"
+        transparent
+        onRequestClose={handleGoogleOAuthClose}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{t("authSignInWithGoogle")}</Text>
+              <TouchableOpacity onPress={handleGoogleOAuthClose} style={styles.modalClose}>
+                <Text style={styles.modalCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.webviewLoading}>
+              {googleOAuthLoading ? (
+                <>
+                  <ActivityIndicator size="large" />
+                  <Text style={styles.webviewLoadingText}>Вход...</Text>
+                </>
+              ) : (
+                <Text style={styles.webviewLoadingText}>
+                  Откройте браузер и войдите через Google.{"\n"}После входа вы вернётесь в приложение.
+                </Text>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -405,5 +526,66 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginVertical: 24,
+  },
+  btnGoogle: {
+    backgroundColor: "#4285f4",
+    borderRadius: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 8,
+    alignItems: "center",
+  },
+  btnGoogleText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: 520,
+    height: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  modalClose: {
+    padding: 4,
+  },
+  modalCloseText: {
+    fontSize: 20,
+    color: "#666",
+  },
+  webview: {
+    flex: 1,
+  },
+  webviewLoading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+  },
+  webviewLoadingText: {
+    fontSize: 16,
+    color: "#666",
   },
 });

@@ -10,5 +10,10 @@ module.exports = {
         windows: null, // cppwinrt IXamlMetadataProvider conflict
       },
     },
+    'react-native-webview': {
+      platforms: {
+        windows: null, // UWP требует RnwNewArch=false
+      },
+    },
   },
 };

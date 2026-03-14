@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 import { API_URL, API_WSS, WEB_APP_URL } from "../config";
 import { apiFetch } from "../api/http";
 import { storage } from "../storage";
@@ -119,8 +119,10 @@ class ChatStore {
   async loadChats() {
     const userId = await this.getCurrentUserId();
     if (!userId) {
-      this.chats = [];
-      this.currentChatId = null;
+      runInAction(() => {
+        this.chats = [];
+        this.currentChatId = null;
+      });
       return;
     }
     if (!API_URL) return;
@@ -136,26 +138,30 @@ class ChatStore {
         if (chatsData.length > 0) {
           await this._loadPinnedChatIds();
           const chatIds = new Set(chatsData.map((c) => c.id));
-          this.pinnedChatIds = this.pinnedChatIds.filter((id) => chatIds.has(id));
-          this._savePinnedChatIds();
-          this.chats = chatsData.map((c) => ({
-            id: c.id,
-            title: c.title || "Новый чат",
-            messages: [],
-            createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
-            _messagesLoaded: false,
-          }));
-          const pinnedSet = new Set(this.pinnedChatIds);
-          this.chats.sort((a, b) => {
-            const ia = this.pinnedChatIds.indexOf(a.id);
-            const ib = this.pinnedChatIds.indexOf(b.id);
-            return (ia >= 0 ? ia : 999) - (ib >= 0 ? ib : 999);
+          runInAction(() => {
+            this.pinnedChatIds = this.pinnedChatIds.filter((id) => chatIds.has(id));
+            this._savePinnedChatIds();
+            this.chats = chatsData.map((c) => ({
+              id: c.id,
+              title: c.title || "Новый чат",
+              messages: [],
+              createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
+              _messagesLoaded: false,
+            }));
+            const pinnedSet = new Set(this.pinnedChatIds);
+            this.chats.sort((a, b) => {
+              const ia = this.pinnedChatIds.indexOf(a.id);
+              const ib = this.pinnedChatIds.indexOf(b.id);
+              return (ia >= 0 ? ia : 999) - (ib >= 0 ? ib : 999);
+            });
+            const keepCurrent = this.currentChatId && chatIds.has(this.currentChatId);
+            if (!keepCurrent) this.currentChatId = this.chats[0].id;
           });
-          const keepCurrent = this.currentChatId && chatIds.has(this.currentChatId);
-          if (!keepCurrent) this.currentChatId = this.chats[0].id;
           this._loadChatMessagesIfNeeded(this.currentChatId);
         } else {
-          this.chats = [];
+          runInAction(() => {
+            this.chats = [];
+          });
           await this.newChat();
         }
         return;
@@ -174,18 +180,22 @@ class ChatStore {
     if (!chat || chat._messagesLoaded) return;
     if (this.socket && this.isConnected) {
       this.socket.send(JSON.stringify({ type: "load_history", chat_id: chatId }));
-      chat._pendingHistory = true;
+      runInAction(() => {
+        chat._pendingHistory = true;
+      });
     } else if (API_URL) {
       try {
         const msgs = await apiFetch(`/api/chats/${chatId}/messages/`);
-        chat.messages = (msgs || []).map((m) => ({
-          id: String(m.id),
-          content: m.content,
-          user: m.user,
-          timestamp: new Date(m.timestamp),
-          isImage: m.isImage,
-        }));
-        chat._messagesLoaded = true;
+        runInAction(() => {
+          chat.messages = (msgs || []).map((m) => ({
+            id: String(m.id),
+            content: m.content,
+            user: m.user,
+            timestamp: new Date(m.timestamp),
+            isImage: m.isImage,
+          }));
+          chat._messagesLoaded = true;
+        });
       } catch (e) {
         console.warn("Ошибка загрузки сообщений:", e);
       }
@@ -242,15 +252,17 @@ class ChatStore {
         console.warn("Ошибка создания чата:", e);
       }
     }
-    const newChat = {
-      id,
-      title: "Новый чат",
-      messages: [],
-      createdAt: new Date(),
-      _messagesLoaded: true,
-    };
-    this.chats.unshift(newChat);
-    this.currentChatId = id;
+    runInAction(() => {
+      const newChat = {
+        id,
+        title: "Новый чат",
+        messages: [],
+        createdAt: new Date(),
+        _messagesLoaded: true,
+      };
+      this.chats.unshift(newChat);
+      this.currentChatId = id;
+    });
     this.saveChats();
     if (this.socket && this.isConnected && this.user) {
       this.socket.send(this.user + "|message|__NEW_CHAT__");
@@ -269,10 +281,12 @@ class ChatStore {
     try {
       this.socket = new WebSocket(API_WSS);
       this.socket.onopen = () => {
-        this.isConnected = true;
-        this.isConnecting = false;
-        this.reconnectAttempts = 0;
-        this.reconnectDelay = 1000;
+        runInAction(() => {
+          this.isConnected = true;
+          this.isConnecting = false;
+          this.reconnectAttempts = 0;
+          this.reconnectDelay = 1000;
+        });
         this._pingIntervalId = setInterval(() => {
           if (this.socket?.readyState === WebSocket.OPEN) {
             this.socket.send(JSON.stringify({ type: "ping" }));
@@ -292,8 +306,10 @@ class ChatStore {
       };
       this.socket.onclose = (e) => {
         this._clearPingInterval();
-        this.isConnected = false;
-        this.isConnecting = false;
+        runInAction(() => {
+          this.isConnected = false;
+          this.isConnecting = false;
+        });
         if (e.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts && this.isAuth) {
           this.reconnectAttempts++;
           this.reconnectDelay = Math.min(this.reconnectDelay * 1.5, 30000);
@@ -301,8 +317,10 @@ class ChatStore {
         }
       };
       this.socket.onerror = () => {
-        this.isConnecting = false;
-        this.error = "Ошибка подключения";
+        runInAction(() => {
+          this.isConnecting = false;
+          this.error = "Ошибка подключения";
+        });
       };
     } catch (err) {
       this.isConnecting = false;

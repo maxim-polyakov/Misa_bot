@@ -671,6 +671,7 @@ class Controller(IController.IController):
         """
         Редирект на Google OAuth (по аналогии с e-commerce-java-two).
         Пользователь кликает ссылку -> попадает сюда -> редирект на Google.
+        Поддерживает ?redirect_uri=... для desktop-клиентов (например misa://oauth).
         """
         if not GOOGLE_AUTH_AVAILABLE or Flow is None:
             return cls.error_response("Google OAuth not configured", 500)
@@ -683,6 +684,12 @@ class Controller(IController.IController):
         if not client_id or not client_secret:
             logging.error("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set")
             return cls.error_response("Google OAuth not configured", 500)
+
+        redirect_uri = request.GET.get('redirect_uri', '').strip()
+        if redirect_uri and redirect_uri.startswith('misa://'):
+            request.session['oauth_redirect_uri'] = redirect_uri
+        else:
+            request.session.pop('oauth_redirect_uri', None)
 
         callback_uri = f"{api_base}/auth/oauth/callback"
         client_config = {
@@ -710,24 +717,26 @@ class Controller(IController.IController):
         Callback от Google. Обменивает code на токены, создаёт/находит пользователя,
         кладёт JWT в OAuthCodeStore, редиректит на frontend с ?oauth=google&code=xxx
         """
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
         if not GOOGLE_AUTH_AVAILABLE or Flow is None:
-            return HttpResponseRedirect(
-                f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/login?oauth_error=OAUTH_AUTH_ERROR"
-            )
+            custom = request.session.pop('oauth_redirect_uri', None)
+            url = f"{custom}?oauth_error=OAUTH_AUTH_ERROR" if (custom and custom.startswith('misa://')) else f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR"
+            return HttpResponseRedirect(url)
 
         code = request.GET.get('code')
         if not code:
-            return HttpResponseRedirect(
-                f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/login?oauth_error=OAUTH_MISSING_DATA"
-            )
+            custom = request.session.pop('oauth_redirect_uri', None)
+            url = f"{custom}?oauth_error=OAUTH_MISSING_DATA" if (custom and custom.startswith('misa://')) else f"{frontend_url}/login?oauth_error=OAUTH_MISSING_DATA"
+            return HttpResponseRedirect(url)
 
         client_id = os.getenv('GOOGLE_CLIENT_ID')
         client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
         api_base = os.getenv('API_BASE_URL', request.build_absolute_uri('/').rstrip('/'))
-        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
 
         if not client_id or not client_secret:
-            return HttpResponseRedirect(f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR")
+            custom = request.session.pop('oauth_redirect_uri', None)
+            url = f"{custom}?oauth_error=OAUTH_AUTH_ERROR" if (custom and custom.startswith('misa://')) else f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR"
+            return HttpResponseRedirect(url)
 
         callback_uri = f"{api_base}/auth/oauth/callback"
         client_config = {
@@ -763,13 +772,22 @@ class Controller(IController.IController):
             jwt_token = cls.generate_jwt_token(user_id, user_email, display_name, picture)
 
             oauth_code = oauth_code_put(jwt_token)
-            redirect_url = f"{frontend_url}/login?oauth=google&code={oauth_code}"
+            custom_redirect = request.session.pop('oauth_redirect_uri', None)
+            if custom_redirect and custom_redirect.startswith('misa://'):
+                redirect_url = f"{custom_redirect}?oauth=google&code={oauth_code}"
+            else:
+                redirect_url = f"{frontend_url}/login?oauth=google&code={oauth_code}"
             return HttpResponseRedirect(redirect_url)
 
         except Exception as e:
             logging.error(f"OAuth callback error: {str(e)}", exc_info=True)
             detail = quote(str(e)[:200], safe='')
-            return HttpResponseRedirect(f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR&oauth_detail={detail}")
+            custom_redirect = request.session.pop('oauth_redirect_uri', None)
+            if custom_redirect and custom_redirect.startswith('misa://'):
+                redirect_url = f"{custom_redirect}?oauth_error=OAUTH_AUTH_ERROR&oauth_detail={detail}"
+            else:
+                redirect_url = f"{frontend_url}/login?oauth_error=OAUTH_AUTH_ERROR&oauth_detail={detail}"
+            return HttpResponseRedirect(redirect_url)
 
     @classmethod
     def oauth_token(cls, request):

@@ -76,6 +76,30 @@ export const verifyForgotPasswordCode = async (email, code, newPassword) => {
   return { ...decoded, ...user };
 };
 
+/**
+ * Обмен OAuth code на JWT (как в веб-клиенте).
+ * Вызывается после редиректа с Google с ?oauth=google&code=xxx
+ */
+export const exchangeOAuthCode = async (code) => {
+  const res = await fetch(`${API_URL}/auth/oauth-token/?code=${encodeURIComponent(code)}`);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const detail = data?.message ?? data?.data?.message ?? data?.detail ?? "Ошибка входа через Google";
+    throw new Error(detail);
+  }
+  const token = data.jwt;
+  if (!token) throw new Error("Нет токена");
+  await storage.setItem("token", token);
+  const decoded = jwtDecode(token);
+  if (decoded.display_name || decoded.picture) {
+    await storage.setItem("userProfile", JSON.stringify({
+      display_name: decoded.display_name,
+      picture: decoded.picture,
+    }));
+  }
+  return decoded;
+};
+
 export const loginWithGoogleIdToken = async (idToken) => {
   const res = await fetch(`${API_URL}/auth/google-id-token/`, {
     method: "POST",
