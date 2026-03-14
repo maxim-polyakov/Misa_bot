@@ -12,7 +12,6 @@ import {
   Modal,
   Linking,
 } from "react-native";
-import { WebView } from "react-native-webview";
 import {
   login,
   sendRegistrationCode,
@@ -21,7 +20,7 @@ import {
   verifyForgotPasswordCode,
   exchangeOAuthCode,
 } from "../api/userApi";
-import { API_URL, WEB_APP_URL } from "../config";
+import { API_URL } from "../config";
 import { useUser } from "../context/UserContext";
 import { useStores } from "../store/rootStoreContext";
 import { useLocale } from "../context/LocaleContext";
@@ -226,10 +225,7 @@ export default function AuthScreen() {
     googleOAuthHandled.current = false;
     setError("");
     setShowGoogleOAuthModal(true);
-    if (Platform.OS === "windows") {
-      // WebView внутри модалки — редирект на /oauth-done, перехватываем URL (без misa://, нет спама окон)
-      return;
-    }
+    if (Platform.OS !== "windows") return;
     Linking.openURL(`${API_URL}/auth/oauth/google/?redirect_uri=${encodeURIComponent("misa://oauth")}`);
   };
 
@@ -430,46 +426,18 @@ export default function AuthScreen() {
                 <Text style={styles.modalCloseText}>✕</Text>
               </TouchableOpacity>
             </View>
-            {Platform.OS === "windows" ? (
-              <WebView
-                style={styles.webview}
-                source={{ uri: `${API_URL}/auth/oauth/google/?redirect_uri=${encodeURIComponent((WEB_APP_URL || "https://misa.baxic.ru") + "/oauth-done")}` }}
-                onShouldStartLoadWithRequest={(req) => {
-                  const url = req?.url || req?.nativeEvent?.url || "";
-                  if (url.includes("/oauth-done")) {
-                    try {
-                      const u = new URL(url);
-                      const code = u.searchParams.get("code");
-                      const oauthError = u.searchParams.get("oauth_error");
-                      const oauthDetail = u.searchParams.get("oauth_detail");
-                      const oauth = u.searchParams.get("oauth");
-                      if (oauthError) {
-                        handleOAuthResult({ error: oauthError, detail: oauthDetail });
-                      } else if (oauth === "google" && code) {
-                        handleOAuthResult({ code });
-                      }
-                    } catch {
-                      /* ignore */
-                    }
-                    return false;
-                  }
-                  return true;
-                }}
-              />
-            ) : (
-              <View style={styles.webviewLoading}>
-                {googleOAuthLoading ? (
-                  <>
-                    <ActivityIndicator size="large" />
-                    <Text style={styles.webviewLoadingText}>Вход...</Text>
-                  </>
-                ) : (
-                  <Text style={styles.webviewLoadingText}>
-                    Откройте браузер и войдите через Google.{"\n"}После входа вы вернётесь в приложение.
-                  </Text>
-                )}
-              </View>
-            )}
+            <View style={styles.webviewLoading}>
+              {googleOAuthLoading ? (
+                <>
+                  <ActivityIndicator size="large" />
+                  <Text style={styles.webviewLoadingText}>Вход...</Text>
+                </>
+              ) : (
+                <Text style={styles.webviewLoadingText}>
+                  Откройте браузер и войдите через Google.{"\n"}После входа вы вернётесь в приложение.
+                </Text>
+              )}
+            </View>
           </View>
         </View>
       </Modal>

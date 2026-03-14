@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "lint": "eslint .",
-    "postinstall": "node scripts/patch-vsInstalls.js && node scripts/copy-vector-icons-font.js",
+    "postinstall": "node scripts/patch-webview-build.js && node scripts/patch-vsInstalls.js && node scripts/copy-vector-icons-font.js",
     "start": "react-native start",
     "test": "jest",
     "windows": "npx react-native run-windows --arch x86",
@@ -27,13 +27,13 @@
     "react-native-screens": "^4.24.0",
     "react-native-vector-icons": "^10.3.0",
     "react-native-webview": "^13.16.1",
-    "react-native-windows": "0.76.3"
+    "react-native-windows": "0.76.3",
+    "@react-native-community/cli": "latest"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
-    "@react-native-community/cli": "15.0.0-alpha.2",
     "@react-native/babel-preset": "0.76.0",
     "@react-native/eslint-config": "0.76.0",
     "@react-native/metro-config": "0.76.0",

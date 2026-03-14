@@ -10,7 +10,9 @@ module.exports = {
         windows: null, // cppwinrt IXamlMetadataProvider conflict
       },
     },
-    // react-native-webview включён для Windows — OAuth в WebView (избегаем спама окон при misa://)
+    'react-native-webview': {
+      platforms: { windows: null },
+    },
     'react-native-http-bridge': {
       platforms: {
         windows: null, // нет нативной реализации для Windows
