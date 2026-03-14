@@ -5,6 +5,7 @@
   <PropertyGroup Label="Globals">
     <TargetName>Misa AI</TargetName>
     <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTGenerateWindowsMetadata>false</CppWinRTGenerateWindowsMetadata>
     <MinimalCoreWin>true</MinimalCoreWin>
     <ProjectGuid>{50D8B3B6-6425-49C1-8552-FDA544ADAC0B}</ProjectGuid>
     <ProjectName>MisaWindows</ProjectName>

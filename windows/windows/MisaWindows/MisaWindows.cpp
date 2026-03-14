@@ -21,6 +21,8 @@ namespace {
 constexpr wchar_t kMutexName[] = L"Global\\MisaWindows_SingleInstance_7D8F2E";
 constexpr wchar_t kWindowTitle[] = L"Misa AI";
 
+HANDLE g_appMutex = NULL;  // First instance holds this; never close
+
 std::wstring GetPendingOAuthPath() {
   wchar_t path[MAX_PATH];
   if (FAILED(SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, path))) return {};
@@ -36,15 +38,18 @@ std::wstring ExtractMisaUrlFromCommandLine() {
   std::wstring s(cmdLine);
   size_t pos = s.find(L"misa://");
   if (pos == std::wstring::npos) return {};
-  size_t end = s.find_first_of(L" \t", pos);
+  size_t end = s.find_first_of(L" \t\"\r\n", pos);
   if (end == std::wstring::npos) end = s.length();
-  return s.substr(pos, end - pos);
+  std::wstring url = s.substr(pos, end - pos);
+  while (!url.empty() && (url.back() == L'"' || url.back() == L'\r' || url.back() == L'\n')) url.pop_back();
+  return url;
 }
 
 bool TrySecondInstanceHandoff() {
   HANDLE mutex = CreateMutexW(NULL, FALSE, kMutexName);
   if (!mutex) return false;
-  if (GetLastError() == ERROR_ALREADY_EXISTS) {
+  const bool alreadyExists = (GetLastError() == ERROR_ALREADY_EXISTS);
+  if (alreadyExists) {
     std::wstring url = ExtractMisaUrlFromCommandLine();
     if (!url.empty()) {
       std::wstring path = GetPendingOAuthPath();
@@ -70,14 +75,33 @@ bool TrySecondInstanceHandoff() {
     CloseHandle(mutex);
     return true;
   }
-  CloseHandle(mutex);
+  g_appMutex = mutex;  // First instance: keep mutex alive, do NOT close
   return false;
+}
+
+void WriteLaunchUrlToPendingFile() {
+  std::wstring url = ExtractMisaUrlFromCommandLine();
+  if (url.empty()) return;
+  std::wstring path = GetPendingOAuthPath();
+  if (path.empty()) return;
+  HANDLE h = CreateFileW(path.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (h == INVALID_HANDLE_VALUE) return;
+  int len = WideCharToMultiByte(CP_UTF8, 0, url.c_str(), (int)url.size(), NULL, 0, NULL, NULL);
+  if (len > 0) {
+    std::string utf8(len, 0);
+    WideCharToMultiByte(CP_UTF8, 0, url.c_str(), (int)url.size(), utf8.data(), len, NULL, NULL);
+    DWORD written;
+    WriteFile(h, utf8.c_str(), (DWORD)utf8.size(), &written, NULL);
+  }
+  CloseHandle(h);
 }
 }  // namespace
 
 // The entry point of the Win32 application
 _Use_decl_annotations_ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE, PSTR /* commandLine */, int showCmd) {
   if (TrySecondInstanceHandoff()) return 0;
+
+  WriteLaunchUrlToPendingFile();  // First launch with URL (getInitialURL bug workaround)
 
   // Initialize WinRT
   winrt::init_apartment(winrt::apartment_type::single_threaded);

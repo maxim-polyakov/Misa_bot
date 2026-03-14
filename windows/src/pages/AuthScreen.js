@@ -182,15 +182,18 @@ export default function AuthScreen() {
       setGoogleOAuthLoading(true);
       exchangeOAuthCode(result.code)
         .then((data) => {
-          chatStore.setUser(data.email, data.user_id ?? data.id);
-          setUser(data);
+          const uid = data.user_id ?? data.id ?? data.sub;
+          const email = data.email || "";
+          if (!email) throw new Error("Нет email в ответе");
+          chatStore.setUser(email, uid);
+          setUser({ ...data, user_id: uid, email });
           setIsAuth(true);
           chatStore.connect();
           setShowGoogleOAuthModal(false);
           setGoogleOAuthLoading(false);
         })
         .catch((err) => {
-          setError(err.message || "Ошибка входа через Google");
+          setError(err?.message || "Ошибка входа через Google");
           setShowGoogleOAuthModal(false);
           setGoogleOAuthLoading(false);
         });
@@ -198,9 +201,11 @@ export default function AuthScreen() {
   }, [chatStore, setUser, setIsAuth]);
 
   const handleMisaUrl = useCallback((url) => {
-    if (!url || !url.startsWith("misa://") || googleOAuthHandled.current) return;
+    const trimmed = (url || "").trim().replace(/^\uFEFF/, "");
+    if (!trimmed || !trimmed.startsWith("misa://") || googleOAuthHandled.current) return;
+    setShowGoogleOAuthModal(true);
     try {
-      const u = new URL(url);
+      const u = new URL(trimmed);
       const oauthError = u.searchParams.get("oauth_error");
       const oauthDetail = u.searchParams.get("oauth_detail");
       const code = u.searchParams.get("code");
@@ -223,17 +228,18 @@ export default function AuthScreen() {
   }, [handleMisaUrl]);
 
   useEffect(() => {
-    if (Platform.OS !== "windows" || !showGoogleOAuthModal || !OAuthHelperModule) return;
+    if (Platform.OS !== "windows" || !OAuthHelperModule) return;
     const interval = setInterval(() => {
+      if (googleOAuthHandled.current) return;
       try {
         const url = OAuthHelperModule?.getPendingOAuthUrl?.();
         if (url) handleMisaUrl(url);
       } catch {
         /* ignore */
       }
-    }, 1500);
+    }, 500);
     return () => clearInterval(interval);
-  }, [showGoogleOAuthModal, handleMisaUrl]);
+  }, [handleMisaUrl]);
 
   const handleGoogleLogin = () => {
     googleOAuthHandled.current = false;

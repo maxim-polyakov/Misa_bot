@@ -20,7 +20,7 @@ std::optional<std::string> OAuthHelper::getPendingOAuthUrl() noexcept {
 
   std::string content(size, 0);
   DWORD read;
-  if (!ReadFile(h, content.data(), size, &read, NULL) || read != size) {
+  if (!ReadFile(h, content.data(), size, &read, NULL) || read == 0) {
     CloseHandle(h);
     return std::nullopt;
   }
@@ -28,6 +28,10 @@ std::optional<std::string> OAuthHelper::getPendingOAuthUrl() noexcept {
 
   DeleteFileW(filePath.c_str());
 
+  content.resize(read);
+  while (!content.empty() && (content.back() == '\r' || content.back() == '\n' || content.back() == ' ' || content.back() == '\t')) content.pop_back();
+  if (content.size() >= 3 && (unsigned char)content[0] == 0xEF && (unsigned char)content[1] == 0xBB && (unsigned char)content[2] == 0xBF) content.erase(0, 3);
+  if (content.empty() || content.find("misa://") == std::string::npos) return std::nullopt;
   return content;
 }
 
