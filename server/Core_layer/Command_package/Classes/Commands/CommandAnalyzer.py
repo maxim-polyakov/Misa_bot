@@ -53,9 +53,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                     result = str(ac.third())
                 case '7':
                     result = str(ac.fifth())
-                case '8':
-                    result = str(ac.seventh())
-                case '9':
+                case '8' | '9':
                     result = str(ac.tenth())
                 case _:
                     # default case if no match found
@@ -85,8 +83,7 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             "5 - фас\n"
             "6 - находить что либо в гугле или в википедии (поиск информации в интернете)\n"
             "7 - погода в каком то городе (предскажи погоду, какая погода, скажи погоду, погода в городе X)\n"
-            "8 - поставить слово в изначальную форму, удалить знаки препинания\n"
-            "9 - очистить текст от знаков препинания, поставить слова в изначальную форму\n"
+            "8, 9 - очистить текст (почисти, очисти, убери лишнее — удалить командные слова, препроцессинг)\n"
             "10 - команды нет в списке\n\n"
             "Задача: Найди команду(ы) в списке, строго учитывая контекст. "
             "Если фраза выражает совет, описание, размышление или эмоцию — не учитывай как команду. "
@@ -110,6 +107,9 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             "- Технические операции (например, 'найди ошибку в коде')\n"
             "- Напиши, создай, сгенерируй, составь — запросы на создание текста/кода/JSON — это 10 (но нарисуй = 3)\n"
             "- 'напиши' и 'найди' — разные команды: напиши = генерация текста, найди = поиск в интернете\n"
+            "Критерии для команд 8 и 9 (очистить текст — одно и то же):\n"
+            "- «почисти», «очисти», «очисти текст», «почисти текст», «убери лишнее», «удали стоп-слова» — 8 или 9\n"
+            "- Любой запрос на очистку текста = 8 или 9\n"
             "Формат ответа: только цифры, без дополнительного текста."
         )
         gpt_response = cls._gpta.answer(input,user, True)
@@ -123,7 +123,13 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             outlist = []
             # Берем только первые 10 слов для анализа (оптимизация)
             check = cls.neurocheck(message_text, user)
-            array_of_message_text = check.split(',')
+            raw_parts = [w.strip() for w in str(check).split(',') if w.strip()]
+            # извлекаем цифры (GPT может вернуть "9." или " 9 ")
+            array_of_message_text = []
+            for w in raw_parts:
+                m = re.search(r'10|[1-9]', w)
+                if m:
+                    array_of_message_text.append(m.group())
 
             for word in array_of_message_text:
                 processed_word = cls.__action_step(word, message_text, user)
