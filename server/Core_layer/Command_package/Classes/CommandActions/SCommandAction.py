@@ -86,13 +86,35 @@ class SCommandAction(IAction.IAction):
 #       атаковать
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            Inputstr = cls.__pred.preprocess_text(cls.message_text)
-            Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
-            Inputarr = Inputstr.split(' ')
-            cls.command_flag = 1
-            Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
-            logging.info('The commandaction.twentyfirst is done')
-            return Inputstr + ' - пидор.'
+            prompt_is_attack = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Текст: {cls.message_text}\n\n"
+                "Задача: Определи, является ли текст командой атаки на кого-то. "
+                "Команда атаки содержит слова вроде: «фас», «атакуй», «пиздани», «нападай», «кусай», «цапни» и им подобные. "
+                "Пользователь просит «атаковать» или «напасть» на человека по имени.\n\n"
+                "Формат ответа: только True или False."
+            )
+            gpt_is_attack = cls._gpta.answer(prompt_is_attack, cls.user, True)
+            is_attack = (not isinstance(gpt_is_attack, dict) and gpt_is_attack and gpt_is_attack.count("True") > 0)
+
+            if is_attack:
+                prompt_name = (
+                    "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                    f"Текст: {cls.message_text}\n\n"
+                    "Задача: Извлеки из текста имя человека, на которого направлена команда атаки. "
+                    "Убери служебные слова: «фас», «атакуй», «пиздани» и т.п. "
+                    "Верни только имя в именительном падеже.\n"
+                    "Примеры: «фас атакуй Петра» → Петр; «пиздани Ваню» → Ваня; "
+                    "«атакуй Максима» → Максим; «фас Ивана» → Иван.\n\n"
+                    "Формат ответа: только имя, без пояснений."
+                )
+                gpt_name = cls._gpta.answer(prompt_name, cls.user, True)
+                name = str(gpt_name).strip() if (not isinstance(gpt_name, dict) and gpt_name) else cls.message_text
+                if not name:
+                    name = cls.message_text
+                cls.command_flag = 1
+                logging.info('The commandaction.first process is completed successfully')
+                return name + ' - пидор.'
         except Exception as e:
             logging.exception(str('The exception in aactionsixteen.seventh ' + str(e)))
 
@@ -102,13 +124,35 @@ class SCommandAction(IAction.IAction):
 #       атаковаться
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            Inputstr = cls.__pred.preprocess_text(cls.message_text)
-            Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
-            Inputarr = Inputstr.split(' ')
-            cls.command_flag = 1
-            Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
-            logging.info('The scommandaction.eighth is done')
-            return Inputstr + ' - пидор.'
+            prompt_is_attack = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Текст: {cls.message_text}\n\n"
+                "Задача: Определи, является ли текст командой атаки на кого-то. "
+                "Команда атаки содержит слова вроде: «фас», «атакуй», «пиздани», «нападай», «кусай», «цапни» и им подобные. "
+                "Пользователь просит «атаковать» или «напасть» на человека по имени.\n\n"
+                "Формат ответа: только True или False."
+            )
+            gpt_is_attack = cls._gpta.answer(prompt_is_attack, cls.user, True)
+            is_attack = (not isinstance(gpt_is_attack, dict) and gpt_is_attack and gpt_is_attack.count("True") > 0)
+
+            if is_attack:
+                prompt_name = (
+                    "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                    f"Текст: {cls.message_text}\n\n"
+                    "Задача: Извлеки из текста имя человека, на которого направлена команда атаки. "
+                    "Убери служебные слова: «фас», «атакуй», «пиздани» и т.п. "
+                    "Верни только имя в именительном падеже.\n"
+                    "Примеры: «фас атакуй Петра» → Петр; «пиздани Ваню» → Ваня; "
+                    "«атакуй Максима» → Максим; «фас Ивана» → Иван.\n\n"
+                    "Формат ответа: только имя, без пояснений."
+                )
+                gpt_name = cls._gpta.answer(prompt_name, cls.user, True)
+                name = str(gpt_name).strip() if (not isinstance(gpt_name, dict) and gpt_name) else cls.message_text
+                if not name:
+                    name = cls.message_text
+                cls.command_flag = 1
+                logging.info('The commandaction.first process is completed successfully')
+                return name + ' - пидор.'
         except Exception as e:
             logging.exception(str('The exception in scommandaction.eighth ' + str(e)))
 

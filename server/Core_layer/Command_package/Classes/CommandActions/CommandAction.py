@@ -29,24 +29,37 @@ class CommandAction(IAction.IAction):
     @classmethod
     def first(cls):
         # attack
-        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('фас') > 0:
-                # preprocess the message text
-                Inputstr = cls.__pred.preprocess_text(cls.message_text)
-                # remove specific attack-related words from the text
-                Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
-                # split the processed text into an array of words
-                Inputarr = Inputstr.split(' ')
-                # set a command flag indicating an action
+            prompt_is_attack = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Текст: {cls.message_text}\n\n"
+                "Задача: Определи, является ли текст командой атаки на кого-то. "
+                "Команда атаки содержит слова вроде: «фас», «атакуй», «пиздани», «нападай», «кусай», «цапни» и им подобные. "
+                "Пользователь просит «атаковать» или «напасть» на человека по имени.\n\n"
+                "Формат ответа: только True или False."
+            )
+            gpt_is_attack = cls._gpta.answer(prompt_is_attack, cls.user, True)
+            is_attack = (not isinstance(gpt_is_attack, dict) and gpt_is_attack and gpt_is_attack.count("True") > 0)
+
+            if is_attack:
+                prompt_name = (
+                    "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                    f"Текст: {cls.message_text}\n\n"
+                    "Задача: Извлеки из текста имя человека, на которого направлена команда атаки. "
+                    "Убери служебные слова: «фас», «атакуй», «пиздани» и т.п. "
+                    "Верни только имя в именительном падеже.\n"
+                    "Примеры: «фас атакуй Петра» → Петр; «пиздани Ваню» → Ваня; "
+                    "«атакуй Максима» → Максим; «фас Ивана» → Иван.\n\n"
+                    "Формат ответа: только имя, без пояснений."
+                )
+                gpt_name = cls._gpta.answer(prompt_name, cls.user, True)
+                name = str(gpt_name).strip() if (not isinstance(gpt_name, dict) and gpt_name) else cls.message_text
+                if not name:
+                    name = cls.message_text
                 cls.command_flag = 1
-                # remove the first word from the input string
-                Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
-                # log successful completion of the process
                 logging.info('The commandaction.first process is completed successfully')
-                # return the modified string with an appended phrase
-                return Inputstr + ' - пидор.'
+                return name + ' - пидор.'
         except Exception as e:
             logging.exception('The exception occurred in aaction.first: ' + str(e))
 
