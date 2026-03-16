@@ -2,6 +2,7 @@ import logging
 from Core_layer.Command_package.Interfaces import IAction
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing, Preprocessing
 from Core_layer.Answer_package.Classes import GptAnswer
+from Core_layer.Answer_package.Classes import GptAnswer
 
 class SCommandAction(IAction.IAction):
     """
@@ -14,6 +15,7 @@ class SCommandAction(IAction.IAction):
 
     __pred = Preprocessing.Preprocessing()
     __pr = CommonPreprocessing.CommonPreprocessing()
+    _gpta = GptAnswer.GptAnswer()
 
     def __init__(self, message, message_text, user):
         SCommandAction.message = message
@@ -105,7 +107,7 @@ class SCommandAction(IAction.IAction):
                     "Убери служебные слова: «фас», «атакуй», «пиздани» и т.п. "
                     "Верни только имя в именительном падеже.\n"
                     "Примеры: «фас атакуй Петра» → Петр; «пиздани Ваню» → Ваня; "
-                    "«атакуй Максима» → Максим; «фас Ивана» → Иван.\n\n"
+                    "«атакуй Максима» → Максим; «фас Ивана» → Иван; «атакуй васю» → Вася.\n\n"
                     "Формат ответа: только имя, без пояснений."
                 )
                 gpt_name = cls._gpta.answer(prompt_name, cls.user, True)
@@ -114,7 +116,7 @@ class SCommandAction(IAction.IAction):
                     name = cls.message_text
                 cls.command_flag = 1
                 logging.info('The commandaction.first process is completed successfully')
-                return name + ' - пидор.'
+                return name + ' - нехороший человек.'
         except Exception as e:
             logging.exception(str('The exception in aactionsixteen.seventh ' + str(e)))
 

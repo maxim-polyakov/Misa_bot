@@ -145,8 +145,6 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             outstr = ''
             command_executed = False  # Флаг для отслеживания выполнения команды
             has_unknown_command_response = False  # Флаг для "команды нет в списке"
-            known_commands = ['абонируй', 'абонируйся', 'нарисуй', 'атакуй',
-                              'фас', 'найди', 'погода']
 
             # Сначала проверяем весь текст целиком на наличие команд
             outlist = cls.__action(message_text, user)

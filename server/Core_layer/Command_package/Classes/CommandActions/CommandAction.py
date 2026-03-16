@@ -41,6 +41,10 @@ class CommandAction(IAction.IAction):
             )
             gpt_is_attack = cls._gpta.answer(prompt_is_attack, cls.user, True)
             is_attack = (not isinstance(gpt_is_attack, dict) and gpt_is_attack and gpt_is_attack.count("True") > 0)
+            # fallback: явные слова команды
+            if not is_attack and cls.message_text:
+                lower = cls.message_text.lower()
+                is_attack = any(kw in lower for kw in ['атакуй', 'фас', 'пиздани', 'нападай', 'кусай', 'цапни'])
 
             if is_attack:
                 prompt_name = (
@@ -50,7 +54,7 @@ class CommandAction(IAction.IAction):
                     "Убери служебные слова: «фас», «атакуй», «пиздани» и т.п. "
                     "Верни только имя в именительном падеже.\n"
                     "Примеры: «фас атакуй Петра» → Петр; «пиздани Ваню» → Ваня; "
-                    "«атакуй Максима» → Максим; «фас Ивана» → Иван.\n\n"
+                    "«атакуй Максима» → Максим; «фас Ивана» → Иван; «атакуй васю» → Вася.\n\n"
                     "Формат ответа: только имя, без пояснений."
                 )
                 gpt_name = cls._gpta.answer(prompt_name, cls.user, True)
