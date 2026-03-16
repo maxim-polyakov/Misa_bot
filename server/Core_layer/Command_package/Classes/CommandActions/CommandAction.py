@@ -67,35 +67,49 @@ class CommandAction(IAction.IAction):
         try:
             # remove unnecessary spaces and "найди" from the message
             message_text = (cls.message_text.strip(' ')
-                            .replace('найди ', ''))
+                            .replace('найди ', '')
+                            .replace('в википедии ', '')
+                            .replace(' в википедии', '')
+                            .strip())
 
-            # check if the message is related to wikipedia search
-            if (message_text.count('в википедии') > 0):
-                message_text = (message_text.strip(' ')
-                                .replace('в википедии ', ''))
+            # GPT определяет: Wikipedia (True) или общий интернет (False)
+            prompt = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Запрос на поиск: {message_text}\n\n"
+                "Задача: По контексту запроса определи, где пользователь просит искать информацию.\n"
+                "- True — пользователь просит искать в Википедии (явно или по контексту: энциклопедические темы, "
+                "биографии, исторические события, научные понятия, определения терминов).\n"
+                "- False — пользователь просит искать в общем интернете (новости, актуальные события, "
+                "погода, отзывы, рецепты, инструкции, товары, сервисы).\n\n"
+                "Формат ответа: только True или False, без дополнительного текста."
+            )
+            gpt_response = cls._gpta.answer(prompt, cls.user, True)
+            if isinstance(gpt_response, dict):
+                use_wikipedia = False
+            elif gpt_response and gpt_response.count("True") > 0:
+                use_wikipedia = True
+            else:
+                use_wikipedia = False
+
+            if use_wikipedia:
                 try:
-                    # perform a wikipedia search
                     apif = WikiFinder.WikiFinder(cls.__pr.preprocess_text(message_text))
                     finded_list = apif.find()
-                    logging.info('The commandaction.find process has completed successfully')
+                    logging.info('The commandaction.find process has completed successfully (Wikipedia)')
                     return str(finded_list)
                 except Exception as e:
-                    # log any exceptions that occur during the wikipedia
                     logging.exception('The exception occurred in commandaction.third: ' + str(e))
                     return 'Не нашла'
             else:
                 try:
-                    # perform a google search
                     gpif = DuckduckgoFinder.DuckduckgoFinder(message_text)
                     outstr = gpif.find()
-                    logging.info('The commandaction.third process has completed successfully')
+                    logging.info('The commandaction.third process has completed successfully (Internet)')
                     return outstr
                 except Exception as e:
-                    # log any exceptions that occur during the google search
                     logging.exception('The exception occurred in commandaction.third: ' + str(e))
                     return 'Не нашла'
         except Exception as e:
-            # log any general exceptions that occur in the method
             logging.exception('The exception occurred in commandaction.third: ' + str(e))
 
     @classmethod
