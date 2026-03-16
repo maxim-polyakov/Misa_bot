@@ -64,7 +64,19 @@ class CommandAction(IAction.IAction):
         # find
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # Промпт 1: извлечь объект поиска из текста
+            # Промпт 1: определить, где искать (Википедия или интернет) — по полному тексту с «в википедии» и т.п.
+            prompt_cmd = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Сообщение пользователя: {cls.message_text}\n\n"
+                "Задача: По контексту определи, где пользователь просит искать.\n"
+                "True — Википедия (явно «в википедии» или энциклопедические темы, биографии, история, наука, определения).\n"
+                "False — общий интернет (новости, погода, отзывы, рецепты, инструкции, товары).\n\n"
+                "Формат ответа: только True или False."
+            )
+            gpt_cmd = cls._gpta.answer(prompt_cmd, cls.user, True)
+            use_wikipedia = (not isinstance(gpt_cmd, dict) and gpt_cmd and gpt_cmd.count("True") > 0)
+
+            # Промпт 2: извлечь объект поиска из текста (после определения команды)
             prompt_object = (
                 "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
                 f"Текст: {cls.message_text}\n\n"
@@ -79,18 +91,6 @@ class CommandAction(IAction.IAction):
             search_object = str(gpt_object).strip() if (not isinstance(gpt_object, dict) and gpt_object) else cls.message_text
             if not search_object:
                 search_object = cls.message_text
-
-            # Промпт 2: определить, где искать (Википедия или интернет)
-            prompt_cmd = (
-                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
-                f"Запрос на поиск: {search_object}\n\n"
-                "Задача: По контексту определи, где пользователь просит искать.\n"
-                "True — Википедия (энциклопедические темы, биографии, история, наука, определения).\n"
-                "False — общий интернет (новости, погода, отзывы, рецепты, инструкции, товары).\n\n"
-                "Формат ответа: только True или False."
-            )
-            gpt_cmd = cls._gpta.answer(prompt_cmd, cls.user, True)
-            use_wikipedia = (not isinstance(gpt_cmd, dict) and gpt_cmd and gpt_cmd.count("True") > 0)
 
             if use_wikipedia:
                 try:
