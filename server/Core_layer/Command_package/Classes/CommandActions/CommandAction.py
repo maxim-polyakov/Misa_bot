@@ -250,19 +250,23 @@ class CommandAction(IAction.IAction):
                 "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
                 f"Текст: {cls.message_text}\n\n"
                 "Задача: Удали из текста все служебные и ключевые слова команды очистки. "
-                "Убери слова вроде: «почисти», «очисти», «очисть», «убери лишнее», «удали стоп-слова», "
-                "«очисти текст», «почисти текст» и им подобные. "
-                "Верни только оставшийся текст — суть, контент без команд.\n"
+                "Убери: «почисти», «очисти», «очисть», «убери лишнее», «удали стоп-слова», "
+                "«очисти текст», «почисти текст», «от знаков препинания», «поставь слово в изначальную форму» и им подобные. "
+                "Верни только оставшийся текст — слово или фразу для обработки.\n"
                 "Примеры: «почисти этот текст» → этот текст; «очисти привет мир» → привет мир; "
-                "«убери лишнее из: Мама мыла раму» → Мама мыла раму.\n\n"
-                "Формат ответа: только очищенный текст, без пояснений."
+                "«убери лишнее из: Мама мыла раму» → Мама мыла раму; "
+                "«очисть текст от знаков препинания и поставь слово в изначальную форму \"убираю\"» → убираю.\n\n"
+                "Формат ответа: только plaintext — извлечённый текст без markdown, без форматирования, без пояснений."
             )
             gpt_clean = cls._gpta.answer(prompt_clean, cls.user, True)
             message_text = str(gpt_clean).strip() if (not isinstance(gpt_clean, dict) and gpt_clean) else cls.message_text
             if not message_text:
                 message_text = cls.message_text
             pr = CommonPreprocessing.CommonPreprocessing()
+            result = pr.preprocess_text(message_text)
+            # plaintext: убираем markdown (*, _, `, # и т.п.)
+            result = re.sub(r'[*_`#]+', '', str(result)).strip()
             logging.info('The commandaction.tenth process has completed successfully')
-            return pr.preprocess_text(message_text)
+            return result
         except Exception as e:
             logging.exception(str('The exception occurred in commandaction.tenth: ' + str(e)))
