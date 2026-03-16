@@ -104,6 +104,9 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
             "- Технические операции (например, 'найди ошибку в коде')\n"
             "- Напиши, создай, сгенерируй, составь — запросы на создание текста/кода/JSON — это 10 (но нарисуй = 3)\n"
             "- 'напиши' и 'найди' — разные команды: напиши = генерация текста, найди = поиск в интернете\n"
+            "Критерии для команд 4 и 5 (атаковать/фас — одно и то же):\n"
+            "- «атакуй X», «фас X», «пиздани X» (X — имя) — только 4 или 5, никогда не 10\n"
+            "- Имя после команды — объект атаки, не отдельная команда. Верни только 4 или 5.\n"
             "Формат ответа: только цифры, без дополнительного текста."
         )
         gpt_response = cls._gpta.answer(input,user, True)
@@ -124,6 +127,10 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
                 m = re.search(r'10|[1-9]', w)
                 if m:
                     array_of_message_text.append(m.group())
+
+            # если есть 4 или 5 (атака) — убираем 10, чтобы не добавлять ответ GPT
+            if '4' in array_of_message_text or '5' in array_of_message_text:
+                array_of_message_text = [x for x in array_of_message_text if x != '10']
 
             for word in array_of_message_text:
                 processed_word = cls.__action_step(word, message_text, user)
