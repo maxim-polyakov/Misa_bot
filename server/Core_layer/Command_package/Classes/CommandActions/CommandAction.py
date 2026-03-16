@@ -59,7 +59,7 @@ class CommandAction(IAction.IAction):
                     name = cls.message_text
                 cls.command_flag = 1
                 logging.info('The commandaction.first process is completed successfully')
-                return name + ' - пидор.'
+                return name + ' - нехороший человек.'
         except Exception as e:
             logging.exception('The exception occurred in aaction.first: ' + str(e))
 
