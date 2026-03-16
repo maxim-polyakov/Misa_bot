@@ -220,8 +220,11 @@ class CommandAction(IAction.IAction):
             if not message_text:
                 message_text = cls.message_text
             pr = CommonPreprocessing.CommonPreprocessing()
+            result = pr.preprocess_text(message_text)
+            # plaintext: убираем markdown (*, _, `, # и т.п.)
+            result = re.sub(r'[*_`#]+', '', str(result)).strip()
             logging.info('The commandaction.tenth process has completed successfully')
-            return pr.preprocess_text(message_text)
+            return f"```plaintext\n{result}\n```"
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception(str('The exception in commandaction.seventh ' + str(e)))
@@ -268,6 +271,6 @@ class CommandAction(IAction.IAction):
             # plaintext: убираем markdown (*, _, `, # и т.п.)
             result = re.sub(r'[*_`#]+', '', str(result)).strip()
             logging.info('The commandaction.tenth process has completed successfully')
-            return result
+            return f"```plaintext\n{result}\n```"
         except Exception as e:
             logging.exception(str('The exception occurred in commandaction.tenth: ' + str(e)))
