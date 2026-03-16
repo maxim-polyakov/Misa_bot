@@ -62,38 +62,39 @@ class CommandAction(IAction.IAction):
     @classmethod
     def third(cls):
         # find
-        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # remove unnecessary spaces and "найди" from the message
-            message_text = (cls.message_text.strip(' ')
-                            .replace('найди ', '')
-                            .replace('в википедии ', '')
-                            .replace(' в википедии', '')
-                            .strip())
-
-            # GPT определяет: Wikipedia (True) или общий интернет (False)
-            prompt = (
+            # Промпт 1: извлечь объект поиска из текста
+            prompt_object = (
                 "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
-                f"Запрос на поиск: {message_text}\n\n"
-                "Задача: По контексту запроса определи, где пользователь просит искать информацию.\n"
-                "- True — пользователь просит искать в Википедии (явно или по контексту: энциклопедические темы, "
-                "биографии, исторические события, научные понятия, определения терминов).\n"
-                "- False — пользователь просит искать в общем интернете (новости, актуальные события, "
-                "погода, отзывы, рецепты, инструкции, товары, сервисы).\n\n"
-                "Формат ответа: только True или False, без дополнительного текста."
+                f"Текст: {cls.message_text}\n\n"
+                "Задача: Извлеки из текста объект, который нужно искать. "
+                "Убери служебные слова: «найди», «поищи», «в википедии», «в интернете» и т.п. "
+                "Верни только суть запроса — ключевые слова, фразу или имя для поиска.\n"
+                "Примеры: «найди Наполеона» → Наполеон; «поищи погоду в Москве» → погода в Москве; "
+                "«найди в википедии кто такой Эйнштейн» → Эйнштейн.\n\n"
+                "Формат ответа: только извлечённый объект поиска, без пояснений."
             )
-            gpt_response = cls._gpta.answer(prompt, cls.user, True)
-            if isinstance(gpt_response, dict):
-                use_wikipedia = False
-            elif gpt_response and gpt_response.count("True") > 0:
-                use_wikipedia = True
-            else:
-                use_wikipedia = False
+            gpt_object = cls._gpta.answer(prompt_object, cls.user, True)
+            search_object = str(gpt_object).strip() if (not isinstance(gpt_object, dict) and gpt_object) else cls.message_text
+            if not search_object:
+                search_object = cls.message_text
+
+            # Промпт 2: определить, где искать (Википедия или интернет)
+            prompt_cmd = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Запрос на поиск: {search_object}\n\n"
+                "Задача: По контексту определи, где пользователь просит искать.\n"
+                "True — Википедия (энциклопедические темы, биографии, история, наука, определения).\n"
+                "False — общий интернет (новости, погода, отзывы, рецепты, инструкции, товары).\n\n"
+                "Формат ответа: только True или False."
+            )
+            gpt_cmd = cls._gpta.answer(prompt_cmd, cls.user, True)
+            use_wikipedia = (not isinstance(gpt_cmd, dict) and gpt_cmd and gpt_cmd.count("True") > 0)
 
             if use_wikipedia:
                 try:
-                    apif = WikiFinder.WikiFinder(cls.__pr.preprocess_text(message_text))
+                    apif = WikiFinder.WikiFinder(cls.__pr.preprocess_text(search_object))
                     finded_list = apif.find()
                     logging.info('The commandaction.find process has completed successfully (Wikipedia)')
                     return str(finded_list)
@@ -102,7 +103,7 @@ class CommandAction(IAction.IAction):
                     return 'Не нашла'
             else:
                 try:
-                    gpif = DuckduckgoFinder.DuckduckgoFinder(message_text)
+                    gpif = DuckduckgoFinder.DuckduckgoFinder(search_object)
                     outstr = gpif.find()
                     logging.info('The commandaction.third process has completed successfully (Internet)')
                     return outstr
