@@ -234,20 +234,26 @@ class CommandAction(IAction.IAction):
 
     @classmethod
     def tenth(cls):
-        # clean
-        # configure logging settings
+        # clean — удаление ключевых слов из текста
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # check if the message contains the word "очисти" but not "очисться"
-            # remove "очисти " from the message text
-            message_text = (cls.message_text.replace('почисти ', '')
-                            .replace('очисти', ''))
-            # create an instance of the common preprocessing class
+            prompt_clean = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Текст: {cls.message_text}\n\n"
+                "Задача: Удали из текста все служебные и ключевые слова команды очистки. "
+                "Убери слова вроде: «почисти», «очисти», «очисть», «убери лишнее», «удали стоп-слова», "
+                "«очисти текст», «почисти текст» и им подобные. "
+                "Верни только оставшийся текст — суть, контент без команд.\n"
+                "Примеры: «почисти этот текст» → этот текст; «очисти привет мир» → привет мир; "
+                "«убери лишнее из: Мама мыла раму» → Мама мыла раму.\n\n"
+                "Формат ответа: только очищенный текст, без пояснений."
+            )
+            gpt_clean = cls._gpta.answer(prompt_clean, cls.user, True)
+            message_text = str(gpt_clean).strip() if (not isinstance(gpt_clean, dict) and gpt_clean) else cls.message_text
+            if not message_text:
+                message_text = cls.message_text
             pr = CommonPreprocessing.CommonPreprocessing()
-            # log successful execution of the method
-            logging.info('The commandaction.seventh process has completed successfully')
-            # preprocess the cleaned message text and return the result
+            logging.info('The commandaction.tenth process has completed successfully')
             return pr.preprocess_text(message_text)
         except Exception as e:
-            # log any exceptions that occur during execution
-            logging.exception(str('The exception occurred in commandaction.seventh: ' + str(e)))
+            logging.exception(str('The exception occurred in commandaction.tenth: ' + str(e)))
