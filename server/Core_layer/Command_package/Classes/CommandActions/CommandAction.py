@@ -29,24 +29,37 @@ class CommandAction(IAction.IAction):
     @classmethod
     def first(cls):
         # attack
-        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message_text.count('фас') > 0:
-                # preprocess the message text
-                Inputstr = cls.__pred.preprocess_text(cls.message_text)
-                # remove specific attack-related words from the text
-                Inputstr = Inputstr.replace('атакуй ', '').replace('пиздани ', '').replace('фас ', '')
-                # split the processed text into an array of words
-                Inputarr = Inputstr.split(' ')
-                # set a command flag indicating an action
+            prompt_is_attack = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Текст: {cls.message_text}\n\n"
+                "Задача: Определи, является ли текст командой атаки на кого-то. "
+                "Команда атаки содержит слова вроде: «фас», «атакуй», «пиздани», «нападай», «кусай», «цапни» и им подобные. "
+                "Пользователь просит «атаковать» или «напасть» на человека по имени.\n\n"
+                "Формат ответа: только True или False."
+            )
+            gpt_is_attack = cls._gpta.answer(prompt_is_attack, cls.user, True)
+            is_attack = (not isinstance(gpt_is_attack, dict) and gpt_is_attack and gpt_is_attack.count("True") > 0)
+
+            if is_attack:
+                prompt_name = (
+                    "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                    f"Текст: {cls.message_text}\n\n"
+                    "Задача: Извлеки из текста имя человека, на которого направлена команда атаки. "
+                    "Убери служебные слова: «фас», «атакуй», «пиздани» и т.п. "
+                    "Верни только имя в именительном падеже.\n"
+                    "Примеры: «фас атакуй Петра» → Петр; «пиздани Ваню» → Ваня; "
+                    "«атакуй Максима» → Максим; «фас Ивана» → Иван; «атакуй васю» → Вася.\n\n"
+                    "Формат ответа: только имя, без пояснений."
+                )
+                gpt_name = cls._gpta.answer(prompt_name, cls.user, True)
+                name = str(gpt_name).strip() if (not isinstance(gpt_name, dict) and gpt_name) else cls.message_text
+                if not name:
+                    name = cls.message_text
                 cls.command_flag = 1
-                # remove the first word from the input string
-                Inputstr = Inputstr.replace(Inputarr[0] + ' ', '')
-                # log successful completion of the process
                 logging.info('The commandaction.first process is completed successfully')
-                # return the modified string with an appended phrase
-                return Inputstr + ' - пидор.'
+                return name + ' - нехороший человек.'
         except Exception as e:
             logging.exception('The exception occurred in aaction.first: ' + str(e))
 
@@ -62,40 +75,55 @@ class CommandAction(IAction.IAction):
     @classmethod
     def third(cls):
         # find
-        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # remove unnecessary spaces and "найди" from the message
-            message_text = (cls.message_text.strip(' ')
-                            .replace('найди ', ''))
+            # Промпт 1: определить, где искать (Википедия или интернет) — по полному тексту с «в википедии» и т.п.
+            prompt_cmd = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Сообщение пользователя: {cls.message_text}\n\n"
+                "Задача: По контексту определи, где пользователь просит искать.\n"
+                "True — Википедия (явно «в википедии» или энциклопедические темы, биографии, история, наука, определения).\n"
+                "False — общий интернет (новости, погода, отзывы, рецепты, инструкции, товары).\n\n"
+                "Формат ответа: только True или False."
+            )
+            gpt_cmd = cls._gpta.answer(prompt_cmd, cls.user, True)
+            use_wikipedia = (not isinstance(gpt_cmd, dict) and gpt_cmd and gpt_cmd.count("True") > 0)
 
-            # check if the message is related to wikipedia search
-            if (message_text.count('в википедии') > 0):
-                message_text = (message_text.strip(' ')
-                                .replace('в википедии ', ''))
+            # Промпт 2: извлечь объект поиска из текста (после определения команды)
+            prompt_object = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Текст: {cls.message_text}\n\n"
+                "Задача: Извлеки из текста объект, который нужно искать. "
+                "Убери служебные слова: «найди», «поищи», «в википедии», «в интернете» и т.п. "
+                "Верни только суть запроса — ключевые слова, фразу или имя для поиска.\n"
+                "Примеры: «найди Наполеона» → Наполеон; «поищи погоду в Москве» → погода в Москве; "
+                "«найди в википедии кто такой Эйнштейн» → Эйнштейн.\n\n"
+                "Формат ответа: только извлечённый объект поиска, без пояснений."
+            )
+            gpt_object = cls._gpta.answer(prompt_object, cls.user, True)
+            search_object = str(gpt_object).strip() if (not isinstance(gpt_object, dict) and gpt_object) else cls.message_text
+            if not search_object:
+                search_object = cls.message_text
+
+            if use_wikipedia:
                 try:
-                    # perform a wikipedia search
-                    apif = WikiFinder.WikiFinder(cls.__pr.preprocess_text(message_text))
+                    apif = WikiFinder.WikiFinder(cls.__pr.preprocess_text(search_object))
                     finded_list = apif.find()
-                    logging.info('The commandaction.find process has completed successfully')
+                    logging.info('The commandaction.find process has completed successfully (Wikipedia)')
                     return str(finded_list)
                 except Exception as e:
-                    # log any exceptions that occur during the wikipedia
                     logging.exception('The exception occurred in commandaction.third: ' + str(e))
                     return 'Не нашла'
             else:
                 try:
-                    # perform a google search
-                    gpif = DuckduckgoFinder.DuckduckgoFinder(message_text)
+                    gpif = DuckduckgoFinder.DuckduckgoFinder(search_object)
                     outstr = gpif.find()
-                    logging.info('The commandaction.third process has completed successfully')
+                    logging.info('The commandaction.third process has completed successfully (Internet)')
                     return outstr
                 except Exception as e:
-                    # log any exceptions that occur during the google search
                     logging.exception('The exception occurred in commandaction.third: ' + str(e))
                     return 'Не нашла'
         except Exception as e:
-            # log any general exceptions that occur in the method
             logging.exception('The exception occurred in commandaction.third: ' + str(e))
 
     @classmethod
@@ -175,15 +203,28 @@ class CommandAction(IAction.IAction):
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # check if the message contains the word "почисти" but not "почистись"
-            # remove "почисти " from the message text
-            message_text = (cls.message_text.replace('почисти ', ''))
-            # create an instance of the common preprocessing class
+            prompt_clean = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Текст: {cls.message_text}\n\n"
+                "Задача: Удали из текста все служебные и ключевые слова команды очистки. "
+                "Убери: «почисти», «очисти», «очисть», «убери лишнее», «удали стоп-слова», "
+                "«очисти текст», «почисти текст», «от знаков препинания», «поставь слово в изначальную форму» и им подобные. "
+                "Верни только оставшийся текст — слово или фразу для обработки.\n"
+                "Примеры: «почисти этот текст» → этот текст; «очисти привет мир» → привет мир; "
+                "«убери лишнее из: Мама мыла раму» → Мама мыла раму; "
+                "«очисть текст от знаков препинания и поставь слово в изначальную форму \"убираю\"» → убираю.\n\n"
+                "Формат ответа: только plaintext — извлечённый текст без markdown, без форматирования, без пояснений."
+            )
+            gpt_clean = cls._gpta.answer(prompt_clean, cls.user, True)
+            message_text = str(gpt_clean).strip() if (not isinstance(gpt_clean, dict) and gpt_clean) else cls.message_text
+            if not message_text:
+                message_text = cls.message_text
             pr = CommonPreprocessing.CommonPreprocessing()
-            # log successful execution
-            logging.info('The commandaction.seventh process has completed successfully')
-            # preprocess the cleaned message text and return the result
-            return pr.preprocess_text(message_text)
+            result = pr.preprocess_text(message_text)
+            # plaintext: убираем markdown (*, _, `, # и т.п.)
+            result = re.sub(r'[*_`#]+', '', str(result)).strip()
+            logging.info('The commandaction.tenth process has completed successfully')
+            return f"```plaintext\n{result}\n```"
         except Exception as e:
             # log any exceptions that occur during execution
             logging.exception(str('The exception in commandaction.seventh ' + str(e)))
@@ -207,19 +248,29 @@ class CommandAction(IAction.IAction):
     @classmethod
     def tenth(cls):
         # clean
-        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # check if the message contains the word "очисти" but not "очисться"
-            # remove "очисти " from the message text
-            message_text = (cls.message_text.replace('почисти ', '')
-                            .replace('очисти', ''))
-            # create an instance of the common preprocessing class
+            prompt_clean = (
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                f"Текст: {cls.message_text}\n\n"
+                "Задача: Удали из текста все служебные и ключевые слова команды очистки. "
+                "Убери: «почисти», «очисти», «очисть», «убери лишнее», «удали стоп-слова», "
+                "«очисти текст», «почисти текст», «от знаков препинания», «поставь слово в изначальную форму» и им подобные. "
+                "Верни только оставшийся текст — слово или фразу для обработки.\n"
+                "Примеры: «почисти этот текст» → этот текст; «очисти привет мир» → привет мир; "
+                "«убери лишнее из: Мама мыла раму» → Мама мыла раму; "
+                "«очисть текст от знаков препинания и поставь слово в изначальную форму \"убираю\"» → убираю.\n\n"
+                "Формат ответа: только plaintext — извлечённый текст без markdown, без форматирования, без пояснений."
+            )
+            gpt_clean = cls._gpta.answer(prompt_clean, cls.user, True)
+            message_text = str(gpt_clean).strip() if (not isinstance(gpt_clean, dict) and gpt_clean) else cls.message_text
+            if not message_text:
+                message_text = cls.message_text
             pr = CommonPreprocessing.CommonPreprocessing()
-            # log successful execution of the method
-            logging.info('The commandaction.seventh process has completed successfully')
-            # preprocess the cleaned message text and return the result
-            return pr.preprocess_text(message_text)
+            result = pr.preprocess_text(message_text)
+            # plaintext: убираем markdown (*, _, `, # и т.п.)
+            result = re.sub(r'[*_`#]+', '', str(result)).strip()
+            logging.info('The commandaction.tenth process has completed successfully')
+            return f"```plaintext\n{result}\n```"
         except Exception as e:
-            # log any exceptions that occur during execution
-            logging.exception(str('The exception occurred in commandaction.seventh: ' + str(e)))
+            logging.exception(str('The exception occurred in commandaction.tenth: ' + str(e)))

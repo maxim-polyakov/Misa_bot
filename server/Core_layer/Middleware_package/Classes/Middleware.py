@@ -29,7 +29,7 @@ class Middleware(IMiddleware.IMiddleware):
                 '/auth/login/', '/auth/forgot-password/send-code/', '/auth/forgot-password/verify/',
                 '/auth/oauth/google/', '/auth/oauth/callback', '/auth/oauth-token/', '/auth/google-id-token/',
                 '/images/misaimg.png',
-                '/swagger/', '/swagger-ui/', '/swagger-ui/index.html', '/redoc/', '/swagger.json',
+                '/swagger/', '/swagger-ui/', '/swagger-ui/index.html', '/redoc/', '/swagger.json', '/schema/',
                 '/accounts/login/',  # DRF "Django Login" редирект — не блокировать
             ]
             # Публичный просмотр шаринга чата — /api/chats/<id>/share/
@@ -49,19 +49,26 @@ class Middleware(IMiddleware.IMiddleware):
                 or ''
             )
 
-            if not auth_header.startswith('Bearer '):
-                detail = (
-                    'заголовок Authorization отсутствует'
-                    if not auth_header
-                    else 'неверный формат (ожидается Bearer <token>)'
-                )
+            auth_header = auth_header.strip()
+            if not auth_header:
                 return JsonResponse({
                     'status': 'error',
                     'message': 'Authentication required',
-                    'detail': detail,
+                    'detail': 'заголовок Authorization отсутствует',
                 }, status=401)
 
-            token = auth_header.split(' ')[1]
+            # Bearer <jwt> или только jwt (Swagger apiKey подставляет значение как есть)
+            if auth_header.lower().startswith('bearer '):
+                token = auth_header[7:].strip()
+            else:
+                token = auth_header
+
+            if not token:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Authentication required',
+                    'detail': 'неверный формат (ожидается JWT или Bearer <token>)',
+                }, status=401)
             user = self.verify_token_and_get_user(token)
 
             if user is None:

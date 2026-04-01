@@ -16,7 +16,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'channels',
     'rest_framework',
-    'drf_yasg',
+    'drf_spectacular',
 ]
 
 # API URL из .env
@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-in-p
 # В .env: DEBUG=1 или DEBUG=true. После отладки отключить!
 DEBUG = os.getenv('DEBUG', 'false').lower() in ('true', '1', 'yes')
 
-# Шаблоны (нужно для drf-yasg Swagger UI)
+# Шаблоны (Swagger UI из drf-spectacular)
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -97,13 +97,36 @@ ALLOWED_CLIENTS = ['web', 'android']
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# drf-yasg: скрыть кнопку Django Login в Swagger UI
-SWAGGER_SETTINGS = {
-    'LOGIN_URL': None,
-    'LOGOUT_URL': None,
-    'USE_SESSION_AUTH': False,
+# OpenAPI 3 (drf-spectacular)
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Misa API',
+    'VERSION': '1.0.0',
+    'DESCRIPTION': (
+        'API Misa Bot.\n\n'
+        '**Try it out:** для защищённых методов нажмите **Authorize**, вставьте JWT '
+        '(поле `data.token` после `POST /auth/login/` или новый токен из `GET /auth/check/`). '
+        'Префикс `Bearer ` Swagger подставит сам.\n\n'
+        'В телах запросов и в параметрах пути уже есть примеры значений.'
+    ),
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,
+        'displayRequestDuration': True,
+    },
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'bearerAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+                'description': 'JWT из ответа POST /auth/login/ (поле data.token)',
+            }
+        }
+    },
 }
 
 # Yandex Object Storage (S3-совместимый) для изображений
