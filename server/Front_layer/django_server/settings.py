@@ -104,16 +104,26 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Misa API',
     'VERSION': '1.0.0',
-    'DESCRIPTION': 'API документация Misa Bot',
+    'DESCRIPTION': (
+        'API Misa Bot.\n\n'
+        '**Try it out:** для защищённых методов нажмите **Authorize**, вставьте JWT '
+        '(поле `data.token` после `POST /auth/login/` или новый токен из `GET /auth/check/`). '
+        'Префикс `Bearer ` Swagger подставит сам.\n\n'
+        'В телах запросов и в параметрах пути уже есть примеры значений.'
+    ),
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,
+        'displayRequestDuration': True,
+    },
     'APPEND_COMPONENTS': {
         'securitySchemes': {
             'bearerAuth': {
                 'type': 'http',
                 'scheme': 'bearer',
                 'bearerFormat': 'JWT',
-                'description': 'JWT токен из /auth/login',
+                'description': 'JWT из ответа POST /auth/login/ (поле data.token)',
             }
         }
     },

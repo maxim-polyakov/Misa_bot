@@ -1,6 +1,230 @@
-"""Схемы тел запросов и примеры для Swagger UI (Try it out)."""
-from drf_spectacular.utils import OpenApiExample, OpenApiParameter
+"""Схемы тел запросов, параметров и примеров ответов для Swagger UI (Try it out)."""
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
+
+# --- Обёртка ответов API (как в Controller.success_response) ---
+_ENVELOPE_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'status': {'type': 'string', 'example': 'success'},
+        'message': {'type': 'string'},
+        'data': {'nullable': True},
+    },
+}
+
+
+def _envelope_example(data, message='Success'):
+    return {'status': 'success', 'message': message, 'data': data}
+
+
+EX_RESP_LOGIN = OpenApiExample(
+    'Успешный вход',
+    value=_envelope_example(
+        {
+            'user': {'id': 1, 'email': 'user@example.com', 'display_name': 'user'},
+            'token': '<jwt>',
+            'expires_in': '7 days',
+        },
+        'Login successful',
+    ),
+    response_only=True,
+)
+RESP_LOGIN = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    description='Успешная авторизация',
+    examples=[EX_RESP_LOGIN],
+)
+
+EX_RESP_CHECK = OpenApiExample(
+    'Проверка токена',
+    value=_envelope_example(
+        {
+            'user': {
+                'id': 1,
+                'email': 'user@example.com',
+                'display_name': 'user',
+                'picture': None,
+            },
+            'token': '<новый_jwt>',
+            'authenticated': True,
+        },
+        'User is authenticated, new token generated',
+    ),
+    response_only=True,
+)
+RESP_CHECK = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    description='Токен валиден; в data — пользователь и новый JWT',
+    examples=[EX_RESP_CHECK],
+)
+
+EX_RESP_CHATS_LIST = OpenApiExample(
+    'Список чатов',
+    value=_envelope_example(
+        [
+            {
+                'id': 'chat-1',
+                'title': 'Новый чат',
+                'createdAt': '2026-01-01T12:00:00',
+            }
+        ],
+    ),
+    response_only=True,
+)
+RESP_CHATS_LIST = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    examples=[EX_RESP_CHATS_LIST],
+)
+
+EX_RESP_CHAT_CREATE = OpenApiExample(
+    'Создан чат',
+    value=_envelope_example(
+        {
+            'id': 'chat-1',
+            'title': 'Мой чат',
+            'createdAt': '2026-01-01T12:00:00Z',
+        },
+        'Success',
+    ),
+    response_only=True,
+)
+RESP_CHAT_CREATE = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    description='201 — чат создан',
+    examples=[EX_RESP_CHAT_CREATE],
+)
+
+EX_RESP_OAUTH_TOKEN = OpenApiExample(
+    'JWT по коду OAuth',
+    value={'jwt': '<jwt_строка>'},
+    response_only=True,
+)
+RESP_OAUTH_TOKEN = OpenApiResponse(
+    response={
+        'type': 'object',
+        'properties': {'jwt': {'type': 'string', 'description': 'JWT для Authorization: Bearer'}},
+    },
+    description='Обмен code на JWT (формат отличается от success_response)',
+    examples=[EX_RESP_OAUTH_TOKEN],
+)
+
+EX_RESP_FEEDBACK = OpenApiExample(
+    'Feedback',
+    value=_envelope_example({'feedback': 'like'}),
+    response_only=True,
+)
+RESP_MESSAGE_FEEDBACK = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    examples=[EX_RESP_FEEDBACK],
+)
+
+EX_RESP_SHARE = OpenApiExample(
+    'Публичный просмотр',
+    value=_envelope_example(
+        {
+            'id': 'example-chat-id',
+            'title': 'Название чата',
+            'messages': [],
+        },
+    ),
+    response_only=True,
+)
+RESP_SHARE_PUBLIC = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    examples=[EX_RESP_SHARE],
+)
+
+EX_RESP_MESSAGES = OpenApiExample(
+    'Сообщения чата',
+    value=_envelope_example(
+        [
+            {
+                'id': 'msg-1',
+                'user': 'user',
+                'content': 'Текст',
+            }
+        ],
+    ),
+    response_only=True,
+)
+RESP_CHAT_MESSAGES = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    examples=[EX_RESP_MESSAGES],
+)
+
+EX_RESP_EXPORT = OpenApiExample(
+    'Экспорт',
+    value=_envelope_example(
+        {
+            'conversations': [
+                {
+                    'id': 'c1',
+                    'title': 'Чат',
+                    'createdAt': '2026-01-01T00:00:00',
+                    'messages': [],
+                }
+            ],
+            'user': {
+                'email': 'user@example.com',
+                'display_name': 'user',
+                'picture': None,
+            },
+        },
+    ),
+    response_only=True,
+)
+RESP_CHATS_EXPORT = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    examples=[EX_RESP_EXPORT],
+)
+
+EX_RESP_TITLE = OpenApiExample(
+    'Обновление заголовка',
+    value=_envelope_example({'id': 'example-chat-id', 'title': 'Новое имя'}),
+    response_only=True,
+)
+RESP_CHAT_UPDATE = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    examples=[EX_RESP_TITLE],
+)
+
+EX_RESP_EMPTY_OK = OpenApiExample(
+    'Успех без data',
+    value={'status': 'success', 'message': 'OK', 'data': None},
+    response_only=True,
+)
+RESP_EMPTY_OK = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    examples=[EX_RESP_EMPTY_OK],
+)
+
+EX_RESP_EMAIL_SENT = OpenApiExample(
+    'Код отправлен',
+    value=_envelope_example({'email': 'user@example.com'}, 'Verification code sent to email'),
+    response_only=True,
+)
+RESP_AUTH_EMAIL_SENT = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    description='Код отправлен на email',
+    examples=[EX_RESP_EMAIL_SENT],
+)
+
+EX_RESP_TOKEN_USER = OpenApiExample(
+    'Токен и пользователь',
+    value=_envelope_example(
+        {
+            'user': {'id': 1, 'email': 'user@example.com', 'display_name': 'user'},
+            'token': '<jwt>',
+        },
+        'User registered successfully',
+    ),
+    response_only=True,
+)
+RESP_AUTH_TOKEN_USER = OpenApiResponse(
+    response=_ENVELOPE_SCHEMA,
+    description='201 — пользователь и JWT (регистрация / сброс пароля / verify)',
+    examples=[EX_RESP_TOKEN_USER],
+)
 
 REQ_EMAIL_PASSWORD = {
     'application/json': {
@@ -185,4 +409,22 @@ PARAM_SHARE_MSG = OpenApiParameter(
     required=False,
     description='Показать только перечисленные сообщения (id через запятую)',
     examples=[OpenApiExample('Фильтр', value='msg-id-1,msg-id-2')],
+)
+
+PARAM_CHAT_ID = OpenApiParameter(
+    name='chat_id',
+    type=OpenApiTypes.STR,
+    location=OpenApiParameter.PATH,
+    required=True,
+    description='Идентификатор чата (как в списке чатов)',
+    examples=[OpenApiExample('ID чата', value='example-chat-id')],
+)
+
+PARAM_MESSAGE_ID = OpenApiParameter(
+    name='message_id',
+    type=OpenApiTypes.STR,
+    location=OpenApiParameter.PATH,
+    required=True,
+    description='Идентификатор сообщения',
+    examples=[OpenApiExample('ID сообщения', value='msg-example-id')],
 )
