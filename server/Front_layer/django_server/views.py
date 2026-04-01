@@ -95,7 +95,7 @@ def google_id_token(request):
     return ctrlr.google_id_token(request)
 
 
-@extend_schema(summary='Проверка JWT', tags=['Auth'], security=_BEARER)
+@extend_schema(summary='Проверка JWT', tags=['Auth'], auth=_BEARER)
 @api_view(['GET'])
 @csrf_exempt
 def check(request):
@@ -103,7 +103,7 @@ def check(request):
     return ctrlr.check(request)
 
 
-@extend_schema(summary='Выход со всех устройств', tags=['Auth'], security=_BEARER)
+@extend_schema(summary='Выход со всех устройств', tags=['Auth'], auth=_BEARER)
 @api_view(['POST'])
 @csrf_exempt
 def logout_all(request):
@@ -112,7 +112,7 @@ def logout_all(request):
     return ctrlr.logout_all(request)
 
 
-@extend_schema(summary='Удаление аккаунта', tags=['Auth'], security=_BEARER)
+@extend_schema(summary='Удаление аккаунта', tags=['Auth'], auth=_BEARER)
 @api_view(['POST'])
 @csrf_exempt
 def delete_account(request):
@@ -123,8 +123,8 @@ def delete_account(request):
 
 # Chat API (требует JWT)
 @extend_schema(
-    get=extend_schema(summary='Список чатов', tags=['Chats'], security=_BEARER),
-    post=extend_schema(summary='Создать чат', tags=['Chats'], security=_BEARER),
+    get=extend_schema(summary='Список чатов', tags=['Chats'], auth=_BEARER),
+    post=extend_schema(summary='Создать чат', tags=['Chats'], auth=_BEARER),
 )
 @api_view(['GET', 'POST'])
 @csrf_exempt
@@ -135,7 +135,7 @@ def chats_list_or_create(request):
     return ctrlr.chats_create(request)
 
 
-@extend_schema(summary='Экспорт чатов', tags=['Chats'], security=_BEARER)
+@extend_schema(summary='Экспорт чатов', tags=['Chats'], auth=_BEARER)
 @api_view(['GET'])
 def chats_export(request):
     ctrlr = Controller.Controller()
@@ -150,14 +150,14 @@ def chats_share_public(request, chat_id):
     return ctrlr.chats_share_public(request, chat_id)
 
 
-@extend_schema(summary='Сообщения чата', tags=['Chats'], security=_BEARER)
+@extend_schema(summary='Сообщения чата', tags=['Chats'], auth=_BEARER)
 @api_view(['GET'])
 def chats_messages(request, chat_id):
     ctrlr = Controller.Controller()
     return ctrlr.chats_messages(request, chat_id)
 
 
-@extend_schema(summary='Лайк/дизлайк сообщения', tags=['Chats'], security=_BEARER)
+@extend_schema(summary='Лайк/дизлайк сообщения', tags=['Chats'], auth=_BEARER)
 @api_view(['PATCH'])
 @csrf_exempt
 def chats_message_feedback(request, chat_id, message_id):
@@ -165,7 +165,7 @@ def chats_message_feedback(request, chat_id, message_id):
     return ctrlr.chats_message_feedback(request, chat_id, message_id)
 
 
-@extend_schema(summary='Очистить сообщения чата', tags=['Chats'], security=_BEARER)
+@extend_schema(summary='Очистить сообщения чата', tags=['Chats'], auth=_BEARER)
 @api_view(['DELETE'])
 @csrf_exempt
 def chats_clear_messages(request, chat_id):
@@ -173,7 +173,7 @@ def chats_clear_messages(request, chat_id):
     return ctrlr.chats_clear_messages(request, chat_id)
 
 
-@extend_schema(summary='Обновить чат', tags=['Chats'], security=_BEARER)
+@extend_schema(summary='Обновить чат', tags=['Chats'], auth=_BEARER)
 @api_view(['PATCH'])
 @csrf_exempt
 def chats_update(request, chat_id):
@@ -181,7 +181,7 @@ def chats_update(request, chat_id):
     return ctrlr.chats_update_title(request, chat_id)
 
 
-@extend_schema(summary='Удалить чат', tags=['Chats'], security=_BEARER)
+@extend_schema(summary='Удалить чат', tags=['Chats'], auth=_BEARER)
 @api_view(['DELETE'])
 @csrf_exempt
 def chats_delete(request, chat_id):
