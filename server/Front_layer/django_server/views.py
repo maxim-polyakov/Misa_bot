@@ -122,10 +122,8 @@ def delete_account(request):
 
 
 # Chat API (требует JWT)
-@extend_schema(
-    get=extend_schema(summary='Список чатов', tags=['Chats'], auth=_BEARER),
-    post=extend_schema(summary='Создать чат', tags=['Chats'], auth=_BEARER),
-)
+@extend_schema(summary='Список чатов', tags=['Chats'], auth=_BEARER, methods=['GET'])
+@extend_schema(summary='Создать чат', tags=['Chats'], auth=_BEARER, methods=['POST'])
 @api_view(['GET', 'POST'])
 @csrf_exempt
 def chats_list_or_create(request):
