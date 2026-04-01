@@ -4,8 +4,8 @@ from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 from Core_layer.Controller_package.Classes import Controller
 
-# JWT Bearer в Swagger (имя совпадает с SECURITY_DEFINITIONS в settings)
-_BEARER = [{'Bearer': []}]
+# JWT в Swagger (имя схемы совпадает с SECURITY_DEFINITIONS: bearerAuth)
+_BEARER = [{'bearerAuth': []}]
 
 # Контроллер регистрации
 @swagger_auto_schema(method='post', operation_summary='Регистрация (legacy)', tags=['Auth'])

@@ -99,17 +99,17 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
 }
 
-# drf-yasg: Swagger UI — авторизация по JWT (Bearer), не Basic / Session
+# drf-yasg: Swagger UI — bearerAuth (http, Bearer), как в Lotus API
 SWAGGER_SETTINGS = {
     'LOGIN_URL': None,
     'LOGOUT_URL': None,
     'USE_SESSION_AUTH': False,
     'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header',
-            'description': 'JWT из POST /auth/login/. В Value укажите: Bearer и пробел, затем токен.',
+        'bearerAuth': {
+            'type': 'http',
+            'scheme': 'bearer',
+            'bearerFormat': 'JWT',
+            'description': 'JWT токен из /auth/login',
         },
     },
 }
