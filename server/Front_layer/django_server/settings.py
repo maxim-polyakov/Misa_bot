@@ -99,11 +99,19 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
 }
 
-# drf-yasg: скрыть кнопку Django Login в Swagger UI
+# drf-yasg: Swagger UI — авторизация по JWT (Bearer), не Basic / Session
 SWAGGER_SETTINGS = {
     'LOGIN_URL': None,
     'LOGOUT_URL': None,
     'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'JWT из POST /auth/login/. В Value укажите: Bearer и пробел, затем токен.',
+        },
+    },
 }
 
 # Yandex Object Storage (S3-совместимый) для изображений

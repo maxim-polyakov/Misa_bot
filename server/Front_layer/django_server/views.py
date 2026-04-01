@@ -4,6 +4,9 @@ from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 from Core_layer.Controller_package.Classes import Controller
 
+# JWT Bearer в Swagger (имя совпадает с SECURITY_DEFINITIONS в settings)
+_BEARER = [{'Bearer': []}]
+
 # Контроллер регистрации
 @swagger_auto_schema(method='post', operation_summary='Регистрация (legacy)', tags=['Auth'])
 @api_view(['POST'])
@@ -92,7 +95,9 @@ def google_id_token(request):
     return ctrlr.google_id_token(request)
 
 
-@swagger_auto_schema(method='get', operation_summary='Проверка JWT', tags=['Auth'])
+@swagger_auto_schema(
+    method='get', operation_summary='Проверка JWT', tags=['Auth'], security=_BEARER
+)
 @api_view(['GET'])
 @csrf_exempt
 def check(request):
@@ -100,7 +105,9 @@ def check(request):
     return ctrlr.check(request)
 
 
-@swagger_auto_schema(method='post', operation_summary='Выход со всех устройств', tags=['Auth'])
+@swagger_auto_schema(
+    method='post', operation_summary='Выход со всех устройств', tags=['Auth'], security=_BEARER
+)
 @api_view(['POST'])
 @csrf_exempt
 def logout_all(request):
@@ -109,7 +116,9 @@ def logout_all(request):
     return ctrlr.logout_all(request)
 
 
-@swagger_auto_schema(method='post', operation_summary='Удаление аккаунта', tags=['Auth'])
+@swagger_auto_schema(
+    method='post', operation_summary='Удаление аккаунта', tags=['Auth'], security=_BEARER
+)
 @api_view(['POST'])
 @csrf_exempt
 def delete_account(request):
@@ -119,8 +128,12 @@ def delete_account(request):
 
 
 # Chat API (требует JWT)
-@swagger_auto_schema(method='get', operation_summary='Список чатов', tags=['Chats'])
-@swagger_auto_schema(method='post', operation_summary='Создать чат', tags=['Chats'])
+@swagger_auto_schema(
+    method='get', operation_summary='Список чатов', tags=['Chats'], security=_BEARER
+)
+@swagger_auto_schema(
+    method='post', operation_summary='Создать чат', tags=['Chats'], security=_BEARER
+)
 @api_view(['GET', 'POST'])
 @csrf_exempt
 def chats_list_or_create(request):
@@ -130,7 +143,9 @@ def chats_list_or_create(request):
     return ctrlr.chats_create(request)
 
 
-@swagger_auto_schema(method='get', operation_summary='Экспорт чатов', tags=['Chats'])
+@swagger_auto_schema(
+    method='get', operation_summary='Экспорт чатов', tags=['Chats'], security=_BEARER
+)
 @api_view(['GET'])
 def chats_export(request):
     ctrlr = Controller.Controller()
@@ -145,14 +160,21 @@ def chats_share_public(request, chat_id):
     return ctrlr.chats_share_public(request, chat_id)
 
 
-@swagger_auto_schema(method='get', operation_summary='Сообщения чата', tags=['Chats'])
+@swagger_auto_schema(
+    method='get', operation_summary='Сообщения чата', tags=['Chats'], security=_BEARER
+)
 @api_view(['GET'])
 def chats_messages(request, chat_id):
     ctrlr = Controller.Controller()
     return ctrlr.chats_messages(request, chat_id)
 
 
-@swagger_auto_schema(method='patch', operation_summary='Лайк/дизлайк сообщения', tags=['Chats'])
+@swagger_auto_schema(
+    method='patch',
+    operation_summary='Лайк/дизлайк сообщения',
+    tags=['Chats'],
+    security=_BEARER,
+)
 @api_view(['PATCH'])
 @csrf_exempt
 def chats_message_feedback(request, chat_id, message_id):
@@ -160,7 +182,12 @@ def chats_message_feedback(request, chat_id, message_id):
     return ctrlr.chats_message_feedback(request, chat_id, message_id)
 
 
-@swagger_auto_schema(method='delete', operation_summary='Очистить сообщения чата', tags=['Chats'])
+@swagger_auto_schema(
+    method='delete',
+    operation_summary='Очистить сообщения чата',
+    tags=['Chats'],
+    security=_BEARER,
+)
 @api_view(['DELETE'])
 @csrf_exempt
 def chats_clear_messages(request, chat_id):
@@ -168,7 +195,9 @@ def chats_clear_messages(request, chat_id):
     return ctrlr.chats_clear_messages(request, chat_id)
 
 
-@swagger_auto_schema(method='patch', operation_summary='Обновить чат', tags=['Chats'])
+@swagger_auto_schema(
+    method='patch', operation_summary='Обновить чат', tags=['Chats'], security=_BEARER
+)
 @api_view(['PATCH'])
 @csrf_exempt
 def chats_update(request, chat_id):
@@ -176,7 +205,9 @@ def chats_update(request, chat_id):
     return ctrlr.chats_update_title(request, chat_id)
 
 
-@swagger_auto_schema(method='delete', operation_summary='Удалить чат', tags=['Chats'])
+@swagger_auto_schema(
+    method='delete', operation_summary='Удалить чат', tags=['Chats'], security=_BEARER
+)
 @api_view(['DELETE'])
 @csrf_exempt
 def chats_delete(request, chat_id):

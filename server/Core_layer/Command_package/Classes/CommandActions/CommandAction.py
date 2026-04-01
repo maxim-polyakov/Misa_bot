@@ -41,10 +41,6 @@ class CommandAction(IAction.IAction):
             )
             gpt_is_attack = cls._gpta.answer(prompt_is_attack, cls.user, True)
             is_attack = (not isinstance(gpt_is_attack, dict) and gpt_is_attack and gpt_is_attack.count("True") > 0)
-            # fallback: явные слова команды
-            if not is_attack and cls.message_text:
-                lower = cls.message_text.lower()
-                is_attack = any(kw in lower for kw in ['атакуй', 'фас', 'пиздани', 'нападай', 'кусай', 'цапни'])
 
             if is_attack:
                 prompt_name = (
