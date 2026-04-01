@@ -14,10 +14,11 @@ class TestCase_API_views(ITestCase.ITestCase):
         self.client = Client()
 
     def test_swagger_json(self):
-        """swagger.json возвращает 200 и JSON."""
+        """swagger.json / OpenAPI 3 возвращает 200 и JSON."""
         r = self.client.get('/swagger.json')
         self.assertEqual(r.status_code, 200)
         data = r.json()
+        self.assertIn('openapi', data)
         self.assertIn('info', data)
         self.assertIn('paths', data)
         self.assertEqual(data['info']['title'], 'Misa API')

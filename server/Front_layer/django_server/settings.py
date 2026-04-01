@@ -16,7 +16,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'channels',
     'rest_framework',
-    'drf_yasg',
+    'drf_spectacular',
 ]
 
 # API URL из .env
@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-in-p
 # В .env: DEBUG=1 или DEBUG=true. После отладки отключить!
 DEBUG = os.getenv('DEBUG', 'false').lower() in ('true', '1', 'yes')
 
-# Шаблоны (нужно для drf-yasg Swagger UI)
+# Шаблоны (Swagger UI из drf-spectacular)
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -97,20 +97,25 @@ ALLOWED_CLIENTS = ['web', 'android']
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# drf-yasg: Swagger UI — bearerAuth (http, Bearer), как в Lotus API
-SWAGGER_SETTINGS = {
-    'LOGIN_URL': None,
-    'LOGOUT_URL': None,
-    'USE_SESSION_AUTH': False,
-    'SECURITY_DEFINITIONS': {
-        'bearerAuth': {
-            'type': 'http',
-            'scheme': 'bearer',
-            'bearerFormat': 'JWT',
-            'description': 'JWT токен из /auth/login',
-        },
+# OpenAPI 3 (drf-spectacular)
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Misa API',
+    'VERSION': '1.0.0',
+    'DESCRIPTION': 'API документация Misa Bot',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'bearerAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+                'description': 'JWT токен из /auth/login',
+            }
+        }
     },
 }
 

@@ -3,11 +3,7 @@ from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
-from rest_framework import permissions
-import drf_yasg
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
-from Core_layer.Middleware_package.Classes import Middleware
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from . import views
 import os
 
@@ -15,45 +11,6 @@ import os
 def home_view(request):
     return HttpResponse("Django server is working!")
 
-
-# URL-паттерны только для схемы (без catch-all и static)
-api_patterns_for_schema = [
-    path('auth/register/', views.register, name='register'),
-    path('auth/register/send-code/', views.register_send_code, name='register_send_code'),
-    path('auth/register/verify/', views.register_verify, name='register_verify'),
-    path('auth/forgot-password/send-code/', views.forgot_password_send_code, name='forgot_password_send_code'),
-    path('auth/forgot-password/verify/', views.forgot_password_verify, name='forgot_password_verify'),
-    path('auth/login/', views.login_view, name='login'),
-    path('auth/oauth/google/', views.oauth_google_redirect, name='oauth_google_redirect'),
-    path('auth/oauth/callback', views.oauth_google_callback, name='oauth_google_callback'),
-    path('auth/oauth-token/', views.oauth_token, name='oauth_token'),
-    path('auth/google-id-token/', views.google_id_token, name='google_id_token'),
-    path('auth/check/', views.check, name='check'),
-    path('auth/logout-all/', views.logout_all, name='logout_all'),
-    path('auth/delete-account/', views.delete_account, name='delete_account'),
-    path('api/chats/', views.chats_list_or_create, name='chats_list_or_create'),
-    path('api/chats/export/', views.chats_export, name='chats_export'),
-    path('api/chats/<str:chat_id>/share/', views.chats_share_public, name='chats_share_public'),
-    path('api/chats/<str:chat_id>/messages/', views.chats_messages, name='chats_messages'),
-    path('api/chats/<str:chat_id>/messages/<str:message_id>/feedback/', views.chats_message_feedback, name='chats_message_feedback'),
-    path('api/chats/<str:chat_id>/messages/clear/', views.chats_clear_messages, name='chats_clear_messages'),
-    path('api/chats/<str:chat_id>/', views.chats_update, name='chats_update'),
-    path('api/chats/<str:chat_id>/delete/', views.chats_delete, name='chats_delete'),
-]
-
-# Swagger / OpenAPI (authentication_classes=[] — без Django Login)
-schema_view = get_schema_view(
-    openapi.Info(
-        title="Misa API",
-        default_version="v1",
-        description="API документация Misa Bot",
-    ),
-    public=True,
-    permission_classes=(permissions.AllowAny,),
-    authentication_classes=[],
-    patterns=api_patterns_for_schema,
-    url=settings.API_URL or None,
-)
 
 urlpatterns = [
     # Аутентификация
@@ -71,12 +28,13 @@ urlpatterns = [
     path('auth/check/', views.check, name="check"),
     path('auth/logout-all/', views.logout_all, name='logout_all'),
     path('auth/delete-account/', views.delete_account, name='delete_account'),
-    # Swagger (drf-yasg)
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('swagger-ui/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('swagger-ui/index.html', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui-html'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    # OpenAPI 3 + Swagger UI / ReDoc (drf-spectacular)
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='schema-swagger-ui'),
+    path('swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='schema-swagger-ui-alt'),
+    path('swagger-ui/index.html', SpectacularSwaggerView.as_view(url_name='schema'), name='schema-swagger-ui-html'),
+    path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='schema-redoc'),
+    path('swagger.json', SpectacularAPIView.as_view(), name='schema-json'),
     # Chat API (хранение в БД)
     path('api/chats/', views.chats_list_or_create, name='chats_list_or_create'),
     path('api/chats/export/', views.chats_export, name='chats_export'),
@@ -86,14 +44,6 @@ urlpatterns = [
     path('api/chats/<str:chat_id>/messages/clear/', views.chats_clear_messages, name='chats_clear_messages'),
     path('api/chats/<str:chat_id>/', views.chats_update, name='chats_update'),
     path('api/chats/<str:chat_id>/delete/', views.chats_delete, name='chats_delete'),
-]
-
-# Swagger UI: раздача из пакета drf-yasg (без collectstatic)
-_drf_yasg_static = os.path.join(os.path.dirname(drf_yasg.__file__), 'static', 'drf-yasg')
-urlpatterns += [
-    re_path(r'^static/drf-yasg/(?P<path>.*)$', serve, {
-        'document_root': _drf_yasg_static,
-    }),
 ]
 
 # Для production: обслуживание статических файлов через Django (не рекомендуется для высоконагруженных проектов)
