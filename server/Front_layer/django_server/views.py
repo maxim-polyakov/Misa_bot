@@ -3,12 +3,18 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from drf_spectacular.utils import extend_schema
 from Core_layer.Controller_package.Classes import Controller
+from . import openapi_examples as oex
 
 _BEARER = [{'bearerAuth': []}]
 
 
 # Контроллер регистрации
-@extend_schema(summary='Регистрация (legacy)', tags=['Auth'])
+@extend_schema(
+    summary='Регистрация (legacy)',
+    tags=['Auth'],
+    request=oex.REQ_EMAIL_PASSWORD,
+    examples=[oex.EX_EMAIL_PASSWORD],
+)
 @api_view(['POST'])
 @csrf_exempt
 def register(request):
@@ -17,7 +23,12 @@ def register(request):
     return ctrlr.register(request)
 
 
-@extend_schema(summary='Отправка кода верификации', tags=['Auth'])
+@extend_schema(
+    summary='Отправка кода верификации',
+    tags=['Auth'],
+    request=oex.REQ_EMAIL_PASSWORD,
+    examples=[oex.EX_EMAIL_PASSWORD],
+)
 @api_view(['POST'])
 @csrf_exempt
 def register_send_code(request):
@@ -26,7 +37,12 @@ def register_send_code(request):
     return ctrlr.register_send_code(request)
 
 
-@extend_schema(summary='Проверка кода и создание пользователя', tags=['Auth'])
+@extend_schema(
+    summary='Проверка кода и создание пользователя',
+    tags=['Auth'],
+    request=oex.REQ_REGISTER_VERIFY,
+    examples=[oex.EX_REGISTER_VERIFY],
+)
 @api_view(['POST'])
 @csrf_exempt
 def register_verify(request):
@@ -35,7 +51,12 @@ def register_verify(request):
     return ctrlr.register_verify(request)
 
 
-@extend_schema(summary='Отправка кода восстановления пароля', tags=['Auth'])
+@extend_schema(
+    summary='Отправка кода восстановления пароля',
+    tags=['Auth'],
+    request=oex.REQ_EMAIL_ONLY,
+    examples=[oex.EX_EMAIL_ONLY],
+)
 @api_view(['POST'])
 @csrf_exempt
 def forgot_password_send_code(request):
@@ -44,7 +65,12 @@ def forgot_password_send_code(request):
     return ctrlr.forgot_password_send_code(request)
 
 
-@extend_schema(summary='Проверка кода и установка нового пароля', tags=['Auth'])
+@extend_schema(
+    summary='Проверка кода и установка нового пароля',
+    tags=['Auth'],
+    request=oex.REQ_FORGOT_VERIFY,
+    examples=[oex.EX_FORGOT_VERIFY],
+)
 @api_view(['POST'])
 @csrf_exempt
 def forgot_password_verify(request):
@@ -54,7 +80,12 @@ def forgot_password_verify(request):
 
 
 # Контроллер авторизации
-@extend_schema(summary='Вход по email/паролю', tags=['Auth'])
+@extend_schema(
+    summary='Вход по email/паролю',
+    tags=['Auth'],
+    request=oex.REQ_EMAIL_PASSWORD,
+    examples=[oex.EX_EMAIL_PASSWORD],
+)
 @api_view(['POST'])
 @csrf_exempt
 def login_view(request):
@@ -63,7 +94,11 @@ def login_view(request):
 
 
 # Google OAuth
-@extend_schema(summary='OAuth Google redirect', tags=['Auth'])
+@extend_schema(
+    summary='OAuth Google redirect',
+    tags=['Auth'],
+    parameters=[oex.PARAM_REDIRECT_URI],
+)
 @api_view(['GET'])
 @csrf_exempt
 def oauth_google_redirect(request):
@@ -71,7 +106,11 @@ def oauth_google_redirect(request):
     return ctrlr.oauth_google_redirect(request)
 
 
-@extend_schema(summary='OAuth Google callback', tags=['Auth'])
+@extend_schema(
+    summary='OAuth Google callback',
+    tags=['Auth'],
+    parameters=oex.PARAM_GOOGLE_CALLBACK,
+)
 @api_view(['GET'])
 @csrf_exempt
 def oauth_google_callback(request):
@@ -79,7 +118,11 @@ def oauth_google_callback(request):
     return ctrlr.oauth_google_callback(request)
 
 
-@extend_schema(summary='OAuth token', tags=['Auth'])
+@extend_schema(
+    summary='OAuth token',
+    tags=['Auth'],
+    parameters=[oex.PARAM_OAUTH_CODE],
+)
 @api_view(['GET'])
 @csrf_exempt
 def oauth_token(request):
@@ -87,7 +130,12 @@ def oauth_token(request):
     return ctrlr.oauth_token(request)
 
 
-@extend_schema(summary='Google ID token (Android)', tags=['Auth'])
+@extend_schema(
+    summary='Google ID token (Android)',
+    tags=['Auth'],
+    request=oex.REQ_GOOGLE_ID_TOKEN,
+    examples=[oex.EX_GOOGLE_ID_TOKEN],
+)
 @api_view(['POST'])
 @csrf_exempt
 def google_id_token(request):
@@ -103,7 +151,13 @@ def check(request):
     return ctrlr.check(request)
 
 
-@extend_schema(summary='Выход со всех устройств', tags=['Auth'], auth=_BEARER)
+@extend_schema(
+    summary='Выход со всех устройств',
+    tags=['Auth'],
+    auth=_BEARER,
+    request=oex.REQ_EMPTY_OBJECT,
+    examples=[oex.EX_EMPTY_OBJECT],
+)
 @api_view(['POST'])
 @csrf_exempt
 def logout_all(request):
@@ -112,7 +166,13 @@ def logout_all(request):
     return ctrlr.logout_all(request)
 
 
-@extend_schema(summary='Удаление аккаунта', tags=['Auth'], auth=_BEARER)
+@extend_schema(
+    summary='Удаление аккаунта',
+    tags=['Auth'],
+    auth=_BEARER,
+    request=oex.REQ_EMPTY_OBJECT,
+    examples=[oex.EX_EMPTY_OBJECT],
+)
 @api_view(['POST'])
 @csrf_exempt
 def delete_account(request):
@@ -123,7 +183,14 @@ def delete_account(request):
 
 # Chat API (требует JWT)
 @extend_schema(summary='Список чатов', tags=['Chats'], auth=_BEARER, methods=['GET'])
-@extend_schema(summary='Создать чат', tags=['Chats'], auth=_BEARER, methods=['POST'])
+@extend_schema(
+    summary='Создать чат',
+    tags=['Chats'],
+    auth=_BEARER,
+    methods=['POST'],
+    request=oex.REQ_CHAT_CREATE,
+    examples=[oex.EX_CHAT_CREATE],
+)
 @api_view(['GET', 'POST'])
 @csrf_exempt
 def chats_list_or_create(request):
@@ -140,7 +207,11 @@ def chats_export(request):
     return ctrlr.chats_export(request)
 
 
-@extend_schema(summary='Публичный просмотр чата (без авторизации)', tags=['Chats'])
+@extend_schema(
+    summary='Публичный просмотр чата (без авторизации)',
+    tags=['Chats'],
+    parameters=[oex.PARAM_SHARE_MSG],
+)
 @api_view(['GET'])
 @csrf_exempt
 def chats_share_public(request, chat_id):
@@ -155,7 +226,13 @@ def chats_messages(request, chat_id):
     return ctrlr.chats_messages(request, chat_id)
 
 
-@extend_schema(summary='Лайк/дизлайк сообщения', tags=['Chats'], auth=_BEARER)
+@extend_schema(
+    summary='Лайк/дизлайк сообщения',
+    tags=['Chats'],
+    auth=_BEARER,
+    request=oex.REQ_MESSAGE_FEEDBACK,
+    examples=[oex.EX_MESSAGE_FEEDBACK],
+)
 @api_view(['PATCH'])
 @csrf_exempt
 def chats_message_feedback(request, chat_id, message_id):
@@ -171,7 +248,13 @@ def chats_clear_messages(request, chat_id):
     return ctrlr.chats_clear_messages(request, chat_id)
 
 
-@extend_schema(summary='Обновить чат', tags=['Chats'], auth=_BEARER)
+@extend_schema(
+    summary='Обновить чат',
+    tags=['Chats'],
+    auth=_BEARER,
+    request=oex.REQ_CHAT_TITLE,
+    examples=[oex.EX_CHAT_TITLE],
+)
 @api_view(['PATCH'])
 @csrf_exempt
 def chats_update(request, chat_id):
