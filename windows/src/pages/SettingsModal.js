@@ -10,9 +10,12 @@ import {
   FlatList,
   Platform,
   ActivityIndicator,
+  useWindowDimensions,
+  Dimensions,
 } from "react-native";
 import { observer } from "mobx-react-lite";
-import Clipboard from "../utils/clipboard";
+import JSZip from "jszip";
+import OAuthHelperModule from "../NativeOAuthHelper";
 import { useStores } from "../store/rootStoreContext";
 import { useUser } from "../context/UserContext";
 import { API_URL } from "../config";
@@ -42,12 +45,15 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
   const { user, setIsAuth } = useUser();
   const { colors, theme, setTheme: setThemeFromContext } = useTheme();
   const { t, locale, setLanguage: setLocale } = useLocale();
+  const win = useWindowDimensions();
+  const winW = win.width > 0 ? win.width : Dimensions.get("window").width;
+  const winH = win.height > 0 ? win.height : Dimensions.get("window").height;
   const [activeTab, setActiveTab] = useState("general");
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, winW, winH), [colors, winW, winH]);
   const SETTINGS_TABS = useMemo(() => getSettingsTabs(t), [t]);
 
   const displayName = user?.display_name;
@@ -91,6 +97,8 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
 
   const handleExport = async () => {
     try {
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const fileName = `misa_data-${dateStr}.zip`;
       let conversationsData = chatStore.getConversationsExportData();
       let userData = {
         exportedAt: new Date().toISOString(),
@@ -117,10 +125,18 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
           console.warn("Ошибка экспорта с бэкенда, fallback на локальные данные:", e);
         }
       }
-      const jsonStr = JSON.stringify({ conversations: conversationsData, user: userData }, null, 2);
-      Clipboard.setString(jsonStr);
-      Alert.alert(t("exportData"), t("fileSaved") + " (JSON скопирован в буфер обмена)");
+      const zip = new JSZip();
+      zip.file("conversations.json", JSON.stringify(conversationsData, null, 2));
+      zip.file("user.json", JSON.stringify(userData, null, 2));
+      const base64 = await zip.generateAsync({ type: "base64" });
+      if (!OAuthHelperModule?.saveExportZipBase64) {
+        throw new Error("saveExportZipBase64 unavailable");
+      }
+      const savedPath = await OAuthHelperModule.saveExportZipBase64(base64, fileName);
+      Alert.alert(t("exportData"), `${t("fileSaved")}\n${savedPath}`);
     } catch (e) {
+      const msg = e?.message ?? String(e ?? "");
+      if (msg === "Cancelled") return;
       console.error("Export error:", e);
       Alert.alert(t("error"), e?.message || t("exportFailed"));
     }
@@ -346,25 +362,33 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
   );
 });
 
-const createStyles = (colors) =>
-  StyleSheet.create({
+const createStyles = (colors, winW, winH) => {
+  const pad = 24;
+  const modalW = Math.min(560, Math.max(320, winW - pad * 2));
+  const modalH = Math.min(Math.floor(winH * 0.85), winH - pad * 2);
+  return StyleSheet.create({
     overlay: {
       flex: 1,
+      width: winW,
+      height: winH,
+      minWidth: winW,
+      minHeight: winH,
       backgroundColor: "rgba(0,0,0,0.6)",
       justifyContent: "center",
       alignItems: "center",
-      padding: 24,
+      padding: pad,
     },
     modal: {
-      width: "100%",
-      maxWidth: 560,
-      height: "85%",
+      width: modalW,
+      height: Math.max(320, modalH),
       minHeight: 320,
+      maxHeight: winH - pad * 2,
       backgroundColor: colors.secondaryBg,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.borderColor,
       overflow: "hidden",
+      alignSelf: "center",
     },
     header: {
       flexDirection: "row",
@@ -446,6 +470,10 @@ const createStyles = (colors) =>
     pickerChevron: { fontSize: 12, color: colors.textSecondary },
     langDropdownOverlay: {
       flex: 1,
+      width: winW,
+      height: winH,
+      minWidth: winW,
+      minHeight: winH,
       backgroundColor: "rgba(0,0,0,0.5)",
       justifyContent: "center",
       alignItems: "center",
@@ -551,5 +579,6 @@ const createStyles = (colors) =>
       fontWeight: "600",
     },
   });
+};
 
 export default SettingsModal;

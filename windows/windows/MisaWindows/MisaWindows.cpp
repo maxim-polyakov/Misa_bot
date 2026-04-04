@@ -163,4 +163,5 @@ _Use_decl_annotations_ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE, PSTR 
 
   // Start the app
   reactNativeWin32App.Start();
+  return 0;
 }
