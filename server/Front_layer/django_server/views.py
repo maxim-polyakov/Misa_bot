@@ -14,19 +14,24 @@ from . import openapi_examples as oex
 
 _BEARER = [{'bearerAuth': []}]
 
+# Старая заглушка Pillow ~2KB; нормальный арт (misa.png) — сотни KB.
+_OG_LOCAL_IMAGE_MIN_BYTES = 8000
+
 
 def _share_og_image_url(request, site_base):
     """
-    1) WEB_APP_PUBLIC_URL + /favicon-195.png — как раньше, превью в Discord с картинкой с веб-клиента.
-    2) Запас: images/misaimg.png или og_share.png на API (если веб-URL не задан).
+    1) /images/og_share.png или misaimg.png на API — только если файл достаточно большой
+       (иначе это может быть синяя заглушка, её не показываем).
+    2) WEB_APP_PUBLIC_URL/misa.png — тот же арт, что client/public/misa.png (Миса, не квадрат).
     """
-    base = (site_base or '').strip().rstrip('/')
-    if base:
-        return f'{base}/favicon-195.png'
     img_dir = os.path.join(settings.BASE_DIR, 'images')
-    for name in ('misaimg.png', 'og_share.png'):
-        if os.path.isfile(os.path.join(img_dir, name)):
+    base = (site_base or '').strip().rstrip('/')
+    for name in ('og_share.png', 'misaimg.png'):
+        p = os.path.join(img_dir, name)
+        if os.path.isfile(p) and os.path.getsize(p) >= _OG_LOCAL_IMAGE_MIN_BYTES:
             return request.build_absolute_uri(f'/images/{name}')
+    if base:
+        return f'{base}/misa.png'
     return ''
 
 
