@@ -27,6 +27,18 @@ def _share_og_absolute_api_url(request, path):
     return request.build_absolute_uri(path)
 
 
+def _share_page_public_url(request, chat_id):
+    """
+    Канонический URL страницы /share/ на API — тот же хост, что и ссылка из клиента.
+    og:url и canonical на misa.baxic.ru заставляли Telegram запрашивать SPA без og:*.
+    """
+    path = f'/share/{quote(str(chat_id), safe="")}'
+    msg_q = request.GET.get('msg')
+    if msg_q:
+        path += f'?msg={quote(msg_q, safe="")}'
+    return _share_og_absolute_api_url(request, path)
+
+
 def _share_og_image_url(request, site_base):
     """
     1) /images/og_share.png или misaimg.png на API — только если файл достаточно большой
@@ -291,6 +303,8 @@ def share_chat_html(request, chat_id):
     """
     HTML с Open Graph для /share/<chat_id>/.
     Краулеры (Telegram и др.) не выполняют JS — читают og:* из <head>.
+    og:url и canonical — на публичный URL API (как ссылка шаринга), не на WEB_APP_PUBLIC_URL:
+    иначе Telegram запрашивает SPA и теряет превью.
     Браузеры выполняют location.replace() на WEB_APP_PUBLIC_URL (SPA).
     Редирект 302 по User-Agent не используем: у Telegram бывает нестандартный UA.
     """
@@ -311,10 +325,7 @@ def share_chat_html(request, chat_id):
     og_title = html_escape(f'{title} | Misa AI')
     og_desc_esc = html_escape(og_desc)
 
-    og_url = f'{site_base}/share/{quote(str(chat_id), safe="")}'
-    msg_q = request.GET.get('msg')
-    if msg_q:
-        og_url += f'?msg={quote(msg_q, safe="")}'
+    og_url = _share_page_public_url(request, chat_id)
 
     og_image = _share_og_image_url(request, site_base)
     og_image_esc = html_escape(og_image) if og_image else ''
