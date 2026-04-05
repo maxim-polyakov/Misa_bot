@@ -21,6 +21,18 @@ INSTALLED_APPS = [
 
 # API URL из .env
 API_URL = os.getenv('API_URL', '')
+# Публичный базовый URL API для абсолютных ссылок в og:image и т.п.
+# За nginx request.build_absolute_uri() часто даёт localhost — Discord/Telegram не загрузят картинку.
+def _public_api_base_url():
+    for key in ('PUBLIC_API_BASE_URL', 'API_BASE_URL', 'API_URL'):
+        v = (os.getenv(key) or '').strip().rstrip('/')
+        if v.startswith('http://') or v.startswith('https://'):
+            return v
+    return ''
+
+
+PUBLIC_API_BASE_URL = _public_api_base_url()
+
 # Публичный URL веб-клиента (og:url, og:image в share_chat_html)
 WEB_APP_PUBLIC_URL = (
     os.getenv('WEB_APP_PUBLIC_URL') or os.getenv('FRONTEND_URL') or 'https://misa.baxic.ru'

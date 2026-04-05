@@ -18,6 +18,15 @@ _BEARER = [{'bearerAuth': []}]
 _OG_LOCAL_IMAGE_MIN_BYTES = 8000
 
 
+def _share_og_absolute_api_url(request, path):
+    """Абсолютный URL на этом API. Без PUBLIC_API_BASE_URL за прокси получается localhost — боты не качают."""
+    base = getattr(settings, 'PUBLIC_API_BASE_URL', '') or ''
+    path = path if path.startswith('/') else f'/{path}'
+    if base:
+        return f'{base.rstrip("/")}{path}'
+    return request.build_absolute_uri(path)
+
+
 def _share_og_image_url(request, site_base):
     """
     1) /images/og_share.png или misaimg.png на API — только если файл достаточно большой
@@ -29,7 +38,7 @@ def _share_og_image_url(request, site_base):
     for name in ('og_share.png', 'misaimg.png'):
         p = os.path.join(img_dir, name)
         if os.path.isfile(p) and os.path.getsize(p) >= _OG_LOCAL_IMAGE_MIN_BYTES:
-            return request.build_absolute_uri(f'/images/{name}')
+            return _share_og_absolute_api_url(request, f'/images/{name}')
     if base:
         return f'{base}/misa.png'
     return ''
