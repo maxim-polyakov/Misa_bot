@@ -64,6 +64,14 @@ class ChatStore {
     this.loadChats();
   }
 
+  _resetChatState() {
+    this.chats = [];
+    this.currentChatId = null;
+    this.pinnedChatIds = [];
+    this.loadingChatIds = [];
+    this.error = null;
+  }
+
   logout() {
     this.disconnect();
     this.user = null;
@@ -73,6 +81,7 @@ class ChatStore {
     storage.removeItem("currentUserId");
     storage.removeItem("token");
     storage.removeItem("userProfile");
+    this._resetChatState();
   }
 
   clearUserFromStorage() {
@@ -116,6 +125,52 @@ class ChatStore {
     }
   }
 
+  async _hydrateChatsFromCacheIfEmpty() {
+    const userId = await this.getCurrentUserId();
+    if (!userId || this.chats.length > 0) return;
+    await this._loadPinnedChatIds();
+    try {
+      const raw = await storage.getItem(`chats_${userId}`);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed) || parsed.length === 0) return;
+      this.chats = parsed.map((chat) => ({
+        ...chat,
+        messages: (chat.messages || []).map((m) => ({
+          ...m,
+          timestamp: new Date(m.timestamp),
+        })),
+        createdAt: chat.createdAt ? new Date(chat.createdAt) : new Date(),
+        _messagesLoaded: !!(chat.messages && chat.messages.length),
+      }));
+      if (this.chats.length > 0 && !this.currentChatId) this.currentChatId = this.chats[0].id;
+    } catch (e) {
+      console.warn("hydrate chats cache:", e);
+    }
+  }
+
+  _loadAllChatMessagesInBackground() {
+    if (!API_URL) return;
+    this.chats.forEach((chat) => {
+      if (chat._pendingHistory) return;
+      apiFetch(`/api/chats/${chat.id}/messages/`)
+        .then((msgs) => {
+          const c = this.chats.find((x) => x.id === chat.id);
+          if (!c) return;
+          c.messages = (msgs || []).map((m) => ({
+            id: String(m.id),
+            content: m.content,
+            user: m.user,
+            timestamp: new Date(m.timestamp),
+            isImage: m.isImage,
+          }));
+          c._messagesLoaded = true;
+          this.saveChats();
+        })
+        .catch((e) => console.warn(`Ошибка загрузки сообщений чата ${chat.id}:`, e?.message));
+    });
+  }
+
   async loadChats() {
     const userId = await this.getCurrentUserId();
     if (!userId) {
@@ -124,9 +179,12 @@ class ChatStore {
       return;
     }
     if (!API_URL) return;
+    await this._hydrateChatsFromCacheIfEmpty();
     for (;;) {
       if (!this.isAuth) return;
       try {
+        const prevById = new Map(this.chats.map((c) => [c.id, c]));
+        const prevCurrentId = this.currentChatId;
         const chatsData = await apiFetch("/api/chats/");
         if (!Array.isArray(chatsData)) {
           console.warn("loadChats: unexpected response format", typeof chatsData);
@@ -138,22 +196,31 @@ class ChatStore {
           const chatIds = new Set(chatsData.map((c) => c.id));
           this.pinnedChatIds = this.pinnedChatIds.filter((id) => chatIds.has(id));
           this._savePinnedChatIds();
-          this.chats = chatsData.map((c) => ({
-            id: c.id,
-            title: c.title || "Новый чат",
-            messages: [],
-            createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
-            _messagesLoaded: false,
-          }));
-          const pinnedSet = new Set(this.pinnedChatIds);
+          this.chats = chatsData.map((c) => {
+            const prev = prevById.get(c.id);
+            const hasCached =
+              prev && Array.isArray(prev.messages) && prev.messages.length > 0;
+            return {
+              id: c.id,
+              title: c.title || "Новый чат",
+              messages: hasCached ? prev.messages : [],
+              createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
+              _messagesLoaded: hasCached,
+              _pendingHistory: false,
+            };
+          });
           this.chats.sort((a, b) => {
             const ia = this.pinnedChatIds.indexOf(a.id);
             const ib = this.pinnedChatIds.indexOf(b.id);
             return (ia >= 0 ? ia : 999) - (ib >= 0 ? ib : 999);
           });
-          const keepCurrent = this.currentChatId && chatIds.has(this.currentChatId);
-          if (!keepCurrent) this.currentChatId = this.chats[0].id;
+          if (prevCurrentId && chatIds.has(prevCurrentId)) {
+            this.currentChatId = prevCurrentId;
+          } else {
+            this.currentChatId = this.chats[0].id;
+          }
           this._loadChatMessagesIfNeeded(this.currentChatId);
+          this._loadAllChatMessagesInBackground();
         } else {
           this.chats = [];
           await this.newChat();
@@ -379,8 +446,8 @@ class ChatStore {
 
   getShareLink(chatId, messageIds) {
     const id = typeof chatId === "string" ? chatId : this.currentChatId;
-    if (!id || typeof id !== "string") return WEB_APP_URL;
-    let url = `${WEB_APP_URL.replace(/\/$/, "")}/share/${encodeURIComponent(id)}`;
+    if (!id || typeof id !== "string") return API_URL.replace(/\/$/, "") || WEB_APP_URL;
+    let url = `${API_URL.replace(/\/$/, "")}/share/${encodeURIComponent(id)}`;
     if (Array.isArray(messageIds) && messageIds.length > 0) {
       url += `?msg=${encodeURIComponent(messageIds.join(","))}`;
     }

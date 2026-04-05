@@ -28,12 +28,19 @@ class Middleware(IMiddleware.IMiddleware):
                 '/auth/register/', '/auth/register/send-code/', '/auth/register/verify/',
                 '/auth/login/', '/auth/forgot-password/send-code/', '/auth/forgot-password/verify/',
                 '/auth/oauth/google/', '/auth/oauth/callback', '/auth/oauth-token/', '/auth/google-id-token/',
-                '/images/misaimg.png',
                 '/swagger/', '/swagger-ui/', '/swagger-ui/index.html', '/redoc/', '/swagger.json', '/schema/',
                 '/accounts/login/',  # DRF "Django Login" редирект — не блокировать
             ]
             # Публичный просмотр шаринга чата — /api/chats/<id>/share/
             if (request.path.startswith('/api/chats/') and request.path.endswith('/share/')):
+                return self.get_response(request)
+            # HTML с Open Graph — /share/<id>/
+            if request.path.startswith('/share/'):
+                return self.get_response(request)
+            # OG/Telegram/Discord: og:image с API — /images/og_share.png и др. без JWT
+            if request.path.startswith('/images/'):
+                return self.get_response(request)
+            if request.path == '/robots.txt':
                 return self.get_response(request)
 
             if (request.path in public_paths or request.path.startswith('/swagger') or

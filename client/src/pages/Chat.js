@@ -6,6 +6,8 @@ import { useLocale } from "../contexts/LocaleContext";
 import { getIntlLocale } from "../utils/locale.js";
 import { useMenuToggle } from "./MainLayout";
 import CachedImage from "./CachedImage";
+import ShareLinkPreviewCard from "../components/ShareLinkPreviewCard";
+import { extractShareLinksFromText } from "../utils/shareLink";
 import "./Styles.css";
 import { imageDB } from "./ImageDB";
 
@@ -171,6 +173,7 @@ const Chat = observer(() => {
                 );
             }
             const parsed = parseMessageContent(messageContent);
+            const shareLinks = extractShareLinksFromText(messageContent);
             return (
                 <div className="message-text">
                     {parsed.map((part, i) =>
@@ -183,6 +186,13 @@ const Chat = observer(() => {
                             </div>
                         )
                     )}
+                    {shareLinks.map((link, idx) => (
+                        <ShareLinkPreviewCard
+                            key={`${link.chatId}-${link.query}-${idx}`}
+                            chatId={link.chatId}
+                            query={link.query}
+                        />
+                    ))}
                 </div>
             );
         };

@@ -1,6 +1,5 @@
 import { makeAutoObservable } from "mobx";
 import { jwtDecode } from "jwt-decode";
-
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 const API_URL = process.env.REACT_APP_API_URL || '';
 
@@ -35,6 +34,7 @@ class ChatStore {
         this.rootStore = rootStore;
         makeAutoObservable(this);
         this.loadUserFromStorage();
+        this._hydrateChatsFromCacheIfEmpty();
         this.loadChats();
         if (typeof document !== 'undefined') {
             this._setupVisibilityReconnect();
@@ -164,7 +164,11 @@ class ChatStore {
     }
 
     getShareLink() {
-        const base = typeof window !== 'undefined' ? window.location.origin : '';
+        // Ссылка на домене API: Django отдаёт og:* ботам; браузер редиректит на веб (SPA)
+        const api = (process.env.REACT_APP_API_URL || '').trim().replace(/\/$/, '');
+        const base =
+            api ||
+            (typeof window !== 'undefined' ? window.location.origin : '');
         const chatId = this.shareModeForChatId || this.currentChatId;
         if (!chatId) return base;
         let url = `${base}/share/${encodeURIComponent(chatId)}`;
@@ -249,15 +253,54 @@ class ChatStore {
         }
     };
 
+    /** Сброс чатов в памяти при смене аккаунта / выходе (кэш на диске остаётся по ключу userId) */
+    _resetChatState() {
+        this.chats = [];
+        this.currentChatId = null;
+        this.pinnedChatIds = [];
+        this.shareModeForChatId = null;
+        this.selectedMessageIds = [];
+        this.loadingChatIds = [];
+        this.error = null;
+        this._loadChatsInProgress = false;
+    }
+
     // Выход из системы
     logout()  {
         this.clearUserFromStorage();
         this.disconnect();
         this.user = null;
         this.isAuth = false;
+        this._resetChatState();
     };
 
     _loadChatsInProgress = false;
+
+    /** Сразу показать чаты из localStorage (stale-while-revalidate), пока ждём API */
+    _hydrateChatsFromCacheIfEmpty() {
+        const userId = this.getCurrentUserId();
+        if (!userId || this.chats.length > 0) return;
+        this._loadPinnedChatIds();
+        let saved;
+        try {
+            saved = localStorage.getItem(`chats_${userId}`);
+            if (!saved) return;
+            const parsed = JSON.parse(saved);
+            if (!Array.isArray(parsed) || parsed.length === 0) return;
+            this.chats = parsed.map(chat => ({
+                ...chat,
+                messages: (chat.messages || []).map(m => ({
+                    ...m,
+                    timestamp: new Date(m.timestamp)
+                })),
+                createdAt: chat.createdAt ? new Date(chat.createdAt) : new Date(),
+                _messagesLoaded: !!(chat.messages && chat.messages.length),
+            }));
+            if (this.chats.length > 0 && !this.currentChatId) this.currentChatId = this.chats[0].id;
+        } catch (e) {
+            console.warn('hydrate chats cache:', e);
+        }
+    }
 
     // Загрузка чатов из API (БД на бэкенде)
     async loadChats() {
@@ -274,9 +317,12 @@ class ChatStore {
                 this._loadChatsFromLocalStorage();
                 return;
             }
+            this._hydrateChatsFromCacheIfEmpty();
             this._loadChatsInProgress = true;
             try {
                 let chatsData;
+                const prevById = new Map(this.chats.map(c => [c.id, c]));
+                const prevCurrentId = this.currentChatId;
                 for (let attempt = 0; attempt < 10; attempt++) {
                     if (!this.isAuth) return;
                     try {
@@ -291,13 +337,14 @@ class ChatStore {
                         if (res.status === 401) {
                             this.clearUserFromStorage();
                             this.isAuth = false;
+                            this._resetChatState();
                             return;
                         }
                         chatsData = data.data;
                         break;
                     } catch (err) {
                         console.warn("Ошибка загрузки чатов, повтор через 1 сек:", err?.message);
-                        await new Promise(r => setTimeout(r, 1000));
+                        await new Promise(r => setTimeout(r, attempt === 0 ? 200 : 1000));
                     }
                 }
                 if (chatsData === undefined) {
@@ -316,15 +363,27 @@ class ChatStore {
                             seen.add(c.id);
                             return true;
                         })
-                        .map(c => ({
-                            id: c.id,
-                            title: c.title || 'Новый чат',
-                            messages: [],
-                            createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
-                            _messagesLoaded: false
-                        }));
-                    this.currentChatId = this.chats[0].id;
-                    this._loadChatMessagesIfNeeded(this.chats[0].id);
+                        .map(c => {
+                            const prev = prevById.get(c.id);
+                            const hasCached =
+                                prev &&
+                                Array.isArray(prev.messages) &&
+                                prev.messages.length > 0;
+                            return {
+                                id: c.id,
+                                title: c.title || 'Новый чат',
+                                messages: hasCached ? prev.messages : [],
+                                createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
+                                _messagesLoaded: hasCached,
+                                _pendingHistory: false,
+                            };
+                        });
+                    if (prevCurrentId && chatIds.has(prevCurrentId)) {
+                        this.currentChatId = prevCurrentId;
+                    } else {
+                        this.currentChatId = this.chats[0].id;
+                    }
+                    this._loadChatMessagesIfNeeded(this.currentChatId);
                     this._loadAllChatMessagesInBackground();
                 } else {
                     this.chats = [];
@@ -378,24 +437,24 @@ class ChatStore {
 
     _loadAllChatMessagesInBackground() {
         if (!API_URL) return;
-        const toLoad = this.chats.filter(c => !c._messagesLoaded && !c._pendingHistory);
+        const toLoad = this.chats.filter(c => !c._pendingHistory);
         toLoad.forEach((chat) => {
             apiFetch(`/api/chats/${chat.id}/messages/`)
                 .then((msgs) => {
                     const c = this.chats.find((x) => x.id === chat.id);
-                    if (c && !c._messagesLoaded) {
-                        c.messages = (msgs || []).map((m) => ({
-                            id: String(m.id),
-                            content: m.content,
-                            user: m.user,
-                            timestamp: new Date(m.timestamp),
-                            isImage: m.isImage,
-                            feedback: m.feedback && (m.feedback === 'like' || m.feedback === 'dislike') ? m.feedback : null,
-                            feedbackCategories: m.feedbackCategories ?? null,
-                            feedbackComment: m.feedbackComment ?? null,
-                        }));
-                        c._messagesLoaded = true;
-                    }
+                    if (!c) return;
+                    c.messages = (msgs || []).map((m) => ({
+                        id: String(m.id),
+                        content: m.content,
+                        user: m.user,
+                        timestamp: new Date(m.timestamp),
+                        isImage: m.isImage,
+                        feedback: m.feedback && (m.feedback === 'like' || m.feedback === 'dislike') ? m.feedback : null,
+                        feedbackCategories: m.feedbackCategories ?? null,
+                        feedbackComment: m.feedbackComment ?? null,
+                    }));
+                    c._messagesLoaded = true;
+                    this.saveChats();
                 })
                 .catch((e) => console.warn(`Ошибка загрузки сообщений чата ${chat.id}:`, e?.message));
         });

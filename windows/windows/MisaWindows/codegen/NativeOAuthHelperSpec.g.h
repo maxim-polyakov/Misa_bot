@@ -18,6 +18,7 @@ namespace MisaOAuthHelperCodegen {
 struct OAuthHelperSpec : winrt::Microsoft::ReactNative::TurboModuleSpec {
   static constexpr auto methods = std::tuple{
       SyncMethod<std::optional<std::string>() noexcept>{0, L"getPendingOAuthUrl"},
+      Method<void(std::string, std::string, Promise<std::string>) noexcept>{1, L"saveExportZipBase64"},
   };
 
   template <class TModule>
@@ -29,6 +30,11 @@ struct OAuthHelperSpec : winrt::Microsoft::ReactNative::TurboModuleSpec {
           "getPendingOAuthUrl",
           "    REACT_SYNC_METHOD(getPendingOAuthUrl) std::optional<std::string> getPendingOAuthUrl() noexcept { /* implementation */ }\n"
           "    REACT_SYNC_METHOD(getPendingOAuthUrl) static std::optional<std::string> getPendingOAuthUrl() noexcept { /* implementation */ }\n");
+    REACT_SHOW_METHOD_SPEC_ERRORS(
+          1,
+          "saveExportZipBase64",
+          "    REACT_METHOD(saveExportZipBase64) void saveExportZipBase64(std::string base64, std::string fileName, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n"
+          "    REACT_METHOD(saveExportZipBase64) static void saveExportZipBase64(std::string base64, std::string fileName, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n");
   }
 };
 

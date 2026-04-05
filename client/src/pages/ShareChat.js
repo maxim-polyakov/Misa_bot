@@ -3,9 +3,14 @@ import { useParams, useSearchParams, Link } from "react-router-dom";
 import CachedImage from "./CachedImage";
 import { useLocale } from "../contexts/LocaleContext";
 import { getIntlLocale } from "../utils/locale.js";
+import { snippetFromShareMessages } from "../utils/shareLink";
+import { getApiBaseUrl } from "../utils/apiBase";
 import "./Styles.css";
 
-const API_URL = process.env.REACT_APP_API_URL || '';
+/**
+ * SPA на веб-домене (после редиректа с https://<API>/share/:id). Данные — GET /api/chats/.../share/.
+ * Превью в Telegram: GET на домен API /share/... → share_chat_html (og:*); браузер — редирект сюда.
+ */
 
 const getBlockType = (language) => {
     const lang = (language || 'plaintext').toLowerCase();
@@ -63,14 +68,18 @@ const ShareChat = () => {
             return;
         }
         const msgIds = searchParams.get('msg');
-        const shareUrl = `${API_URL}/api/chats/${encodeURIComponent(chatId)}/share/${msgIds ? `?msg=${encodeURIComponent(msgIds)}` : ''}`;
+        const base = getApiBaseUrl();
+        const qs = msgIds ? `?msg=${encodeURIComponent(msgIds)}` : '';
+        const shareUrl = `${base}/api/chats/${encodeURIComponent(chatId)}/share/${qs}`;
         const fetchChat = async () => {
             try {
-                const res = await fetch(shareUrl);
+                const res = await fetch(shareUrl, { credentials: 'omit' });
                 const json = await res.json().catch(() => ({}));
-                if (json.status === 'error') {
-                    setError(json.message || 'Chat not found');
-                } else if (json.data) {
+                if (!res.ok || json.status === 'error') {
+                    setError(json.message || (res.status === 404 ? 'Chat not found' : 'Chat not found'));
+                    return;
+                }
+                if (json.data != null) {
                     setData(json.data);
                 } else {
                     setError('Chat not found');
@@ -85,11 +94,13 @@ const ShareChat = () => {
         fetchChat();
     }, [chatId, searchParams]);
 
-    // Обновляем title для SEO и превью при шаринге (хук должен быть до любых return)
+    // Заголовок вкладки в браузере (og:* для мессенджеров — только с сервера, не дублируем в <head>)
     useEffect(() => {
         if (data?.title) {
             document.title = `${data.title} | Misa AI`;
-            return () => { document.title = 'Misa AI Chat'; };
+            return () => {
+                document.title = "Misa AI Chat";
+            };
         }
     }, [data?.title]);
 
@@ -109,7 +120,7 @@ const ShareChat = () => {
 
         const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(messageContent);
         const imageUrl = isRelativeImagePath
-            ? `${API_URL}${messageContent}`
+            ? `${getApiBaseUrl()}${messageContent}`
             : messageContent;
 
         const renderContent = () => {
@@ -166,6 +177,9 @@ const ShareChat = () => {
         );
     }
 
+    const previewSnippet = data ? snippetFromShareMessages(data.messages) : '';
+    const previewSubtitle = previewSnippet || (data ? t('shareChatBadge') : '');
+
     if (error || !data) {
         return (
             <div className="share-chat-page">
@@ -195,7 +209,21 @@ const ShareChat = () => {
 
             <div className="share-chat-body">
                 <div className="share-chat-body-inner">
-                    <h1 className="share-chat-title">{data.title || 'Чат'}</h1>
+                    <div className="share-chat-hero">
+                        <img
+                            className="share-chat-hero-icon"
+                            src="/favicon-195.png"
+                            width={48}
+                            height={48}
+                            alt=""
+                        />
+                        <div className="share-chat-hero-text">
+                            <h1 className="share-chat-title">{data.title || 'Чат'}</h1>
+                            {previewSubtitle ? (
+                                <p className="share-chat-preview-snippet">{previewSubtitle}</p>
+                            ) : null}
+                        </div>
+                    </div>
                     <div className="share-chat-messages">
                         {(data.messages || []).map(renderMessage)}
                     </div>
