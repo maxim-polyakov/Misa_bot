@@ -1,10 +1,11 @@
+import json
 import os
 import re
 from html import escape as html_escape
 from urllib.parse import quote
 
 from django.conf import settings
-from django.http import JsonResponse, HttpResponse, Http404, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from drf_spectacular.utils import extend_schema
@@ -13,26 +14,18 @@ from . import openapi_examples as oex
 
 _BEARER = [{'bearerAuth': []}]
 
-# User-Agent краулеров превью ссылок (Telegram, VK, Discord и т.д.)
-_LINK_PREVIEW_CRAWLER_RE = re.compile(
-    r'(?i)(TelegramBot|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|Slackbot|vkShare|Discordbot|Discord|Googlebot|bingbot)',
-)
 
-
-def _is_link_preview_crawler_ua(user_agent):
-    return bool(user_agent and _LINK_PREVIEW_CRAWLER_RE.search(user_agent))
-
-
-def _share_og_image_absolute_url(request):
+def _share_og_image_url(request, site_base):
     """
-    URL картинки для og:image на том же хосте, что и HTML.
-    Если указывать og:image на другой домен (например только веб-клиент), Telegram часто
-    зависает на «Загрузка предпросмотра», пока тянет картинку; Discord терпит лучше.
+    og:image: сначала images/misaimg.png на том же хосте, что и HTML (если файл есть);
+    иначе favicon на WEB_APP_PUBLIC_URL — чтобы Discord снова показывал картинку в превью.
     """
-    rel = '/images/misaimg.png'
     path = os.path.join(settings.BASE_DIR, 'images', 'misaimg.png')
     if os.path.isfile(path):
-        return request.build_absolute_uri(rel)
+        return request.build_absolute_uri('/images/misaimg.png')
+    base = (site_base or '').strip().rstrip('/')
+    if base:
+        return f'{base}/favicon-195.png'
     return ''
 
 
@@ -281,14 +274,12 @@ def _share_description_for_og(messages, max_len=220):
 @csrf_exempt
 def share_chat_html(request, chat_id):
     """
-    HTML с Open Graph для /share/<chat_id>/ — для краулеров (Telegram и др.).
-    Обычный браузер: редирект на WEB_APP_PUBLIC_URL (SPA), чтобы ссылку можно было
-    отдавать с домена API — превью в мессенджерах без отдельного nginx на веб-домене.
+    HTML с Open Graph для /share/<chat_id>/.
+    Краулеры (Telegram и др.) не выполняют JS — читают og:* из <head>.
+    Браузеры выполняют location.replace() на WEB_APP_PUBLIC_URL (SPA).
+    Редирект 302 по User-Agent не используем: у Telegram бывает нестандартный UA.
     """
-    ua = request.META.get('HTTP_USER_AGENT', '') or ''
     public = getattr(settings, 'WEB_APP_PUBLIC_URL', '').strip().rstrip('/')
-    if public and not _is_link_preview_crawler_ua(ua):
-        return HttpResponseRedirect(public + request.get_full_path())
 
     ctrlr = Controller.Controller()
     try:
@@ -310,7 +301,7 @@ def share_chat_html(request, chat_id):
     if msg_q:
         og_url += f'?msg={quote(msg_q, safe="")}'
 
-    og_image = _share_og_image_absolute_url(request)
+    og_image = _share_og_image_url(request, site_base)
     og_image_esc = html_escape(og_image) if og_image else ''
     twitter_card = 'summary_large_image' if og_image else 'summary'
 
@@ -343,10 +334,14 @@ def share_chat_html(request, chat_id):
         '</head>',
         '<body>',
         f'<p><a href="{html_escape(og_url)}">Открыть чат в Misa AI</a></p>',
-        '</body>',
-        '</html>',
     ])
-    return HttpResponse('\n'.join(parts), content_type='text/html; charset=utf-8')
+    if public:
+        spa_url = public + request.get_full_path()
+        parts.append(f'<script>location.replace({json.dumps(spa_url)});</script>')
+    parts.extend(['</body>', '</html>'])
+    resp = HttpResponse('\n'.join(parts), content_type='text/html; charset=utf-8')
+    resp['Cache-Control'] = 'public, max-age=300'
+    return resp
 
 
 @extend_schema(
