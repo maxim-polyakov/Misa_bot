@@ -1,3 +1,4 @@
+import os
 import re
 from html import escape as html_escape
 from urllib.parse import quote
@@ -20,6 +21,19 @@ _LINK_PREVIEW_CRAWLER_RE = re.compile(
 
 def _is_link_preview_crawler_ua(user_agent):
     return bool(user_agent and _LINK_PREVIEW_CRAWLER_RE.search(user_agent))
+
+
+def _share_og_image_absolute_url(request):
+    """
+    URL картинки для og:image на том же хосте, что и HTML.
+    Если указывать og:image на другой домен (например только веб-клиент), Telegram часто
+    зависает на «Загрузка предпросмотра», пока тянет картинку; Discord терпит лучше.
+    """
+    rel = '/images/misaimg.png'
+    path = os.path.join(settings.BASE_DIR, 'images', 'misaimg.png')
+    if os.path.isfile(path):
+        return request.build_absolute_uri(rel)
+    return ''
 
 
 # Контроллер регистрации
@@ -296,8 +310,9 @@ def share_chat_html(request, chat_id):
     if msg_q:
         og_url += f'?msg={quote(msg_q, safe="")}'
 
-    og_image = f'{site_base}/favicon-195.png' if site_base else ''
+    og_image = _share_og_image_absolute_url(request)
     og_image_esc = html_escape(og_image) if og_image else ''
+    twitter_card = 'summary_large_image' if og_image else 'summary'
 
     parts = [
         '<!DOCTYPE html>',
@@ -316,7 +331,7 @@ def share_chat_html(request, chat_id):
         parts.append(f'<meta property="og:image" content="{og_image_esc}" />')
         parts.append(f'<meta property="og:image:alt" content="{og_title}" />')
     parts.extend([
-        '<meta name="twitter:card" content="summary_large_image" />',
+        f'<meta name="twitter:card" content="{twitter_card}" />',
         f'<meta name="twitter:title" content="{og_title}" />',
         f'<meta name="twitter:description" content="{og_desc_esc}" />',
     ])
