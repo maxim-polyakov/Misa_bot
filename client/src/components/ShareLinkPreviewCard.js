@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocale } from "../contexts/LocaleContext";
-import { snippetFromShareMessages } from "../utils/shareLink";
+import { snippetFromShareMessages, SHARE_LINK_URL_VERSION } from "../utils/shareLink";
 import { getApiBaseUrl } from "../utils/apiBase";
 
 /**
@@ -12,9 +12,10 @@ export default function ShareLinkPreviewCard({ chatId, query }) {
 
     useEffect(() => {
         let cancelled = false;
-        const qs = query ? `?${query}` : "";
         const base = getApiBaseUrl();
-        const url = `${base}/api/chats/${encodeURIComponent(chatId)}/share/${qs}`;
+        const params = new URLSearchParams(query || "");
+        params.set("v", String(SHARE_LINK_URL_VERSION));
+        const url = `${base}/api/chats/${encodeURIComponent(chatId)}/share/?${params.toString()}`;
         setState({ loading: true, data: null, error: null });
         fetch(url, { credentials: "omit" })
             .then(async (r) => {
@@ -41,10 +42,12 @@ export default function ShareLinkPreviewCard({ chatId, query }) {
         };
     }, [chatId, query]);
 
-    const href =
-        typeof window !== "undefined"
-            ? `${getApiBaseUrl()}/share/${encodeURIComponent(chatId)}${query ? `?${query}` : ""}`
-            : "#";
+    const href = (() => {
+        if (typeof window === "undefined") return "#";
+        const params = new URLSearchParams(query || "");
+        params.set("v", String(SHARE_LINK_URL_VERSION));
+        return `${getApiBaseUrl()}/share/${encodeURIComponent(chatId)}?${params.toString()}`;
+    })();
 
     if (state.loading) {
         return (

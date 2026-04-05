@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import struct
 from html import escape as html_escape
 from urllib.parse import quote
 
@@ -16,6 +17,61 @@ _BEARER = [{'bearerAuth': []}]
 
 # Старая заглушка Pillow ~2KB; нормальный арт (misa.png) — сотни KB.
 _OG_LOCAL_IMAGE_MIN_BYTES = 8000
+# client/public/misa.png (если на сервере нет og_share.png для чтения IHDR)
+_MISA_PNG_FALLBACK_WH = (800, 1120)
+
+
+def _png_ihdr_dimensions(path):
+    """Ширина/высота PNG без Pillow (для og:image:width/height — Telegram рекомендует meta)."""
+    try:
+        with open(path, 'rb') as f:
+            if f.read(8) != b'\x89PNG\r\n\x1a\n':
+                return None, None
+            length = struct.unpack('>I', f.read(4))[0]
+            if f.read(4) != b'IHDR':
+                return None, None
+            data = f.read(length)
+            w, h = struct.unpack('>II', data[:8])
+            return w, h
+    except (OSError, struct.error):
+        return None, None
+
+
+def _og_share_image_dimensions(og_image_url):
+    if not og_image_url:
+        return None, None
+    img_dir = os.path.join(settings.BASE_DIR, 'images')
+    for name in ('og_share.png', 'misaimg.png'):
+        if name in og_image_url:
+            p = os.path.join(img_dir, name)
+            if os.path.isfile(p):
+                return _png_ihdr_dimensions(p)
+    if og_image_url.rstrip('/').lower().endswith('misa.png'):
+        p = os.path.join(img_dir, 'og_share.png')
+        if os.path.isfile(p):
+            return _png_ihdr_dimensions(p)
+        return _MISA_PNG_FALLBACK_WH
+    return None, None
+
+
+def _share_is_link_preview_bot(request):
+    """Краулеры превью не исполняют JS; без редиректа на SPA — проще для Telegram и др."""
+    ua = (request.META.get('HTTP_USER_AGENT') or '').lower()
+    return any(
+        bot in ua
+        for bot in (
+            'telegrambot',
+            'twitterbot',
+            'facebookexternalhit',
+            'whatsapp',
+            'linkedinbot',
+            'slackbot',
+            'discordbot',
+            'vkshare',
+            'pinterestbot',
+            'skypeuripreview',
+        )
+    )
 
 
 def _share_og_absolute_api_url(request, path):
@@ -24,19 +80,19 @@ def _share_og_absolute_api_url(request, path):
     path = path if path.startswith('/') else f'/{path}'
     if base:
         return f'{base.rstrip("/")}{path}'
+    # После USE_X_FORWARDED_HOST / SECURE_PROXY_SSL_HEADER в settings — совпадает с публичным URL
     return request.build_absolute_uri(path)
 
 
 def _share_page_public_url(request, chat_id):
     """
-    Канонический URL страницы /share/ на API — тот же хост, что и ссылка из клиента.
-    og:url и canonical на misa.baxic.ru заставляли Telegram запрашивать SPA без og:*.
+    Канонический URL страницы /share/ на API — как в запросе (включая ?v=, ?msg=).
+    Совпадает со ссылкой из клиента — важно для Telegram og:url.
     """
-    path = f'/share/{quote(str(chat_id), safe="")}'
-    msg_q = request.GET.get('msg')
-    if msg_q:
-        path += f'?msg={quote(msg_q, safe="")}'
-    return _share_og_absolute_api_url(request, path)
+    fp = request.get_full_path()
+    if not fp.startswith('/'):
+        fp = '/' + fp
+    return _share_og_absolute_api_url(request, fp)
 
 
 def _share_og_image_url(request, site_base):
@@ -329,6 +385,7 @@ def share_chat_html(request, chat_id):
 
     og_image = _share_og_image_url(request, site_base)
     og_image_esc = html_escape(og_image) if og_image else ''
+    og_w, og_h = _og_share_image_dimensions(og_image)
     twitter_card = 'summary_large_image' if og_image else 'summary'
 
     parts = [
@@ -346,7 +403,12 @@ def share_chat_html(request, chat_id):
     ]
     if og_image:
         parts.append(f'<meta property="og:image" content="{og_image_esc}" />')
+        if og_image.lower().startswith('https://'):
+            parts.append(f'<meta property="og:image:secure_url" content="{og_image_esc}" />')
         parts.append(f'<meta property="og:image:alt" content="{og_title}" />')
+        if og_w and og_h:
+            parts.append(f'<meta property="og:image:width" content="{og_w}" />')
+            parts.append(f'<meta property="og:image:height" content="{og_h}" />')
     parts.extend([
         f'<meta name="twitter:card" content="{twitter_card}" />',
         f'<meta name="twitter:title" content="{og_title}" />',
@@ -361,7 +423,7 @@ def share_chat_html(request, chat_id):
         '<body>',
         f'<p><a href="{html_escape(og_url)}">Открыть чат в Misa AI</a></p>',
     ])
-    if public:
+    if public and not _share_is_link_preview_bot(request):
         spa_url = public + request.get_full_path()
         parts.append(f'<script>location.replace({json.dumps(spa_url)});</script>')
     parts.extend(['</body>', '</html>'])

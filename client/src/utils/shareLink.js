@@ -1,3 +1,21 @@
+/** Только веб-клиент добавляет ?v= к /share/; Windows/Mobile — без версии. */
+export const SHARE_LINK_URL_VERSION = 5;
+
+/**
+ * Query для публичной страницы /share/&lt;id&gt; (всегда с v=).
+ * @param {{ messageIds?: string[] }} [opts]
+ * @returns {string} без ведущего «?»
+ */
+export function buildSharePageQueryString(opts = {}) {
+    const { messageIds } = opts;
+    const params = new URLSearchParams();
+    params.set('v', String(SHARE_LINK_URL_VERSION));
+    if (Array.isArray(messageIds) && messageIds.length > 0) {
+        params.set('msg', messageIds.join(','));
+    }
+    return params.toString();
+}
+
 /**
  * Извлекает ссылки вида /share/<chat_id> из текста (с любым origin или без).
  * @returns {{ chatId: string, query: string }[]} уникальные пары (query без ведущего ?)

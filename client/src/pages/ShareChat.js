@@ -3,7 +3,7 @@ import { useParams, useSearchParams, Link } from "react-router-dom";
 import CachedImage from "./CachedImage";
 import { useLocale } from "../contexts/LocaleContext";
 import { getIntlLocale } from "../utils/locale.js";
-import { snippetFromShareMessages } from "../utils/shareLink";
+import { snippetFromShareMessages, SHARE_LINK_URL_VERSION } from "../utils/shareLink";
 import { getApiBaseUrl } from "../utils/apiBase";
 import "./Styles.css";
 
@@ -69,8 +69,10 @@ const ShareChat = () => {
         }
         const msgIds = searchParams.get('msg');
         const base = getApiBaseUrl();
-        const qs = msgIds ? `?msg=${encodeURIComponent(msgIds)}` : '';
-        const shareUrl = `${base}/api/chats/${encodeURIComponent(chatId)}/share/${qs}`;
+        const p = new URLSearchParams();
+        p.set('v', String(SHARE_LINK_URL_VERSION));
+        if (msgIds) p.set('msg', msgIds);
+        const shareUrl = `${base}/api/chats/${encodeURIComponent(chatId)}/share/?${p.toString()}`;
         const fetchChat = async () => {
             try {
                 const res = await fetch(shareUrl, { credentials: 'omit' });

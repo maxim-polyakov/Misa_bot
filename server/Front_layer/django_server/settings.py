@@ -33,6 +33,11 @@ def _public_api_base_url():
 
 PUBLIC_API_BASE_URL = _public_api_base_url()
 
+# За reverse-proxy (nginx, SSL на границе): иначе get_host()/is_secure() неверны,
+# build_absolute_uri() даёт http://localhost — Telegram отбрасывает всё превью (og:url ≠ реальный URL).
+USE_X_FORWARDED_HOST = os.getenv('USE_X_FORWARDED_HOST', 'true').lower() in ('true', '1', 'yes')
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Публичный URL веб-клиента (og:url, og:image в share_chat_html)
 WEB_APP_PUBLIC_URL = (
     os.getenv('WEB_APP_PUBLIC_URL') or os.getenv('FRONTEND_URL') or 'https://misa.baxic.ru'

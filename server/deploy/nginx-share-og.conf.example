@@ -1,6 +1,9 @@
 # =============================================================================
 # Превью ссылок /share/<chat_id> (опционально для nginx на ВЕБ-домене)
 # =============================================================================
+# Если превью в Telegram «не грузится»: на WAF/Cloudflare не блокируйте User-Agent
+#   TelegramBot (like TwitterBot) — иначе сервер Telegram не получит og:*.
+# =============================================================================
 # Рекомендуемая схема в коде: ссылки шаринга ведут на ДОМЕН API
 #   https://misaapi.baxic.ru/share/<id>  → Django share_chat_html (og:* для ботов),
 #   обычный браузер → 302 на WEB_APP_PUBLIC_URL (SPA).
@@ -14,3 +17,12 @@
 
 # ----- в server { } для listen 443; server_name <веб-клиент>; -----
 # location /share { ... proxy_pass на API ... }
+
+# ----- обязательно в location при proxy_pass на Django (домен API) -----
+# Иначе Django думает, что запрос http://127.0.0.1:8000 — в og:url попадёт localhost,
+# Telegram сверяет с реальным https://misaapi... и отбрасывает всё превью.
+#
+# proxy_set_header Host              $host;
+# proxy_set_header X-Forwarded-Proto $scheme;
+# proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+# proxy_set_header X-Forwarded-Host  $host;
