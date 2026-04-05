@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocale } from "../contexts/LocaleContext";
 import { snippetFromShareMessages } from "../utils/shareLink";
-
-const API_URL = process.env.REACT_APP_API_URL || "";
+import { getApiBaseUrl } from "../utils/apiBase";
 
 /**
  * Превью публичной ссылки на чат внутри ленты сообщений (данные с GET /api/chats/.../share/).
@@ -14,15 +13,21 @@ export default function ShareLinkPreviewCard({ chatId, query }) {
     useEffect(() => {
         let cancelled = false;
         const qs = query ? `?${query}` : "";
-        const url = `${API_URL}/api/chats/${encodeURIComponent(chatId)}/share/${qs}`;
+        const base = getApiBaseUrl();
+        const url = `${base}/api/chats/${encodeURIComponent(chatId)}/share/${qs}`;
         setState({ loading: true, data: null, error: null });
-        fetch(url)
-            .then((r) => r.json().catch(() => ({})))
-            .then((json) => {
+        fetch(url, { credentials: "omit" })
+            .then(async (r) => {
+                const json = await r.json().catch(() => ({}));
+                return { ok: r.ok, status: r.status, json };
+            })
+            .then(({ ok, status, json }) => {
                 if (cancelled) return;
-                if (json.status === "error") {
-                    setState({ loading: false, data: null, error: json.message || "error" });
-                } else if (json.data) {
+                if (!ok || json.status === "error") {
+                    setState({ loading: false, data: null, error: json.message || status });
+                    return;
+                }
+                if (json.data != null && (json.status === "success" || json.data)) {
                     setState({ loading: false, data: json.data, error: null });
                 } else {
                     setState({ loading: false, data: null, error: "notfound" });

@@ -4,9 +4,10 @@ import CachedImage from "./CachedImage";
 import { useLocale } from "../contexts/LocaleContext";
 import { getIntlLocale } from "../utils/locale.js";
 import { snippetFromShareMessages } from "../utils/shareLink";
+import { getApiBaseUrl } from "../utils/apiBase";
 import "./Styles.css";
 
-const API_URL = process.env.REACT_APP_API_URL || '';
+/** Публичная страница шаринга: только SPA (nginx отдаёт index.html). Данные — GET /api/chats/.../share/ с API. */
 
 const getBlockType = (language) => {
     const lang = (language || 'plaintext').toLowerCase();
@@ -64,14 +65,18 @@ const ShareChat = () => {
             return;
         }
         const msgIds = searchParams.get('msg');
-        const shareUrl = `${API_URL}/api/chats/${encodeURIComponent(chatId)}/share/${msgIds ? `?msg=${encodeURIComponent(msgIds)}` : ''}`;
+        const base = getApiBaseUrl();
+        const qs = msgIds ? `?msg=${encodeURIComponent(msgIds)}` : '';
+        const shareUrl = `${base}/api/chats/${encodeURIComponent(chatId)}/share/${qs}`;
         const fetchChat = async () => {
             try {
-                const res = await fetch(shareUrl);
+                const res = await fetch(shareUrl, { credentials: 'omit' });
                 const json = await res.json().catch(() => ({}));
-                if (json.status === 'error') {
-                    setError(json.message || 'Chat not found');
-                } else if (json.data) {
+                if (!res.ok || json.status === 'error') {
+                    setError(json.message || (res.status === 404 ? 'Chat not found' : 'Chat not found'));
+                    return;
+                }
+                if (json.data != null) {
                     setData(json.data);
                 } else {
                     setError('Chat not found');
@@ -110,7 +115,7 @@ const ShareChat = () => {
 
         const isRelativeImagePath = /^\/images\/[^\\]+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(messageContent);
         const imageUrl = isRelativeImagePath
-            ? `${API_URL}${messageContent}`
+            ? `${getApiBaseUrl()}${messageContent}`
             : messageContent;
 
         const renderContent = () => {
@@ -168,6 +173,7 @@ const ShareChat = () => {
     }
 
     const previewSnippet = data ? snippetFromShareMessages(data.messages) : '';
+    const previewSubtitle = previewSnippet || (data ? t('shareChatBadge') : '');
 
     if (error || !data) {
         return (
@@ -208,8 +214,8 @@ const ShareChat = () => {
                         />
                         <div className="share-chat-hero-text">
                             <h1 className="share-chat-title">{data.title || 'Чат'}</h1>
-                            {previewSnippet ? (
-                                <p className="share-chat-preview-snippet">{previewSnippet}</p>
+                            {previewSubtitle ? (
+                                <p className="share-chat-preview-snippet">{previewSubtitle}</p>
                             ) : null}
                         </div>
                     </div>
