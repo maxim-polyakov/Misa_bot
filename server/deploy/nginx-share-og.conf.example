@@ -13,7 +13,19 @@
 # чтобы боты получали HTML с API, а не index.html SPA.
 
 # ----- в http { } -----
-# map $http_user_agent $misa_share_og { ... }  # см. историю репозитория
+# UA официального краулера Telegram: "TelegramBot (like TwitterBot)" — достаточно ~*TelegramBot
+# map $http_user_agent $misa_share_og {
+#     default 0;
+#     ~*TelegramBot        1;
+#     ~*facebookexternalhit 1;
+#     ~*Facebot             1;
+#     ~*Twitterbot          1;
+#     ~*LinkedInBot         1;
+#     ~*WhatsApp            1;
+#     ~*Slackbot            1;
+#     ~*vkShare             1;
+#     ~*Discordbot          1;
+# }
 
 # ----- в server { } для listen 443; server_name <веб-клиент>; -----
 # location /share { ... proxy_pass на API ... }

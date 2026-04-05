@@ -82,11 +82,9 @@ def _share_should_redirect_to_spa(request):
         )
     ):
         return False
-    if request.META.get('HTTP_SEC_FETCH_MODE') == 'navigate':
-        return True
-    if 'mozilla' in ua and 'bot' not in ua:
-        return True
-    return False
+    # Только настоящий переход по ссылке в Chrome/Safari/Firefox (у Telegram-краулера Sec-Fetch нет).
+    # Раньше был fallback по «mozilla без bot» — лишний <script> мог мешать превью в Telegram.
+    return request.META.get('HTTP_SEC_FETCH_MODE') == 'navigate'
 
 
 def _share_og_absolute_api_url(request, path):
