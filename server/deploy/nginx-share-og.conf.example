@@ -1,37 +1,58 @@
-# Пример для фронтенд-домена (например misa.baxic.ru), где отдаётся SPA.
-# Ссылки шаринга остаются https://<WEB>/share/<chat_id>/ — без правок в клиентах.
+# =============================================================================
+# Open Graph для https://<WEB>/share/<chat_id>/ (Telegram, VK, …)
+# =============================================================================
+# Ссылки в клиентах ведут на веб-домен. Боты превью должны получить HTML с og:*
+# с Django (тот же хост, что и API), а не index.html SPA.
 #
-# Боты превью (Telegram, VK, Facebook и т.д.) проксируются на Django API, где уже есть
-# GET /share/<chat_id>/ с Open Graph. Обычные браузеры получают index.html (React).
+# В http { } — map; в server { } для 443 — location /share (см. ниже).
+# После правок: sudo nginx -t && sudo systemctl reload nginx
 #
-# Вставьте map в блок http { }, location — в server { } для веб-клиента.
-# Замените UPSTREAM_API на ваш API (тот же хост, где крутится Django с этим маршрутом).
+# --- Диагностика (на VPS или с ПК), если превью в Telegram пустое:
+#
+# 1) HTML с API напрямую (обход nginx фронта):
+#    curl -sL "https://ВАШ_API_HOST/share/CHAT_ID" | grep -E 'og:title|og:description'
+#    Если пусто или 404 — Django/БД/CHAT_ID, не nginx.
+#
+# 2) Тот же URL через веб-домен с User-Agent как у Telegram:
+#    curl -sL -A "TelegramBot (like TwitterBot)" "https://misa.baxic.ru/share/CHAT_ID" | grep og:title
+#    Если (1) ок, а (2) нет — map/location на фронте: боту отдаётся SPA.
+#
+# 3) Кэш Telegram: после исправлений пришлите ссылку с новым ?msg= или другой чат.
+#
+# 4) Фаервол/WAF: запросы превью идут с IP Telegram (сети 149.154.x.x и др.), не с телефона.
 
-# map $http_user_agent $misa_share_og {
-#     default 0;
-#     ~*TelegramBot 1;
-#     ~*Telegram 1;
-#     ~*facebookexternalhit 1;
-#     ~*Facebot 1;
-#     ~*Twitterbot 1;
-#     ~*LinkedInBot 1;
-#     ~*WhatsApp 1;
-#     ~*Slackbot 1;
-#     ~*vkShare 1;
-#     ~*Discordbot 1;
-# }
-#
-# Проверка с сервера (должны быть строки og:title):
-# curl -sL -A "TelegramBot (like TwitterBot)" "https://misa.baxic.ru/share/ВАШ_CHAT_ID?msg=1,2" | head -40
+# ----- вставить в http { } -----
 
-# location /share/ {
+map $http_user_agent $misa_share_og {
+    default 0;
+    ~*TelegramBot 1;
+    ~*facebookexternalhit 1;
+    ~*Facebot 1;
+    ~*Twitterbot 1;
+    ~*LinkedInBot 1;
+    ~*WhatsApp 1;
+    ~*Slackbot 1;
+    ~*vkShare 1;
+    ~*Discordbot 1;
+}
+
+# ----- вставить в server { } для listen 443 ssl; server_name <веб-клиент>; -----
+# Замените бэкенд API на свой (тот же, где Django и маршрут ^share/).
+
+# location /share {
+#     set $misa_share_backend http://127.0.0.1:3001;
+#     set $misa_share_proxy_host $host;
 #     if ($misa_share_og = 1) {
-#         proxy_pass https://UPSTREAM_API;
-#         # Host должен совпадать с тем, что ожидает Django (обычно хост API)
-#         proxy_set_header Host UPSTREAM_API_HOST;
-#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-#         proxy_set_header X-Forwarded-Proto $scheme;
-#         break;
+#         set $misa_share_backend https://misaapi.baxic.ru;
+#         set $misa_share_proxy_host misaapi.baxic.ru;
 #     }
-#     try_files $uri /index.html;
+#     resolver 8.8.8.8 valid=300s ipv6=off;
+#     proxy_ssl_server_name on;
+#     proxy_pass $misa_share_backend;
+#     proxy_set_header Host $misa_share_proxy_host;
+#     proxy_set_header X-Real-IP $remote_addr;
+#     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#     proxy_set_header X-Forwarded-Proto $scheme;
 # }
+#
+# Внутри if только set. Не класть в if: proxy_pass, proxy_set_header, proxy_ssl_*.

@@ -3,6 +3,7 @@ import { useParams, useSearchParams, Link } from "react-router-dom";
 import CachedImage from "./CachedImage";
 import { useLocale } from "../contexts/LocaleContext";
 import { getIntlLocale } from "../utils/locale.js";
+import { snippetFromShareMessages } from "../utils/shareLink";
 import "./Styles.css";
 
 const API_URL = process.env.REACT_APP_API_URL || '';
@@ -166,6 +167,8 @@ const ShareChat = () => {
         );
     }
 
+    const previewSnippet = data ? snippetFromShareMessages(data.messages) : '';
+
     if (error || !data) {
         return (
             <div className="share-chat-page">
@@ -195,7 +198,21 @@ const ShareChat = () => {
 
             <div className="share-chat-body">
                 <div className="share-chat-body-inner">
-                    <h1 className="share-chat-title">{data.title || 'Чат'}</h1>
+                    <div className="share-chat-hero">
+                        <img
+                            className="share-chat-hero-icon"
+                            src="/favicon-195.png"
+                            width={48}
+                            height={48}
+                            alt=""
+                        />
+                        <div className="share-chat-hero-text">
+                            <h1 className="share-chat-title">{data.title || 'Чат'}</h1>
+                            {previewSnippet ? (
+                                <p className="share-chat-preview-snippet">{previewSnippet}</p>
+                            ) : null}
+                        </div>
+                    </div>
                     <div className="share-chat-messages">
                         {(data.messages || []).map(renderMessage)}
                     </div>

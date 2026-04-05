@@ -13,8 +13,6 @@ def home_view(request):
 
 
 urlpatterns = [
-    # HTML + Open Graph (со слэшем и без — ссылки из клиента без / перед ?)
-    re_path(r'^share/(?P<chat_id>[^/]+)/?$', views.share_chat_html, name='share_chat_html'),
     # Аутентификация
     path('', home_view),
     path('auth/register/', views.register, name='register'),
