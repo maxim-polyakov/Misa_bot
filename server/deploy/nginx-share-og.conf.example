@@ -10,6 +10,7 @@
 # map $http_user_agent $misa_share_og {
 #     default 0;
 #     ~*TelegramBot 1;
+#     ~*Telegram 1;
 #     ~*facebookexternalhit 1;
 #     ~*Facebot 1;
 #     ~*Twitterbot 1;
@@ -19,6 +20,9 @@
 #     ~*vkShare 1;
 #     ~*Discordbot 1;
 # }
+#
+# Проверка с сервера (должны быть строки og:title):
+# curl -sL -A "TelegramBot (like TwitterBot)" "https://misa.baxic.ru/share/ВАШ_CHAT_ID?msg=1,2" | head -40
 
 # location /share/ {
 #     if ($misa_share_og = 1) {
