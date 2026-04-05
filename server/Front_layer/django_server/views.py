@@ -3,7 +3,7 @@ from html import escape as html_escape
 from urllib.parse import quote
 
 from django.conf import settings
-from django.http import JsonResponse, HttpResponse, Http404
+from django.http import JsonResponse, HttpResponse, Http404, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from drf_spectacular.utils import extend_schema
@@ -11,6 +11,15 @@ from Core_layer.Controller_package.Classes import Controller
 from . import openapi_examples as oex
 
 _BEARER = [{'bearerAuth': []}]
+
+# User-Agent краулеров превью ссылок (Telegram, VK, Discord и т.д.)
+_LINK_PREVIEW_CRAWLER_RE = re.compile(
+    r'(?i)(TelegramBot|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|Slackbot|vkShare|Discordbot|Discord|Googlebot|bingbot)',
+)
+
+
+def _is_link_preview_crawler_ua(user_agent):
+    return bool(user_agent and _LINK_PREVIEW_CRAWLER_RE.search(user_agent))
 
 
 # Контроллер регистрации
@@ -259,8 +268,14 @@ def _share_description_for_og(messages, max_len=220):
 def share_chat_html(request, chat_id):
     """
     HTML с Open Graph для /share/<chat_id>/ — для краулеров (Telegram и др.).
-    Пользователи открывают тот же URL в браузере и получают SPA с фронта.
+    Обычный браузер: редирект на WEB_APP_PUBLIC_URL (SPA), чтобы ссылку можно было
+    отдавать с домена API — превью в мессенджерах без отдельного nginx на веб-домене.
     """
+    ua = request.META.get('HTTP_USER_AGENT', '') or ''
+    public = getattr(settings, 'WEB_APP_PUBLIC_URL', '').strip().rstrip('/')
+    if public and not _is_link_preview_crawler_ua(ua):
+        return HttpResponseRedirect(public + request.get_full_path())
+
     ctrlr = Controller.Controller()
     try:
         payload = ctrlr.get_share_chat_payload(request, chat_id)

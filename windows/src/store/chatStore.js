@@ -470,8 +470,8 @@ class ChatStore {
 
   getShareLink(chatId, messageIds) {
     const id = typeof chatId === "string" ? chatId : this.currentChatId;
-    if (!id || typeof id !== "string") return WEB_APP_URL;
-    let url = `${WEB_APP_URL.replace(/\/$/, "")}/share/${encodeURIComponent(id)}`;
+    if (!id || typeof id !== "string") return API_URL.replace(/\/$/, "") || WEB_APP_URL;
+    let url = `${API_URL.replace(/\/$/, "")}/share/${encodeURIComponent(id)}`;
     if (Array.isArray(messageIds) && messageIds.length > 0) {
       url += `?msg=${encodeURIComponent(messageIds.join(","))}`;
     }

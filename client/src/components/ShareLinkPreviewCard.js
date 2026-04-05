@@ -43,7 +43,7 @@ export default function ShareLinkPreviewCard({ chatId, query }) {
 
     const href =
         typeof window !== "undefined"
-            ? `${window.location.origin}/share/${encodeURIComponent(chatId)}${query ? `?${query}` : ""}`
+            ? `${getApiBaseUrl()}/share/${encodeURIComponent(chatId)}${query ? `?${query}` : ""}`
             : "#";
 
     if (state.loading) {

@@ -8,9 +8,8 @@ import { getApiBaseUrl } from "../utils/apiBase";
 import "./Styles.css";
 
 /**
- * Публичная страница /share/:chatId (SPA). Данные — GET /api/chats/.../share/.
- * Open Graph для Telegram и др. отдаёт Django (share_chat_html) при первом GET по тому же пути на API;
- * на веб-домене nginx проксирует ботов на API — см. server/deploy/nginx-share-og.conf.example.
+ * SPA на веб-домене (после редиректа с https://<API>/share/:id). Данные — GET /api/chats/.../share/.
+ * Превью в Telegram: GET на домен API /share/... → share_chat_html (og:*); браузер — редирект сюда.
  */
 
 const getBlockType = (language) => {

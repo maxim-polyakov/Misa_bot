@@ -165,7 +165,11 @@ class ChatStore {
     }
 
     getShareLink() {
-        const base = typeof window !== 'undefined' ? window.location.origin : '';
+        // Ссылка на домене API: Django отдаёт og:* ботам; браузер редиректит на веб (SPA)
+        const api = (process.env.REACT_APP_API_URL || '').trim().replace(/\/$/, '');
+        const base =
+            api ||
+            (typeof window !== 'undefined' ? window.location.origin : '');
         const chatId = this.shareModeForChatId || this.currentChatId;
         if (!chatId) return base;
         let url = `${base}/share/${encodeURIComponent(chatId)}`;
