@@ -1,25 +1,14 @@
 # =============================================================================
-# Open Graph для https://<WEB>/share/<chat_id>/ (Telegram, VK, …)
+# Превью ссылок (Open Graph) для https://<WEB>/share/<chat_id>/
 # =============================================================================
-# Ссылки в клиентах ведут на веб-домен. Боты превью должны получить HTML с og:*
-# с Django (тот же хост, что и API), а не index.html SPA.
+# Django отдаёт HTML с og:* по GET на API: /share/<chat_id>/ (см. share_chat_html).
+# На домене веб-клиента nginx: боты превью → прокси на API, браузеры → SPA.
 #
-# В http { } — map; в server { } для 443 — location /share (см. ниже).
+# В http { } — map; в server { } для 443 (misa.baxic.ru) — location /share.
 # После правок: sudo nginx -t && sudo systemctl reload nginx
 #
-# --- Диагностика (на VPS или с ПК), если превью в Telegram пустое:
-#
-# 1) HTML с API напрямую (обход nginx фронта):
-#    curl -sL "https://ВАШ_API_HOST/share/CHAT_ID" | grep -E 'og:title|og:description'
-#    Если пусто или 404 — Django/БД/CHAT_ID, не nginx.
-#
-# 2) Тот же URL через веб-домен с User-Agent как у Telegram:
-#    curl -sL -A "TelegramBot (like TwitterBot)" "https://misa.baxic.ru/share/CHAT_ID" | grep og:title
-#    Если (1) ок, а (2) нет — map/location на фронте: боту отдаётся SPA.
-#
-# 3) Кэш Telegram: после исправлений пришлите ссылку с новым ?msg= или другой чат.
-#
-# 4) Фаервол/WAF: запросы превью идут с IP Telegram (сети 149.154.x.x и др.), не с телефона.
+# Проверка:
+#   curl -sL -A "TelegramBot (like TwitterBot)" "https://misa.baxic.ru/share/CHAT_ID" | grep og:title
 
 # ----- вставить в http { } -----
 
@@ -36,8 +25,8 @@ map $http_user_agent $misa_share_og {
     ~*Discordbot 1;
 }
 
-# ----- вставить в server { } для listen 443 ssl; server_name <веб-клиент>; -----
-# Замените бэкенд API на свой (тот же, где Django и маршрут ^share/).
+# ----- вставить в server { } listen 443; server_name <веб-клиент>; -----
+# Замените https://misaapi.baxic.ru на ваш хост API (Django).
 
 # location /share {
 #     set $misa_share_backend http://127.0.0.1:3001;
@@ -55,4 +44,4 @@ map $http_user_agent $misa_share_og {
 #     proxy_set_header X-Forwarded-Proto $scheme;
 # }
 #
-# Внутри if только set. Не класть в if: proxy_pass, proxy_set_header, proxy_ssl_*.
+# Внутри if только set. proxy_pass и proxy_set_header — снаружи if.

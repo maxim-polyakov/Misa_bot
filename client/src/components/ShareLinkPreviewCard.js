@@ -4,7 +4,7 @@ import { snippetFromShareMessages } from "../utils/shareLink";
 import { getApiBaseUrl } from "../utils/apiBase";
 
 /**
- * Превью публичной ссылки на чат внутри ленты сообщений (данные с GET /api/chats/.../share/).
+ * Карточка превью ссылки в чате (JSON с API). Превью в Telegram — HTML og:* с Django, не этот компонент.
  */
 export default function ShareLinkPreviewCard({ chatId, query }) {
     const { t } = useLocale();

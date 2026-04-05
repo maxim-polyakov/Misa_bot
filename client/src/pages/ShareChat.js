@@ -7,7 +7,11 @@ import { snippetFromShareMessages } from "../utils/shareLink";
 import { getApiBaseUrl } from "../utils/apiBase";
 import "./Styles.css";
 
-/** Публичная страница шаринга: только SPA (nginx отдаёт index.html). Данные — GET /api/chats/.../share/ с API. */
+/**
+ * Публичная страница /share/:chatId (SPA). Данные — GET /api/chats/.../share/.
+ * Open Graph для Telegram и др. отдаёт Django (share_chat_html) при первом GET по тому же пути на API;
+ * на веб-домене nginx проксирует ботов на API — см. server/deploy/nginx-share-og.conf.example.
+ */
 
 const getBlockType = (language) => {
     const lang = (language || 'plaintext').toLowerCase();
@@ -91,11 +95,13 @@ const ShareChat = () => {
         fetchChat();
     }, [chatId, searchParams]);
 
-    // Обновляем title для SEO и превью при шаринге (хук должен быть до любых return)
+    // Заголовок вкладки в браузере (og:* для мессенджеров — только с сервера, не дублируем в <head>)
     useEffect(() => {
         if (data?.title) {
             document.title = `${data.title} | Misa AI`;
-            return () => { document.title = 'Misa AI Chat'; };
+            return () => {
+                document.title = "Misa AI Chat";
+            };
         }
     }, [data?.title]);
 

@@ -1,4 +1,9 @@
-from django.http import JsonResponse
+import re
+from html import escape as html_escape
+from urllib.parse import quote
+
+from django.conf import settings
+from django.http import JsonResponse, HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from drf_spectacular.utils import extend_schema
@@ -232,6 +237,86 @@ def chats_list_or_create(request):
 def chats_export(request):
     ctrlr = Controller.Controller()
     return ctrlr.chats_export(request)
+
+
+def _share_description_for_og(messages, max_len=220):
+    """Краткий текст для og:description (первое содержательное сообщение)."""
+    for m in messages or []:
+        c = m.get('content') or ''
+        if not str(c).strip():
+            continue
+        text = re.sub(r'```[\s\S]*?```', '', str(c))
+        text = re.sub(r'\s+', ' ', text).strip()
+        if not text:
+            continue
+        if len(text) > max_len:
+            text = text[: max_len - 1] + '…'
+        return text
+    return 'Misa AI — чат с искусственным интеллектом'
+
+
+@csrf_exempt
+def share_chat_html(request, chat_id):
+    """
+    HTML с Open Graph для /share/<chat_id>/ — для краулеров (Telegram и др.).
+    Пользователи открывают тот же URL в браузере и получают SPA с фронта.
+    """
+    ctrlr = Controller.Controller()
+    try:
+        payload = ctrlr.get_share_chat_payload(request, chat_id)
+    except Exception:
+        raise Http404('Chat not found')
+    if payload is None:
+        raise Http404('Chat not found')
+
+    title = payload.get('title') or 'Чат'
+    messages = payload.get('messages') or []
+    site_base = getattr(settings, 'WEB_APP_PUBLIC_URL', '').rstrip('/')
+    og_desc = _share_description_for_og(messages)
+    og_title = html_escape(f'{title} | Misa AI')
+    og_desc_esc = html_escape(og_desc)
+
+    og_url = f'{site_base}/share/{quote(str(chat_id), safe="")}'
+    msg_q = request.GET.get('msg')
+    if msg_q:
+        og_url += f'?msg={quote(msg_q, safe="")}'
+
+    og_image = f'{site_base}/favicon-195.png' if site_base else ''
+    og_image_esc = html_escape(og_image) if og_image else ''
+
+    parts = [
+        '<!DOCTYPE html>',
+        '<html lang="ru">',
+        '<head>',
+        '<meta charset="utf-8" />',
+        '<meta name="viewport" content="width=device-width, initial-scale=1" />',
+        f'<meta name="description" content="{og_desc_esc}" />',
+        f'<meta property="og:title" content="{og_title}" />',
+        f'<meta property="og:description" content="{og_desc_esc}" />',
+        f'<meta property="og:url" content="{html_escape(og_url)}" />',
+        '<meta property="og:type" content="website" />',
+        '<meta property="og:site_name" content="Misa AI" />',
+    ]
+    if og_image:
+        parts.append(f'<meta property="og:image" content="{og_image_esc}" />')
+        parts.append(f'<meta property="og:image:alt" content="{og_title}" />')
+    parts.extend([
+        '<meta name="twitter:card" content="summary_large_image" />',
+        f'<meta name="twitter:title" content="{og_title}" />',
+        f'<meta name="twitter:description" content="{og_desc_esc}" />',
+    ])
+    if og_image:
+        parts.append(f'<meta name="twitter:image" content="{og_image_esc}" />')
+    parts.extend([
+        f'<link rel="canonical" href="{html_escape(og_url)}" />',
+        f'<title>{og_title}</title>',
+        '</head>',
+        '<body>',
+        f'<p><a href="{html_escape(og_url)}">Открыть чат в Misa AI</a></p>',
+        '</body>',
+        '</html>',
+    ])
+    return HttpResponse('\n'.join(parts), content_type='text/html; charset=utf-8')
 
 
 @extend_schema(

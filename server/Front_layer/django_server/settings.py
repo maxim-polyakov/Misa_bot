@@ -21,6 +21,10 @@ INSTALLED_APPS = [
 
 # API URL из .env
 API_URL = os.getenv('API_URL', '')
+# Публичный URL веб-клиента (og:url, og:image в share_chat_html)
+WEB_APP_PUBLIC_URL = (
+    os.getenv('WEB_APP_PUBLIC_URL') or os.getenv('FRONTEND_URL') or 'https://misa.baxic.ru'
+).rstrip('/')
 
 # SECRET_KEY обязателен для Django (сессии, CSRF, шаблоны)
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-in-production')
