@@ -7,7 +7,6 @@ resphotos/*
 audios/*
 downloads/*
 images/*
-!images/og_share.png
 *.pt
 *.exe
 *.log
