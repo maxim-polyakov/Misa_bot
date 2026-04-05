@@ -1,7 +1,5 @@
 import { makeAutoObservable } from "mobx";
 import { jwtDecode } from "jwt-decode";
-import { buildSharePageQueryString } from "../utils/shareLink";
-
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 const API_URL = process.env.REACT_APP_API_URL || '';
 
@@ -173,10 +171,11 @@ class ChatStore {
             (typeof window !== 'undefined' ? window.location.origin : '');
         const chatId = this.shareModeForChatId || this.currentChatId;
         if (!chatId) return base;
-        const qs = buildSharePageQueryString({
-            messageIds: this.selectedMessageIds?.length > 0 ? this.selectedMessageIds : undefined,
-        });
-        return `${base}/share/${encodeURIComponent(chatId)}?${qs}`;
+        let url = `${base}/share/${encodeURIComponent(chatId)}`;
+        if (this.selectedMessageIds?.length > 0) {
+            url += `?msg=${encodeURIComponent(this.selectedMessageIds.join(','))}`;
+        }
+        return url;
     }
 
     // Получение ID текущего пользователя

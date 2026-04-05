@@ -54,13 +54,17 @@ def _og_share_image_dimensions(og_image_url):
     return None, None
 
 
-def _share_is_link_preview_bot(request):
-    """Краулеры превью не исполняют JS; без редиректа на SPA — проще для Telegram и др."""
+def _share_should_redirect_to_spa(request):
+    """
+    Редирект location.replace() только для обычного браузера по ссылке.
+    Краулеры Telegram и др. часто без Sec-Fetch-Mode или с другим UA — им нельзя вставлять script:
+    иначе превью в Telegram может не собираться.
+    """
     ua = (request.META.get('HTTP_USER_AGENT') or '').lower()
-    return any(
-        bot in ua
-        for bot in (
-            'telegrambot',
+    if any(
+        x in ua
+        for x in (
+            'telegram',
             'twitterbot',
             'facebookexternalhit',
             'whatsapp',
@@ -70,8 +74,19 @@ def _share_is_link_preview_bot(request):
             'vkshare',
             'pinterestbot',
             'skypeuripreview',
+            'embedly',
+            'googlebot',
+            'bingbot',
+            'yandexbot',
+            'bytespider',
         )
-    )
+    ):
+        return False
+    if request.META.get('HTTP_SEC_FETCH_MODE') == 'navigate':
+        return True
+    if 'mozilla' in ua and 'bot' not in ua:
+        return True
+    return False
 
 
 def _share_og_absolute_api_url(request, path):
@@ -423,13 +438,18 @@ def share_chat_html(request, chat_id):
         '<body>',
         f'<p><a href="{html_escape(og_url)}">Открыть чат в Misa AI</a></p>',
     ])
-    if public and not _share_is_link_preview_bot(request):
+    if public and _share_should_redirect_to_spa(request):
         spa_url = public + request.get_full_path()
         parts.append(f'<script>location.replace({json.dumps(spa_url)});</script>')
     parts.extend(['</body>', '</html>'])
     resp = HttpResponse('\n'.join(parts), content_type='text/html; charset=utf-8')
     resp['Cache-Control'] = 'public, max-age=300'
     return resp
+
+
+def robots_txt(request):
+    """Чтобы краулеры (в т.ч. проверка robots перед превью) не получали 401 от JWT middleware."""
+    return HttpResponse("User-agent: *\nAllow: /\n", content_type="text/plain; charset=utf-8")
 
 
 @extend_schema(

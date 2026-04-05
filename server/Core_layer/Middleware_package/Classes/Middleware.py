@@ -40,6 +40,8 @@ class Middleware(IMiddleware.IMiddleware):
             # OG/Telegram/Discord: og:image с API — /images/og_share.png и др. без JWT
             if request.path.startswith('/images/'):
                 return self.get_response(request)
+            if request.path == '/robots.txt':
+                return self.get_response(request)
 
             if (request.path in public_paths or request.path.startswith('/swagger') or
                     request.path.startswith('/redoc') or request.path.startswith('/static/') or

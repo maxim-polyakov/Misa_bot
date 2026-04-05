@@ -13,6 +13,7 @@ def home_view(request):
 
 
 urlpatterns = [
+    path('robots.txt', views.robots_txt, name='robots_txt'),
     # HTML + Open Graph для превью ссылок (Telegram и др.); со слэшем и без
     re_path(r'^share/(?P<chat_id>[^/]+)/?$', views.share_chat_html, name='share_chat_html'),
     # Аутентификация
