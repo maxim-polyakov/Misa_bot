@@ -13,6 +13,8 @@ def home_view(request):
 
 
 urlpatterns = [
+    # HTML + Open Graph для шаринга ссылок в мессенджерах (до catch-all статики)
+    path('share/<str:chat_id>/', views.share_chat_html, name='share_chat_html'),
     # Аутентификация
     path('', home_view),
     path('auth/register/', views.register, name='register'),

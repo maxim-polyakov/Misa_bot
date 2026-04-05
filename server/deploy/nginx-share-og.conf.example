@@ -1,0 +1,33 @@
+# Пример для фронтенд-домена (например misa.baxic.ru), где отдаётся SPA.
+# Ссылки шаринга остаются https://<WEB>/share/<chat_id>/ — без правок в клиентах.
+#
+# Боты превью (Telegram, VK, Facebook и т.д.) проксируются на Django API, где уже есть
+# GET /share/<chat_id>/ с Open Graph. Обычные браузеры получают index.html (React).
+#
+# Вставьте map в блок http { }, location — в server { } для веб-клиента.
+# Замените UPSTREAM_API на ваш API (тот же хост, где крутится Django с этим маршрутом).
+
+# map $http_user_agent $misa_share_og {
+#     default 0;
+#     ~*TelegramBot 1;
+#     ~*facebookexternalhit 1;
+#     ~*Facebot 1;
+#     ~*Twitterbot 1;
+#     ~*LinkedInBot 1;
+#     ~*WhatsApp 1;
+#     ~*Slackbot 1;
+#     ~*vkShare 1;
+#     ~*Discordbot 1;
+# }
+
+# location /share/ {
+#     if ($misa_share_og = 1) {
+#         proxy_pass https://UPSTREAM_API;
+#         # Host должен совпадать с тем, что ожидает Django (обычно хост API)
+#         proxy_set_header Host UPSTREAM_API_HOST;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#         break;
+#     }
+#     try_files $uri /index.html;
+# }

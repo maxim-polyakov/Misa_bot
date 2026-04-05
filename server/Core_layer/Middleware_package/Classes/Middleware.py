@@ -35,6 +35,9 @@ class Middleware(IMiddleware.IMiddleware):
             # Публичный просмотр шаринга чата — /api/chats/<id>/share/
             if (request.path.startswith('/api/chats/') and request.path.endswith('/share/')):
                 return self.get_response(request)
+            # HTML с Open Graph для мессенджеров (Telegram и т.д.) — /share/<id>/
+            if request.path.startswith('/share/'):
+                return self.get_response(request)
 
             if (request.path in public_paths or request.path.startswith('/swagger') or
                     request.path.startswith('/redoc') or request.path.startswith('/static/') or

@@ -1048,23 +1048,31 @@ class Controller(IController.IController):
             return cls.error_response(str(e), 500)
 
     @classmethod
+    def get_share_chat_payload(cls, request, chat_id):
+        """Данные публичного шаринга (как JSON API). Возвращает dict или None, если чат не найден."""
+        df_chat = cls.__dbc.execute_query(
+            "SELECT id, title FROM chat.chats WHERE id = %s",
+            (chat_id,),
+        )
+        if df_chat is None or df_chat.empty:
+            return None
+        title = str(df_chat.iloc[0].get("title", "")).strip() or "Новый чат"
+        messages = ChatService.get_messages(chat_id)
+        msg_param = request.GET.get("msg") if hasattr(request, "GET") else None
+        if msg_param:
+            msg_ids = {m.strip() for m in msg_param.split(",") if m.strip()}
+            if msg_ids:
+                messages = [m for m in messages if str(m.get("id", "")) in msg_ids]
+        return {"id": chat_id, "title": title, "messages": messages}
+
+    @classmethod
     def chats_share_public(cls, request, chat_id):
         """GET /api/chats/<id>/share/ — публичный просмотр чата (без авторизации). ?msg=id1,id2 — только выбранные сообщения."""
         try:
-            df_chat = cls.__dbc.execute_query(
-                "SELECT id, title FROM chat.chats WHERE id = %s",
-                (chat_id,)
-            )
-            if df_chat is None or df_chat.empty:
+            payload = cls.get_share_chat_payload(request, chat_id)
+            if payload is None:
                 return cls.error_response("Chat not found", 404)
-            title = str(df_chat.iloc[0].get('title', '')).strip() or 'Новый чат'
-            messages = ChatService.get_messages(chat_id)
-            msg_param = request.GET.get('msg') if hasattr(request, 'GET') else None
-            if msg_param:
-                msg_ids = {m.strip() for m in msg_param.split(',') if m.strip()}
-                if msg_ids:
-                    messages = [m for m in messages if str(m.get('id', '')) in msg_ids]
-            return cls.success_response({'id': chat_id, 'title': title, 'messages': messages})
+            return cls.success_response(payload)
         except Exception as e:
             logging.error(f"chats_share_public error: {str(e)}")
             return cls.error_response(str(e), 500)
