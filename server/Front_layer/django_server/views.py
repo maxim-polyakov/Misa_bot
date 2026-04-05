@@ -17,15 +17,16 @@ _BEARER = [{'bearerAuth': []}]
 
 def _share_og_image_url(request, site_base):
     """
-    og:image: сначала images/misaimg.png на том же хосте, что и HTML (если файл есть);
-    иначе favicon на WEB_APP_PUBLIC_URL — чтобы Discord снова показывал картинку в превью.
+    Как изначально: og:image с WEB_APP_PUBLIC_URL (favicon-195.png на веб-клиенте) — превью в Discord
+    как у вас на скрине. Запасной вариант без веб-домена — images/ на API.
     """
-    path = os.path.join(settings.BASE_DIR, 'images', 'misaimg.png')
-    if os.path.isfile(path):
-        return request.build_absolute_uri('/images/misaimg.png')
     base = (site_base or '').strip().rstrip('/')
     if base:
         return f'{base}/favicon-195.png'
+    img_dir = os.path.join(settings.BASE_DIR, 'images')
+    for name in ('misaimg.png', 'og_share.png'):
+        if os.path.isfile(os.path.join(img_dir, name)):
+            return request.build_absolute_uri(f'/images/{name}')
     return ''
 
 
