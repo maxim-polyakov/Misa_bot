@@ -12,7 +12,7 @@ class Drawer(IDrawer.IDrawer):
 
     That's a class drawer. It describes an image drawing algorithm.
     Сохраняет изображения в S3 (Yandex Object Storage) или локально в images/ при отсутствии S3.
-    source: 'telegram'|'discord' — помечает для регулярной очистки.
+    source: 'telegram'|'discord' — префикс каталога в S3 (images/telegram|discord/); автоочистка отключена.
 
     """
     message_text = None
@@ -33,7 +33,7 @@ class Drawer(IDrawer.IDrawer):
                 p = requests.get(image_url)
                 image_bytes = p.content
 
-                # Пробуем загрузить в S3 (source=telegram/discord для пометки под очистку)
+                # Пробуем загрузить в S3 (префикс по source)
                 s3_url = upload_image(image_bytes, source=cls.__source)
                 if s3_url:
                     logging.info('The drawer.draw process has completed successfully (S3)')
