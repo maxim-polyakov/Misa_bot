@@ -1,8 +1,29 @@
 import logging
+import re
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Bot_package.Interfaces import IMonitor
 from Core_layer.Answer_package.Classes import GptAnswer
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
+
+
+def _text_without_urls_for_misa_trigger(text):
+    """
+    Убирает из текста фрагменты, похожие на URL, чтобы срабатывание по misa/миса/миша
+    не происходило только из-за подстроки в ссылке.
+    """
+    if not text:
+        return text
+    s = text
+    s = re.sub(r'https?://[^\s<>\]]+', ' ', s, flags=re.IGNORECASE)
+    s = re.sub(r'www\.[^\s<>\]]+', ' ', s, flags=re.IGNORECASE)
+    # без схемы, но в имени хоста есть misa: misa.example.ru/share
+    s = re.sub(
+        r'(^|[\s(>])([^\s<>\]]*misa[^\s<>\]]*\.(?:[a-z0-9-]+\.)+[a-z]{2,}[^\s<>\]]*)',
+        r'\1',
+        s,
+        flags=re.IGNORECASE,
+    )
+    return s
 
 
 class MessageMonitor(IMonitor.IMonitor):
@@ -111,13 +132,14 @@ class MessageMonitor(IMonitor.IMonitor):
             # insert the processed text into the database
             cls._dbc.insert_to(lowertext)
             outstr = ''
-            # check if the message contains specific keywords
-            if (lowertext.count('миса') > 0
-                or lowertext.lower().count('misa') > 0
-                or lowertext.count('миша') > 0
-                or lowertext.count('misha') > 0
-                or lowertext.count('миса,')>0
-                or lowertext.count('иса')>0 and pltype != 'server'):
+            text_for_trigger = _text_without_urls_for_misa_trigger(lowertext)
+            # check if the message contains specific keywords (не в части ссылки)
+            if (text_for_trigger.count('миса') > 0
+                or text_for_trigger.lower().count('misa') > 0
+                or text_for_trigger.count('миша') > 0
+                or text_for_trigger.count('misha') > 0
+                or text_for_trigger.count('миса,') > 0
+                or text_for_trigger.count('иса') > 0 and pltype != 'server'):
                 # perform text replacements (currently empty replacements)
                 lowertext = (lowertext.replace('миса ', '')
                              .replace('misa ', '')
