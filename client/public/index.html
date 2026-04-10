@@ -10,7 +10,10 @@
     <meta property="og:description" content="Misa Chat - современный мессенджер" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Misa AI" />
-    <meta property="og:image" content="%PUBLIC_URL%/misa.png" />
+    <!-- Абсолютные URL подставляет scripts/patch-index-og.js при сборке (REACT_APP_WEB_ORIGIN), как у /share/ на API -->
+    <meta property="og:url" content="__OG_SITE_ORIGIN__/chat" />
+    <meta property="og:image" content="__OG_SITE_ORIGIN__/misa.png" />
+    <meta property="og:image:secure_url" content="__OG_SITE_ORIGIN__/misa.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="800" />
     <meta property="og:image:height" content="1120" />
@@ -18,8 +21,9 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Misa Chat - современный мессенджер" />
     <meta name="twitter:description" content="Misa Chat - современный мессенджер" />
-    <meta name="twitter:image" content="%PUBLIC_URL%/misa.png" />
-    <link rel="image_src" href="%PUBLIC_URL%/misa.png" />
+    <meta name="twitter:image" content="__OG_SITE_ORIGIN__/misa.png" />
+    <link rel="canonical" href="__OG_SITE_ORIGIN__/chat" />
+    <link rel="image_src" href="__OG_SITE_ORIGIN__/misa.png" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/favicon-195.png" sizes="195x195" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />

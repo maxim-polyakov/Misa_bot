@@ -20,7 +20,7 @@
   "scripts": {
     "test": "react-scripts test",
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && node scripts/patch-index-og.js",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
