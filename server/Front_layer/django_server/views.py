@@ -46,7 +46,8 @@ def _og_share_image_dimensions(og_image_url):
             p = os.path.join(img_dir, name)
             if os.path.isfile(p):
                 return _png_ihdr_dimensions(p)
-    if og_image_url.rstrip('/').lower().endswith('misa.png'):
+    path_only = og_image_url.split('?', 1)[0].rstrip('/').lower()
+    if path_only.split('/')[-1] == 'misa.png':
         p = os.path.join(img_dir, 'og_share.png')
         if os.path.isfile(p):
             return _png_ihdr_dimensions(p)
@@ -418,6 +419,8 @@ def share_chat_html(request, chat_id):
         parts.append(f'<meta property="og:image" content="{og_image_esc}" />')
         if og_image.lower().startswith('https://'):
             parts.append(f'<meta property="og:image:secure_url" content="{og_image_esc}" />')
+        if og_image.lower().split('?', 1)[0].endswith('.png'):
+            parts.append('<meta property="og:image:type" content="image/png" />')
         parts.append(f'<meta property="og:image:alt" content="{og_title}" />')
         if og_w and og_h:
             parts.append(f'<meta property="og:image:width" content="{og_w}" />')
@@ -429,6 +432,7 @@ def share_chat_html(request, chat_id):
     ])
     if og_image:
         parts.append(f'<meta name="twitter:image" content="{og_image_esc}" />')
+        parts.append(f'<meta name="twitter:image:alt" content="{og_title}" />')
     parts.extend([
         f'<link rel="canonical" href="{html_escape(og_url)}" />',
         f'<title>{og_title}</title>',
