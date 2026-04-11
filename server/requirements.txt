@@ -161,4 +161,5 @@ yarl==1.8.2
 youtube-dl==2021.12.17
 yt-dlp
 disnake==2.12.0
+dave.py>=0.1.0
 validators==0.34.0
