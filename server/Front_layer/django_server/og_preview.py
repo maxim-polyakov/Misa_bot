@@ -3,7 +3,10 @@ Open Graph для SPA (/chat и др.). Язык превью (как в нас�
   1) query ?lang= в X-Original-URI (клиент подставляет из getLanguage / localStorage);
   2) cookie misa_locale (если бот передал);
   3) Accept-Language (если пусто — en).
-Строки — client/src/utils/ogPreviewStrings.js (TAGLINES).
+
+Картинка превью — тот же файл, что client/public/misa.png (в сборке — /misa.png на веб-домене).
+В meta: og:image = public_misa_image_url() (как %PUBLIC_URL%/misa.png в index.html; опционально OG_IMAGE_QUERY).
+Строки текста — client/src/utils/ogPreviewStrings.js (TAGLINES).
 """
 import os
 import re
@@ -170,6 +173,18 @@ def _parse_accept_language(header: str) -> str:
     return "en"
 
 
+def public_misa_image_url(site_base: str) -> str:
+    """Тот же файл, что client/public/misa.png → {WEB_APP_PUBLIC_URL}/misa.png."""
+    base = (site_base or "").strip().rstrip("/")
+    q = getattr(settings, "OG_IMAGE_QUERY", "") or ""
+    q = str(q).strip()
+    if not q:
+        return f"{base}/misa.png"
+    if q.startswith("?"):
+        q = q[1:].strip()
+    return f"{base}/misa.png?{q}"
+
+
 def _safe_spa_path(path_only: str) -> str:
     p = unquote(path_only or "").strip() or "/chat"
     if ".." in p or p.startswith("//"):
@@ -197,8 +212,7 @@ def _sub_full(html: str, pattern: str, replacement: str) -> str:
 def inject_og_meta(html: str, preview: str, og_page_url: str, site_base: str) -> str:
     esc = html_escape(preview, quote=True)
     url_esc = html_escape(og_page_url, quote=True)
-    base = site_base.rstrip("/")
-    img_esc = html_escape(f"{base}/misa.png", quote=True)
+    img_esc = html_escape(public_misa_image_url(site_base), quote=True)
 
     # Сначала картинка (как в _minimal_html / index.html — до длинного Unicode в title/description):
     # у части краулеров превью ломается, если og:image идёт после «тяжёлых» мета.
@@ -264,21 +278,20 @@ def inject_og_meta_with_locale(html: str, preview: str, og_page_url: str, site_b
 def _minimal_html(preview: str, og_page_url: str, site_base: str, lang: str) -> str:
     esc = html_escape(preview, quote=True)
     url_esc = html_escape(og_page_url, quote=True)
-    base = site_base.rstrip("/")
-    img = html_escape(f"{base}/misa.png", quote=True)
+    img = html_escape(public_misa_image_url(site_base), quote=True)
     hl = _intl_html_lang(lang)
     return f"""<!DOCTYPE html>
 <html lang="{hl}">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5"/>
-<meta name="theme-color" content="#000000"/>
 <meta property="og:image" content="{img}"/>
 <meta property="og:image:secure_url" content="{img}"/>
 <meta property="og:image:type" content="image/png"/>
 <meta property="og:image:width" content="800"/>
 <meta property="og:image:height" content="1120"/>
 <meta property="og:image:alt" content="Misa AI"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5"/>
+<meta name="theme-color" content="#000000"/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="Misa AI"/>
 <meta property="og:url" content="{url_esc}"/>
@@ -345,4 +358,6 @@ def spa_og_preview_response(request):
     html = inject_og_meta_with_locale(html, preview, og_page_url, site, lang)
     resp = HttpResponse(html, content_type="text/html; charset=utf-8")
     resp["Cache-Control"] = "public, max-age=300"
+    img_abs = public_misa_image_url(site)
+    resp["Link"] = f'<{img_abs}>; rel=preload; as=image'
     return resp

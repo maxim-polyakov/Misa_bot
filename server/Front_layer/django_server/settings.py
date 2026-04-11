@@ -43,6 +43,9 @@ WEB_APP_PUBLIC_URL = (
     os.getenv('WEB_APP_PUBLIC_URL') or os.getenv('FRONTEND_URL') or 'https://misa.baxic.ru'
 ).rstrip('/')
 
+# Опционально: query к /misa.png в og:image (например v=2) — сброс кэша Discord при «иногда нет картинки».
+OG_IMAGE_QUERY = (os.getenv('OG_IMAGE_QUERY') or '').strip()
+
 # Опционально: путь к client/build/index.html для GET /og/preview/ (иначе — минимальный HTML, og:* всё равно корректны).
 SPA_INDEX_HTML_PATH = (os.getenv('SPA_INDEX_HTML_PATH') or '').strip()
 
