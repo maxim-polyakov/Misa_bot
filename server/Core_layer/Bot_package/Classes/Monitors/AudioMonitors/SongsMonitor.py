@@ -208,16 +208,41 @@ class SongsMonitor(IMonitor.IMonitor):
             return e
 
     @classmethod
+    def _audio_url_from_ytdl_data(cls, data):
+        """Достаёт URL потока из ответа yt-dlp (формат YouTube менялся — не всегда есть data['url'])."""
+        if not data:
+            return None
+        if data.get("url"):
+            return data["url"]
+        entries = data.get("entries")
+        if entries:
+            first = entries[0]
+            if first:
+                u = cls._audio_url_from_ytdl_data(first)
+                if u:
+                    return u
+        for f in data.get("formats") or []:
+            if not f or not f.get("url"):
+                continue
+            if f.get("acodec") and f.get("acodec") != "none":
+                return f["url"]
+        for f in data.get("formats") or []:
+            if f and f.get("url"):
+                return f["url"]
+        return None
+
+    @classmethod
     async def monitor(cls, url):
         # playing songs
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            play_url = (url or "").strip()
             # check if the provided url is not a direct youtube link
-            if cls.youtube_base_url not in url:
+            if cls.youtube_base_url not in play_url:
                 # convert the search query into a url-encoded format
                 query_string = urllib.parse.urlencode({
-                    'search_query': url
+                    'search_query': play_url
                 })
                 # fetch search results from youtube
                 content = urllib.request.urlopen(
@@ -225,14 +250,25 @@ class SongsMonitor(IMonitor.IMonitor):
                 )
                 # extract video ids from the search results
                 search_results = re.findall(r'/watch\?v=(.{11})', content.read().decode())
-                # construct the full youtube video url
-                cls.url = cls.youtube_watch_url + search_results[0]
-            # get the current event loop
-            loop = asyncio.get_event_loop()
-            # run the youtube downloader in an executor (non-blocking)
-            data = await loop.run_in_executor(None, lambda: cls.ytdl.extract_info(url, download=False))
-            # extract the direct audio url from the downloaded data
-            song = data['url']
+                if not search_results:
+                    return 'по запросу ничего не найдено на YouTube'
+                play_url = cls.youtube_watch_url + search_results[0]
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = asyncio.get_event_loop()
+
+            def _extract():
+                return cls.ytdl.extract_info(play_url, download=False)
+
+            data = await loop.run_in_executor(None, _extract)
+            if data is None:
+                return 'не удалось получить данные о видео (yt-dlp вернул None)'
+
+            song = cls._audio_url_from_ytdl_data(data)
+            if not song:
+                return 'не удалось извлечь аудиопоток (обновите yt-dlp: pip install -U yt-dlp)'
+
             # create an ffmpeg audio player for discord
             player = disnake.FFmpegOpusAudio(song, **cls.ffmpeg_options)
             # get the guild (server) id
