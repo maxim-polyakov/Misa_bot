@@ -1,4 +1,5 @@
 import { LANGUAGES } from "./locale.js";
+import { OG_PREVIEW } from "./ogPreviewStrings.js";
 
 export const translations = {
     ru: {
@@ -8439,7 +8440,8 @@ export const translations = {
     },
 };
 
-// Fallback to English for all other languages from LANGUAGES
+// Fallback to English for all other languages from LANGUAGES; OG preview line from ogPreviewStrings
 for (const { code } of LANGUAGES) {
     if (!translations[code]) translations[code] = { ...translations.en };
+    translations[code].ogPreview = OG_PREVIEW[code];
 }

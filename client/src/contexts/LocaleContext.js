@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { getLanguage, setLanguage as setLocale, applyDocumentLocale } from "../utils/locale.js";
 import { translations } from "../utils/translations.js";
+import { applySeoMeta } from "../utils/seoMeta.js";
 
 export const LocaleContext = createContext(null);
 
@@ -15,6 +16,7 @@ export const LocaleProvider = ({ children }) => {
 
     useEffect(() => {
         applyDocumentLocale(locale);
+        applySeoMeta(locale);
     }, [locale]);
 
     useEffect(() => {
