@@ -5,7 +5,7 @@ Open Graph для SPA (/chat и др.). Язык превью (как в нас�
   3) Accept-Language (если пусто — en).
 
 Картинка превью — тот же файл, что client/public/misa.png (в сборке — /misa.png на веб-домене).
-В meta: og:image = public_misa_image_url() (как %PUBLIC_URL%/misa.png в index.html; опционально OG_IMAGE_QUERY).
+В meta: og:image = {WEB_APP_PUBLIC_URL}/misa.png (как %PUBLIC_URL%/misa.png в index.html).
 Строки текста — client/src/utils/ogPreviewStrings.js (TAGLINES).
 """
 import os
@@ -104,6 +104,21 @@ def _intl_html_lang(code: str) -> str:
     return m.get(code, code)
 
 
+def _clean_lang_param(value: str) -> str:
+    """
+    Убирает хвост после ошибочного второго «?» в значении lang
+    (например ?lang=haw?v=1 вместо ?lang=haw&v=1 — иначе lang=«haw?v=1» и не совпадает с TAGLINES).
+    """
+    s = (value or "").strip()
+    if not s:
+        return ""
+    if "?" in s:
+        s = s.split("?", 1)[0].strip()
+    if "&" in s:
+        s = s.split("&", 1)[0].strip()
+    return s
+
+
 def _lang_from_query_string(qs: str) -> str:
     """lang из query исходного URL (X-Original-URI), т.к. запрос к Django идёт на /og/preview/ без этих параметров."""
     if not qs:
@@ -113,14 +128,16 @@ def _lang_from_query_string(qs: str) -> str:
         for key in ("lang", "locale", "l"):
             vals = params.get(key)
             if vals and vals[0]:
-                return vals[0].strip()
+                return _clean_lang_param(vals[0].strip())
     except (TypeError, ValueError):
         pass
     return ""
 
 
 def locale_from_request(request, lang_from_uri: str = "") -> str:
-    raw = (request.GET.get("lang") or "").strip() or (lang_from_uri or "").strip()
+    raw = _clean_lang_param(
+        (request.GET.get("lang") or "").strip() or (lang_from_uri or "").strip()
+    )
     if not raw:
         raw = (request.COOKIES.get("misa_locale") or "").strip()
     if raw:
@@ -174,15 +191,9 @@ def _parse_accept_language(header: str) -> str:
 
 
 def public_misa_image_url(site_base: str) -> str:
-    """Тот же файл, что client/public/misa.png → {WEB_APP_PUBLIC_URL}/misa.png."""
+    """Тот же файл, что client/public/misa.png → {WEB_APP_PUBLIC_URL}/misa.png (без query)."""
     base = (site_base or "").strip().rstrip("/")
-    q = getattr(settings, "OG_IMAGE_QUERY", "") or ""
-    q = str(q).strip()
-    if not q:
-        return f"{base}/misa.png"
-    if q.startswith("?"):
-        q = q[1:].strip()
-    return f"{base}/misa.png?{q}"
+    return f"{base}/misa.png"
 
 
 def _safe_spa_path(path_only: str) -> str:
