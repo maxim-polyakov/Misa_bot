@@ -3,6 +3,7 @@ import asyncio
 import disnake
 import logging
 import urllib.parse, urllib.request, re
+from typing import Optional
 from Core_layer.Bot_package.Interfaces import IMonitor
 
 
@@ -66,6 +67,26 @@ class SongsMonitor(IMonitor.IMonitor):
         vc = guild.voice_client
         if vc is not None:
             cls.voice_clients[guild.id] = vc
+
+    @classmethod
+    def _resolve_play_url_sync(cls, initial: str) -> Optional[str]:
+        """
+        Синхронно: URL watch или None. Только из run_in_executor —
+        иначе urllib блокирует event loop и рвётся голос Discord.
+        """
+        s = (initial or "").strip()
+        if not s:
+            return None
+        if cls.youtube_base_url in s:
+            return s
+        query_string = urllib.parse.urlencode({"search_query": s})
+        req = cls.youtube_results_url + query_string
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            body = resp.read().decode()
+        found = re.findall(r"/watch\?v=(.{11})", body)
+        if not found:
+            return None
+        return cls.youtube_watch_url + found[0]
 
     @classmethod
     async def join(cls):
@@ -231,25 +252,14 @@ class SongsMonitor(IMonitor.IMonitor):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             play_url = (url or "").strip()
-            # check if the provided url is not a direct youtube link
-            if cls.youtube_base_url not in play_url:
-                # convert the search query into a url-encoded format
-                query_string = urllib.parse.urlencode({
-                    'search_query': play_url
-                })
-                # fetch search results from youtube
-                content = urllib.request.urlopen(
-                    cls.youtube_results_url + query_string
-                )
-                # extract video ids from the search results
-                search_results = re.findall(r'/watch\?v=(.{11})', content.read().decode())
-                if not search_results:
-                    return 'по запросу ничего не найдено на YouTube'
-                play_url = cls.youtube_watch_url + search_results[0]
             try:
                 loop = asyncio.get_running_loop()
             except RuntimeError:
                 loop = asyncio.get_event_loop()
+
+            play_url = await loop.run_in_executor(None, cls._resolve_play_url_sync, play_url)
+            if not play_url:
+                return 'по запросу ничего не найдено на YouTube'
 
             def _extract():
                 return cls.ytdl.extract_info(play_url, download=False)
