@@ -44,6 +44,8 @@ class Middleware(IMiddleware.IMiddleware):
                 return self.get_response(request)
             if request.path.startswith('/og/preview'):
                 return self.get_response(request)
+            if request.path == '/api/ui-locale/':
+                return self.get_response(request)
 
             if (request.path in public_paths or request.path.startswith('/swagger') or
                     request.path.startswith('/redoc') or request.path.startswith('/static/') or

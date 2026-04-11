@@ -46,6 +46,9 @@ WEB_APP_PUBLIC_URL = (
 # Опционально: путь к client/build/index.html для GET /og/preview/ (иначе — минимальный HTML, og:* всё равно корректны).
 SPA_INDEX_HTML_PATH = (os.getenv('SPA_INDEX_HTML_PATH') or '').strip()
 
+# Cookie misa_locale с API: общий домен для веб и API (например .baxic.ru), иначе cookie только на хосте API.
+UI_LOCALE_COOKIE_DOMAIN = (os.getenv('UI_LOCALE_COOKIE_DOMAIN') or '').strip()
+
 # SECRET_KEY обязателен для Django (сессии, CSRF, шаблоны)
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-in-production')
 
@@ -112,7 +115,13 @@ else:
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         },
     }
-CORS_ALLOW_ALL_ORIGINS = True
+_cors_allowed = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
+if _cors_allowed:
+    CORS_ALLOWED_ORIGINS = [x.strip() for x in _cors_allowed.split(',') if x.strip()]
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOW_CREDENTIALS = True
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
 # Разрешённые клиенты: web (client/), android (android/)
 ALLOWED_CLIENTS = ['web', 'android']
 

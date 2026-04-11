@@ -1,11 +1,14 @@
 """
-Open Graph для SPA (/chat и др.): боты не выполняют JS — строки по Accept-Language
-(синхронно с client/src/utils/ogPreviewStrings.js).
+Open Graph для SPA (/chat и др.). Язык превью (как в настройках сайта):
+  1) query ?lang= в X-Original-URI (клиент подставляет из getLanguage / localStorage);
+  2) cookie misa_locale (если бот передал);
+  3) Accept-Language (если пусто — en).
+Строки — client/src/utils/ogPreviewStrings.js (TAGLINES).
 """
 import os
 import re
 from html import escape as html_escape
-from urllib.parse import unquote
+from urllib.parse import parse_qs, unquote
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseNotAllowed
@@ -98,15 +101,34 @@ def _intl_html_lang(code: str) -> str:
     return m.get(code, code)
 
 
-def locale_from_request(request) -> str:
-    raw = (request.GET.get("lang") or "").strip()
+def _lang_from_query_string(qs: str) -> str:
+    """lang из query исходного URL (X-Original-URI), т.к. запрос к Django идёт на /og/preview/ без этих параметров."""
+    if not qs:
+        return ""
+    try:
+        params = parse_qs(qs, keep_blank_values=False)
+        for key in ("lang", "locale", "l"):
+            vals = params.get(key)
+            if vals and vals[0]:
+                return vals[0].strip()
+    except (TypeError, ValueError):
+        pass
+    return ""
+
+
+def locale_from_request(request, lang_from_uri: str = "") -> str:
+    raw = (request.GET.get("lang") or "").strip() or (lang_from_uri or "").strip()
+    if not raw:
+        raw = (request.COOKIES.get("misa_locale") or "").strip()
     if raw:
         low = raw.lower().replace("_", "-")
         if low in TAGLINES:
             return low
         if low.split("-")[0] in TAGLINES:
             return low.split("-")[0]
-    al = request.META.get("HTTP_ACCEPT_LANGUAGE") or ""
+    al = (request.META.get("HTTP_ACCEPT_LANGUAGE") or "").strip()
+    if not al:
+        return "en"
     return _parse_accept_language(al)
 
 
@@ -286,11 +308,13 @@ def spa_og_preview_response(request):
     path_only = _safe_spa_path(path_only)
     qs = (qs or "").strip()[:2048]
 
+    lang_from_uri = _lang_from_query_string(qs)
+
     site = getattr(settings, "WEB_APP_PUBLIC_URL", "") or "https://misa.baxic.ru"
     site = site.rstrip("/")
     og_page_url = f"{site}{path_only}?{qs}" if qs else f"{site}{path_only}"
 
-    lang = locale_from_request(request)
+    lang = locale_from_request(request, lang_from_uri=lang_from_uri)
     preview = TAGLINES.get(lang, _EN)
 
     index_path = getattr(settings, "SPA_INDEX_HTML_PATH", None) or ""
