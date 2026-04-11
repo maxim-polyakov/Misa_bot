@@ -1,0 +1,72 @@
+# =============================================================================
+# misa.baxic.ru: боты → API (как у вас для /share), обычные клиенты → SPA (serve :3001)
+# Включите map один раз в http { }, блок server — в sites-available.
+# На API должен быть Django: GET /og/preview/ (см. Front_layer/django_server/og_preview.py)
+# =============================================================================
+
+# ----- в http { } -----
+# map $http_user_agent $misa_og_bot {
+#     default 0;
+#     ~*TelegramBot         1;
+#     ~*Discordbot          1;
+#     ~*facebookexternalhit 1;
+#     ~*Facebot             1;
+#     ~*Twitterbot          1;
+#     ~*LinkedInBot         1;
+#     ~*WhatsApp            1;
+#     ~*Slackbot            1;
+#     ~*vkShare             1;
+#     ~*Googlebot           1;
+#     ~*bingbot             1;
+#     ~*YandexBot           1;
+# }
+
+# ----- при proxy_pass с переменной на https:// (блок /share) при 502 добавьте в server { }:
+# resolver 1.1.1.1 ipv6=off valid=300s;
+# resolver_timeout 5s;
+
+# ----- server { listen 443 ssl; server_name misa.baxic.ru; ... } -----
+
+#     location / {
+#         error_page 418 = @misa_og_spa;
+#         if ($misa_og_bot = 1) {
+#             return 418;
+#         }
+#         proxy_pass http://127.0.0.1:3001;
+#         proxy_http_version 1.1;
+#         proxy_set_header Host               $host;
+#         proxy_set_header X-Real-IP         $remote_addr;
+#         proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#         proxy_set_header X-Forwarded-Host  $host;
+#         proxy_set_header X-Forwarded-Server $host;
+#     }
+#
+#     # В именованном location нельзя proxy_pass .../path/ — только rewrite + proxy_pass без URI
+#     location @misa_og_spa {
+#         internal;
+#         rewrite ^ /og/preview/ break;
+#         proxy_pass https://misaapi.baxic.ru;
+#         proxy_ssl_server_name on;
+#         proxy_set_header Host               misaapi.baxic.ru;
+#         proxy_set_header X-Real-IP          $remote_addr;
+#         proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto  $scheme;
+#         proxy_set_header X-Original-URI     $request_uri;
+#         proxy_set_header Accept-Language    $http_accept_language;
+#     }
+#
+#     location /share {
+#         set $misa_share_backend http://127.0.0.1:3001;
+#         set $misa_share_proxy_host $host;
+#         if ($misa_og_bot = 1) {
+#             set $misa_share_backend https://misaapi.baxic.ru;
+#             set $misa_share_proxy_host misaapi.baxic.ru;
+#         }
+#         proxy_ssl_server_name on;
+#         proxy_pass $misa_share_backend;
+#         proxy_set_header Host               $misa_share_proxy_host;
+#         proxy_set_header X-Real-IP          $remote_addr;
+#         proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto  $scheme;
+#     }

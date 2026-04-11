@@ -1,4 +1,4 @@
-import { translations } from "./translations.js";
+import { OG_PREVIEW } from "./ogPreviewStrings.js";
 
 function upsertMetaByName(name, content) {
     let el = document.head.querySelector(`meta[name="${name}"]`);
@@ -21,14 +21,12 @@ function upsertMetaByProperty(property, content) {
 }
 
 /**
- * Updates description / Open Graph / Twitter preview text from translations for the active locale.
+ * В браузере: og:* по локали (настройки). У краулеров превью даёт Django GET /og/preview/
+ * (через scripts/serve-spa-og.mjs в production) — без JS.
  */
 export function applySeoMeta(locale) {
     if (typeof document === "undefined") return;
-    const text =
-        translations[locale]?.ogPreview ??
-        translations.en?.ogPreview ??
-        "";
+    const text = OG_PREVIEW[locale] ?? OG_PREVIEW.en;
     if (!text) return;
 
     upsertMetaByName("description", text);

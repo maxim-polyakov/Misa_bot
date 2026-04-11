@@ -12,6 +12,7 @@ from rest_framework.decorators import api_view
 from drf_spectacular.utils import extend_schema
 from Core_layer.Controller_package.Classes import Controller
 from . import openapi_examples as oex
+from . import og_preview
 
 _BEARER = [{'bearerAuth': []}]
 
@@ -447,6 +448,11 @@ def share_chat_html(request, chat_id):
     resp = HttpResponse('\n'.join(parts), content_type='text/html; charset=utf-8')
     resp['Cache-Control'] = 'public, max-age=300'
     return resp
+
+
+def spa_og_preview(request):
+    """HTML SPA с og:* по Accept-Language (Discord, Telegram и др.)."""
+    return og_preview.spa_og_preview_response(request)
 
 
 def robots_txt(request):

@@ -43,6 +43,9 @@ WEB_APP_PUBLIC_URL = (
     os.getenv('WEB_APP_PUBLIC_URL') or os.getenv('FRONTEND_URL') or 'https://misa.baxic.ru'
 ).rstrip('/')
 
+# Опционально: путь к client/build/index.html для GET /og/preview/ (иначе — минимальный HTML, og:* всё равно корректны).
+SPA_INDEX_HTML_PATH = (os.getenv('SPA_INDEX_HTML_PATH') or '').strip()
+
 # SECRET_KEY обязателен для Django (сессии, CSRF, шаблоны)
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-in-production')
 
