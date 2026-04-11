@@ -60,28 +60,35 @@ class SongsMonitor(IMonitor.IMonitor):
 
     @classmethod
     def _sync_voice_client_map(cls):
-        """voice_clients должен совпадать с guild.voice_client — иначе после Already connected словарь пустой."""
+        """voice_clients совпадает с guild.voice_client; при отсутствии VC — убрать устаревшую запись."""
         guild = getattr(cls.message, "guild", None)
         if not guild:
             return
         vc = guild.voice_client
         if vc is not None:
             cls.voice_clients[guild.id] = vc
+        else:
+            cls.voice_clients.pop(guild.id, None)
 
     @classmethod
-    async def _await_voice_ready(cls, vc, max_wait: float = 15.0) -> bool:
-        """Дождаться is_connected() после connect/move_to (защита от гонок с gateway)."""
-        if vc is None:
-            return False
+    async def _await_voice_ready(cls, vc, guild=None, max_wait: float = 45.0) -> bool:
+        """Дождаться is_connected(); guild перечитывается — актуальный VoiceClient после connect/move."""
         loop = asyncio.get_running_loop()
         deadline = loop.time() + max_wait
         while loop.time() < deadline:
-            try:
-                if vc.is_connected():
-                    return True
-            except Exception:
-                pass
+            if guild is not None:
+                vc = guild.voice_client or vc
+            if vc is not None:
+                try:
+                    if vc.is_connected():
+                        return True
+                except Exception:
+                    pass
             await asyncio.sleep(0.15)
+        if guild is not None:
+            vc = guild.voice_client or vc
+        if vc is None:
+            return False
         try:
             return vc.is_connected()
         except Exception:
@@ -120,24 +127,40 @@ class SongsMonitor(IMonitor.IMonitor):
             if not permissions.connect:
                 return 'невозможно подключится к данному каналу'
 
-            vc = cls.message.guild.voice_client
+            guild = cls.message.guild
+            vc = guild.voice_client
+            if vc is not None and not vc.is_connected():
+                try:
+                    await vc.disconnect(force=True)
+                except Exception:
+                    pass
+                cls.voice_clients.pop(guild.id, None)
+                vc = None
+
             if vc is not None:
                 if vc.channel != target:
                     await vc.move_to(target)
-                    if not await cls._await_voice_ready(vc):
+                    if not await cls._await_voice_ready(vc, guild):
                         return 'не удалось завершить переход в голосовой канал (таймаут)'
                 cls._sync_voice_client_map()
                 logging.info('The songsmonitor.join method has completed successfully (existing or moved)')
                 return 'подключился к голосовому каналу'
 
             voice_client = await target.connect(timeout=120.0, reconnect=True)
-            if not await cls._await_voice_ready(voice_client):
+            cls._sync_voice_client_map()
+            vc = guild.voice_client or voice_client
+            if not await cls._await_voice_ready(vc, guild):
+                vc = guild.voice_client
+                if vc is not None and vc.is_connected():
+                    cls.voice_clients[guild.id] = vc
+                    logging.info('The songsmonitor.join method has completed successfully (voice ready after recheck)')
+                    return 'подключился к голосовому каналу'
                 try:
                     await voice_client.disconnect(force=True)
                 except Exception:
                     pass
                 return 'не удалось установить голосовое соединение (таймаут)'
-            cls.voice_clients[voice_client.guild.id] = voice_client
+            cls.voice_clients[guild.id] = guild.voice_client or voice_client
             logging.info('The songsmonitor.join method has completed successfully')
             return 'подключился к голосовому каналу'
         except Exception as e:
@@ -162,7 +185,7 @@ class SongsMonitor(IMonitor.IMonitor):
                 return 'бот не подключен к голосовому каналу'
             # disconnect the bot from the voice channel
             await voice_client.disconnect()
-            cls.voice_clients.pop(cls.message.guild.id)
+            cls.voice_clients.pop(cls.message.guild.id, None)
             # log successful disconnection
             logging.info('The songsmonitor.leave method has completed successfully')
             return 'отключился от голосового канала'
@@ -302,19 +325,19 @@ class SongsMonitor(IMonitor.IMonitor):
             cls._sync_voice_client_map()
             guild = cls.message.guild
             guild_id = guild.id
-            voice_client = guild.voice_client or cls.voice_clients.get(guild_id)
+            voice_client = guild.voice_client
             if voice_client is None or not voice_client.is_connected():
                 j = await cls.join()
                 if isinstance(j, str) and (
                     'подключился' in j or 'уже подключен' in j
                 ):
                     cls._sync_voice_client_map()
-                    voice_client = guild.voice_client or cls.voice_clients.get(guild_id)
                 else:
                     return (
                         'голосовое соединение потеряно во время подготовки трека. '
                         f'Повторите /join: {j}'
                     )
+                voice_client = guild.voice_client
             if voice_client is None or not voice_client.is_connected():
                 return 'бот не подключен к голосовому каналу'
 
