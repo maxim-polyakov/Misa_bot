@@ -13,115 +13,115 @@ class TestCase_Command_package(ITestCase.ITestCase):
     def test_commandanalyzerf(self):
         command = CommandAnalyzer.CommandAnalyzer(
             'найди пистолет', 'test')
-        output = command.analyse(message_text='найди пистолет')
+        output = command.analyse(message_text='найди пистолет', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzers(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'найди в википедии нож', 'test')
-        output = command.analyse(message_text='найди в википедии нож')
+        output = command.analyse(message_text='найди в википедии нож', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzert(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'найди производную x^2 по x', 'test')
-        output = command.analyse(message_text='найди производную x^2 по x')
+        output = command.analyse(message_text='найди производную x^2 по x', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzerfi(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'скажи пистолет', 'test')
-        output = command.analyse(message_text='скажи пистолет')
+        output = command.analyse(message_text='скажи пистолет', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzersi(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'поздоровайся', 'test')
-        output = command.analyse(message_text='поздоровайся')
+        output = command.analyse(message_text='поздоровайся', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzerse(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'почисти ввали', 'test')
-        output = command.analyse(message_text='почисти ввали')
+        output = command.analyse(message_text='почисти ввали', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzerei(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'аплодировать', 'test')
-        output = command.analyse(message_text='аплодировать')
+        output = command.analyse(message_text='аплодировать', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzerni(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'поссчитай производную x^2 по x', 'test')
-        output = command.analyse(message_text='поссчитай производную x^2 по x')
+        output = command.analyse(message_text='поссчитай производную x^2 по x', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzerte(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'абонируй васю', 'test')
-        output = command.analyse(message_text='абонируй васю')
+        output = command.analyse(message_text='абонируй васю', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzerel(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'переведи knife', 'test')
-        output = command.analyse(message_text='переведи knife')
+        output = command.analyse(message_text='переведи knife', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzertw(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'абонируйся', 'test')
-        output = command.analyse(message_text='абонируйся')
+        output = command.analyse(message_text='абонируйся', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzerthi(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'абсолютизируй', 'test')
-        output = command.analyse(message_text='абсолютизируй')
+        output = command.analyse(message_text='абсолютизируй', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzerfour(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'абсолютизируйся', 'test')
-        output = command.analyse(message_text='абсолютизируйся')
+        output = command.analyse(message_text='абсолютизируйся', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzerfif(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'абсолютируй', 'test')
-        output = command.analyse(message_text='абсолютируй')
+        output = command.analyse(message_text='абсолютируй', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzersix(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'абсорбируйся', 'test')
-        output = command.analyse(message_text='абсорбируйся')
+        output = command.analyse(message_text='абсорбируйся', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzerseven(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'абстрагируй', 'test')
-        output = command.analyse(message_text='абстрагируй')
+        output = command.analyse(message_text='абстрагируй', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzereight(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'автоматизируйся', 'test')
-        output = command.analyse(message_text='автоматизируйся')
+        output = command.analyse(message_text='автоматизируйся', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzernine(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'погода', 'test')
-        output = command.analyse(message_text='погода')
+        output = command.analyse(message_text='погода', user='test')
         self.assertNotEqual(output, None)
 
     def test_commandanalyzertwntn(self):
         command = CommandAnalyzer.CommandAnalyzer('boto',
             'нарисуй кота', 'test')
-        output = command.analyse(message_text='нарисуй кота')
+        output = command.analyse(message_text='нарисуй кота', user='test')
         self.assertNotEqual(output, None)
 
 if __name__ == '__main__':

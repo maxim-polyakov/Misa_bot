@@ -10,9 +10,8 @@ async def play(message, *, url):
     if validators.url(url):
         if url.count('youtube'):
             sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
-            out = await sm.join()
-            if out != 'вы не подключены к голосовому каналу':
-                out = await sm.monitor(url)
+            # join выполняется внутри monitor (один сценарий подключения, без двойного join)
+            out = await sm.monitor(url)
         else:
             out = 'проигрывается только youtube'
     else:
