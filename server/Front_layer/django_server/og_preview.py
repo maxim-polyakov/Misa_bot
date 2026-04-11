@@ -179,7 +179,17 @@ def _safe_spa_path(path_only: str) -> str:
     return p[:2048]
 
 
-def _sub_attr(html: str, pattern: str, replacement: str) -> str:
+def _sub_meta_attr(html: str, pattern: str, content: str) -> str:
+    """Подставляет content между группами 1 и 2; без rf\"\\1\" — иначе backslash в тексте ломает замену."""
+
+    def repl(m):
+        return m.group(1) + content + m.group(2)
+
+    out, n = re.subn(pattern, repl, html, count=1)
+    return out if n else html
+
+
+def _sub_full(html: str, pattern: str, replacement: str) -> str:
     out, n = re.subn(pattern, replacement, html, count=1)
     return out if n else html
 
@@ -190,49 +200,52 @@ def inject_og_meta(html: str, preview: str, og_page_url: str, site_base: str) ->
     base = site_base.rstrip("/")
     img_esc = html_escape(f"{base}/misa.png", quote=True)
 
-    html = _sub_attr(
-        html,
-        r'(<meta\s+name="description"\s+content=")[^"]*(")',
-        rf"\1{esc}\2",
-    )
-    for prop in ("og:title", "og:description"):
-        html = _sub_attr(
+    # Сначала картинка (как в _minimal_html / index.html — до длинного Unicode в title/description):
+    # у части краулеров превью ломается, если og:image идёт после «тяжёлых» мета.
+    for prop in ("og:image", "og:image:secure_url"):
+        html = _sub_meta_attr(
             html,
             rf'(<meta\s+property="{re.escape(prop)}"\s+content=")[^"]*(")',
-            rf"\1{esc}\2",
-        )
-    for name in ("twitter:title", "twitter:description"):
-        html = _sub_attr(
-            html,
-            rf'(<meta\s+name="{re.escape(name)}"\s+content=")[^"]*(")',
-            rf"\1{esc}\2",
-        )
-    html = _sub_attr(
-        html,
-        r'(<meta\s+property="og:url"\s+content=")[^"]*(")',
-        rf"\1{url_esc}\2",
-    )
-    html = _sub_attr(
-        html,
-        r'(<link\s+rel="canonical"\s+href=")[^"]*(")',
-        rf"\1{url_esc}\2",
-    )
-    for prop in ("og:image",):
-        html = _sub_attr(
-            html,
-            rf'(<meta\s+property="{re.escape(prop)}"\s+content=")[^"]*(")',
-            rf"\1{img_esc}\2",
+            img_esc,
         )
     for name in ("twitter:image",):
-        html = _sub_attr(
+        html = _sub_meta_attr(
             html,
             rf'(<meta\s+name="{re.escape(name)}"\s+content=")[^"]*(")',
-            rf"\1{img_esc}\2",
+            img_esc,
         )
-    html = _sub_attr(
+    html = _sub_meta_attr(
         html,
         r'(<link\s+rel="image_src"\s+href=")[^"]*(")',
-        rf"\1{img_esc}\2",
+        img_esc,
+    )
+
+    html = _sub_meta_attr(
+        html,
+        r'(<meta\s+name="description"\s+content=")[^"]*(")',
+        esc,
+    )
+    for prop in ("og:title", "og:description"):
+        html = _sub_meta_attr(
+            html,
+            rf'(<meta\s+property="{re.escape(prop)}"\s+content=")[^"]*(")',
+            esc,
+        )
+    for name in ("twitter:title", "twitter:description"):
+        html = _sub_meta_attr(
+            html,
+            rf'(<meta\s+name="{re.escape(name)}"\s+content=")[^"]*(")',
+            esc,
+        )
+    html = _sub_meta_attr(
+        html,
+        r'(<meta\s+property="og:url"\s+content=")[^"]*(")',
+        url_esc,
+    )
+    html = _sub_meta_attr(
+        html,
+        r'(<link\s+rel="canonical"\s+href=")[^"]*(")',
+        url_esc,
     )
     return html
 
@@ -240,7 +253,7 @@ def inject_og_meta(html: str, preview: str, og_page_url: str, site_base: str) ->
 def inject_og_meta_with_locale(html: str, preview: str, og_page_url: str, site_base: str, lang: str) -> str:
     html = inject_og_meta(html, preview, og_page_url, site_base)
     hl = _intl_html_lang(lang)
-    html = _sub_attr(
+    html = _sub_full(
         html,
         r'<html\s+lang="[^"]*"',
         f'<html lang="{html_escape(hl, quote=True)}"',
@@ -260,17 +273,18 @@ def _minimal_html(preview: str, og_page_url: str, site_base: str, lang: str) -> 
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5"/>
 <meta name="theme-color" content="#000000"/>
-<meta name="description" content="{esc}"/>
-<meta property="og:title" content="{esc}"/>
-<meta property="og:description" content="{esc}"/>
-<meta property="og:type" content="website"/>
-<meta property="og:site_name" content="Misa AI"/>
-<meta property="og:url" content="{url_esc}"/>
 <meta property="og:image" content="{img}"/>
+<meta property="og:image:secure_url" content="{img}"/>
 <meta property="og:image:type" content="image/png"/>
 <meta property="og:image:width" content="800"/>
 <meta property="og:image:height" content="1120"/>
 <meta property="og:image:alt" content="Misa AI"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Misa AI"/>
+<meta property="og:url" content="{url_esc}"/>
+<meta name="description" content="{esc}"/>
+<meta property="og:title" content="{esc}"/>
+<meta property="og:description" content="{esc}"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="{esc}"/>
 <meta name="twitter:description" content="{esc}"/>
