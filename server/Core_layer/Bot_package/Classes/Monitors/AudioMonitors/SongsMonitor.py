@@ -69,6 +69,25 @@ class SongsMonitor(IMonitor.IMonitor):
             cls.voice_clients[guild.id] = vc
 
     @classmethod
+    async def _await_voice_ready(cls, vc, max_wait: float = 15.0) -> bool:
+        """Дождаться is_connected() после connect/move_to (защита от гонок с gateway)."""
+        if vc is None:
+            return False
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + max_wait
+        while loop.time() < deadline:
+            try:
+                if vc.is_connected():
+                    return True
+            except Exception:
+                pass
+            await asyncio.sleep(0.15)
+        try:
+            return vc.is_connected()
+        except Exception:
+            return False
+
+    @classmethod
     def _resolve_play_url_sync(cls, initial: str) -> Optional[str]:
         """
         Синхронно: URL watch или None. Только из run_in_executor —
@@ -105,11 +124,19 @@ class SongsMonitor(IMonitor.IMonitor):
             if vc is not None:
                 if vc.channel != target:
                     await vc.move_to(target)
+                    if not await cls._await_voice_ready(vc):
+                        return 'не удалось завершить переход в голосовой канал (таймаут)'
                 cls._sync_voice_client_map()
                 logging.info('The songsmonitor.join method has completed successfully (existing or moved)')
                 return 'подключился к голосовому каналу'
 
-            voice_client = await target.connect()
+            voice_client = await target.connect(timeout=120.0, reconnect=True)
+            if not await cls._await_voice_ready(voice_client):
+                try:
+                    await voice_client.disconnect(force=True)
+                except Exception:
+                    pass
+                return 'не удалось установить голосовое соединение (таймаут)'
             cls.voice_clients[voice_client.guild.id] = voice_client
             logging.info('The songsmonitor.join method has completed successfully')
             return 'подключился к голосовому каналу'
@@ -273,16 +300,34 @@ class SongsMonitor(IMonitor.IMonitor):
                 return 'не удалось извлечь аудиопоток (обновите yt-dlp: pip install -U yt-dlp)'
 
             cls._sync_voice_client_map()
+            guild = cls.message.guild
+            guild_id = guild.id
+            voice_client = guild.voice_client or cls.voice_clients.get(guild_id)
+            if voice_client is None or not voice_client.is_connected():
+                j = await cls.join()
+                if isinstance(j, str) and (
+                    'подключился' in j or 'уже подключен' in j
+                ):
+                    cls._sync_voice_client_map()
+                    voice_client = guild.voice_client or cls.voice_clients.get(guild_id)
+                else:
+                    return (
+                        'голосовое соединение потеряно во время подготовки трека. '
+                        f'Повторите /join: {j}'
+                    )
+            if voice_client is None or not voice_client.is_connected():
+                return 'бот не подключен к голосовому каналу'
+
             # create an ffmpeg audio player for discord
             player = disnake.FFmpegOpusAudio(song, **cls.ffmpeg_options)
-            # get the guild (server) id
-            id = cls.message.guild.id
-            if id not in cls.voice_clients or cls.voice_clients[id] is None:
-                return 'id гильдии не найден в списке, бот не подключен к голосовому каналу'
             # play the audio in the corresponding voice client
-            cls.voice_clients[id].play(player,
-                                   after=lambda e: asyncio.run_coroutine_threadsafe(cls.__play_next(cls.message),
-                                                                                    cls.bot.loop))
+            voice_client.play(
+                player,
+                after=lambda e, _loop=loop: asyncio.run_coroutine_threadsafe(
+                    cls.__play_next(cls.message), _loop
+                ),
+            )
+            cls.voice_clients[guild_id] = voice_client
             return 'готово'
             # log successful execution
             logging.info('The songsmonitor.monitor method has completed successfully')
@@ -296,6 +341,6 @@ class SongsMonitor(IMonitor.IMonitor):
                     return 'id гильдии не найден в списке, бот не подключен к голосовому каналу'
                 else:
                     if str(e) == 'Not connected to voice.':
-                        return "бот не подлючён к голосовому каналу"
+                        return "бот не подключён к голосовому каналу"
                     else:
                         return e
