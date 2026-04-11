@@ -101,17 +101,18 @@ function setLocaleCookie(code) {
     }
 }
 
-/** URL ?lang= и cookie — совпадают с языком в настройках; боты читают query в X-Original-URI (cookie часто не шлют). */
+/** Cookie misa_locale — как в настройках; query ?lang= в URL не добавляем (убираем, если был в ссылке). */
 export function syncLangQueryWithSettings(code) {
     if (typeof document === "undefined") return;
     if (!LANGUAGES.some((l) => l.code === code)) return;
     setLocaleCookie(code);
     try {
         const u = new URL(window.location.href);
-        if ((u.searchParams.get("lang") || "").toLowerCase() !== String(code).toLowerCase()) {
-            u.searchParams.set("lang", code);
-            window.history.replaceState({}, "", `${u.pathname}${u.search}${u.hash}`);
-        }
+        if (!u.searchParams.has("lang")) return;
+        u.searchParams.delete("lang");
+        const search = u.searchParams.toString();
+        const qs = search ? `?${search}` : "";
+        window.history.replaceState({}, "", `${u.pathname}${qs}${u.hash}`);
     } catch {
         /* ignore */
     }
