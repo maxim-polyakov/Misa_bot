@@ -208,30 +208,6 @@ class SongsMonitor(IMonitor.IMonitor):
             return e
 
     @classmethod
-    def _audio_url_from_ytdl_data(cls, data):
-        """Достаёт URL потока из ответа yt-dlp (формат YouTube менялся — не всегда есть data['url'])."""
-        if not data:
-            return None
-        if data.get("url"):
-            return data["url"]
-        entries = data.get("entries")
-        if entries:
-            first = entries[0]
-            if first:
-                u = cls._audio_url_from_ytdl_data(first)
-                if u:
-                    return u
-        for f in data.get("formats") or []:
-            if not f or not f.get("url"):
-                continue
-            if f.get("acodec") and f.get("acodec") != "none":
-                return f["url"]
-        for f in data.get("formats") or []:
-            if f and f.get("url"):
-                return f["url"]
-        return None
-
-    @classmethod
     async def monitor(cls, url):
         # playing songs
         # configure logging settings
@@ -265,7 +241,7 @@ class SongsMonitor(IMonitor.IMonitor):
             if data is None:
                 return 'не удалось получить данные о видео (yt-dlp вернул None)'
 
-            song = cls._audio_url_from_ytdl_data(data)
+            song = data.get('url')
             if not song:
                 return 'не удалось извлечь аудиопоток (обновите yt-dlp: pip install -U yt-dlp)'
 
