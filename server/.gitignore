@@ -8,6 +8,7 @@ audios/*
 downloads/*
 images/*
 !images/og_share.png
+!images/misa.png
 *.pt
 *.exe
 *.log

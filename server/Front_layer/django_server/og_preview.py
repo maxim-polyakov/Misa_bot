@@ -4,8 +4,11 @@ Open Graph для SPA (/chat и др.). Язык превью (как в нас�
   2) cookie misa_locale (если бот передал);
   3) Accept-Language (если пусто — en).
 
-Картинка превью — тот же файл, что client/public/misa.png (в сборке — /misa.png на веб-домене).
-В meta: og:image = {WEB_APP_PUBLIC_URL}/misa.png (как %PUBLIC_URL%/misa.png в index.html).
+Картинка превью — тот же арт, что client/public/misa.png.
+HTML для ботов отдаёт API (/og/preview/); если og:image вести только на WEB_APP_PUBLIC_URL/misa.png,
+второй запрос идёт на веб-хостинг и картинка может не отдаваться. Поэтому: при наличии файла
+server/images/misa.png в meta подставляется абсолютный URL API /images/misa.png (скопируйте туда тот же PNG).
+Иначе fallback: {WEB_APP_PUBLIC_URL}/misa.png.
 Строки текста — client/src/utils/ogPreviewStrings.js (TAGLINES).
 """
 import os
@@ -190,10 +193,26 @@ def _parse_accept_language(header: str) -> str:
     return "en"
 
 
-def public_misa_image_url(site_base: str) -> str:
-    """Тот же файл, что client/public/misa.png → {WEB_APP_PUBLIC_URL}/misa.png (без query)."""
-    base = (site_base or "").strip().rstrip("/")
-    return f"{base}/misa.png"
+def preview_og_image_url(web_base: str) -> str:
+    """
+    Абсолютный HTTPS URL для og:image.
+
+    Если есть server/images/misa.png и задан PUBLIC_API_BASE_URL в .env — ссылка на API
+    /images/misa.png (тот же хост, что отдаёт /og/preview/).
+
+    Иначе только {WEB_APP_PUBLIC_URL}/misa.png.
+
+    Нельзя использовать request.build_absolute_uri() без PUBLIC_API_BASE_URL — получится
+    http://127.0.0.1:... и Discord/Telegram не загрузят картинку.
+    """
+    web = (web_base or "").strip().rstrip("/")
+    img_dir = os.path.join(str(settings.BASE_DIR), "images")
+    local = os.path.join(img_dir, "misa.png")
+    if os.path.isfile(local) and os.path.getsize(local) > 32:
+        api = (getattr(settings, "PUBLIC_API_BASE_URL", "") or "").strip().rstrip("/")
+        if api:
+            return f"{api}/images/misa.png"
+    return f"{web}/misa.png"
 
 
 def _safe_spa_path(path_only: str) -> str:
@@ -220,10 +239,10 @@ def _sub_full(html: str, pattern: str, replacement: str) -> str:
     return out if n else html
 
 
-def inject_og_meta(html: str, preview: str, og_page_url: str, site_base: str) -> str:
+def inject_og_meta(html: str, preview: str, og_page_url: str, img_url: str) -> str:
     esc = html_escape(preview, quote=True)
     url_esc = html_escape(og_page_url, quote=True)
-    img_esc = html_escape(public_misa_image_url(site_base), quote=True)
+    img_esc = html_escape(img_url, quote=True)
 
     # Сначала картинка (как в _minimal_html / index.html — до длинного Unicode в title/description):
     # у части краулеров превью ломается, если og:image идёт после «тяжёлых» мета.
@@ -275,8 +294,8 @@ def inject_og_meta(html: str, preview: str, og_page_url: str, site_base: str) ->
     return html
 
 
-def inject_og_meta_with_locale(html: str, preview: str, og_page_url: str, site_base: str, lang: str) -> str:
-    html = inject_og_meta(html, preview, og_page_url, site_base)
+def inject_og_meta_with_locale(html: str, preview: str, og_page_url: str, img_url: str, lang: str) -> str:
+    html = inject_og_meta(html, preview, og_page_url, img_url)
     hl = _intl_html_lang(lang)
     html = _sub_full(
         html,
@@ -286,10 +305,10 @@ def inject_og_meta_with_locale(html: str, preview: str, og_page_url: str, site_b
     return html
 
 
-def _minimal_html(preview: str, og_page_url: str, site_base: str, lang: str) -> str:
+def _minimal_html(preview: str, og_page_url: str, img_url: str, lang: str) -> str:
     esc = html_escape(preview, quote=True)
     url_esc = html_escape(og_page_url, quote=True)
-    img = html_escape(public_misa_image_url(site_base), quote=True)
+    img = html_escape(img_url, quote=True)
     hl = _intl_html_lang(lang)
     return f"""<!DOCTYPE html>
 <html lang="{hl}">
@@ -355,6 +374,8 @@ def spa_og_preview_response(request):
     lang = locale_from_request(request, lang_from_uri=lang_from_uri)
     preview = TAGLINES.get(lang, _EN)
 
+    img_url = preview_og_image_url(site)
+
     index_path = getattr(settings, "SPA_INDEX_HTML_PATH", None) or ""
     index_path = str(index_path).strip()
     if index_path and os.path.isfile(index_path):
@@ -362,13 +383,12 @@ def spa_og_preview_response(request):
             with open(index_path, "r", encoding="utf-8") as f:
                 html = f.read()
         except OSError:
-            html = _minimal_html(preview, og_page_url, site, lang)
+            html = _minimal_html(preview, og_page_url, img_url, lang)
     else:
-        html = _minimal_html(preview, og_page_url, site, lang)
+        html = _minimal_html(preview, og_page_url, img_url, lang)
 
-    html = inject_og_meta_with_locale(html, preview, og_page_url, site, lang)
+    html = inject_og_meta_with_locale(html, preview, og_page_url, img_url, lang)
     resp = HttpResponse(html, content_type="text/html; charset=utf-8")
     resp["Cache-Control"] = "public, max-age=300"
-    img_abs = public_misa_image_url(site)
-    resp["Link"] = f'<{img_abs}>; rel=preload; as=image'
+    resp["Link"] = f'<{img_url}>; rel=preload; as=image'
     return resp
