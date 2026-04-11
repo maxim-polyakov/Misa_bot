@@ -58,30 +58,47 @@ class SongsMonitor(IMonitor.IMonitor):
 
 
     @classmethod
+    def _sync_voice_client_map(cls):
+        """voice_clients должен совпадать с guild.voice_client — иначе после Already connected словарь пустой."""
+        guild = getattr(cls.message, "guild", None)
+        if not guild:
+            return
+        vc = guild.voice_client
+        if vc is not None:
+            cls.voice_clients[guild.id] = vc
+
+    @classmethod
     async def join(cls):
         # join to the channel
         # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            if cls.message.author.voice != None:
-                # connect to the voice channel of the message author
-                permissions = cls.message.author.voice.channel.permissions_for(cls.message.author.voice.channel.guild.me)
-                if permissions.connect == False:
-                    return 'невозможно подключится к данному каналу'
-                voice_client = await cls.message.author.voice.channel.connect()
-                cls.voice_clients[voice_client.guild.id] = voice_client
-                # log successful connection
-                logging.info('The songsmonitor.join method has completed successfully')
+            if cls.message.author.voice is None:
+                return 'вы не подключены к голосовому каналу'
+            target = cls.message.author.voice.channel
+            permissions = target.permissions_for(target.guild.me)
+            if not permissions.connect:
+                return 'невозможно подключится к данному каналу'
+
+            vc = cls.message.guild.voice_client
+            if vc is not None:
+                if vc.channel != target:
+                    await vc.move_to(target)
+                cls._sync_voice_client_map()
+                logging.info('The songsmonitor.join method has completed successfully (existing or moved)')
                 return 'подключился к голосовому каналу'
-            else:
-                return 'вы не подключены к глосовому каналу'
+
+            voice_client = await target.connect()
+            cls.voice_clients[voice_client.guild.id] = voice_client
+            logging.info('The songsmonitor.join method has completed successfully')
+            return 'подключился к голосовому каналу'
         except Exception as e:
-            # log any exceptions that occur during the connection process
             logging.exception('The exception occurred in songsmonitor.join: ' + str(e))
-            if str(e) == 'Already connected to a voice channel.':
+            err = str(e)
+            if 'Already connected' in err:
+                cls._sync_voice_client_map()
                 return 'бот уже подключен к голосовому каналу'
-            else:
-                return e
+            return e
 
     @classmethod
     async def leave(cls):
@@ -245,11 +262,12 @@ class SongsMonitor(IMonitor.IMonitor):
             if not song:
                 return 'не удалось извлечь аудиопоток (обновите yt-dlp: pip install -U yt-dlp)'
 
+            cls._sync_voice_client_map()
             # create an ffmpeg audio player for discord
             player = disnake.FFmpegOpusAudio(song, **cls.ffmpeg_options)
             # get the guild (server) id
             id = cls.message.guild.id
-            if id not in cls.voice_clients:
+            if id not in cls.voice_clients or cls.voice_clients[id] is None:
                 return 'id гильдии не найден в списке, бот не подключен к голосовому каналу'
             # play the audio in the corresponding voice client
             cls.voice_clients[id].play(player,
