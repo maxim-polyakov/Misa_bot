@@ -3,7 +3,7 @@ import asyncio
 import disnake
 import logging
 import urllib.parse, urllib.request, re
-from typing import Optional
+from typing import Optional, Any
 from Core_layer.Bot_package.Interfaces import IMonitor
 
 
@@ -57,28 +57,27 @@ class SongsMonitor(IMonitor.IMonitor):
         else:
             SongsMonitor.voice_clients.pop(guild.id, None)
 
-    @staticmethod
-    async def _await_voice_ready(vc, guild=None, max_wait: float = 45.0) -> bool:
+    async def _wait_for_voice_live(self, guild, max_wait: float = 10.0) -> Any:
+        """Подождать, пока голос снова станет connected (после yt-dlp бывают краткие ложные «обрывы»)."""
         loop = asyncio.get_running_loop()
         deadline = loop.time() + max_wait
         while loop.time() < deadline:
-            if guild is not None:
-                vc = guild.voice_client or vc
+            vc = guild.voice_client
             if vc is not None:
                 try:
                     if vc.is_connected():
-                        return True
+                        return vc
                 except Exception:
                     pass
-            await asyncio.sleep(0.15)
-        if guild is not None:
-            vc = guild.voice_client or vc
-        if vc is None:
-            return False
-        try:
-            return vc.is_connected()
-        except Exception:
-            return False
+            await asyncio.sleep(0.25)
+        vc = guild.voice_client
+        if vc is not None:
+            try:
+                if vc.is_connected():
+                    return vc
+            except Exception:
+                pass
+        return None
 
     @classmethod
     def _resolve_play_url_sync(cls, initial: str) -> Optional[str]:
@@ -112,41 +111,38 @@ class SongsMonitor(IMonitor.IMonitor):
 
             guild = self.message.guild
             vc = guild.voice_client
+            # Не рвём сессию сразу: при кратковременном False is_connected() disconnect() сам «выкидывает» бота из канала.
             if vc is not None and not vc.is_connected():
-                if await SongsMonitor._await_voice_ready(vc, guild, max_wait=4.0):
-                    pass
+                recovered = await self._wait_for_voice_live(guild, max_wait=6.0)
+                if recovered is not None:
+                    vc = recovered
                 else:
-                    try:
-                        await vc.disconnect(force=True)
-                    except Exception:
-                        pass
-                    SongsMonitor.voice_clients.pop(guild.id, None)
-                    vc = None
+                    vc = guild.voice_client
+                    if vc is not None and not vc.is_connected():
+                        try:
+                            await vc.disconnect(force=True)
+                        except Exception:
+                            pass
+                        SongsMonitor.voice_clients.pop(guild.id, None)
+                        vc = None
 
             if vc is not None:
                 if vc.channel != target:
                     await vc.move_to(target)
-                    if not await SongsMonitor._await_voice_ready(vc, guild):
-                        return 'не удалось завершить переход в голосовой канал (таймаут)'
+                    await asyncio.sleep(0.5)
                 self._sync_voice_client_map()
                 logging.info('The songsmonitor.join method has completed successfully (existing or moved)')
                 return 'подключился к голосовому каналу'
 
-            voice_client = await target.connect(timeout=120.0, reconnect=True)
+            # connect() уже дожидается готового соединения — не проверяем is_connected() отдельно
+            # (ложный таймаут рвёт сессию и даёт «не удалось установить голосовое соединение»).
+            await target.connect(timeout=120.0, reconnect=True)
             self._sync_voice_client_map()
-            vc = guild.voice_client or voice_client
-            if not await SongsMonitor._await_voice_ready(vc, guild):
-                vc = guild.voice_client
-                if vc is not None and vc.is_connected():
-                    SongsMonitor.voice_clients[guild.id] = vc
-                    logging.info('The songsmonitor.join method has completed successfully (voice ready after recheck)')
-                    return 'подключился к голосовому каналу'
-                try:
-                    await voice_client.disconnect(force=True)
-                except Exception:
-                    pass
-                return 'не удалось установить голосовое соединение (таймаут)'
-            SongsMonitor.voice_clients[guild.id] = guild.voice_client or voice_client
+            vc_new = guild.voice_client
+            if vc_new is None:
+                logging.warning('songsmonitor.join: guild.voice_client is None after connect')
+                return 'не удалось установить голосовое соединение'
+            SongsMonitor.voice_clients[guild.id] = vc_new
             logging.info('The songsmonitor.join method has completed successfully')
             return 'подключился к голосовому каналу'
         except Exception as e:
@@ -239,12 +235,18 @@ class SongsMonitor(IMonitor.IMonitor):
     async def monitor(self, url):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            play_url = (url or "").strip()
             try:
                 loop = asyncio.get_running_loop()
             except RuntimeError:
                 loop = asyncio.get_event_loop()
 
+            j0 = await self.join()
+            if not isinstance(j0, str):
+                return f'не удалось войти в голос: {j0}'
+            if 'подключился' not in j0 and 'уже подключен' not in j0:
+                return j0
+
+            play_url = (url or "").strip()
             play_url = await loop.run_in_executor(None, self._resolve_play_url_sync, play_url)
             if not play_url:
                 return 'по запросу ничего не найдено на YouTube'
@@ -263,23 +265,29 @@ class SongsMonitor(IMonitor.IMonitor):
             self._sync_voice_client_map()
             guild = self.message.guild
             guild_id = guild.id
-            voice_client = guild.voice_client
-            if voice_client is None or not voice_client.is_connected():
+            voice_client = await self._wait_for_voice_live(guild, max_wait=8.0)
+            if voice_client is None:
                 j = await self.join()
                 if isinstance(j, str) and (
                     'подключился' in j or 'уже подключен' in j
                 ):
                     self._sync_voice_client_map()
+                    voice_client = guild.voice_client
                 else:
                     return (
                         'голосовое соединение потеряно во время подготовки трека. '
                         f'Повторите /join: {j}'
                     )
-                voice_client = guild.voice_client
+            if voice_client is None or not voice_client.is_connected():
+                voice_client = await self._wait_for_voice_live(guild, max_wait=3.0)
             if voice_client is None or not voice_client.is_connected():
                 return 'бот не подключен к голосовому каналу'
 
-            await asyncio.sleep(0.6)
+            vc_now = guild.voice_client
+            if vc_now is not None:
+                voice_client = vc_now
+
+            await asyncio.sleep(0.25)
 
             msg = self.message
             bot = self.bot
