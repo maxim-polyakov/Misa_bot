@@ -14,6 +14,7 @@ def home_view(request):
 
 urlpatterns = [
     path('robots.txt', views.robots_txt, name='robots_txt'),
+    path('og/preview/', views.spa_og_preview, name='spa_og_preview'),
     # HTML + Open Graph для превью ссылок (Telegram и др.); со слэшем и без
     re_path(r'^share/(?P<chat_id>[^/]+)/?$', views.share_chat_html, name='share_chat_html'),
     # Аутентификация
@@ -39,6 +40,7 @@ urlpatterns = [
     path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='schema-redoc'),
     path('swagger.json', SpectacularAPIView.as_view(), name='schema-json'),
     # Chat API (хранение в БД)
+    path('api/ui-locale/', views.ui_locale, name='ui_locale'),
     path('api/chats/', views.chats_list_or_create, name='chats_list_or_create'),
     path('api/chats/export/', views.chats_export, name='chats_export'),
     path('api/chats/<str:chat_id>/share/', views.chats_share_public, name='chats_share_public'),

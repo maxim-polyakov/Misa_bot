@@ -21,7 +21,8 @@
     "test": "react-scripts test",
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "start:prod": "node scripts/serve-spa-og.mjs"
   },
   "eslintConfig": {
     "extends": [

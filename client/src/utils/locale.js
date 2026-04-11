@@ -90,9 +90,58 @@ export const getLanguage = () => {
     return prefix ? prefix.code : "en";
 };
 
+const LOCALE_COOKIE = "misa_locale";
+const LOCALE_COOKIE_MAX_AGE = 31536000;
+
+function setLocaleCookie(code) {
+    try {
+        document.cookie = `${LOCALE_COOKIE}=${encodeURIComponent(code)}; Path=/; Max-Age=${LOCALE_COOKIE_MAX_AGE}; SameSite=Lax`;
+    } catch {
+        /* ignore */
+    }
+}
+
+/**
+ * Cookie + ?lang= в URL как в настройках.
+ * Превью в Discord/Telegram читают запрос бота к og/preview по X-Original-URI — там должен быть lang (cookie боты не шлют).
+ */
+export function syncLangQueryWithSettings(code) {
+    if (typeof document === "undefined") return;
+    if (!LANGUAGES.some((l) => l.code === code)) return;
+    setLocaleCookie(code);
+    try {
+        const u = new URL(window.location.href);
+        if ((u.searchParams.get("lang") || "").toLowerCase() !== String(code).toLowerCase()) {
+            u.searchParams.set("lang", code);
+            window.history.replaceState({}, "", `${u.pathname}${u.search}${u.hash}`);
+        }
+    } catch {
+        /* ignore */
+    }
+}
+
+/** POST на API: Set-Cookie misa_locale на сервере (для og/preview; при UI_LOCALE_COOKIE_DOMAIN=. — общий с вебом). */
+export function postUiLocaleToServer(code) {
+    const base = (typeof process !== "undefined" && process.env && process.env.REACT_APP_API_URL
+        ? process.env.REACT_APP_API_URL
+        : ""
+    ).replace(/\/$/, "");
+    if (!base || !LANGUAGES.some((l) => l.code === code)) return;
+    fetch(`${base}/api/ui-locale/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ locale: code }),
+    }).catch(() => {
+        /* сеть / CORS — локально остаются localStorage и клиентский cookie */
+    });
+}
+
 export const setLanguage = (code) => {
     if (LANGUAGES.some((l) => l.code === code)) {
         localStorage.setItem(STORAGE_KEY, code);
+        setLocaleCookie(code);
+        postUiLocaleToServer(code);
         window.dispatchEvent(new CustomEvent("localechange", { detail: code }));
     }
 };
@@ -108,4 +157,5 @@ export const applyDocumentLocale = (code) => {
     if (typeof document === "undefined") return;
     document.documentElement.lang = getIntlLocale(code);
     document.documentElement.dir = RTL_CODES.has(code) ? "rtl" : "ltr";
+    syncLangQueryWithSettings(code);
 };

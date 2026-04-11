@@ -5,8 +5,13 @@ import { applyTheme } from './utils/theme.js';
 import UserChat from "./store/userChat";
 import { LocaleProvider } from './contexts/LocaleContext.js';
 import App from './App.js';
+import { getLanguage, postUiLocaleToServer, syncLangQueryWithSettings } from './utils/locale.js';
+import { applySeoMeta } from './utils/seoMeta.js';
 
 applyTheme();
+syncLangQueryWithSettings(getLanguage());
+applySeoMeta(getLanguage());
+postUiLocaleToServer(getLanguage());
 
 export const Context = createContext(null)
 

@@ -12,6 +12,7 @@ from rest_framework.decorators import api_view
 from drf_spectacular.utils import extend_schema
 from Core_layer.Controller_package.Classes import Controller
 from . import openapi_examples as oex
+from . import og_preview
 
 _BEARER = [{'bearerAuth': []}]
 
@@ -447,6 +448,56 @@ def share_chat_html(request, chat_id):
     resp = HttpResponse('\n'.join(parts), content_type='text/html; charset=utf-8')
     resp['Cache-Control'] = 'public, max-age=300'
     return resp
+
+
+def _normalize_ui_locale_code(raw: str):
+    code = (raw or "").strip().replace("_", "-")
+    if not code:
+        return None
+    if code in og_preview.TAGLINES:
+        return code
+    short = code.split("-", 1)[0]
+    if short in og_preview.TAGLINES:
+        return short
+    return None
+
+
+@extend_schema(
+    summary='Язык интерфейса для превью (cookie misa_locale)',
+    tags=['Locale'],
+    request={'application/json': {'type': 'object', 'properties': {'locale': {'type': 'string'}}}},
+    responses={200: {'description': 'ok'}},
+)
+@api_view(['POST'])
+@csrf_exempt
+def ui_locale(request):
+    """Сохраняет выбранный язык: Set-Cookie misa_locale — og/preview читает тот же cookie (при Domain=. — и веб, и API)."""
+    payload = request.data if isinstance(getattr(request, 'data', None), dict) else {}
+    raw = str(payload.get('locale') or payload.get('lang') or request.POST.get('locale') or request.POST.get('lang') or '')
+    code = _normalize_ui_locale_code(raw)
+    if not code:
+        return JsonResponse({'ok': False, 'error': 'invalid or missing locale'}, status=400)
+
+    resp = JsonResponse({'ok': True, 'locale': code})
+    domain = getattr(settings, 'UI_LOCALE_COOKIE_DOMAIN', None) or None
+    if isinstance(domain, str):
+        domain = domain.strip() or None
+    secure = request.is_secure()
+    resp.set_cookie(
+        'misa_locale',
+        code,
+        max_age=31536000,
+        path='/',
+        samesite='Lax',
+        domain=domain,
+        secure=secure,
+    )
+    return resp
+
+
+def spa_og_preview(request):
+    """HTML SPA с og:* по Accept-Language (Discord, Telegram и др.)."""
+    return og_preview.spa_og_preview_response(request)
 
 
 def robots_txt(request):

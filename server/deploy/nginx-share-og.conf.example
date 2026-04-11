@@ -38,3 +38,34 @@
 # proxy_set_header X-Forwarded-Proto $scheme;
 # proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
 # proxy_set_header X-Forwarded-Host  $host;
+
+# =============================================================================
+# Превью SPA (/chat) на веб-домене — только если контейнер клиента НЕ использует
+# scripts/serve-spa-og.mjs (тогда ботам HTML отдаёт сам Node, nginx — обычный proxy_pass).
+# =============================================================================
+# map $http_user_agent $misa_spa_og_bot {
+#     default 0;
+#     ~*Discordbot           1;
+#     ~*TelegramBot          1;
+#     ~*facebookexternalhit  1;
+#     ~*Twitterbot           1;
+#     ~*LinkedInBot          1;
+#     ~*WhatsApp             1;
+#     ~*Slackbot             1;
+# }
+# location / {
+#     error_page 418 = @misa_og_spa;
+#     if ($misa_spa_og_bot) { return 418; }
+#     root /var/www/misa-client/build;
+#     try_files $uri /index.html;
+# }
+# location @misa_og_spa {
+#     internal;
+#     rewrite ^ /og/preview/ break;
+#     proxy_pass https://misaapi.baxic.ru;
+#     proxy_ssl_server_name on;
+#     proxy_set_header Host               misaapi.baxic.ru;
+#     proxy_set_header X-Forwarded-Proto  $scheme;
+#     proxy_set_header X-Original-URI     $request_uri;
+#     proxy_set_header Accept-Language    $http_accept_language;
+# }
