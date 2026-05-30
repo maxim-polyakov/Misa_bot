@@ -22,7 +22,7 @@ class Gpt(IGpt.IGpt):
     _cleanup_lock = threading.Lock()
 
     @classmethod
-    def generate(cls, text, user, is_command_check=False, chat_id=None):
+    def generate(cls, text, user, is_command_check=False, chat_id=None, rag_context=None):
         # generating answers with conversation context
         # configuring logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
@@ -93,6 +93,15 @@ class Gpt(IGpt.IGpt):
                 "- quote: citations\n"
                 "- output: command output or logs"
             )
+            if rag_context and not is_command_check:
+                system_prompt += (
+                    "\n\n--- Актуальная информация из интернета ---\n"
+                    + rag_context
+                    + "\n--- Конец информации из интернета ---\n"
+                    "Используй эту информацию для точного ответа. "
+                    "Если данные из интернета противоречат общим знаниям — доверяй интернету. "
+                    "Указывай источники ссылками когда это уместно."
+                )
             api_messages = (
                 [{"role": "user", "content": text}]
                 if is_command_check

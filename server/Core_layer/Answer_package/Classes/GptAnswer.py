@@ -13,11 +13,13 @@ class GptAnswer(IAnswer.IAnswer):
     __gpt = Gpt.Gpt()
 
     @classmethod
-    def answer(cls, text, user, is_command_check, chat_id=None):
+    def answer(cls, text, user, is_command_check, chat_id=None, rag_context=None):
         # generating answers by gpt
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            generated_text = cls.__gpt.generate(text, user, is_command_check, chat_id=chat_id)
+            generated_text = cls.__gpt.generate(
+                text, user, is_command_check, chat_id=chat_id, rag_context=rag_context
+            )
             # log successful completion of the answer generation
             logging.info('The gptanswer.answer process has completed successfully')
             return generated_text

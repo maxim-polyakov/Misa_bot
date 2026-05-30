@@ -4,6 +4,7 @@ from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Bot_package.Interfaces import IMonitor
 from Core_layer.Answer_package.Classes import GptAnswer
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
+from Deep_layer.RAG_package.Classes.RagService import RagService
 
 
 def _text_without_urls_for_misa_trigger(text):
@@ -53,7 +54,8 @@ class MessageMonitor(IMonitor.IMonitor):
                 # analyze the command and add the result to the output list
                 outlist.append(commands.analyse(text_message, user))
                 return outlist
-            res = cls._gpta.answer(text_message, user, False, chat_id=chat_id)
+            rag_context = RagService.enrich_query(text_message, user, chat_id=chat_id)
+            res = cls._gpta.answer(text_message, user, False, chat_id=chat_id, rag_context=rag_context)
             outlist.append(res)
             # append the emotion to the output list
             outlist.append('' + emotion)

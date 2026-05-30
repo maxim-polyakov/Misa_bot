@@ -194,7 +194,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     if not user_content:
                         return None, False, "Пустой запрос пользователя"
                     GptAnswer.GptAnswer.import_history_from_db(user, chat_id, exclude_last=2)
-                    response = MessageMonitorServer.MessageMonitorServer(user=user, message=user_content, chat_id=chat_id).monitor()
+                    response = MessageMonitorServer.MessageMonitorServer(
+                        user=user, message=user_content, chat_id=chat_id
+                    ).monitor()
                     if not response:
                         return None, False, "Пустой ответ от модели"
                     cleaned = _clean_command_response(response)
