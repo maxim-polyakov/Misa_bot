@@ -7,25 +7,52 @@ from duckduckgo_search import DDGS
 class WebSearchRetriever:
     """Retrieve web search results with snippets for RAG context."""
 
+    _BACKENDS = ('auto', 'html', 'lite')
+
     @classmethod
     def search(cls, query, max_results=5):
         if not query or not str(query).strip():
             return []
 
         query = str(query).strip()
-        results = []
 
+        for backend in cls._BACKENDS:
+            results = cls._search_with_backend(query, max_results, backend)
+            if results:
+                logging.info(f'WebSearchRetriever: {len(results)} results via backend={backend}')
+                return results
+
+        logging.warning(f'WebSearchRetriever: no results for "{query}"')
+        return []
+
+    @classmethod
+    def _search_with_backend(cls, query, max_results, backend):
+        results = []
         try:
-            time.sleep(random.uniform(0.3, 0.8))
-            ddgs = DDGS()
-            raw = ddgs.text(keywords=query, region='ru-ru', max_results=max_results)
+            time.sleep(random.uniform(0.2, 0.6))
+            raw = DDGS().text(
+                keywords=query,
+                region='wt-wt',
+                safesearch='moderate',
+                max_results=max_results,
+                backend=backend,
+            )
             seen_domains = set()
 
             for item in raw or []:
-                url = (item.get('href') or '').strip()
+                url = (item.get('href') or item.get('link') or item.get('url') or '').strip()
                 title = (item.get('title') or '').strip()
-                body = (item.get('body') or '').strip()
-                if not url or not body:
+                body = (
+                    item.get('body')
+                    or item.get('snippet')
+                    or item.get('description')
+                    or ''
+                ).strip()
+                if not url and not body and not title:
+                    continue
+                if not body:
+                    body = title or url
+                if not url:
                     continue
 
                 domain = url.split('/')[2] if '://' in url else url
@@ -44,7 +71,7 @@ class WebSearchRetriever:
                     break
 
         except Exception as e:
-            logging.warning(f'WebSearchRetriever.search failed for "{query}": {e}')
+            logging.warning(f'WebSearchRetriever backend={backend} failed for "{query}": {e}')
 
         return results
 

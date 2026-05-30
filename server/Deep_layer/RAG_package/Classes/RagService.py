@@ -15,6 +15,24 @@ class RagService:
         re.IGNORECASE,
     )
 
+    # Явные запросы актуальных данных — без дополнительного GPT-решения
+    _NEEDS_SEARCH_HEURISTIC = re.compile(
+        r'(?:'
+        r'сейчас|сегодня|на\s+(?:данный\s+)?момент|актуальн|текущ(?:ая|ий|ее|ие)?|'
+        r'курс|цена|стоит|стоимость|котировк|'
+        r'bitcoin|биткоин|btc|ethereum|eth|криптовалют|'
+        r'акци(?:й|и|я|ю)|stock|nasdaq|'
+        r'новост(?:и|ей|ь)|'
+        r'сколько\s+стоит|какой\s+курс|какая\s+цена'
+        r')',
+        re.IGNORECASE | re.UNICODE,
+    )
+
+    _WIKI_HEURISTIC = re.compile(
+        r'(?:кто\s+такой|что\s+такое|биографи|истори(?:я|и)|определени|википеди)',
+        re.IGNORECASE | re.UNICODE,
+    )
+
     @classmethod
     def enrich_query(cls, text, user, chat_id=None):
         """Run RAG pipeline. Returns context string for GPT or None if search not needed."""
@@ -26,11 +44,12 @@ class RagService:
             return None
 
         if not cls._needs_web_search(text, user, chat_id):
+            logging.info(f'RAG: search not needed for: {text[:100]}')
             return None
 
         search_query = cls._extract_search_query(text, user)
-
         use_wiki = cls._prefer_wikipedia(text, user)
+
         if use_wiki:
             results = WebSearchRetriever.search_wikipedia(search_query)
             if not results:
@@ -41,12 +60,22 @@ class RagService:
                 results = WebSearchRetriever.search_wikipedia(search_query)
 
         if not results:
+            logging.warning(f'RAG: empty search results for query="{search_query}"')
             return None
 
+        logging.info(f'RAG: retrieved {len(results)} sources for query="{search_query}"')
         return cls._build_context(results)
 
     @classmethod
+    def _needs_web_search_heuristic(cls, text):
+        return bool(cls._NEEDS_SEARCH_HEURISTIC.search(text))
+
+    @classmethod
     def _needs_web_search(cls, text, user, chat_id=None):
+        if cls._needs_web_search_heuristic(text):
+            logging.info(f'RAG: heuristic web search trigger: {text[:100]}')
+            return True
+
         prompt = (
             "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
             f"Сообщение: {text}\n\n"
@@ -58,16 +87,21 @@ class RagService:
             "Формат ответа: только True или False."
         )
         try:
-            result = cls._gpta.answer(prompt, user, True, chat_id=chat_id)
+            result = cls._gpta.answer(prompt, user, True)
             if isinstance(result, dict):
                 return False
-            return result and 'True' in str(result)
+            needs = result and 'True' in str(result)
+            logging.info(f'RAG: GPT search decision={needs} for: {text[:100]}')
+            return needs
         except Exception as e:
             logging.warning(f'RAG needs_web_search check failed: {e}')
-            return False
+            return cls._needs_web_search_heuristic(text)
 
     @classmethod
     def _extract_search_query(cls, text, user):
+        if cls._needs_web_search_heuristic(text):
+            return text[:200]
+
         prompt = (
             "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
             f"Сообщение: {text}\n\n"
@@ -86,6 +120,9 @@ class RagService:
 
     @classmethod
     def _prefer_wikipedia(cls, text, user):
+        if cls._needs_web_search_heuristic(text):
+            return bool(cls._WIKI_HEURISTIC.search(text))
+
         prompt = (
             "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
             f"Сообщение: {text}\n\n"
