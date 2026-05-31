@@ -103,11 +103,13 @@ class Gpt(IGpt.IGpt):
                     "Если точной цифры нет — используй ближайшее значение из сниппетов и укажи источник ссылкой. "
                     "Если данные из интернета противоречат общим знаниям — доверяй интернету."
                 )
-            api_messages = (
-                [{"role": "user", "content": text}]
-                if is_command_check
-                else conversation_history
-            )
+            if is_command_check:
+                api_messages = [{"role": "user", "content": text}]
+            elif rag_context:
+                # RAG-ответ: только текущий вопрос, без истории (одинаково на всех платформах)
+                api_messages = [{"role": "user", "content": text}]
+            else:
+                api_messages = conversation_history
             # При проверке команды — без системного сообщения (чистый запрос)
             messages = api_messages if is_command_check else [{"role": "system", "content": system_prompt}] + api_messages
 

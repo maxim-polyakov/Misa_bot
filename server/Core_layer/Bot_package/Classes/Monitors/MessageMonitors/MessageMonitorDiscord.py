@@ -13,7 +13,12 @@ class MessageMonitorDiscord(MessageMonitor.MessageMonitor):
             message, 'discord')
         MessageMonitorDiscord.__message = message
         MessageMonitorDiscord.__user = user
+        MessageMonitorDiscord.__chat_id = (
+            f'discord_{message.channel.id}' if message.channel else None
+        )
 
     @classmethod
     def monitor(cls):
-        return super().monitor(cls.__message, cls.__user,  cls.__command,'discord')
+        return super().monitor(
+            cls.__message, cls.__user, cls.__command, 'discord', chat_id=cls.__chat_id
+        )

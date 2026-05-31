@@ -13,7 +13,12 @@ class MessageMonitorTelegram(MessageMonitor.MessageMonitor):
             message, 'telegram')
         MessageMonitorTelegram.__message = message
         MessageMonitorTelegram.__user = user
+        MessageMonitorTelegram.__chat_id = (
+            f'telegram_{message.chat.id}' if getattr(message, 'chat', None) else None
+        )
 
     @classmethod
     def monitor(cls):
-        return super().monitor(cls.__message, cls.__user, cls.__command,'telegram')
+        return super().monitor(
+            cls.__message, cls.__user, cls.__command, 'telegram', chat_id=cls.__chat_id
+        )

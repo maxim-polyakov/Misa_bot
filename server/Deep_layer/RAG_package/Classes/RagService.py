@@ -33,6 +33,33 @@ class RagService:
         re.IGNORECASE | re.UNICODE,
     )
 
+    _FINANCIAL_HEURISTIC = re.compile(
+        r'(?:'
+        r'цена|стоимость|котировк|курс|'
+        r'акци(?:й|и|я|ю|ей)|stock|nasdaq|nyse|'
+        r'bitcoin|биткоин|btc|ethereum|eth|криптовалют|crypto'
+        r')',
+        re.IGNORECASE | re.UNICODE,
+    )
+
+    _TICKER_HINTS = (
+        ('tesla', 'TSLA'),
+        ('тесла', 'TSLA'),
+        ('apple', 'AAPL'),
+        ('эпл', 'AAPL'),
+        ('апple', 'AAPL'),
+        ('microsoft', 'MSFT'),
+        ('майкрософт', 'MSFT'),
+        ('google', 'GOOGL'),
+        ('alphabet', 'GOOGL'),
+        ('amazon', 'AMZN'),
+        ('амазон', 'AMZN'),
+        ('nvidia', 'NVDA'),
+        ('meta', 'META'),
+        ('facebook', 'META'),
+        ('фейсбук', 'META'),
+    )
+
     @classmethod
     def enrich_query(cls, text, user, chat_id=None):
         """Run RAG pipeline. Returns context string for GPT or None if search not needed."""
@@ -47,8 +74,9 @@ class RagService:
             logging.info(f'RAG: search not needed for: {text[:100]}')
             return None
 
-        search_query = cls._extract_search_query(text, user)
-        use_wiki = cls._prefer_wikipedia(text, user)
+        search_query = cls._extract_search_query(text, user, chat_id=chat_id)
+        is_financial = cls._is_financial_query(text)
+        use_wiki = False if is_financial else cls._prefer_wikipedia(text, user, chat_id=chat_id)
 
         if use_wiki:
             results = WebSearchRetriever.search_wikipedia(search_query)
@@ -56,7 +84,7 @@ class RagService:
                 results = WebSearchRetriever.search(search_query)
         else:
             results = WebSearchRetriever.search(search_query)
-            if not results:
+            if not results and not is_financial:
                 results = WebSearchRetriever.search_wikipedia(search_query)
 
         if not results:
@@ -87,7 +115,7 @@ class RagService:
             "Формат ответа: только True или False."
         )
         try:
-            result = cls._gpta.answer(prompt, user, True)
+            result = cls._gpta.answer(prompt, user, True, chat_id=chat_id)
             if isinstance(result, dict):
                 return False
             needs = result and 'True' in str(result)
@@ -98,7 +126,25 @@ class RagService:
             return cls._needs_web_search_heuristic(text)
 
     @classmethod
-    def _extract_search_query(cls, text, user):
+    def _is_financial_query(cls, text):
+        return bool(cls._FINANCIAL_HEURISTIC.search(text))
+
+    @classmethod
+    def _build_financial_search_query(cls, text):
+        t_lower = str(text).lower()
+        for name, ticker in cls._TICKER_HINTS:
+            if name in t_lower:
+                return f'{ticker} stock price today'
+        if re.search(r'btc|bitcoin|биткоин', t_lower):
+            return 'bitcoin price today USD'
+        if re.search(r'eth|ethereum', t_lower):
+            return 'ethereum price today USD'
+        return f'{str(text).strip()[:80]} stock price today'
+
+    @classmethod
+    def _extract_search_query(cls, text, user, chat_id=None):
+        if cls._is_financial_query(text):
+            return cls._build_financial_search_query(text)
         if cls._needs_web_search_heuristic(text):
             return text[:200]
 
@@ -109,7 +155,7 @@ class RagService:
             "в интернете. Верни только запрос, без пояснений и кавычек."
         )
         try:
-            result = cls._gpta.answer(prompt, user, True)
+            result = cls._gpta.answer(prompt, user, True, chat_id=chat_id)
             if isinstance(result, dict) or not result:
                 return text[:120]
             query = str(result).strip().strip('"\'')
@@ -119,7 +165,9 @@ class RagService:
             return text[:120]
 
     @classmethod
-    def _prefer_wikipedia(cls, text, user):
+    def _prefer_wikipedia(cls, text, user, chat_id=None):
+        if cls._is_financial_query(text):
+            return False
         if cls._needs_web_search_heuristic(text):
             return bool(cls._WIKI_HEURISTIC.search(text))
 
@@ -132,7 +180,7 @@ class RagService:
             "Формат ответа: только True или False."
         )
         try:
-            result = cls._gpta.answer(prompt, user, True)
+            result = cls._gpta.answer(prompt, user, True, chat_id=chat_id)
             if isinstance(result, dict):
                 return False
             return result and 'True' in str(result)

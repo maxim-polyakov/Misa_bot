@@ -77,10 +77,17 @@ class MessageMonitor(IMonitor.IMonitor):
     __pltype = 'server'
 
     @classmethod
+    def _reply_with_rag(cls, text_message, user, emotion, chat_id=None):
+        rag_context = RagService.enrich_query(text_message, user, chat_id=chat_id)
+        res = cls._gpta.answer(
+            text_message, user, False, chat_id=chat_id, rag_context=rag_context
+        )
+        return [res, emotion]
+
+    @classmethod
     def __decision(cls, text_message, user, emotion, commands, pltype='server', chat_id=None):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            outlist = []
             cls.__commands = commands
             cls.__pltype = pltype
             text_message = _strip_bot_address(text_message)
@@ -88,30 +95,13 @@ class MessageMonitor(IMonitor.IMonitor):
             cls.__user = user
             cls.__chat_id = chat_id
 
-            # Discord/Telegram: обращение с «миса» — обычный диалог + RAG, без команд
-            if pltype in ('discord', 'telegram'):
-                rag_context = RagService.enrich_query(text_message, user, chat_id=chat_id)
-                res = cls._gpta.answer(
-                    text_message, user, False, chat_id=chat_id, rag_context=rag_context
-                )
-                outlist.append(res)
-                outlist.append(emotion)
-                logging.info('messagemonitor.__decision: bot trigger reply (%s)', pltype)
-                return outlist
-
-            # Web: команды + RAG
+            # Одинаковая логика для web, Discord и Telegram: check() отделяет команды от всего остального
             if cls.check(text_message, user):
-                outlist.append(commands.analyse(text_message, user))
-                return outlist
+                logging.info('messagemonitor.__decision: command (%s)', pltype)
+                return [commands.analyse(text_message, user)]
 
-            rag_context = RagService.enrich_query(text_message, user, chat_id=chat_id)
-            res = cls._gpta.answer(
-                text_message, user, False, chat_id=chat_id, rag_context=rag_context
-            )
-            outlist.append(res)
-            outlist.append(emotion)
-            logging.info('The messagemonitor.__decision process has completed successfully')
-            return outlist
+            logging.info('messagemonitor.__decision: RAG (%s)', pltype)
+            return cls._reply_with_rag(text_message, user, emotion, chat_id=chat_id)
         except Exception as e:
             logging.exception('The exception occurred in messagemonitor.__decision: ' + str(e))
 
@@ -145,11 +135,15 @@ class MessageMonitor(IMonitor.IMonitor):
             input = (
                 "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
                 "Сообщение: " + text_message + "\n"
-                "Задача: Определи, является ли это командой, строго учитывая контекст высказывания. "
-                "Считается командой: (1) прямое побуждение к действию (приказ, просьба, инструкция); "
-                "(2) любое сообщение о погоде — вопрос про погоду, запрос погоды, рассказ о погоде и т.п. "
-                "Не считается командой: советы, рекомендации, описания, размышления, эмоции или повествование "
-                "(кроме погодной тематики), даже при глаголах в повелительном наклонении. "
+                "Задача: Определи, является ли это командой для бота (приказ выполнить действие), "
+                "или это вопрос / обычный диалог.\n\n"
+                "ВАЖНО: все вопросы — всегда False. Любое сообщение в вопросительной форме "
+                "(знак «?», «какая», «сколько», «что», «где», «когда», «почему», «кто», «как» и т.п.) "
+                "помечай как False, даже если тема — погода, цены, новости или факты.\n\n"
+                "False (не команда) — любой вопрос, совет, мнение, описание, рассуждение, "
+                "просьба объяснить или рассказать.\n"
+                "True (команда) — только явный императив выполнить действие без вопросительной формы: "
+                "нарисуй, сгенерируй, включи, найди, запусти, отправь и т.п.\n\n"
                 "Верни True, если это команда, или False, если нет.\n"
                 "Формат ответа: только True или False, без дополнительного текста."
             )
