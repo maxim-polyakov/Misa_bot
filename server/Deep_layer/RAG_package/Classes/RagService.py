@@ -31,19 +31,26 @@ class RagService:
             logging.info('RAG: search not needed for: %s', text[:100])
             return None
 
+        # Котировки — сразу, не ждём DuckDuckGo
+        results = []
+        quote = WebSearchRetriever.fetch_market_quote(text)
+        if quote:
+            results.append(quote)
+            logging.info('RAG: direct market quote for: %s', text[:80])
+
         search_query = cls._extract_search_query(text, user, chat_id=chat_id)
-        results = WebSearchRetriever.search(search_query, symbol_hint_text=text)
+        web_results = WebSearchRetriever.search(search_query, symbol_hint_text=text)
+
+        for item in web_results:
+            if item not in results and not any(r.get('url') == item.get('url') for r in results):
+                results.append(item)
 
         if WebSearchRetriever.results_lack_facts(results) and search_query.strip().lower() != text.strip().lower():
             logging.info('RAG: retry search with original text')
             alt_results = WebSearchRetriever.search(text[:200], symbol_hint_text=text)
-            if alt_results and (
-                not results
-                or len(alt_results) > len(results)
-                or not WebSearchRetriever.results_lack_facts(alt_results)
-            ):
-                results = alt_results
-                search_query = text[:200]
+            for item in alt_results:
+                if not any(r.get('url') == item.get('url') for r in results):
+                    results.append(item)
 
         if not results:
             logging.warning('RAG: empty search results for query="%s"', search_query)

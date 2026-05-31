@@ -18,6 +18,14 @@ _FACT_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
+_MARKET_QUERY = re.compile(
+    r'(?:'
+    r'цена|стоимость|котировк|курс|акци|stock|share|nasdaq|nyse|'
+    r'bitcoin|биткоин|btc|ethereum|eth|криптовалют|crypto'
+    r')',
+    re.IGNORECASE | re.UNICODE,
+)
+
 _SYMBOL_HINTS = (
     ('tesla', 'TSLA'),
     ('тесла', 'TSLA'),
@@ -42,7 +50,7 @@ _SYMBOL_HINTS = (
 
 
 class WebSearchRetriever:
-    """Поиск в интернете через DuckDuckGo + текст с найденных страниц."""
+    """Поиск в интернете через DuckDuckGo + котировки + текст со страниц."""
 
     _BACKENDS = ('bing', 'html', 'lite', 'auto')
     _REGIONS = ('us-en', 'wt-wt', 'ru-ru')
@@ -54,30 +62,60 @@ class WebSearchRetriever:
 
         query = str(query).strip()
         hint = (symbol_hint_text or query).strip()
-        results = cls._search_text(query, max_results)
+        results = []
+
+        if cls._looks_like_market_query(hint):
+            quote_item = cls.fetch_market_quote(hint)
+            if quote_item:
+                results.append(quote_item)
+                logging.info('WebSearchRetriever: market quote for "%s"', hint[:80])
+
+        ddg_results = cls._search_text(query, max_results)
+        if not ddg_results:
+            ddg_results = cls._search_news(query, max_results)
+        if ddg_results:
+            ddg_results = cls._enrich_results(ddg_results)
+            for item in ddg_results:
+                if len(results) >= max_results:
+                    break
+                if not cls._is_duplicate_result(results, item):
+                    results.append(item)
+
         if not results:
-            results = cls._search_news(query, max_results)
+            quote_item = cls.fetch_market_quote(hint)
+            if quote_item:
+                results.append(quote_item)
+                logging.info('WebSearchRetriever: market quote fallback (no search results)')
 
         if not results:
             logging.warning('WebSearchRetriever: no results for "%s"', query)
             return []
 
-        results = cls._enrich_results(results)
-        if cls._results_lack_facts(results):
-            quote = cls._fetch_market_quote(hint)
-            if quote:
-                logging.info('WebSearchRetriever: market quote fallback for "%s"', query)
-                results = [quote] + results[: max(0, max_results - 1)]
-
         logging.info(
             'WebSearchRetriever: %s results for "%s" (facts=%s)',
             len(results), query, not cls._results_lack_facts(results),
         )
-        return results
+        return results[:max_results]
+
+    @classmethod
+    def fetch_market_quote(cls, text):
+        return cls._fetch_market_quote(text)
 
     @classmethod
     def results_lack_facts(cls, results):
         return cls._results_lack_facts(results)
+
+    @classmethod
+    def _looks_like_market_query(cls, text):
+        return bool(_MARKET_QUERY.search(str(text)))
+
+    @classmethod
+    def _is_duplicate_result(cls, results, item):
+        url = item.get('url', '')
+        for r in results:
+            if r.get('url') == url:
+                return True
+        return False
 
     @classmethod
     def _results_lack_facts(cls, results):
@@ -179,7 +217,6 @@ class WebSearchRetriever:
 
     @classmethod
     def _enrich_results(cls, results, max_pages=3):
-        """Дополняет сниппеты текстом со страниц — в них часто есть цены и цифры."""
         if not results:
             return results
 
@@ -194,6 +231,7 @@ class WebSearchRetriever:
                 pages_fetched < max_pages
                 and url
                 and 'duckduckgo.com' not in url
+                and 'finance.yahoo.com' not in url
                 and (cls._results_lack_facts([item]) or len(snippet) < 250)
             )
             if need_page:
@@ -213,8 +251,7 @@ class WebSearchRetriever:
         if page_text and page_text.strip():
             if not snippet or page_text.strip() not in snippet:
                 parts.append(page_text.strip())
-        merged = '\n\n'.join(parts)
-        return merged[:max_len]
+        return '\n\n'.join(parts)[:max_len]
 
     @classmethod
     def _fetch_page_text(cls, url, max_chars=3000):
@@ -243,9 +280,7 @@ class WebSearchRetriever:
             chunks.extend(soup.stripped_strings)
 
             text = re.sub(r'\s+', ' ', ' '.join(chunks)).strip()
-            if not text:
-                return ''
-            return text[:max_chars]
+            return text[:max_chars] if text else ''
         except Exception as e:
             logging.warning('WebSearchRetriever page fetch failed for %s: %s', url, e)
             return ''
@@ -254,7 +289,7 @@ class WebSearchRetriever:
     def _symbol_from_text(cls, text):
         t_lower = str(text).lower()
         for name, symbol in _SYMBOL_HINTS:
-            if re.search(rf'\b{re.escape(name)}\b', t_lower):
+            if name in t_lower:
                 return symbol
         m = re.search(r'\b([A-Z]{2,5})\b', str(text))
         if m:
@@ -266,16 +301,26 @@ class WebSearchRetriever:
         symbol = cls._symbol_from_text(text)
         if not symbol:
             return None
+
+        quote = cls._fetch_yahoo_quote(symbol)
+        if quote:
+            return quote
+
+        if '-' not in symbol:
+            quote = cls._fetch_stooq_quote(symbol)
+            if quote:
+                return quote
+
+        return None
+
+    @classmethod
+    def _fetch_yahoo_quote(cls, symbol):
         url = (
             f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}'
             f'?interval=1d&range=1d'
         )
         try:
-            resp = requests.get(
-                url,
-                headers={'User-Agent': _USER_AGENT},
-                timeout=10,
-            )
+            resp = requests.get(url, headers={'User-Agent': _USER_AGENT}, timeout=12)
             resp.raise_for_status()
             result = (resp.json().get('chart') or {}).get('result') or []
             if not result:
@@ -290,8 +335,7 @@ class WebSearchRetriever:
             page_url = f'https://finance.yahoo.com/quote/{symbol}'
             snippet = (
                 f'{name} ({symbol}): {price} {currency}. '
-                f'Биржа: {exchange}. '
-                f'Источник: Yahoo Finance, данные на момент запроса.'
+                f'Биржа: {exchange}. Источник: Yahoo Finance.'
             )
             return {
                 'title': f'{name} — {price} {currency}',
@@ -299,5 +343,36 @@ class WebSearchRetriever:
                 'snippet': snippet,
             }
         except Exception as e:
-            logging.warning('WebSearchRetriever market quote failed for %s: %s', symbol, e)
+            logging.warning('WebSearchRetriever Yahoo quote failed for %s: %s', symbol, e)
+            return None
+
+    @classmethod
+    def _fetch_stooq_quote(cls, symbol):
+        stooq_symbol = f'{symbol.lower()}.us'
+        url = f'https://stooq.com/q/l/?s={stooq_symbol}&f=sd2t2ohlcv&h&e=csv'
+        try:
+            resp = requests.get(url, headers={'User-Agent': _USER_AGENT}, timeout=12)
+            resp.raise_for_status()
+            lines = [ln.strip() for ln in resp.text.strip().splitlines() if ln.strip()]
+            if len(lines) < 2:
+                return None
+            parts = lines[1].split(',')
+            if len(parts) < 7:
+                return None
+            sym, date, time_str, _open, _high, _low, close = parts[:7]
+            price = close.strip()
+            if not price or price.lower() == 'null':
+                return None
+            page_url = f'https://stooq.com/q/?s={stooq_symbol}'
+            snippet = (
+                f'{sym} ({symbol}): {price} USD на {date} {time_str}. '
+                f'Источник: Stooq.com.'
+            )
+            return {
+                'title': f'{symbol} — {price} USD',
+                'url': page_url,
+                'snippet': snippet,
+            }
+        except Exception as e:
+            logging.warning('WebSearchRetriever Stooq quote failed for %s: %s', symbol, e)
             return None
