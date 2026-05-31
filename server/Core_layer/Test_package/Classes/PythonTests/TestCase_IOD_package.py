@@ -12,7 +12,8 @@ class TestCase_IOD_package(ITestCase.ITestCase):
 
     def test_dalle(self):
         res = self.dal.generate('кота')
-        self.assertNotEqual(res, None)
+        self.assertIsNotNone(res)
+        self.assertIsInstance(res, (bytes, bytearray))
 
 if __name__ == '__main__':
     unittest.main()

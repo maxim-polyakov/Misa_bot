@@ -1,12 +1,13 @@
 from Deep_layer.NLP_package.Interfaces import IGpt
 from openai import OpenAI
+import base64
 import logging
 from Deep_layer.DB_package.Classes import DB_Communication
 from Deep_layer.NLP_package.Classes.TextPreprocessers import QuestionPreprocessing
 
 class Dalle(IGpt.IGpt):
     """
-    It is a dalle image generator
+    Генератор изображений через OpenAI gpt-image-2.
     """
     __dbc = DB_Communication.DB_Communication()
     __pr = QuestionPreprocessing.QuestionPreprocessing()
@@ -33,18 +34,18 @@ class Dalle(IGpt.IGpt):
             )
             # preprocessing the input text
             input_text = cls.__pr.preprocess_text(text)
-            # generating an image using openai's dall·e model
             response = client.images.generate(
-                model="dall-e-3",
+                model="gpt-image-2",
                 prompt=input_text,
                 size="1024x1024",
                 n=1,
             )
-            # extracting the generated image url
-            image_url = response.data[0].url
-            # log successful execution
+            b64_data = response.data[0].b64_json
+            if not b64_data:
+                raise ValueError('gpt-image-2 returned no image data')
+            image_bytes = base64.b64decode(b64_data)
             logging.info('The dalle.generate method has completed successfully')
-            return str(image_url)
+            return image_bytes
         except Exception as e:
             # logging any exceptions that occur during execution
             logging.exception('The exception occurred in dalle.generate: ' + str(e))

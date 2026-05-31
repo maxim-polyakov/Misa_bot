@@ -3,7 +3,6 @@ from Core_layer.Bot_package.Interfaces import IDrawer
 from Deep_layer.IOD_package.Classes import Dalle
 from Deep_layer.Storage_package.Classes.S3Storage import upload_image
 import logging
-import requests
 import os
 import time
 
@@ -29,9 +28,7 @@ class Drawer(IDrawer.IDrawer):
         while True:
             try:
                 attempt += 1
-                image_url = cls.__dal.generate(cls.message_text)
-                p = requests.get(image_url)
-                image_bytes = p.content
+                image_bytes = cls.__dal.generate(cls.message_text)
 
                 # Пробуем загрузить в S3 (префикс по source)
                 s3_url = upload_image(image_bytes, source=cls.__source)
