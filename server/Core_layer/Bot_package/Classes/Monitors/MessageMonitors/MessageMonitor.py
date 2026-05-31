@@ -27,7 +27,7 @@ def _text_without_urls_for_misa_trigger(text):
 
 
 def _strip_bot_address(text):
-    """Убирает обращение к боту в начале сообщения (миса, misa, …)."""
+    """Убирает обращение к боту (миса, misa, …) из текста."""
     if not text:
         return text
     s = str(text).strip()
@@ -38,7 +38,14 @@ def _strip_bot_address(text):
         count=1,
         flags=re.IGNORECASE,
     )
-    return s.strip()
+    s = s.strip()
+    s = re.sub(
+        r'(?:@?\s*)?(?:миса|misa|миша|misha)(?:[,\s:—\-–]+)?',
+        ' ',
+        s,
+        flags=re.IGNORECASE,
+    )
+    return re.sub(r'\s+', ' ', s).strip()
 
 
 def _has_bot_trigger(text, pltype):
@@ -133,6 +140,7 @@ class MessageMonitor(IMonitor.IMonitor):
     def check(cls, text_message, user):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
+            text_message = _strip_bot_address(text_message)
             text_message = text_message.replace('\n', ' ')
             input = (
                 "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
