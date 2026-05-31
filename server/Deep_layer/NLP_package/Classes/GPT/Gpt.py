@@ -139,7 +139,7 @@ class Gpt(IGpt.IGpt):
             # При проверке команды — без системного сообщения (чистый запрос)
             messages = api_messages if is_command_check else [{"role": "system", "content": system_prompt}] + api_messages
 
-            temperature = 0.2 if rag_context and not is_command_check else 1
+            temperature = 0.2 if rag_context and not is_command_check else (0 if is_command_check else 1)
             response = client.chat.completions.create(
                 model='gpt-4o',
                 messages=messages,

@@ -36,6 +36,12 @@ class WebSearchRetriever:
 
     _BACKENDS = ('bing', 'html', 'lite', 'auto')
     _REGIONS = ('us-en', 'wt-wt', 'ru-ru')
+    _PRIORITY_COMBOS = (
+        ('bing', 'us-en'),
+        ('html', 'us-en'),
+        ('bing', 'wt-wt'),
+        ('html', 'ru-ru'),
+    )
 
     @classmethod
     def search_queries(cls, queries, topic='', max_results=5):
@@ -88,32 +94,34 @@ class WebSearchRetriever:
         merged = []
         seen_domains = set()
 
-        for backend in cls._BACKENDS:
-            for region in cls._REGIONS:
-                batch = cls._fetch_text(query, per_query, backend, region)
-                for item in batch:
-                    url = item.get('url', '')
-                    domain = cls._domain(url)
-                    if domain in seen_domains:
-                        continue
-                    seen_domains.add(domain)
-                    merged.append(item)
-                    if len(merged) >= per_query:
-                        break
+        def add_batch(batch):
+            for item in batch or []:
                 if len(merged) >= per_query:
-                    break
-            if len(merged) >= per_query:
-                break
-
-        if len(merged) < per_query // 2:
-            news = cls._search_news(query, per_query)
-            for item in news:
+                    return
                 url = item.get('url', '')
                 domain = cls._domain(url)
                 if domain in seen_domains:
                     continue
                 seen_domains.add(domain)
                 merged.append(item)
+
+        for backend, region in cls._PRIORITY_COMBOS:
+            add_batch(cls._fetch_text(query, per_query, backend, region))
+
+        if len(merged) < per_query:
+            for backend in cls._BACKENDS:
+                for region in cls._REGIONS:
+                    if (backend, region) in cls._PRIORITY_COMBOS:
+                        continue
+                    add_batch(cls._fetch_text(query, per_query, backend, region))
+                    if len(merged) >= per_query:
+                        break
+                if len(merged) >= per_query:
+                    break
+
+        if len(merged) < per_query // 2:
+            for item in cls._search_news(query, per_query):
+                add_batch([item])
 
         logging.info('WebSearchRetriever: collected %s links for "%s"', len(merged), query[:80])
         return merged
