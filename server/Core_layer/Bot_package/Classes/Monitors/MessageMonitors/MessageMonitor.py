@@ -17,7 +17,6 @@ def _text_without_urls_for_misa_trigger(text):
     s = text
     s = re.sub(r'https?://[^\s<>\]]+', ' ', s, flags=re.IGNORECASE)
     s = re.sub(r'www\.[^\s<>\]]+', ' ', s, flags=re.IGNORECASE)
-    # без схемы, но в имени хоста есть misa: misa.example.ru/share
     s = re.sub(
         r'(^|[\s(>])([^\s<>\]]*misa[^\s<>\]]*\.(?:[a-z0-9-]+\.)+[a-z]{2,}[^\s<>\]]*)',
         r'\1',
@@ -25,6 +24,36 @@ def _text_without_urls_for_misa_trigger(text):
         flags=re.IGNORECASE,
     )
     return s
+
+
+def _strip_bot_address(text):
+    """Убирает обращение к боту в начале сообщения (миса, misa, …)."""
+    if not text:
+        return text
+    s = str(text).strip()
+    s = re.sub(
+        r'^(?:@?\s*)?(?:миса|misa|миша|misha|иса)(?:[,\s:—\-–]+|$)',
+        '',
+        s,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    return s.strip()
+
+
+def _has_bot_trigger(text, pltype):
+    """Discord/Telegram: «миса» — только триггер ответа, не команда."""
+    if pltype == 'server':
+        return True
+    s = _text_without_urls_for_misa_trigger(text or '')
+    return (
+        s.count('миса') > 0
+        or s.lower().count('misa') > 0
+        or s.count('миша') > 0
+        or s.count('misha') > 0
+        or s.count('миса,') > 0
+        or s.count('иса') > 0
+    )
 
 
 class MessageMonitor(IMonitor.IMonitor):
@@ -38,48 +67,57 @@ class MessageMonitor(IMonitor.IMonitor):
     __text_message = None
     __user = None
     __chat_id = None
+    __pltype = 'server'
 
     @classmethod
-    def __decision(cls, text_message, user, emotion, commands, chat_id=None):
-        # call gpt to get an answer and check commands
-        # configure logging settings
+    def __decision(cls, text_message, user, emotion, commands, pltype='server', chat_id=None):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             outlist = []
             cls.__commands = commands
+            cls.__pltype = pltype
+            text_message = _strip_bot_address(text_message)
             cls.__text_message = text_message
             cls.__user = user
             cls.__chat_id = chat_id
-            if (cls.check(text_message, user)):
-                # analyze the command and add the result to the output list
+
+            # Discord/Telegram: обращение с «миса» — обычный диалог + RAG, без команд
+            if pltype in ('discord', 'telegram'):
+                rag_context = RagService.enrich_query(text_message, user, chat_id=chat_id)
+                res = cls._gpta.answer(
+                    text_message, user, False, chat_id=chat_id, rag_context=rag_context
+                )
+                outlist.append(res)
+                outlist.append(emotion)
+                logging.info('messagemonitor.__decision: bot trigger reply (%s)', pltype)
+                return outlist
+
+            # Web: команды + RAG
+            if cls.check(text_message, user):
                 outlist.append(commands.analyse(text_message, user))
                 return outlist
+
             rag_context = RagService.enrich_query(text_message, user, chat_id=chat_id)
-            res = cls._gpta.answer(text_message, user, False, chat_id=chat_id, rag_context=rag_context)
+            res = cls._gpta.answer(
+                text_message, user, False, chat_id=chat_id, rag_context=rag_context
+            )
             outlist.append(res)
-            # append the emotion to the output list
-            outlist.append('' + emotion)
-            # log successful completion of the process
+            outlist.append(emotion)
             logging.info('The messagemonitor.__decision process has completed successfully')
             return outlist
         except Exception as e:
-            # log any exceptions that occur during execution
             logging.exception('The exception occurred in messagemonitor.__decision: ' + str(e))
 
     @classmethod
-    def _neurodesc(cls, text, user, text_message, command, chat_id=None):
-        # calling the decision with emotion
-        # configure logging settings
+    def _neurodesc(cls, text, user, text_message, command, pltype='server', chat_id=None):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            # initialize an empty emotion variable
             emotion = ''
-            # log successful execution of the method
             logging.info('The messagemonitor._neurodesc process has completed successfully')
-            # call the __decision method with the provided parameters
-            return cls.__decision(text_message, user, emotion, command, chat_id=chat_id)
+            return cls.__decision(
+                text_message, user, emotion, command, pltype=pltype, chat_id=chat_id
+            )
         except Exception as e:
-            # log the exception if an error occurs
             logging.exception('The exception occurred in messagemonitor._neurodesc: ' + str(e))
 
     @classmethod
@@ -90,114 +128,55 @@ class MessageMonitor(IMonitor.IMonitor):
             return res
         except Exception as e:
             logging.exception('The exception occurred in messagemonitor.command_type: ' + str(e))
+
     @classmethod
     def check(cls, text_message, user):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             text_message = text_message.replace('\n', ' ')
             input = (
-                    "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
-                    "Сообщение: " + text_message + "\n"
-                    "Задача: Определи, является ли это командой, строго учитывая контекст высказывания. "
-                    "Считается командой: (1) прямое побуждение к действию (приказ, просьба, инструкция); "
-                    "(2) любое сообщение о погоде — вопрос про погоду, запрос погоды, рассказ о погоде и т.п. "
-                    "Не считается командой: советы, рекомендации, описания, размышления, эмоции или повествование "
-                    "(кроме погодной тематики), даже при глаголах в повелительном наклонении. "
-                    "Верни True, если это команда, или False, если нет.\n"
-                    "Формат ответа: только True или False, без дополнительного текста."
+                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+                "Сообщение: " + text_message + "\n"
+                "Задача: Определи, является ли это командой, строго учитывая контекст высказывания. "
+                "Считается командой: (1) прямое побуждение к действию (приказ, просьба, инструкция); "
+                "(2) любое сообщение о погоде — вопрос про погоду, запрос погоды, рассказ о погоде и т.п. "
+                "Не считается командой: советы, рекомендации, описания, размышления, эмоции или повествование "
+                "(кроме погодной тематики), даже при глаголах в повелительном наклонении. "
+                "Верни True, если это команда, или False, если нет.\n"
+                "Формат ответа: только True или False, без дополнительного текста."
             )
             res = cls._gpta.answer(input, user, True, chat_id=cls.__chat_id)
-
-            if res.count("True") > 0:
-                logging.info('The messagemonitor.check process has completed successfully')
-                return True
-            else:
-                logging.info('The messagemonitor.check process has completed successfully')
-                return False
+            return res and res.count("True") > 0
         except Exception as e:
             logging.exception('The exception occurred in messagemonitor.check: ' + str(e))
 
     @classmethod
     def monitor(cls, message, user, command, pltype, chat_id=None):
-        # main monitor for calculating messages
-        # configure logging settings
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            text = []
-            # determine the message content based on the platform type
-            if(pltype == 'discord'):
+            if pltype == 'discord':
                 lowertext = message.content
-            elif (pltype=='telegram'):
+            elif pltype == 'telegram':
                 lowertext = message.text
             else:
                 lowertext = message
-            # insert the processed text into the database
+
             cls._dbc.insert_to(lowertext)
-            outstr = ''
-            text_for_trigger = _text_without_urls_for_misa_trigger(lowertext)
-            # check if the message contains specific keywords (не в части ссылки)
-            if (text_for_trigger.count('миса') > 0
-                or text_for_trigger.lower().count('misa') > 0
-                or text_for_trigger.count('миша') > 0
-                or text_for_trigger.count('misha') > 0
-                or text_for_trigger.count('миса,') > 0
-                or text_for_trigger.count('иса') > 0 and pltype != 'server'):
-                # perform text replacements (currently empty replacements)
-                lowertext = (lowertext.replace('миса ', '')
-                             .replace('misa ', '')
-                             .replace('миса,', '')
-                             .replace('misa,', '')
-                             .replace('миша', '')
-                             .replace('misha', '')
-                             .replace('иса', '')
-                             .replace('Миса', '')
-                             .replace('Misa ', '')
-                             .replace('Миса,', '')
-                             .replace('Misa,', '')
-                             .replace('Миша', '')
-                             .replace('Misha', '')
-                             .replace('Иса', ''))
-                text.append(lowertext)
-                outlist = cls._neurodesc(text, user, lowertext, command, chat_id=chat_id)
-                # if the function returns a result, format it into a string
-                if (outlist != None):
-                    for outmes in outlist:
-                        outstr += str(outmes)
-                # log successful completion of the process
-                logging.info('The messagemonitor.monitor process has completed successfully')
-                return outstr
-            else:
-                if pltype == 'server':
-                    # perform text replacements (currently empty replacements)
-                    lowertext = (lowertext.replace('миса ', '')
-                                 .replace('misa ', '')
-                                 .replace('миса,', '')
-                                 .replace('misa,', '')
-                                 .replace('миша', '')
-                                 .replace('misha', '')
-                                 .replace('иса', '')
-                                 .replace('Миса', '')
-                                 .replace('Misa ', '')
-                                 .replace('Миса,', '')
-                                 .replace('Misa,', '')
-                                 .replace('Миша', '')
-                                 .replace('Misha', '')
-                                 .replace('Иса', ''))
-                    text.append(lowertext)
-                    outlist = cls._neurodesc(text, user, lowertext, command, chat_id=chat_id)
-                    # if the function returns a result, format it into a string
-                    if (outlist != None):
-                        for outmes in outlist:
-                            outstr += str(outmes)
-                    # log successful completion of the process
-                    logging.info('The messagemonitor.monitor process has completed successfully')
-                    return outstr
-                # log successful completion even if no keywords were found
-                logging.info('The messagemonitor.monitor process has completed successfully')
-                return outstr
+
+            if not _has_bot_trigger(lowertext, pltype):
+                logging.info('messagemonitor.monitor: no bot trigger, skip reply (%s)', pltype)
+                return ''
+
+            lowertext = _strip_bot_address(lowertext)
+            outlist = cls._neurodesc(
+                [lowertext], user, lowertext, command, pltype=pltype, chat_id=chat_id
+            )
+            if outlist is None:
+                return ''
+            return ''.join(str(m) for m in outlist)
         except Exception as e:
-            # log any exceptions that occur during execution
             logging.exception('The exception occurred in messagemonitor.monitor: ' + str(e))
+            return ''
 
     @classmethod
     def clear_conversation_history(cls, user=None):
