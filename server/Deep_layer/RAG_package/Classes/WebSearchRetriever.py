@@ -114,7 +114,7 @@ class WebSearchRetriever:
             results.append({
                 'title': title or domain,
                 'url': url,
-                'snippet': body[:600],
+                'snippet': body[:1000],
             })
             if len(results) >= max_results:
                 break

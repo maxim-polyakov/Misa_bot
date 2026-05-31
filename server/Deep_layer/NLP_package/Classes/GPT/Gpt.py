@@ -77,50 +77,63 @@ class Gpt(IGpt.IGpt):
                 project=OPENAI_API_PROJECT,
             )
 
-            # System prompt: instruct GPT to format content in markdown blocks for proper display
-            system_prompt = (
-                "When you output code or structured content, always wrap it in markdown code blocks: "
-                "```label\\ncontent\\n```. Use these labels for different frame styles:\n"
-                "- Code: python, javascript, typescript, go, rust, java, etc.\n"
-                "- json: JSON data\n"
-                "- yaml/yml: YAML configs\n"
-                "- bash/sh: shell commands\n"
-                "- sql: SQL queries\n"
-                "- md/markdown: Markdown snippets\n"
-                "- diff: file diffs\n"
-                "- warning: warnings\n"
-                "- error: error messages\n"
-                "- quote: citations\n"
-                "- output: command output or logs"
-            )
+            # System prompt
             if rag_context and not is_command_check:
-                system_prompt += (
-                    "\n\n--- Актуальная информация из интернета ---\n"
+                system_prompt = (
+                    "Ты — ассистент Misa. Отвечай на языке пользователя.\n\n"
+                    "Ниже — результаты поиска в интернете. Это единственный источник фактов для ответа.\n\n"
+                    "--- Результаты поиска ---\n"
                     + rag_context
-                    + "\n--- Конец информации из интернета ---\n"
-                    "ОБЯЗАТЕЛЬНО ответь на вопрос пользователя, используя данные из блока выше. "
-                    "ЗАПРЕЩЕНО отвечать, что ты не можешь предоставить актуальные или realtime-данные. "
-                    "Если точной цифры нет — используй ближайшее значение из сниппетов и укажи источник ссылкой. "
-                    "Если данные из интернета противоречат общим знаниям — доверяй интернету."
+                    + "\n--- Конец результатов ---\n\n"
+                    "Правила ответа:\n"
+                    "1. Ответь напрямую на вопрос, используя факты и цифры из результатов поиска.\n"
+                    "2. ЗАПРЕЩЕНО: отказываться от актуальных данных; писать, что у тебя нет доступа к realtime; "
+                    "советовать «проверьте на сайте», «воспользуйтесь сервисом», «цена может варьироваться» "
+                    "вместо конкретного ответа.\n"
+                    "3. Если в сниппетах есть число (цена, курс, температура, дата) — укажи его и источник ссылкой.\n"
+                    "4. Если точной цифры нет — приведи ближайшую конкретную информацию из сниппетов, не отправляй пользователя на другие сайты.\n"
+                    "5. Кратко и по делу."
+                )
+            else:
+                system_prompt = (
+                    "When you output code or structured content, always wrap it in markdown code blocks: "
+                    "```label\\ncontent\\n```. Use these labels for different frame styles:\n"
+                    "- Code: python, javascript, typescript, go, rust, java, etc.\n"
+                    "- json: JSON data\n"
+                    "- yaml/yml: YAML configs\n"
+                    "- bash/sh: shell commands\n"
+                    "- sql: SQL queries\n"
+                    "- md/markdown: Markdown snippets\n"
+                    "- diff: file diffs\n"
+                    "- warning: warnings\n"
+                    "- error: error messages\n"
+                    "- quote: citations\n"
+                    "- output: command output or logs"
                 )
             if is_command_check:
                 api_messages = [{"role": "user", "content": text}]
             elif rag_context:
-                # RAG-ответ: только текущий вопрос, без истории (одинаково на всех платформах)
-                api_messages = [{"role": "user", "content": text}]
+                api_messages = [{
+                    "role": "user",
+                    "content": (
+                        f"{text}\n\n"
+                        "Дай прямой ответ по результатам поиска выше: конкретные факты и цифры из сниппетов. "
+                        "Не предлагай пользователю искать на других сайтах."
+                    ),
+                }]
             else:
                 api_messages = conversation_history
             # При проверке команды — без системного сообщения (чистый запрос)
             messages = api_messages if is_command_check else [{"role": "system", "content": system_prompt}] + api_messages
 
-            # sending a request to the gpt model to generate a response with full context
+            temperature = 0.2 if rag_context and not is_command_check else 1
             response = client.chat.completions.create(
                 model='gpt-4o',
                 messages=messages,
-                temperature=1,
+                temperature=temperature,
                 top_p=1,
                 frequency_penalty=0,
-                presence_penalty=0
+                presence_penalty=0,
             )
 
             # Extract assistant response
