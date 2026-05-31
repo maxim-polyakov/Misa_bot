@@ -79,6 +79,8 @@ class MessageMonitor(IMonitor.IMonitor):
     @classmethod
     def _reply_with_rag(cls, text_message, user, emotion, chat_id=None):
         rag_context = RagService.enrich_query(text_message, user, chat_id=chat_id)
+        if not rag_context:
+            logging.warning('messagemonitor._reply_with_rag: empty rag_context for: %s', text_message[:80])
         res = cls._gpta.answer(
             text_message, user, False, chat_id=chat_id, rag_context=rag_context
         )

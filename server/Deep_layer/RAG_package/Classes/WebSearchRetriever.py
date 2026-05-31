@@ -61,11 +61,14 @@ class WebSearchRetriever:
 
         merged = cls._enrich_results(merged, max_pages=5)
         merged = cls._rank_results(merged, topic or ' '.join(queries))
+        with_facts = [r for r in merged if not cls._results_lack_facts([r])]
+        without_facts = [r for r in merged if cls._results_lack_facts([r])]
+        merged = with_facts + without_facts
 
         logging.info(
             'WebSearchRetriever: %s results after enrich+rank (facts=%s) queries=%s',
             min(len(merged), max_results),
-            not cls._results_lack_facts(merged[:max_results]),
+            len(with_facts) > 0,
             [q[:60] for q in queries if q],
         )
         return merged[:max_results]
@@ -231,8 +234,13 @@ class WebSearchRetriever:
 
         enriched = []
         pages_fetched = 0
+        # Сначала загружаем страницы без цифр в сниппете
+        ordered = sorted(
+            results,
+            key=lambda r: 0 if cls._results_lack_facts([r]) else 1,
+        )
 
-        for r in results:
+        for r in ordered:
             item = dict(r)
             url = item.get('url', '')
             if (

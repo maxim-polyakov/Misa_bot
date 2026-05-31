@@ -11,6 +11,32 @@ def _conversation_key(user, chat_id=None):
     return (user, chat_id) if chat_id else (user, None)
 
 
+def _build_rag_user_message(text, rag_context):
+    """RAG-контекст в user-сообщении — GPT надёжнее использует цифры отсюда."""
+    import re
+    fact_lines = []
+    for line in str(rag_context).splitlines():
+        line = line.strip()
+        if line and re.search(r'\d+[.,]\d+|\$|USD|EUR|₽', line, re.IGNORECASE):
+            fact_lines.append(line[:400])
+    facts_block = ''
+    if fact_lines:
+        facts_block = (
+            'Ключевые числа из поиска:\n'
+            + '\n'.join(f'- {ln}' for ln in fact_lines[:8])
+            + '\n\n'
+        )
+    return (
+        f'{facts_block}'
+        f'Результаты поиска в интернете:\n\n{rag_context}\n\n'
+        f'---\n'
+        f'Вопрос: {text}\n\n'
+        f'Ответь на вопрос, используя числа и факты из результатов поиска. '
+        f'Начни с прямого ответа с цифрами. Укажи источник (URL). '
+        f'Запрещено: отказы, «проверьте на сайте», «не могу дать актуальные данные».'
+    )
+
+
 class Gpt(IGpt.IGpt):
     """
     It is a gpt text generator
@@ -80,20 +106,11 @@ class Gpt(IGpt.IGpt):
             # System prompt
             if rag_context and not is_command_check:
                 system_prompt = (
-                    "Ты — ассистент Misa. Отвечай на языке пользователя.\n\n"
-                    "Ниже — результаты поиска в интернете. Это единственный источник фактов для ответа.\n\n"
-                    "--- Результаты поиска ---\n"
-                    + rag_context
-                    + "\n--- Конец результатов ---\n\n"
-                    "Правила ответа:\n"
-                    "1. Ответь напрямую на вопрос, используя факты и цифры из результатов поиска.\n"
-                    "2. ЗАПРЕЩЕНО: отказываться от актуальных данных; писать, что у тебя нет доступа к realtime; "
-                    "советовать «проверьте на сайте», «воспользуйтесь сервисом», «цена может варьироваться» "
-                    "вместо конкретного ответа.\n"
-                    "3. Если в сниппетах есть число (цена, курс, температура, дата) — укажи его и источник ссылкой.\n"
-                    "4. Если точной цифры нет — приведи ближайшую конкретную информацию из сниппетов, не отправляй пользователя на другие сайты.\n"
-                    "5. Кратко и по делу."
+                    "Ты — ассистент Misa. Отвечай на языке вопроса. "
+                    "Используй ТОЛЬКО блок «Результаты поиска» в сообщении пользователя. "
+                    "Если там есть цены, курсы, даты — обязательно укажи их в ответе."
                 )
+                logging.info('gpt.generate RAG: context_len=%s', len(rag_context))
             else:
                 system_prompt = (
                     "When you output code or structured content, always wrap it in markdown code blocks: "
@@ -115,11 +132,7 @@ class Gpt(IGpt.IGpt):
             elif rag_context:
                 api_messages = [{
                     "role": "user",
-                    "content": (
-                        f"{text}\n\n"
-                        "Дай прямой ответ по результатам поиска выше: конкретные факты и цифры из сниппетов. "
-                        "Не предлагай пользователю искать на других сайтах."
-                    ),
+                    "content": _build_rag_user_message(text, rag_context),
                 }]
             else:
                 api_messages = conversation_history

@@ -15,6 +15,18 @@ class RagService:
         re.IGNORECASE,
     )
 
+    # Актуальные данные — всегда ищем, без GPT-решения (стабильнее)
+    _REALTIME_HEURISTIC = re.compile(
+        r'(?:'
+        r'сейчас|сегодня|актуальн|текущ|'
+        r'цена|стоимость|котировк|курс|'
+        r'акци(?:й|и|я|ю|ей)|stock|'
+        r'погод|новост|'
+        r'bitcoin|биткоин|btc|ethereum|eth|криптовалют'
+        r')',
+        re.IGNORECASE | re.UNICODE,
+    )
+
     @classmethod
     def enrich_query(cls, text, user, chat_id=None):
         """Возвращает текст из результатов поиска или None."""
@@ -55,7 +67,15 @@ class RagService:
         if WebSearchRetriever.results_lack_facts(results):
             logging.warning('RAG: no numeric facts in results for: %s', text[:80])
 
-        logging.info('RAG: retrieved %s sources', len(results))
+        # В контекст — сначала источники с цифрами
+        with_facts = [r for r in results if not WebSearchRetriever.results_lack_facts([r])]
+        without_facts = [r for r in results if WebSearchRetriever.results_lack_facts([r])]
+        results = (with_facts + without_facts)[:5]
+
+        logging.info(
+            'RAG: retrieved %s sources (%s with facts)',
+            len(results), len(with_facts),
+        )
         return cls._build_context(results)
 
     @classmethod
@@ -70,6 +90,10 @@ class RagService:
 
     @classmethod
     def _needs_web_search(cls, text, user, chat_id=None):
+        if cls._REALTIME_HEURISTIC.search(text):
+            logging.info('RAG: heuristic search=True for: %s', text[:100])
+            return True
+
         prompt = (
             "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
             f"Сообщение: {text}\n\n"
