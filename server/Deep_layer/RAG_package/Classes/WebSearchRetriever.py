@@ -18,104 +18,109 @@ _FACT_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-_MARKET_QUERY = re.compile(
-    r'(?:'
-    r'цена|стоимость|котировк|курс|акци|stock|share|nasdaq|nyse|'
-    r'bitcoin|биткоин|btc|ethereum|eth|криптовалют|crypto'
-    r')',
-    re.IGNORECASE | re.UNICODE,
-)
-
-_SYMBOL_HINTS = (
-    ('tesla', 'TSLA'),
-    ('тесла', 'TSLA'),
-    ('apple', 'AAPL'),
-    ('эпл', 'AAPL'),
-    ('microsoft', 'MSFT'),
-    ('майкрософт', 'MSFT'),
-    ('google', 'GOOGL'),
-    ('alphabet', 'GOOGL'),
-    ('amazon', 'AMZN'),
-    ('амазон', 'AMZN'),
-    ('nvidia', 'NVDA'),
-    ('meta', 'META'),
-    ('facebook', 'META'),
-    ('фейсбук', 'META'),
-    ('bitcoin', 'BTC-USD'),
-    ('биткоин', 'BTC-USD'),
-    ('btc', 'BTC-USD'),
-    ('ethereum', 'ETH-USD'),
-    ('eth', 'ETH-USD'),
-)
+_STOPWORDS = frozenset({
+    'как', 'что', 'где', 'когда', 'какой', 'какая', 'какие', 'сколько', 'сейчас',
+    'the', 'and', 'for', 'how', 'what', 'when', 'where', 'who', 'why', 'is', 'are',
+})
 
 
 class WebSearchRetriever:
-    """Поиск в интернете через DuckDuckGo + котировки + текст со страниц."""
+    """
+    Универсальный поиск через DuckDuckGo.
+
+    Сниппеты DDG редко содержат цифры (цены, курсы) — поэтому:
+    1) собираем больше ссылок с разных backend/region;
+    2) загружаем текст с найденных страниц;
+    3) ранжируем результаты с конкретными фактами выше.
+    """
 
     _BACKENDS = ('bing', 'html', 'lite', 'auto')
     _REGIONS = ('us-en', 'wt-wt', 'ru-ru')
 
     @classmethod
-    def search(cls, query, max_results=5, symbol_hint_text=None):
-        if not query or not str(query).strip():
+    def search_queries(cls, queries, topic='', max_results=5):
+        """Поиск по нескольким формулировкам запроса."""
+        merged = []
+        seen_urls = set()
+
+        for query in queries or []:
+            q = str(query).strip()
+            if not q:
+                continue
+            batch = cls._collect_web_results(q, per_query=max_results + 3)
+            for item in batch:
+                url = item.get('url', '')
+                if url in seen_urls:
+                    continue
+                seen_urls.add(url)
+                merged.append(item)
+
+        if not merged:
+            logging.warning('WebSearchRetriever: no links for queries=%s', queries)
             return []
 
-        query = str(query).strip()
-        hint = (symbol_hint_text or query).strip()
-        results = []
-
-        if cls._looks_like_market_query(hint):
-            quote_item = cls.fetch_market_quote(hint)
-            if quote_item:
-                results.append(quote_item)
-                logging.info('WebSearchRetriever: market quote for "%s"', hint[:80])
-
-        ddg_results = cls._search_text(query, max_results)
-        if not ddg_results:
-            ddg_results = cls._search_news(query, max_results)
-        if ddg_results:
-            ddg_results = cls._enrich_results(ddg_results)
-            for item in ddg_results:
-                if len(results) >= max_results:
-                    break
-                if not cls._is_duplicate_result(results, item):
-                    results.append(item)
-
-        if not results:
-            quote_item = cls.fetch_market_quote(hint)
-            if quote_item:
-                results.append(quote_item)
-                logging.info('WebSearchRetriever: market quote fallback (no search results)')
-
-        if not results:
-            logging.warning('WebSearchRetriever: no results for "%s"', query)
-            return []
+        merged = cls._enrich_results(merged, max_pages=5)
+        merged = cls._rank_results(merged, topic or ' '.join(queries))
 
         logging.info(
-            'WebSearchRetriever: %s results for "%s" (facts=%s)',
-            len(results), query, not cls._results_lack_facts(results),
+            'WebSearchRetriever: %s results after enrich+rank (facts=%s) queries=%s',
+            min(len(merged), max_results),
+            not cls._results_lack_facts(merged[:max_results]),
+            [q[:60] for q in queries if q],
         )
-        return results[:max_results]
+        return merged[:max_results]
 
     @classmethod
-    def fetch_market_quote(cls, text):
-        return cls._fetch_market_quote(text)
+    def search(cls, query, max_results=5, symbol_hint_text=None):
+        """Один запрос — обёртка над search_queries."""
+        topic = (symbol_hint_text or query or '').strip()
+        return cls.search_queries([query], topic=topic, max_results=max_results)
 
     @classmethod
     def results_lack_facts(cls, results):
         return cls._results_lack_facts(results)
 
     @classmethod
-    def _looks_like_market_query(cls, text):
-        return bool(_MARKET_QUERY.search(str(text)))
+    def _collect_web_results(cls, query, per_query=8):
+        merged = []
+        seen_domains = set()
+
+        for backend in cls._BACKENDS:
+            for region in cls._REGIONS:
+                batch = cls._fetch_text(query, per_query, backend, region)
+                for item in batch:
+                    url = item.get('url', '')
+                    domain = cls._domain(url)
+                    if domain in seen_domains:
+                        continue
+                    seen_domains.add(domain)
+                    merged.append(item)
+                    if len(merged) >= per_query:
+                        break
+                if len(merged) >= per_query:
+                    break
+            if len(merged) >= per_query:
+                break
+
+        if len(merged) < per_query // 2:
+            news = cls._search_news(query, per_query)
+            for item in news:
+                url = item.get('url', '')
+                domain = cls._domain(url)
+                if domain in seen_domains:
+                    continue
+                seen_domains.add(domain)
+                merged.append(item)
+
+        logging.info('WebSearchRetriever: collected %s links for "%s"', len(merged), query[:80])
+        return merged
 
     @classmethod
-    def _is_duplicate_result(cls, results, item):
-        url = item.get('url', '')
-        for r in results:
-            if r.get('url') == url:
-                return True
-        return False
+    def _domain(cls, url):
+        if '://' not in url:
+            return url
+        domain = url.split('/')[2]
+        return domain[4:] if domain.startswith('www.') else domain
 
     @classmethod
     def _results_lack_facts(cls, results):
@@ -125,17 +130,25 @@ class WebSearchRetriever:
         return True
 
     @classmethod
-    def _search_text(cls, query, max_results):
-        for backend in cls._BACKENDS:
-            for region in cls._REGIONS:
-                results = cls._fetch_text(query, max_results, backend, region)
-                if results:
-                    logging.info(
-                        'WebSearchRetriever: %s text results for "%s" backend=%s region=%s',
-                        len(results), query, backend, region,
-                    )
-                    return results
-        return []
+    def _rank_results(cls, results, topic):
+        terms = {
+            t for t in re.findall(r'[\w\u0400-\u04FF]+', str(topic).lower())
+            if len(t) > 2 and t not in _STOPWORDS
+        }
+
+        def score(item):
+            blob = f"{item.get('title', '')} {item.get('snippet', '')} {item.get('url', '')}".lower()
+            s = 0
+            if _FACT_PATTERN.search(blob):
+                s += 20
+            for term in terms:
+                if term in blob:
+                    s += 3
+            if any(x in blob for x in ('how to', 'как узнать', 'лучшие сервисы', 'best apps')):
+                s -= 5
+            return s
+
+        return sorted(results, key=score, reverse=True)
 
     @classmethod
     def _search_news(cls, query, max_results):
@@ -152,16 +165,13 @@ class WebSearchRetriever:
                 if results:
                     return results
             except Exception as e:
-                logging.warning(
-                    'WebSearchRetriever news failed for "%s" region=%s: %s',
-                    query, region, e,
-                )
+                logging.warning('WebSearchRetriever news failed for "%s": %s', query[:60], e)
         return []
 
     @classmethod
     def _fetch_text(cls, query, max_results, backend, region):
         try:
-            time.sleep(random.uniform(0.2, 0.6))
+            time.sleep(random.uniform(0.15, 0.45))
             raw = DDGS(timeout=20).text(
                 keywords=query,
                 region=region,
@@ -171,9 +181,9 @@ class WebSearchRetriever:
             )
             return cls._normalize_results(raw, query, max_results)
         except Exception as e:
-            logging.warning(
+            logging.debug(
                 'WebSearchRetriever backend=%s region=%s failed for "%s": %s',
-                backend, region, query, e,
+                backend, region, query[:60], e,
             )
             return []
 
@@ -198,17 +208,15 @@ class WebSearchRetriever:
             if not url:
                 url = f'https://duckduckgo.com/?q={quote(query)}'
 
-            domain = url.split('/')[2] if '://' in url else url
-            if domain.startswith('www.'):
-                domain = domain[4:]
-            if domain in seen_domains:
+            domain = cls._domain(url)
+            if domain in seen_domains or 'duckduckgo.com' in domain:
                 continue
             seen_domains.add(domain)
 
             results.append({
                 'title': title or domain,
                 'url': url,
-                'snippet': body[:1000],
+                'snippet': body[:800],
             })
             if len(results) >= max_results:
                 break
@@ -216,7 +224,8 @@ class WebSearchRetriever:
         return results
 
     @classmethod
-    def _enrich_results(cls, results, max_pages=3):
+    def _enrich_results(cls, results, max_pages=5):
+        """Загружает текст страниц — в сниппетах DDG цифр почти нет."""
         if not results:
             return results
 
@@ -225,26 +234,22 @@ class WebSearchRetriever:
 
         for r in results:
             item = dict(r)
-            snippet = item.get('snippet', '')
             url = item.get('url', '')
-            need_page = (
+            if (
                 pages_fetched < max_pages
                 and url
                 and 'duckduckgo.com' not in url
-                and 'finance.yahoo.com' not in url
-                and (cls._results_lack_facts([item]) or len(snippet) < 250)
-            )
-            if need_page:
+            ):
                 page_text = cls._fetch_page_text(url)
                 pages_fetched += 1
                 if page_text:
-                    item['snippet'] = cls._merge_snippet(snippet, page_text)
+                    item['snippet'] = cls._merge_snippet(item.get('snippet', ''), page_text)
             enriched.append(item)
 
         return enriched
 
     @classmethod
-    def _merge_snippet(cls, snippet, page_text, max_len=3500):
+    def _merge_snippet(cls, snippet, page_text, max_len=4000):
         parts = []
         if snippet and snippet.strip():
             parts.append(snippet.strip())
@@ -254,7 +259,7 @@ class WebSearchRetriever:
         return '\n\n'.join(parts)[:max_len]
 
     @classmethod
-    def _fetch_page_text(cls, url, max_chars=3000):
+    def _fetch_page_text(cls, url, max_chars=3500):
         try:
             resp = requests.get(
                 url,
@@ -271,8 +276,13 @@ class WebSearchRetriever:
             for tag in soup(['script', 'style', 'nav', 'footer', 'header', 'noscript', 'svg', 'iframe']):
                 tag.decompose()
 
+            og_desc = soup.find('meta', attrs={'property': 'og:description'})
             meta_desc = soup.find('meta', attrs={'name': 'description'})
-            meta_text = meta_desc.get('content', '').strip() if meta_desc else ''
+            meta_text = ''
+            if og_desc and og_desc.get('content'):
+                meta_text = og_desc['content'].strip()
+            elif meta_desc and meta_desc.get('content'):
+                meta_text = meta_desc['content'].strip()
 
             chunks = []
             if meta_text:
@@ -284,95 +294,3 @@ class WebSearchRetriever:
         except Exception as e:
             logging.warning('WebSearchRetriever page fetch failed for %s: %s', url, e)
             return ''
-
-    @classmethod
-    def _symbol_from_text(cls, text):
-        t_lower = str(text).lower()
-        for name, symbol in _SYMBOL_HINTS:
-            if name in t_lower:
-                return symbol
-        m = re.search(r'\b([A-Z]{2,5})\b', str(text))
-        if m:
-            return m.group(1)
-        return None
-
-    @classmethod
-    def _fetch_market_quote(cls, text):
-        symbol = cls._symbol_from_text(text)
-        if not symbol:
-            return None
-
-        quote = cls._fetch_yahoo_quote(symbol)
-        if quote:
-            return quote
-
-        if '-' not in symbol:
-            quote = cls._fetch_stooq_quote(symbol)
-            if quote:
-                return quote
-
-        return None
-
-    @classmethod
-    def _fetch_yahoo_quote(cls, symbol):
-        url = (
-            f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}'
-            f'?interval=1d&range=1d'
-        )
-        try:
-            resp = requests.get(url, headers={'User-Agent': _USER_AGENT}, timeout=12)
-            resp.raise_for_status()
-            result = (resp.json().get('chart') or {}).get('result') or []
-            if not result:
-                return None
-            meta = result[0].get('meta') or {}
-            price = meta.get('regularMarketPrice') or meta.get('previousClose')
-            if price is None:
-                return None
-            currency = meta.get('currency', 'USD')
-            exchange = meta.get('exchangeName') or meta.get('fullExchangeName') or ''
-            name = meta.get('longName') or meta.get('shortName') or symbol
-            page_url = f'https://finance.yahoo.com/quote/{symbol}'
-            snippet = (
-                f'{name} ({symbol}): {price} {currency}. '
-                f'Биржа: {exchange}. Источник: Yahoo Finance.'
-            )
-            return {
-                'title': f'{name} — {price} {currency}',
-                'url': page_url,
-                'snippet': snippet,
-            }
-        except Exception as e:
-            logging.warning('WebSearchRetriever Yahoo quote failed for %s: %s', symbol, e)
-            return None
-
-    @classmethod
-    def _fetch_stooq_quote(cls, symbol):
-        stooq_symbol = f'{symbol.lower()}.us'
-        url = f'https://stooq.com/q/l/?s={stooq_symbol}&f=sd2t2ohlcv&h&e=csv'
-        try:
-            resp = requests.get(url, headers={'User-Agent': _USER_AGENT}, timeout=12)
-            resp.raise_for_status()
-            lines = [ln.strip() for ln in resp.text.strip().splitlines() if ln.strip()]
-            if len(lines) < 2:
-                return None
-            parts = lines[1].split(',')
-            if len(parts) < 7:
-                return None
-            sym, date, time_str, _open, _high, _low, close = parts[:7]
-            price = close.strip()
-            if not price or price.lower() == 'null':
-                return None
-            page_url = f'https://stooq.com/q/?s={stooq_symbol}'
-            snippet = (
-                f'{sym} ({symbol}): {price} USD на {date} {time_str}. '
-                f'Источник: Stooq.com.'
-            )
-            return {
-                'title': f'{symbol} — {price} USD',
-                'url': page_url,
-                'snippet': snippet,
-            }
-        except Exception as e:
-            logging.warning('WebSearchRetriever Stooq quote failed for %s: %s', symbol, e)
-            return None
