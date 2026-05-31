@@ -1,23 +1,18 @@
+import io
 import os
 import logging
+
+import requests
 
 from Front_layer import discord_bot
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorDiscord
 from Core_layer.Bot_package.Classes.Monitors.PictureMonitors import PictureMonitorDiscord
-
-
-def is_file_path(response):
-    if not isinstance(response, str):
-        return False
-
-    cleaned_path = response.strip().replace('\n', '')
-
-    if os.path.exists(cleaned_path) and os.path.isfile(cleaned_path):
-        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
-        file_ext = os.path.splitext(cleaned_path)[1].lower()
-        return file_ext in image_extensions
-
-    return False
+from Core_layer.Bot_package.Classes.response_utils import (
+    clean_command_response,
+    extract_image_url,
+    is_image_url,
+    is_local_image_path,
+)
 
 
 @discord_bot.bot.listen()
@@ -31,6 +26,22 @@ async def on_message(message):
             await message.channel.send(file=discord_bot.disnake.File('txtfiles/message.txt'))
         else:
             await message.channel.send(outstr)
+
+    async def send_response_parts(outstr):
+        parts = clean_command_response(outstr)
+        if not parts and outstr and outstr.strip():
+            parts = [outstr.strip()]
+        for part in parts:
+            if is_image_url(part):
+                r = requests.get(extract_image_url(part), timeout=30)
+                r.raise_for_status()
+                await message.channel.send(
+                    file=discord_bot.disnake.File(io.BytesIO(r.content), filename='image.png')
+                )
+            elif is_local_image_path(part):
+                await message.channel.send(file=discord_bot.disnake.File(part))
+            else:
+                await processing_large_messages(part)
 
     if message.author == discord_bot.bot.user:
         return
@@ -49,6 +60,6 @@ async def on_message(message):
             await message.channel.send(file=discord_bot.disnake.File(photo))
     elif outstr and outstr.strip():
         try:
-            await processing_large_messages(outstr)
+            await send_response_parts(outstr)
         except Exception as e:
             logging.exception('The exception occurred in on_message ' + str(e))

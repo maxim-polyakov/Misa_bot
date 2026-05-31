@@ -18,12 +18,7 @@ def _get_messages_sync(chat_id):
     return ChatService.get_messages(chat_id)
 
 
-def _clean_command_response(response):
-    """Убирает |command| из ответа, возвращает список частей."""
-    if not response or not isinstance(response, str):
-        return []
-    parts = response.replace('|command|\n', '\x00').replace('|command|', '\x00').split('\x00')
-    return [p.strip() for p in parts if p.strip()]
+from Core_layer.Bot_package.Classes.response_utils import clean_command_response as _clean_command_response
 
 
 PING_INTERVAL = 30  # секунд — keepalive для предотвращения разрыва при неактивности
@@ -72,8 +67,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     def _clean_command_response(self, response):
         """Убирает |command| из ответа, возвращает список частей."""
-        parts = response.replace('|command|\n', '\x00').replace('|command|', '\x00').split('\x00')
-        return [p.strip() for p in parts if p.strip()]
+        return _clean_command_response(response)
 
     async def receive(self, text_data):
         try:

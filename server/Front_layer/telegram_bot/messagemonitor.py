@@ -1,20 +1,13 @@
 import os
+
 from Front_layer import telegram_bot
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorTelegram
-
-
-def is_file_path(response):
-    if not isinstance(response, str):
-        return False
-
-    cleaned_path = response.strip().replace('\n', '')
-
-    if os.path.exists(cleaned_path) and os.path.isfile(cleaned_path):
-        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
-        file_ext = os.path.splitext(cleaned_path)[1].lower()
-        return file_ext in image_extensions
-
-    return False
+from Core_layer.Bot_package.Classes.response_utils import (
+    clean_command_response,
+    extract_image_url,
+    is_image_url,
+    is_local_image_path,
+)
 
 
 @telegram_bot.dp.message_handler(content_types=['text'])
@@ -31,6 +24,18 @@ async def get_user_text(message):
         else:
             await telegram_bot.boto.send_message(message.chat.id, output)
 
+    async def send_response_parts(output):
+        parts = clean_command_response(output)
+        if not parts and output and output.strip():
+            parts = [output.strip()]
+        for part in parts:
+            if is_image_url(part):
+                await telegram_bot.boto.send_photo(message.chat.id, photo=extract_image_url(part))
+            elif is_local_image_path(part):
+                await telegram_bot.boto.send_photo(message.chat.id, photo=open(part, 'rb'))
+            else:
+                await processing_large_messages(part)
+
     mon = MessageMonitorTelegram.MessageMonitorTelegram(
         telegram_bot.boto, message.from_user.username, message
     )
@@ -38,6 +43,6 @@ async def get_user_text(message):
 
     if output and output.strip():
         try:
-            await processing_large_messages(output)
+            await send_response_parts(output)
         except Exception:
             pass

@@ -5,6 +5,7 @@ from Core_layer.Command_package.Classes.CommandActions import FCommandAction
 from Core_layer.Command_package.Classes.CommandActions import SCommandAction
 from Deep_layer.NLP_package.Classes.TextPreprocessers import Preprocessing, CommonPreprocessing, CommandPreprocessing
 from Core_layer.Answer_package.Classes import GptAnswer
+from Core_layer.Bot_package.Classes.response_utils import clean_command_response
 import re
 
 class CommandAnalyzer(IAnalyzer.IAnalyzer):
@@ -173,9 +174,12 @@ class CommandAnalyzer(IAnalyzer.IAnalyzer):
 
             # Логика ответа:
             if command_executed and not has_unknown_command_response:
-                # Только известные команды - возвращаем только результат команды
+                # Только известные команды — без служебного |command|
                 logging.info('Case 1: Only known commands')
-                return outstr
+                parts = clean_command_response(outstr)
+                if not parts:
+                    return outstr
+                return '\n\n'.join(parts) if len(parts) > 1 else parts[0]
             elif command_executed and (has_unknown_command_response):
                 # Есть и известные и неизвестные команды - результат команды + GPT
                 logging.info('Case 2: Mixed commands - command + GPT')
