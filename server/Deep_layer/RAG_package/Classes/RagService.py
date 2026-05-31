@@ -32,11 +32,25 @@ class RagService:
             return None
 
         search_query = cls._extract_search_query(text, user, chat_id=chat_id)
-        results = WebSearchRetriever.search(search_query)
+        results = WebSearchRetriever.search(search_query, symbol_hint_text=text)
+
+        if WebSearchRetriever.results_lack_facts(results) and search_query.strip().lower() != text.strip().lower():
+            logging.info('RAG: retry search with original text')
+            alt_results = WebSearchRetriever.search(text[:200], symbol_hint_text=text)
+            if alt_results and (
+                not results
+                or len(alt_results) > len(results)
+                or not WebSearchRetriever.results_lack_facts(alt_results)
+            ):
+                results = alt_results
+                search_query = text[:200]
 
         if not results:
             logging.warning('RAG: empty search results for query="%s"', search_query)
             return None
+
+        if WebSearchRetriever.results_lack_facts(results):
+            logging.warning('RAG: results have no numeric facts for query="%s"', search_query)
 
         logging.info('RAG: retrieved %s sources for query="%s"', len(results), search_query)
         return cls._build_context(results)
