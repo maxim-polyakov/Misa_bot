@@ -31,36 +31,42 @@ class RagService:
             logging.info('RAG: search not needed for: %s', text[:100])
             return None
 
-        # Котировки — сразу, не ждём DuckDuckGo
-        results = []
-        quote = WebSearchRetriever.fetch_market_quote(text)
-        if quote:
-            results.append(quote)
-            logging.info('RAG: direct market quote for: %s', text[:80])
+        queries = cls._build_search_queries(text, user, chat_id=chat_id)
+        logging.info('RAG: search queries=%s', [q[:80] for q in queries])
 
-        search_query = cls._extract_search_query(text, user, chat_id=chat_id)
-        web_results = WebSearchRetriever.search(search_query, symbol_hint_text=text)
+        results = WebSearchRetriever.search_queries(queries, topic=text, max_results=5)
 
-        for item in web_results:
-            if item not in results and not any(r.get('url') == item.get('url') for r in results):
-                results.append(item)
-
-        if WebSearchRetriever.results_lack_facts(results) and search_query.strip().lower() != text.strip().lower():
-            logging.info('RAG: retry search with original text')
-            alt_results = WebSearchRetriever.search(text[:200], symbol_hint_text=text)
-            for item in alt_results:
-                if not any(r.get('url') == item.get('url') for r in results):
-                    results.append(item)
+        if WebSearchRetriever.results_lack_facts(results):
+            refined = cls._refine_search_query(text, user, chat_id=chat_id)
+            if refined and refined not in queries:
+                logging.info('RAG: refine search query="%s"', refined[:80])
+                extra = WebSearchRetriever.search_queries([refined], topic=text, max_results=5)
+                seen = {r.get('url') for r in results}
+                for item in extra:
+                    if item.get('url') not in seen:
+                        results.append(item)
+                        seen.add(item.get('url'))
+                results = results[:5]
 
         if not results:
-            logging.warning('RAG: empty search results for query="%s"', search_query)
+            logging.warning('RAG: empty search results for queries=%s', queries)
             return None
 
         if WebSearchRetriever.results_lack_facts(results):
-            logging.warning('RAG: results have no numeric facts for query="%s"', search_query)
+            logging.warning('RAG: no numeric facts in results for: %s', text[:80])
 
-        logging.info('RAG: retrieved %s sources for query="%s"', len(results), search_query)
+        logging.info('RAG: retrieved %s sources', len(results))
         return cls._build_context(results)
+
+    @classmethod
+    def _build_search_queries(cls, text, user, chat_id=None):
+        primary = cls._extract_search_query(text, user, chat_id=chat_id)
+        queries = []
+        for q in (primary, text[:200]):
+            q = str(q).strip()
+            if q and q not in queries:
+                queries.append(q)
+        return queries
 
     @classmethod
     def _needs_web_search(cls, text, user, chat_id=None):
@@ -91,10 +97,13 @@ class RagService:
         prompt = (
             "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
             f"Сообщение: {text}\n\n"
-            "Задача: Сформулируй краткий поисковый запрос (3–10 слов) для поиска "
-            "информации в интернете по этому сообщению.\n"
-            "Если нужны актуальные данные (цена, курс, погода, статистика) — "
-            "запрос должен вести к страницам с конкретными значениями, а не к обзорам «как узнать».\n"
+            "Задача: Сформулируй поисковый запрос (3–12 слов) для DuckDuckGo.\n"
+            "Правила:\n"
+            "- Запрос должен находить страницы с конкретными фактами и цифрами, "
+            "а не статьи «как узнать», «лучшие сервисы», «обзор».\n"
+            "- Для международных компаний, акций, курсов, криптовалют — используй English "
+            "и тикеры/названия (например Tesla TSLA stock price today).\n"
+            "- Для локальных тем — язык пользователя.\n"
             "Верни только запрос, без пояснений и кавычек."
         )
         try:
@@ -106,6 +115,26 @@ class RagService:
         except Exception as e:
             logging.warning('RAG extract_search_query failed: %s', e)
             return text[:200]
+
+    @classmethod
+    def _refine_search_query(cls, text, user, chat_id=None):
+        prompt = (
+            "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
+            f"Сообщение пользователя: {text}\n\n"
+            "Предыдущий поиск не дал страниц с конкретными цифрами.\n"
+            "Сформулируй другой поисковый запрос для DuckDuckGo, который найдёт "
+            "страницу с точным значением (цена, курс, температура, дата, число).\n"
+            "Используй English для акций/крипты. Верни только запрос."
+        )
+        try:
+            result = cls._gpta.answer(prompt, user, True, chat_id=chat_id)
+            if isinstance(result, dict) or not result:
+                return None
+            query = str(result).strip().strip('"\'')
+            return query[:200] if query else None
+        except Exception as e:
+            logging.warning('RAG refine_search_query failed: %s', e)
+            return None
 
     @classmethod
     def _build_context(cls, results):
