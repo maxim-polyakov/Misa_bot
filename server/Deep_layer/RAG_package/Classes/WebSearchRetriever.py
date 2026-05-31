@@ -1,12 +1,10 @@
 import logging
-import random
 import re
-import time
-from urllib.parse import quote
 
 import requests
 from bs4 import BeautifulSoup
-from duckduckgo_search import DDGS
+
+from Deep_layer.RAG_package.Classes.SerperRetriever import SerperRetriever
 
 _USER_AGENT = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
@@ -26,28 +24,24 @@ _STOPWORDS = frozenset({
 
 class WebSearchRetriever:
     """
-    Универсальный поиск через DuckDuckGo.
+    Веб-поиск через Serper (Google Search).
 
-    Сниппеты DDG редко содержат цифры (цены, курсы) — поэтому:
-    1) собираем больше ссылок с разных backend/region;
-    2) загружаем текст с найденных страниц;
-    3) ранжируем результаты с конкретными фактами выше.
+    Сниппеты редко содержат цифры — поэтому:
+    1) Serper organic results;
+    2) загрузка текста с найденных страниц;
+    3) ранжирование результатов с конкретными фактами выше.
     """
-
-    _BACKENDS = ('bing', 'html', 'lite', 'auto')
-    _REGIONS = ('us-en', 'wt-wt', 'ru-ru')
-    _PRIORITY_COMBOS = (
-        ('bing', 'us-en'),
-        ('html', 'us-en'),
-        ('bing', 'wt-wt'),
-        ('html', 'ru-ru'),
-    )
 
     @classmethod
     def search_queries(cls, queries, topic='', max_results=5):
         """Поиск по нескольким формулировкам запроса."""
+        if not SerperRetriever.is_available():
+            logging.error('WebSearchRetriever: SERPER_API_KEY is not set')
+            return []
+
         merged = []
         seen_urls = set()
+        topic_text = (topic or ' '.join(queries or [])).strip()
 
         for query in queries or []:
             q = str(query).strip()
@@ -66,7 +60,7 @@ class WebSearchRetriever:
             return []
 
         merged = cls._enrich_results(merged, max_pages=5)
-        merged = cls._rank_results(merged, topic or ' '.join(queries))
+        merged = cls._rank_results(merged, topic_text)
         with_facts = [r for r in merged if not cls._results_lack_facts([r])]
         without_facts = [r for r in merged if cls._results_lack_facts([r])]
         merged = with_facts + without_facts
@@ -94,34 +88,15 @@ class WebSearchRetriever:
         merged = []
         seen_domains = set()
 
-        def add_batch(batch):
-            for item in batch or []:
-                if len(merged) >= per_query:
-                    return
-                url = item.get('url', '')
-                domain = cls._domain(url)
-                if domain in seen_domains:
-                    continue
-                seen_domains.add(domain)
-                merged.append(item)
-
-        for backend, region in cls._PRIORITY_COMBOS:
-            add_batch(cls._fetch_text(query, per_query, backend, region))
-
-        if len(merged) < per_query:
-            for backend in cls._BACKENDS:
-                for region in cls._REGIONS:
-                    if (backend, region) in cls._PRIORITY_COMBOS:
-                        continue
-                    add_batch(cls._fetch_text(query, per_query, backend, region))
-                    if len(merged) >= per_query:
-                        break
-                if len(merged) >= per_query:
-                    break
-
-        if len(merged) < per_query // 2:
-            for item in cls._search_news(query, per_query):
-                add_batch([item])
+        for item in SerperRetriever.search(query, max_results=per_query) or []:
+            if len(merged) >= per_query:
+                break
+            url = item.get('url', '')
+            domain = cls._domain(url)
+            if domain in seen_domains:
+                continue
+            seen_domains.add(domain)
+            merged.append(item)
 
         logging.info('WebSearchRetriever: collected %s links for "%s"', len(merged), query[:80])
         return merged
@@ -152,6 +127,8 @@ class WebSearchRetriever:
             s = 0
             if _FACT_PATTERN.search(blob):
                 s += 20
+            if item.get('source') == 'serper':
+                s += 5
             for term in terms:
                 if term in blob:
                     s += 3
@@ -162,87 +139,13 @@ class WebSearchRetriever:
         return sorted(results, key=score, reverse=True)
 
     @classmethod
-    def _search_news(cls, query, max_results):
-        for region in cls._REGIONS:
-            try:
-                time.sleep(random.uniform(0.2, 0.5))
-                raw = DDGS(timeout=20).news(
-                    keywords=query,
-                    region=region,
-                    safesearch='moderate',
-                    max_results=max_results,
-                )
-                results = cls._normalize_results(raw, query, max_results)
-                if results:
-                    return results
-            except Exception as e:
-                logging.warning('WebSearchRetriever news failed for "%s": %s', query[:60], e)
-        return []
-
-    @classmethod
-    def _fetch_text(cls, query, max_results, backend, region):
-        try:
-            time.sleep(random.uniform(0.15, 0.45))
-            raw = DDGS(timeout=20).text(
-                keywords=query,
-                region=region,
-                safesearch='moderate',
-                max_results=max_results,
-                backend=backend,
-            )
-            return cls._normalize_results(raw, query, max_results)
-        except Exception as e:
-            logging.debug(
-                'WebSearchRetriever backend=%s region=%s failed for "%s": %s',
-                backend, region, query[:60], e,
-            )
-            return []
-
-    @classmethod
-    def _normalize_results(cls, raw, query, max_results):
-        results = []
-        seen_domains = set()
-
-        for item in raw or []:
-            url = (item.get('href') or item.get('link') or item.get('url') or '').strip()
-            title = (item.get('title') or '').strip()
-            body = (
-                item.get('body')
-                or item.get('snippet')
-                or item.get('description')
-                or ''
-            ).strip()
-            if not url and not body and not title:
-                continue
-            if not body:
-                body = title or url
-            if not url:
-                url = f'https://duckduckgo.com/?q={quote(query)}'
-
-            domain = cls._domain(url)
-            if domain in seen_domains or 'duckduckgo.com' in domain:
-                continue
-            seen_domains.add(domain)
-
-            results.append({
-                'title': title or domain,
-                'url': url,
-                'snippet': body[:800],
-            })
-            if len(results) >= max_results:
-                break
-
-        return results
-
-    @classmethod
     def _enrich_results(cls, results, max_pages=5):
-        """Загружает текст страниц — в сниппетах DDG цифр почти нет."""
+        """Загружает текст страниц, если в сниппете нет цифр."""
         if not results:
             return results
 
         enriched = []
         pages_fetched = 0
-        # Сначала загружаем страницы без цифр в сниппете
         ordered = sorted(
             results,
             key=lambda r: 0 if cls._results_lack_facts([r]) else 1,
@@ -254,7 +157,7 @@ class WebSearchRetriever:
             if (
                 pages_fetched < max_pages
                 and url
-                and 'duckduckgo.com' not in url
+                and cls._results_lack_facts([item])
             ):
                 page_text = cls._fetch_page_text(url)
                 pages_fetched += 1
