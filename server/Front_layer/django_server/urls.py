@@ -2,6 +2,7 @@ from django.urls import include, re_path
 from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.staticfiles.views import serve as serve_staticfiles
 from django.views.static import serve
 from dmr.openapi import OpenAPIConfig, build_schema
 from dmr.openapi.views import OpenAPIJsonView, RedocView, SwaggerView
@@ -74,6 +75,12 @@ urlpatterns = [
 
 # Для production: обслуживание статических файлов через Django (не рекомендуется для высоконагруженных проектов)
 if not settings.DEBUG:
+    # App static files (например /static/dmr/swagger/...) для Swagger UI из django-modern-rest.
+    # В проекте нет manage.py/collectstatic, поэтому отдаём их через staticfiles finder.
+    urlpatterns += [
+        re_path(r'^static/(?P<path>.*)$', serve_staticfiles, {'insecure': True}),
+    ]
+
     # Явно обслуживаем папку images
     urlpatterns += [
         re_path(r'^images/(?P<path>.*)$', serve, {
