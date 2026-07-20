@@ -2,7 +2,6 @@ import nltk
 
 
 import Front_layer.discord_bot as db
-from Core_layer.Test_package.Classes.PythonTests import TestRun as PyTest
 from Front_layer.discord_bot import draw
 from Front_layer.discord_bot import find
 from Front_layer.discord_bot import on_ready
