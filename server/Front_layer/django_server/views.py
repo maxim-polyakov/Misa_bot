@@ -250,3 +250,41 @@ def spa_og_preview(request):
 def robots_txt(request):
     """Чтобы краулеры (в т.ч. проверка robots перед превью) не получали 401 от JWT middleware."""
     return HttpResponse("User-agent: *\nAllow: /\n", content_type="text/plain; charset=utf-8")
+
+
+def swagger_ui_html(request):
+    """Swagger UI без локальных /static/dmr assets, чтобы nginx static location не ломал страницу."""
+    html = """<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Misa API</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.32.1/swagger-ui.css" />
+  <style>
+    html, body, #swagger-ui { margin: 0; min-height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.32.1/swagger-ui-bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.32.1/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function () {
+      window.ui = SwaggerUIBundle({
+        url: "/swagger.json",
+        dom_id: "#swagger-ui",
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        layout: "StandaloneLayout",
+        persistAuthorization: true,
+        displayRequestDuration: true
+      });
+    };
+  </script>
+</body>
+</html>"""
+    return HttpResponse(html, content_type="text/html; charset=utf-8")

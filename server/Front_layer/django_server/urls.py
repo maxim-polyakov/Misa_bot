@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 from django.contrib.staticfiles.views import serve as serve_staticfiles
 from django.views.static import serve
 from dmr.openapi import OpenAPIConfig, build_schema
-from dmr.openapi.views import OpenAPIJsonView, RedocView, SwaggerView
+from dmr.openapi.views import OpenAPIJsonView, RedocView
 from dmr.routing import Router, path
 from . import dmr_views, views
 import os
@@ -67,9 +67,9 @@ urlpatterns = [
     # OpenAPI 3 + Swagger UI / ReDoc (django-modern-rest)
     path('schema/', OpenAPIJsonView.as_view(openapi_schema), name='schema'),
     path('swagger.json', OpenAPIJsonView.as_view(openapi_schema), name='schema-json'),
-    path('swagger/', SwaggerView.as_view(openapi_schema), name='schema-swagger-ui'),
-    path('swagger-ui/', SwaggerView.as_view(openapi_schema), name='schema-swagger-ui-alt'),
-    path('swagger-ui/index.html', SwaggerView.as_view(openapi_schema), name='schema-swagger-ui-html'),
+    path('swagger/', views.swagger_ui_html, name='schema-swagger-ui'),
+    path('swagger-ui/', views.swagger_ui_html, name='schema-swagger-ui-alt'),
+    path('swagger-ui/index.html', views.swagger_ui_html, name='schema-swagger-ui-html'),
     path('redoc/', RedocView.as_view(openapi_schema), name='schema-redoc'),
 ]
 
