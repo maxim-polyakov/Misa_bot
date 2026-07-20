@@ -30,6 +30,10 @@ if __name__ == "__main__":
     # Конфигурация Hypercorn
     config = Config()
     config.bind = ["0.0.0.0:8001"]
+    # Держим WebSocket живым за reverse proxy: Hypercorn отправляет WS ping control frames,
+    # а keep-alive timeout не должен быть короче nginx proxy_read_timeout.
+    config.websocket_ping_interval = 20
+    config.keep_alive_timeout = 120
 
     # Запускаем сервер
     asyncio.run(serve(application, config))
