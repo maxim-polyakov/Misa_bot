@@ -50,6 +50,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             pass
 
     async def disconnect(self, close_code):
+        logger.info("WebSocket disconnected: close_code=%s groups=%s", close_code, list(self.chat_groups))
         if self._ping_task:
             self._ping_task.cancel()
             try:
@@ -273,7 +274,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         is_image = content.startswith('/images/') or content.startswith('http')
         if chat_id:
-            ChatService.save_message(chat_id, user, content, is_image=is_image)
+            await database_sync_to_async(ChatService.save_message)(
+                chat_id, user, content, is_image=is_image
+            )
             await self._broadcast_message(chat_id, user, content, is_image, exclude_self=True)
             await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
             # Генерация заголовка в фоне — не блокирует ответ Мисы
@@ -299,7 +302,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             cleaned = self._clean_command_response(response)
             msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else response)
             is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned)
-            ChatService.save_message(chat_id, 'Misa', msg_to_save, is_image=is_img)
+            await database_sync_to_async(ChatService.save_message)(
+                chat_id, 'Misa', msg_to_save, is_image=is_img
+            )
             for el in cleaned:
                 await self._broadcast_message(chat_id, 'Misa', el, is_img, exclude_self=True)
 
