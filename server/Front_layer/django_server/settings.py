@@ -89,7 +89,14 @@ if REDIS_URL:
     CHANNEL_LAYERS = {
         'default': {
             'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {'hosts': [REDIS_URL]},
+            'CONFIG': {
+                'hosts': [{
+                    'address': REDIS_URL,
+                    # redis-py 8 changed socket_timeout default to 5s; explicit None keeps
+                    # Channels blocking receive from timing out during idle WebSocket periods.
+                    'socket_timeout': None,
+                }],
+            },
         },
     }
     CACHES = {

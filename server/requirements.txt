@@ -132,6 +132,7 @@ spacy-loggers==1.0.4
 SQLAlchemy==2.0.4
 django-cors-headers==4.9.0
 PyJWT==2.13.0
+redis==5.0.8
 srsly==2.4.5
 srt==3.5.3
 sympy==1.11.1
