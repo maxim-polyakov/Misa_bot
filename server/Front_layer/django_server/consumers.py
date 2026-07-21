@@ -27,15 +27,35 @@ PING_INTERVAL = 30  # секунд — keepalive для предотвращен
 class ChatConsumer(AsyncWebsocketConsumer):
     """WebSocket consumer с загрузкой истории и broadcast на все устройства."""
 
+    def _spawn_task(self, coro, label):
+        task = asyncio.create_task(coro)
+
+        def _log_task_result(done_task):
+            try:
+                done_task.result()
+            except asyncio.CancelledError:
+                pass
+            except Exception:
+                logger.exception("WebSocket background task failed: %s", label)
+
+        task.add_done_callback(_log_task_result)
+        return task
+
+    async def _safe_send_json(self, payload):
+        try:
+            await self.send(text_data=json.dumps(payload, ensure_ascii=False))
+        except Exception:
+            logger.exception("WebSocket send failed: payload_type=%s", payload.get("type"))
+
     async def connect(self):
         self.chat_groups = set()  # chat_id, к которым подключен
         self._ping_task = None
         await self.accept()
-        await self.send(text_data=json.dumps({
+        await self._safe_send_json({
             'type': 'connection_established',
             'message': 'WebSocket соединение установлено'
-        }))
-        self._ping_task = asyncio.create_task(self._ping_loop())
+        })
+        self._ping_task = self._spawn_task(self._ping_loop(), "ping_loop")
 
     async def _ping_loop(self):
         """Периодическая отправка ping для keepalive (прокси, мобильные браузеры)."""
@@ -43,28 +63,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
             while True:
                 await asyncio.sleep(PING_INTERVAL)
                 try:
-                    await self.send(text_data=json.dumps({'type': 'ping'}))
+                    await self._safe_send_json({'type': 'ping'})
                 except Exception:
                     break
         except asyncio.CancelledError:
             pass
 
     async def disconnect(self, close_code):
-        logger.info("WebSocket disconnected: close_code=%s groups=%s", close_code, list(self.chat_groups))
+        chat_groups = getattr(self, "chat_groups", set())
+        logger.info("WebSocket disconnected: close_code=%s groups=%s", close_code, list(chat_groups))
         if self._ping_task:
             self._ping_task.cancel()
             try:
                 await self._ping_task
             except asyncio.CancelledError:
                 pass
-        for chat_id in list(self.chat_groups):
+        for chat_id in list(chat_groups):
             await self.channel_layer.group_discard(f"chat_{chat_id}", self.channel_name)
 
     async def chat_broadcast(self, event):
         """Получить broadcast от группы и отправить в WebSocket."""
         if event.get('exclude_channel') == self.channel_name:
             return
-        await self.send(text_data=json.dumps(event['data'], ensure_ascii=False))
+        await self._safe_send_json(event['data'])
 
     def _clean_command_response(self, response):
         """Убирает |command| из ответа, возвращает список частей."""
@@ -83,12 +104,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             await self._join_chat_group(chat_id)
                             messages = await database_sync_to_async(_get_messages_sync)(chat_id)
                             title = await database_sync_to_async(ChatService.get_title)(chat_id)
-                            await self.send(text_data=json.dumps({
+                            await self._safe_send_json({
                                 'type': 'history',
                                 'chat_id': chat_id,
                                 'messages': messages,
                                 'title': title or ''
-                            }, ensure_ascii=False))
+                            })
                         return
                     if msg_type == 'join_chat':
                         chat_id = data.get('chat_id')
@@ -98,7 +119,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     if msg_type == 'pong':
                         return
                     if msg_type == 'ping':
-                        await self.send(text_data=json.dumps({'type': 'pong'}))
+                        await self._safe_send_json({'type': 'pong'})
                         return
                     if msg_type == 'clear_messages':
                         chat_id = data.get('chat_id')
@@ -111,7 +132,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         message_id = data.get('message_id')
                         user = data.get('user')
                         if chat_id and message_id and user:
-                            asyncio.create_task(self._process_regenerate(chat_id, message_id, user))
+                            self._spawn_task(
+                                self._process_regenerate(chat_id, message_id, user),
+                                "regenerate",
+                            )
                         return
             except (json.JSONDecodeError, TypeError):
                 pass
@@ -123,15 +147,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 first_parts = first.split('|')
                 if len(first_parts) >= 2:
                     chat_id = first_parts[1].strip()
-            asyncio.create_task(self._process_and_send(text_data, chat_id))
+            self._spawn_task(self._process_and_send(text_data, chat_id), "process_and_send")
         except Exception as e:
             import traceback
             logger.error(f"Error in receive: {str(e)}\n{traceback.format_exc()}")
-            await self.send(text_data=json.dumps({
+            await self._safe_send_json({
                 'type': 'error',
                 'message': 'Произошла ошибка при обработке сообщения',
                 'detail': str(e)
-            }, ensure_ascii=False))
+            })
 
     async def _process_and_send(self, text_data, chat_id):
         """Обрабатывает сообщение и отправляет ответ — позволяет параллельную обработку разных чатов."""
@@ -145,7 +169,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 msg_data = {'type': 'chat_message', 'message': el, 'user': 'Misa', 'isImage': is_img}
                 if chat_id:
                     msg_data['chat_id'] = chat_id
-                await self.send(text_data=json.dumps(msg_data, ensure_ascii=False))
+                await self._safe_send_json(msg_data)
         except Exception as e:
             import traceback
             logger.error(f"Error processing message: {str(e)}\n{traceback.format_exc()}")
@@ -156,7 +180,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
             if chat_id:
                 err_payload['chat_id'] = chat_id
-            await self.send(text_data=json.dumps(err_payload, ensure_ascii=False))
+            await self._safe_send_json(err_payload)
 
     async def _process_regenerate(self, chat_id, message_id, user):
         """Перегенерировать ответ: обновить сообщение Misa, не добавляя новых."""
@@ -221,21 +245,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     }
                 })
             else:
-                await self.send(text_data=json.dumps({
+                await self._safe_send_json({
                     'type': 'error',
                     'chat_id': chat_id,
                     'message': 'Ошибка перегенерации',
                     'detail': err_msg or 'Неизвестная ошибка',
-                }, ensure_ascii=False))
+                })
         except Exception as e:
             import traceback
             logger.error(f"Regenerate error: {str(e)}\n{traceback.format_exc()}")
-            await self.send(text_data=json.dumps({
+            await self._safe_send_json({
                 'type': 'error',
                 'chat_id': chat_id,
                 'message': 'Ошибка перегенерации',
                 'detail': str(e),
-            }, ensure_ascii=False))
+            })
         finally:
             await self._broadcast_typing(chat_id, is_typing=False, exclude_self=True)
 
@@ -290,7 +314,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     title = await database_sync_to_async(_gen)()
                     if title:
                         await self._broadcast_title(chat_id, title)
-                asyncio.create_task(_gen_and_broadcast_title())
+                self._spawn_task(_gen_and_broadcast_title(), "generate_title_from_message")
 
         try:
             message_monitor = MessageMonitorServer.MessageMonitorServer(user=user, message=content, chat_id=chat_id)
