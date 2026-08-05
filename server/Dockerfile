@@ -5,7 +5,15 @@ WORKDIR /misa
 COPY requirements.txt .
 
 # Установка системных зависимостей
-RUN apt update && apt install -y libsm6 libxext6 ffmpeg libfontconfig1 libxrender1 libgl1 libglx-mesa0
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ffmpeg \
+        libfontconfig1 \
+        libgl1 \
+        libsm6 \
+        libxext6 \
+        libxrender1 \
+    && rm -rf /var/lib/apt/lists/*
 RUN python -m pip install --no-cache-dir --default-timeout=300 -r requirements.txt
 
 
