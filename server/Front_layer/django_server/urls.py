@@ -42,6 +42,45 @@ api_router = Router(
         path('api/chats/<str:chat_id>/delete/', dmr_views.ChatDeleteController.as_view(), name='chats_delete'),
     ],
 )
+
+
+def _add_bearer_auth(schema):
+    """Добавляет JWT Bearer auth в DMR OpenAPI schema для Swagger Authorize."""
+    from dmr.openapi.objects.components import Components
+    from dmr.openapi.objects.security_scheme import SecurityScheme
+
+    if schema.components is None:
+        schema.components = Components()
+    if schema.components.security_schemes is None:
+        schema.components.security_schemes = {}
+    schema.components.security_schemes['bearerAuth'] = SecurityScheme(
+        type='http',
+        scheme='bearer',
+        bearer_format='JWT',
+        description='JWT из ответа POST /auth/login/ или GET /auth/check/.',
+    )
+    public_paths = {
+        '/auth/register/',
+        '/auth/register/send-code/',
+        '/auth/register/verify/',
+        '/auth/forgot-password/send-code/',
+        '/auth/forgot-password/verify/',
+        '/auth/login/',
+        '/auth/oauth-token/',
+        '/auth/google-id-token/',
+        '/api/ui-locale/',
+        '/api/chats/{chat_id}/share/',
+    }
+    for path_name, path_item in (schema.paths or {}).items():
+        if path_name in public_paths:
+            continue
+        for method in ('get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'):
+            operation = getattr(path_item, method, None)
+            if operation is not None and operation.security is None:
+                operation.security = [{'bearerAuth': []}]
+    return schema
+
+
 openapi_schema = build_schema(
     api_router,
     config=OpenAPIConfig(
@@ -53,6 +92,7 @@ openapi_schema = build_schema(
         ),
     ),
 )
+openapi_schema = _add_bearer_auth(openapi_schema)
 
 urlpatterns = [
     path('robots.txt', views.robots_txt, name='robots_txt'),
