@@ -2,3 +2,4 @@
 /.idea
 *.log
 /mobile/.idea
+client/.env
