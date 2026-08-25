@@ -3,3 +3,4 @@
 *.log
 /mobile/.idea
 client/.env
+server/.env
