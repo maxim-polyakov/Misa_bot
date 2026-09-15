@@ -9,7 +9,6 @@ async def play(message, *, url):
     await message.response.defer(ephemeral=True)
     if validators.url(url):
         if url.count('youtube'):
-            await message.followup.send('Готовлю трек…', ephemeral=True)
             sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
             # join выполняется внутри monitor (один сценарий подключения, без двойного join)
             out = await sm.monitor(url)
