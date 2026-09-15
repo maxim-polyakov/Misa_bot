@@ -158,8 +158,7 @@ wikipedia==1.4.0
 wrapt==1.14.1
 xgboost==1.7.4
 yarl==1.8.2
-youtube-dl==2021.12.17
-yt-dlp
+yt-dlp[default]==2026.8.19
 disnake==2.12.0
 dave.py>=0.1.0
 validators==0.34.0

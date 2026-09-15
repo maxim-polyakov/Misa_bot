@@ -22,13 +22,22 @@ class SongsMonitor(IMonitor.IMonitor):
     ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
                       'options': '-vn -filter:a "volume=0.25"'}
     yt_dl_options = {
-        "format": "bestaudio",
-        "extractor_args": {"youtube": {"formats": "missing_pot"}},
-        "socket_timeout": 10,
+        "format": "bestaudio/best",
+        "quiet": True,
+        "noplaylist": True,
+        "socket_timeout": 30,
         "extract_flat": False,
-        "ignoreerrors": "only_download"
+        # android/web клиенты стабильнее для Discord-стриминга без ручного PO Token
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "web"],
+            }
+        },
     }
-    ytdl = yt_dlp.YoutubeDL(yt_dl_options)
+
+    @classmethod
+    def _new_ytdl(cls):
+        return yt_dlp.YoutubeDL(cls.yt_dl_options)
 
     def __init__(self, bot, message):
         self.bot = bot
@@ -252,15 +261,39 @@ class SongsMonitor(IMonitor.IMonitor):
                 return 'по запросу ничего не найдено на YouTube'
 
             def _extract():
-                return SongsMonitor.ytdl.extract_info(play_url, download=False)
+                ytdl = SongsMonitor._new_ytdl()
+                info = ytdl.extract_info(play_url, download=False)
+                if info is None:
+                    return None, None
+                # playlist/search entry: берём первый ролик
+                if 'entries' in info:
+                    entries = [e for e in (info.get('entries') or []) if e]
+                    info = entries[0] if entries else None
+                if info is None:
+                    return None, None
+                # прямой url или лучший audio format
+                stream_url = info.get('url')
+                if not stream_url:
+                    formats = info.get('formats') or []
+                    audio = [
+                        f for f in formats
+                        if f.get('url') and (f.get('acodec') not in (None, 'none'))
+                    ]
+                    audio.sort(key=lambda f: f.get('abr') or 0, reverse=True)
+                    stream_url = audio[0]['url'] if audio else None
+                return info, stream_url
 
-            data = await loop.run_in_executor(None, _extract)
+            try:
+                data, song = await loop.run_in_executor(None, _extract)
+            except Exception as extract_err:
+                logging.exception('songsmonitor.monitor yt-dlp extract failed: %s', extract_err)
+                return f'не удалось получить данные о видео: {extract_err}'
+
             if data is None:
-                return 'не удалось получить данные о видео (yt-dlp вернул None)'
+                return 'не удалось получить данные о видео (yt-dlp вернул пустой ответ)'
 
-            song = data.get('url')
             if not song:
-                return 'не удалось извлечь аудиопоток (обновите yt-dlp: pip install -U yt-dlp)'
+                return 'не удалось извлечь аудиопоток (YouTube/yt-dlp: нет доступных audio formats)'
 
             self._sync_voice_client_map()
             guild = self.message.guild

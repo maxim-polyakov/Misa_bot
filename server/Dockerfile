@@ -13,6 +13,7 @@ RUN apt-get update \
         libsm6 \
         libxext6 \
         libxrender1 \
+        nodejs \
     && rm -rf /var/lib/apt/lists/*
 RUN python -m pip install --no-cache-dir --default-timeout=300 -r requirements.txt
 
