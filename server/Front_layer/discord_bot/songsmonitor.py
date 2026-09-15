@@ -9,6 +9,7 @@ async def play(message, *, url):
     await message.response.defer(ephemeral=True)
     if validators.url(url):
         if url.count('youtube'):
+            await message.followup.send('Готовлю трек…', ephemeral=True)
             sm = SongsMonitor.SongsMonitor(discord_bot.bot, message)
             # join выполняется внутри monitor (один сценарий подключения, без двойного join)
             out = await sm.monitor(url)
@@ -16,7 +17,7 @@ async def play(message, *, url):
             out = 'проигрывается только youtube'
     else:
         out = 'некорректный url'
-    await message.followup.send(out)
+    await message.followup.send(out, ephemeral=True)
 
 @discord_bot.bot.slash_command(name='pause', description='Ставит на паузу проигрывание музыки')
 async def pause(message):

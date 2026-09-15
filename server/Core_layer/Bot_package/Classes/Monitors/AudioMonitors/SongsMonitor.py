@@ -24,16 +24,21 @@ class SongsMonitor(IMonitor.IMonitor):
     yt_dl_options = {
         "format": "bestaudio/best",
         "quiet": True,
+        "no_warnings": True,
         "noplaylist": True,
-        "socket_timeout": 30,
+        "socket_timeout": 20,
+        "retries": 2,
         "extract_flat": False,
-        # android/web клиенты стабильнее для Discord-стриминга без ручного PO Token
+        # android быстрее для Discord; web часто зависает на JS-challenge
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "web"],
+                "player_client": ["android", "ios"],
             }
         },
     }
+
+    # Жёсткий лимит на extract, чтобы slash-команда Discord не висела бесконечно
+    YTDL_EXTRACT_TIMEOUT = 45.0
 
     @classmethod
     def _new_ytdl(cls):
@@ -145,7 +150,7 @@ class SongsMonitor(IMonitor.IMonitor):
 
             # connect() уже дожидается готового соединения — не проверяем is_connected() отдельно
             # (ложный таймаут рвёт сессию и даёт «не удалось установить голосовое соединение»).
-            await target.connect(timeout=120.0, reconnect=True)
+            await target.connect(timeout=30.0, reconnect=True)
             self._sync_voice_client_map()
             vc_new = guild.voice_client
             if vc_new is None:
@@ -284,7 +289,20 @@ class SongsMonitor(IMonitor.IMonitor):
                 return info, stream_url
 
             try:
-                data, song = await loop.run_in_executor(None, _extract)
+                data, song = await asyncio.wait_for(
+                    loop.run_in_executor(None, _extract),
+                    timeout=SongsMonitor.YTDL_EXTRACT_TIMEOUT,
+                )
+            except asyncio.TimeoutError:
+                logging.error(
+                    'songsmonitor.monitor yt-dlp extract timed out after %ss url=%s',
+                    SongsMonitor.YTDL_EXTRACT_TIMEOUT,
+                    play_url,
+                )
+                return (
+                    f'таймаут получения данных о видео '
+                    f'({int(SongsMonitor.YTDL_EXTRACT_TIMEOUT)}с). Попробуйте другую ссылку.'
+                )
             except Exception as extract_err:
                 logging.exception('songsmonitor.monitor yt-dlp extract failed: %s', extract_err)
                 return f'не удалось получить данные о видео: {extract_err}'
@@ -294,6 +312,10 @@ class SongsMonitor(IMonitor.IMonitor):
 
             if not song:
                 return 'не удалось извлечь аудиопоток (YouTube/yt-dlp: нет доступных audio formats)'
+
+            # Создание FFmpeg-плеера тоже может блокировать event loop
+            def _make_player():
+                return disnake.FFmpegOpusAudio(song, **SongsMonitor.ffmpeg_options)
 
             self._sync_voice_client_map()
             guild = self.message.guild
@@ -325,7 +347,12 @@ class SongsMonitor(IMonitor.IMonitor):
             msg = self.message
             bot = self.bot
 
-            player = disnake.FFmpegOpusAudio(song, **SongsMonitor.ffmpeg_options)
+            try:
+                player = await loop.run_in_executor(None, _make_player)
+            except Exception as player_err:
+                logging.exception('songsmonitor.monitor FFmpeg player failed: %s', player_err)
+                return f'не удалось создать аудиоплеер: {player_err}'
+
             try:
                 voice_client.play(
                     player,
