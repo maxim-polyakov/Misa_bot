@@ -2,6 +2,7 @@ import unittest
 from Core_layer.Test_package.Classes.PythonTests import (
     TestCase_Auth_package,
     TestCase_API_views,
+    TestCase_ResponseUtils,
 )
 
 
@@ -17,6 +18,8 @@ class TestRun:
         suite.addTests(loader.loadTestsFromModule(TestCase_Auth_package))
         # Django API views
         suite.addTests(loader.loadTestsFromModule(TestCase_API_views))
+        # Pure command response parsing
+        suite.addTests(loader.loadTestsFromModule(TestCase_ResponseUtils))
 
         runner = unittest.TextTestRunner(verbosity=2)
         return runner.run(suite)
