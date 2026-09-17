@@ -18,19 +18,5 @@ class TestRun:
         # Django API views
         suite.addTests(loader.loadTestsFromModule(TestCase_API_views))
 
-        # API package (calc, finders) — требует внешние сервисы
-        try:
-            from Core_layer.Test_package.Classes.PythonTests import TestCase_API_package
-            suite.addTests(loader.loadTestsFromModule(TestCase_API_package))
-        except Exception:
-            pass
-
-        # Command analyzer — требует GPT
-        try:
-            from Core_layer.Test_package.Classes.PythonTests import TestCase_Command_package
-            suite.addTests(loader.loadTestsFromModule(TestCase_Command_package))
-        except Exception:
-            pass
-
         runner = unittest.TextTestRunner(verbosity=2)
         return runner.run(suite)

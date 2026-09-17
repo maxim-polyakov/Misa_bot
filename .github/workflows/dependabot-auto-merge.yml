@@ -30,6 +30,10 @@ jobs:
         if: contains(steps.metadata.outputs.dependency-names, 'yt-dlp')
         run: docker build --file server/Dockerfile --tag misa-server-test server
 
+      - name: Run server tests
+        if: contains(steps.metadata.outputs.dependency-names, 'yt-dlp')
+        run: docker run --rm --entrypoint python misa-server-test tests_main.py
+
       - name: Merge successful yt-dlp update
         if: contains(steps.metadata.outputs.dependency-names, 'yt-dlp')
         env:
