@@ -1,0 +1,15 @@
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: /server
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Moscow
+    allow:
+      - dependency-name: yt-dlp
+    open-pull-requests-limit: 2
+    labels:
+      - dependencies
