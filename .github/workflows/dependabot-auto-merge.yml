@@ -1,0 +1,38 @@
+name: Dependabot yt-dlp auto-merge
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  test-and-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Read Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout Dependabot change
+        if: contains(steps.metadata.outputs.dependency-names, 'yt-dlp')
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Build server Docker image
+        if: contains(steps.metadata.outputs.dependency-names, 'yt-dlp')
+        run: docker build --file server/Dockerfile --tag misa-server-test server
+
+      - name: Merge successful yt-dlp update
+        if: contains(steps.metadata.outputs.dependency-names, 'yt-dlp')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge "$PR_URL" --squash
