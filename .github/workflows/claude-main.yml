@@ -42,7 +42,7 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
-      actions: read
+      actions: write
     steps:
       - name: Checkout main at pushed commit
         uses: actions/checkout@v6
@@ -70,3 +70,8 @@ jobs:
             push them to main with a clear message. If no changes are needed,
             leave the repository untouched and summarize the checks performed.
             Never create another commit solely to report results.
+
+      - name: Start deploy after Claude checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --repo "${{ github.repository }}" --ref main
