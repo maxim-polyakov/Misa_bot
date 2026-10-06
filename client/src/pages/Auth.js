@@ -7,10 +7,10 @@ import { observer } from "mobx-react-lite";
 import { Context } from "../index.js";
 import { useStores } from "../store/rootStoreContext";
 import { useLocale } from "../contexts/LocaleContext";
-
-const API_URL = process.env.REACT_APP_API_URL || "";
+import { getApiBaseUrl } from "../utils/apiBase";
 
 const Auth = observer(() => {
+    const apiUrl = getApiBaseUrl();
     const { user } = useContext(Context);
     const { chatStore } = useStores();
     const { t } = useLocale();
@@ -167,10 +167,10 @@ const Auth = observer(() => {
                         type="password"
                         required
                     />
-                    {API_URL && (
+                    {apiUrl && (
                         <div className="mt-3 d-flex justify-content-center">
                             <a
-                                href={`${API_URL}/auth/oauth/google/`}
+                                href={`${apiUrl}/auth/oauth/google/`}
                                 className="btn btn-outline-secondary btn-lg"
                                 style={{ textDecoration: "none" }}
                             >
