@@ -86,10 +86,17 @@ export const login = async (email, password) => {
             email,
             password,
         });
-        const token = data.data.token.toString();
-        localStorage.setItem("token", token);
-        const decoded = jwtDecode(data.data.token);
-        const userFromServer = data.data.user || {};
+        if (typeof data === "string" && data.includes("<!DOCTYPE html>")) {
+            throw new Error("API недоступен: проверьте REACT_APP_API_URL (ожидается misaapi.baxic.ru)");
+        }
+        const payload = data?.data ?? data;
+        const token = payload?.token;
+        if (!token) {
+            throw new Error(data?.message || "Сервер не вернул токен авторизации");
+        }
+        localStorage.setItem("token", token.toString());
+        const decoded = jwtDecode(token);
+        const userFromServer = payload.user || {};
         const result = { ...decoded, ...userFromServer };
         if (result.display_name || result.picture) {
             localStorage.setItem("userProfile", JSON.stringify({
@@ -103,34 +110,33 @@ export const login = async (email, password) => {
 
         let errorMessage = "Ошибка авторизации";
 
-        // Обработка ошибок БИЗНЕС-ЛОГИКИ (сервер ответил с ошибкой)
         if (error.response) {
-            // Сервер ответил, но с ошибкой (4xx, 5xx)
-            if (error.response.status === 404) {
-                if (error.response.data?.message) {
-                    errorMessage = error.response.data.message;
-                } else if (typeof error.response.data === 'string') {
-                    const match = error.response.data.match(/Пользователь не найден|User not found/i);
+            const body = error.response.data;
+            if (typeof body === "string" && body.includes("<!DOCTYPE html>")) {
+                errorMessage = "API недоступен: проверьте REACT_APP_API_URL (ожидается misaapi.baxic.ru)";
+            } else if (error.response.status === 404) {
+                if (body?.message) {
+                    errorMessage = body.message;
+                } else if (typeof body === 'string') {
+                    const match = body.match(/Пользователь не найден|User not found/i);
                     errorMessage = match ? match[0] : "Ресурс не найден";
                 } else {
                     errorMessage = "Пользователь не найден";
                 }
             } else if (error.response.status === 401) {
-                errorMessage = "Неверный email или пароль";
-            } else if (error.response.status === 403 && error.response?.data?.message === "email_not_verified") {
+                errorMessage = body?.message === "Используйте вход через Google"
+                    ? body.message
+                    : "Неверный email или пароль";
+            } else if (error.response.status === 403 && body?.message === "email_not_verified") {
                 errorMessage = "email_not_verified";
             } else if (error.response.status === 400) {
-                errorMessage = error.response.data?.message || "Неверные данные";
-            } else if (error.response.data?.message) {
-                errorMessage = error.response.data.message;
+                errorMessage = body?.message || "Неверные данные";
+            } else if (body?.message) {
+                errorMessage = body.message;
             }
-        }
-        // Обработка ошибок ПОДКЛЮЧЕНИЯ (сервер не ответил)
-        else if (error.code === 'NETWORK_ERROR' || error.code === 'ECONNREFUSED') {
+        } else if (error.code === 'NETWORK_ERROR' || error.code === 'ECONNREFUSED') {
             errorMessage = "Не удалось подключиться к серверу";
-        }
-        // Обработка других ошибок
-        else if (error.message) {
+        } else if (error.message) {
             errorMessage = error.message;
         }
 

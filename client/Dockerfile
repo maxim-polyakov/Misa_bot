@@ -2,18 +2,20 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-# Копируем package.json, yarn.lock и ставим зависимости
+# CRA вшивает REACT_APP_* только на этапе yarn build (не из runtime env_file).
+ARG REACT_APP_API_URL=https://misaapi.baxic.ru
+ARG REACT_APP_API_WSS=
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ENV REACT_APP_API_WSS=$REACT_APP_API_WSS
+
 COPY package*.json yarn.lock ./
 RUN yarn --frozen-lockfile
 
-# Копируем весь код и собираем production-версию
 COPY . .
 RUN yarn build
 
-# Устанавливаем serve для отдачи статики
 RUN yarn global add serve
 
 EXPOSE 3000
 
-# Запуск production-бандла
 CMD ["serve", "-s", "build", "-l", "3000"]

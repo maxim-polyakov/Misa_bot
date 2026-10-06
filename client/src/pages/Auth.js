@@ -167,17 +167,15 @@ const Auth = observer(() => {
                         type="password"
                         required
                     />
-                    {apiUrl && (
-                        <div className="mt-3 d-flex justify-content-center">
-                            <a
-                                href={`${apiUrl}/auth/oauth/google/`}
-                                className="btn btn-outline-secondary btn-lg"
-                                style={{ textDecoration: "none" }}
-                            >
-                                {t("authSignInWithGoogle")}
-                            </a>
-                        </div>
-                    )}
+                    <div className="mt-3 d-flex justify-content-center">
+                        <a
+                            href={`${apiUrl || "https://misaapi.baxic.ru"}/auth/oauth/google/`}
+                            className="btn btn-outline-secondary btn-lg"
+                            style={{ textDecoration: "none" }}
+                        >
+                            {t("authSignInWithGoogle")}
+                        </a>
+                    </div>
                     {isLogin && (
                         <div className="mt-2 text-end">
                             <Link to={FORGOT_PASSWORD_ROUTE} style={{ textDecoration: "none", fontSize: "0.9rem" }}>

@@ -20,8 +20,10 @@ services:
     build:
       dockerfile: Dockerfile
       context: ./client/
-    env_file:
-      - ./client/.env
+      args:
+        # Нужен: docker compose --env-file client/.env build
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-https://misaapi.baxic.ru}
+        REACT_APP_API_WSS: ${REACT_APP_API_WSS:-}
     ports:
       - "3001:3000"
     restart: unless-stopped
