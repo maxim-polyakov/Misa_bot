@@ -93,6 +93,7 @@ jobs:
           # .env пишем на сервере: scp часто не копирует dotfiles / gitignore
           envs: DEPLOY_PATH,SERVER_ENV,CLIENT_ENV
           script_stop: true
+          command_timeout: 60m
           script: |
             cd "$DEPLOY_PATH"
             if [ -z "$SERVER_ENV" ]; then echo "SERVER_ENV empty" >&2; exit 1; fi
