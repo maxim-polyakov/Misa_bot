@@ -197,9 +197,10 @@ for name, service in config["services"].items():
         continue
     if "build" not in service and not service.get("image"):
         continue
+    explicit_image = "1" if service.get("image") else "0"
     image = service.get("image") or f"{project}{separator}{name}"
     replicas = service.get("deploy", {}).get("replicas", 1)
-    print(f"{name}\t{image}\t{replicas}")
+    print(f"{name}\t{image}\t{replicas}\t{explicit_image}")
 PY
 )
 
@@ -221,7 +222,7 @@ local_ips=" $(hostname -I 2>/dev/null || true) "
 matched_services=0
 
 for row in "${sync_services[@]}"; do
-  IFS=$'\t' read -r service source_image replicas <<<"$row"
+  IFS=$'\t' read -r service source_image replicas explicit_image <<<"$row"
 
   mapfile -t matches < <(
     "${kube[@]}" get deployment -A \
@@ -257,10 +258,29 @@ for row in "${sync_services[@]}"; do
   short_id=${image_id#sha256:}
   short_id=${short_id:0:16}
   immutable_image="compose-sync/${kube_project}-${service}:${short_id}"
+  deployment_image=$immutable_image
+  pull_policy=Never
 
-  log "importing $source_image as $immutable_image"
-  docker image tag "$source_image" "$immutable_image"
-  docker image save "$immutable_image" | k3s ctr -n k8s.io images import -
+  media_type=$(
+    docker image inspect "$source_image" |
+      python3 -c 'import json, sys; print((json.load(sys.stdin)[0].get("Descriptor") or {}).get("mediaType", ""))'
+  )
+  if [[ "$media_type" == *".image.index."* ||
+        "$media_type" == *".manifest.list."* ]]; then
+    registry_digest=$(
+      docker image inspect "$source_image" |
+        python3 -c 'import json, sys; print(next((item for item in json.load(sys.stdin)[0].get("RepoDigests", []) if not item.startswith("compose-sync/") and "/compose-sync/" not in item), ""))'
+    )
+    [[ "$explicit_image" == 1 && -n "$registry_digest" ]] || die \
+      "$source_image is a multi-platform image without a registry digest"
+    deployment_image=$registry_digest
+    pull_policy=IfNotPresent
+    log "using registry digest $deployment_image for multi-platform image"
+  else
+    log "importing $source_image as $immutable_image"
+    docker image tag "$source_image" "$immutable_image"
+    docker image save "$immutable_image" | k3s ctr -n k8s.io images import -
+  fi
 
   container=$("${kube[@]}" get deployment "$deployment" -n "$namespace" \
     -o jsonpath='{.spec.template.spec.containers[0].name}')
@@ -270,9 +290,9 @@ for row in "${sync_services[@]}"; do
   "${kube[@]}" patch deployment "$deployment" -n "$namespace" --type merge \
     -p '{"spec":{"strategy":{"type":"Recreate","rollingUpdate":null}}}' >/dev/null
   "${kube[@]}" set image deployment/"$deployment" -n "$namespace" \
-    "$container=$immutable_image" >/dev/null
+    "$container=$deployment_image" >/dev/null
   "${kube[@]}" patch deployment "$deployment" -n "$namespace" --type strategic \
-    -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"${container}\",\"imagePullPolicy\":\"IfNotPresent\"}]}}}}" \
+    -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"${container}\",\"imagePullPolicy\":\"${pull_policy}\"}]}}}}" \
     >/dev/null
   "${kube[@]}" patch deployment "$deployment" -n "$namespace" --type merge \
     -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"sync.compose/image-id\":\"${image_id}\",\"sync.compose/source-image\":\"${source_image}\"}}}}}" \
