@@ -271,6 +271,9 @@ for row in "${sync_services[@]}"; do
     -p '{"spec":{"strategy":{"type":"Recreate","rollingUpdate":null}}}' >/dev/null
   "${kube[@]}" set image deployment/"$deployment" -n "$namespace" \
     "$container=$immutable_image" >/dev/null
+  "${kube[@]}" patch deployment "$deployment" -n "$namespace" --type strategic \
+    -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"${container}\",\"imagePullPolicy\":\"IfNotPresent\"}]}}}}" \
+    >/dev/null
   "${kube[@]}" patch deployment "$deployment" -n "$namespace" --type merge \
     -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"sync.compose/image-id\":\"${image_id}\",\"sync.compose/source-image\":\"${source_image}\"}}}}}" \
     >/dev/null
