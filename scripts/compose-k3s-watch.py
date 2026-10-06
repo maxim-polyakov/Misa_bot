@@ -70,6 +70,9 @@ def queue_event(line: str, pending: dict[str, PendingProject]) -> None:
         return
 
     attributes = event.get("Actor", {}).get("Attributes", {})
+    if attributes.get("com.docker.compose.oneoff", "").lower() == "true":
+        return
+
     project = attributes.get("com.docker.compose.project")
     working_dir = attributes.get("com.docker.compose.project.working_dir")
     if not project or not working_dir:
