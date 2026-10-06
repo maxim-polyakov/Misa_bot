@@ -10,6 +10,7 @@ into the k3s containerd on this node, and roll out matching Deployments.
 
 Options:
   --project-dir DIR       Directory containing docker-compose.yml (required)
+  --project-name NAME     Override the Compose/Kubernetes project name
   --env-file FILE         Compose env file, relative to project directory
   --compose-file FILE     Compose file, relative to project directory
   --skip-build            Use images already built by Docker Compose
@@ -30,6 +31,7 @@ die() {
 }
 
 project_dir=
+project_name_override=
 env_file=
 compose_file=
 skip_build=false
@@ -42,6 +44,11 @@ while (($#)); do
     --project-dir)
       (($# >= 2)) || die "--project-dir requires a value"
       project_dir=$2
+      shift 2
+      ;;
+    --project-name)
+      (($# >= 2)) || die "--project-name requires a value"
+      project_name_override=$2
       shift 2
       ;;
     --env-file)
@@ -97,6 +104,9 @@ elif command -v docker-compose >/dev/null 2>&1; then
 else
   die "neither docker compose nor docker-compose is available"
 fi
+if [[ -n "$project_name_override" ]]; then
+  compose+=(-p "$project_name_override")
+fi
 kube=(k3s kubectl)
 kubeconfig=${COMPOSE_K3S_KUBECONFIG:-/etc/rancher/k3s/compose-sync.yaml}
 if [[ -f "$kubeconfig" ]]; then
@@ -140,7 +150,7 @@ with open(sys.argv[2], "w", encoding="utf-8") as target:
 PY
 fi
 
-python3 - "$config_json" "$project_dir" <<'PY'
+python3 - "$config_json" "$project_dir" "$project_name_override" <<'PY'
 import json
 import re
 import sys
@@ -149,7 +159,9 @@ from pathlib import Path
 path = Path(sys.argv[1])
 with path.open(encoding="utf-8") as stream:
     config = json.load(stream)
-if not config.get("name"):
+if sys.argv[3]:
+    config["name"] = sys.argv[3]
+elif not config.get("name"):
     config["name"] = re.sub(
         r"[^a-z0-9_-]+", "", Path(sys.argv[2]).name.lower()
     )
