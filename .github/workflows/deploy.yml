@@ -103,7 +103,9 @@ jobs:
             fi
             printf '%s\n' "$SERVER_ENV" > server/.env
             printf '%s\n' "$CLIENT_ENV" > client/.env
-            docker compose --env-file client/.env down --remove-orphans
-            docker compose --env-file client/.env build --no-cache client
-            docker compose --env-file client/.env build
-            docker compose --env-file client/.env up -d --remove-orphans
+            # Compose собирает образы, production-контейнеры запускает k3s.
+            # Helper импортирует образы в локальный containerd и ждёт rollout.
+            sudo -n /usr/local/sbin/compose-k3s-sync \
+              --project-dir "$DEPLOY_PATH" \
+              --env-file client/.env \
+              --no-cache
