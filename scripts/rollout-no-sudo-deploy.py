@@ -53,13 +53,17 @@ def patch(text: str) -> str:
         text,
         flags=re.M,
     )
-    text = text.replace(
-        "sudo -n /usr/local/sbin/compose-k3s-sync \\",
-        'bash "$DEPLOY_PATH/scripts/compose-k3s-sync.sh" \\',
+    text = re.sub(
+        r'^(\s*)sudo -n /usr/local/sbin/compose-k3s-sync \\',
+        r'\1bash "$DEPLOY_PATH/scripts/compose-k3s-sync.sh" \\',
+        text,
+        flags=re.M,
     )
-    text = text.replace(
-        "sudo -n /usr/local/sbin/compose-k3s-sync",
-        'bash "$DEPLOY_PATH/scripts/compose-k3s-sync.sh"',
+    text = re.sub(
+        r'^(\s*)sudo -n /usr/local/sbin/compose-k3s-sync\s*$',
+        r'\1bash "$DEPLOY_PATH/scripts/compose-k3s-sync.sh"',
+        text,
+        flags=re.M,
     )
     return text
 

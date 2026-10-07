@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""On each server project dir: refresh that repo's compose-k3s-sync.sh, then run it."""
+"""Refresh each project's compose-k3s-sync.sh and run fleet sync (patch or rollout)."""
 from __future__ import annotations
 
+import argparse
 import os
 import sys
 from dataclasses import dataclass
@@ -18,9 +19,11 @@ class Project:
     host: str
     node_label: str
     folder: str
-    github_repo: str  # for non-git deploy dirs: raw fetch
+    github_repo: str
     env_args: str = ""
     jump_via: str | None = None
+    skip_sync: bool = False
+    skip_reason: str = ""
 
 
 PROJECTS = [
@@ -31,8 +34,15 @@ PROJECTS = [
     Project("146.103.110.27", "worker-146", "Galaxy-map", "baxic-top-projects/Galaxy-map"),
     Project("146.103.110.27", "worker-146", "lotus_game", "maxim-polyakov/lotus_game"),
     Project("146.103.110.27", "worker-146", "misadrawing", "maxim-polyakov/misadrawing"),
-    Project("146.103.110.27", "worker-146", "hackaton", "baxic-top-projects/hackaton"),
-    Project("146.103.110.27", "worker-146", "ForLogs", "maxim-polyakov/ForLogs"),
+    Project(
+        "146.103.110.27",
+        "worker-146",
+        "hackaton",
+        "baxic-top-projects/hackaton",
+        skip_sync=True,
+        skip_reason="github/* Deployments lack compose.project labels",
+    ),
+    Project("146.103.110.27", "worker-146", "ai_stream_project", "maxim-polyakov/ForLogs"),
     Project(
         "192.144.57.185",
         "worker-192",
@@ -51,15 +61,18 @@ def connect(host: str, jump: str | None) -> paramiko.SSHClient:
     if not jump:
         c = paramiko.SSHClient()
         c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        c.connect(host, username="baxic", password=PWD, timeout=25, allow_agent=False, look_for_keys=False)
+        c.connect(host, username="baxic", password=PWD, timeout=30, allow_agent=False, look_for_keys=False)
+        c.get_transport().set_keepalive(30)
         return c
     j = paramiko.SSHClient()
     j.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    j.connect(jump, username="baxic", password=PWD, timeout=25, allow_agent=False, look_for_keys=False)
-    ch = j.get_transport().open_channel("direct-tcpip", (host, 22), ("127.0.0.1", 0), timeout=25)
+    j.connect(jump, username="baxic", password=PWD, timeout=30, allow_agent=False, look_for_keys=False)
+    j.get_transport().set_keepalive(30)
+    ch = j.get_transport().open_channel("direct-tcpip", (host, 22), ("127.0.0.1", 0), timeout=60)
     c = paramiko.SSHClient()
     c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    c.connect(host, username="baxic", password=PWD, sock=ch, timeout=25, allow_agent=False, look_for_keys=False)
+    c.connect(host, username="baxic", password=PWD, sock=ch, timeout=60, allow_agent=False, look_for_keys=False)
+    c.get_transport().set_keepalive(30)
     return c
 
 
@@ -75,7 +88,6 @@ def refresh_helper_shell(deploy: str, repo: str) -> str:
     return f"""
 set -e
 deploy="{deploy}"
-repo="{repo}"
 raw="{raw}"
 mkdir -p "$deploy/scripts"
 if [ -d "$deploy/.git" ]; then
@@ -93,6 +105,22 @@ test -s "$deploy/{HELPER}"
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--mode",
+        choices=("patch-only", "skip-build", "build"),
+        default="skip-build",
+        help="patch-only: schema only; skip-build: rollout if images exist else patch; build: compose build + rollout",
+    )
+    parser.add_argument("--scripts-only", action="store_true", help="only refresh helper script on disk")
+    args = parser.parse_args()
+
+    sync_flags = {
+        "patch-only": "--patch-only",
+        "skip-build": "--skip-build",
+        "build": "",
+    }[args.mode]
+
     failures: list[str] = []
     for proj in PROJECTS:
         deploy = f"{BASE}/{proj.folder}"
@@ -103,6 +131,7 @@ def main() -> None:
             print(f"  connect FAIL: {exc}")
             failures.append(f"{proj.folder}: connect")
             continue
+        refresh_timeout = 300 if proj.jump_via else 120
         _, chk, _ = run(
             c,
             f'test -f "{deploy}/docker-compose.yml" && echo ok || echo no-compose',
@@ -112,7 +141,7 @@ def main() -> None:
             print("  skip: no docker-compose.yml")
             c.close()
             continue
-        code, out, err = run(c, refresh_helper_shell(deploy, proj.github_repo), timeout=120)
+        code, out, err = run(c, refresh_helper_shell(deploy, proj.github_repo), timeout=refresh_timeout)
         print(out)
         if err.strip():
             print(err, file=sys.stderr)
@@ -120,12 +149,18 @@ def main() -> None:
             failures.append(f"{proj.folder}: refresh({code})")
             c.close()
             continue
+        if args.scripts_only:
+            print("  OK (helper only)")
+            c.close()
+            continue
+        if proj.skip_sync:
+            print(f"  OK (helper only; sync skipped: {proj.skip_reason})")
+            c.close()
+            continue
         extra = f" {proj.env_args}" if proj.env_args else ""
-        sync = (
-            f'bash "{deploy}/{HELPER}" --project-dir "{deploy}"{extra} '
-            f"--skip-build --timeout 15m"
-        )
-        code, out, err = run(c, sync, timeout=960)
+        sync = f'bash "{deploy}/{HELPER}" --project-dir "{deploy}"{extra} {sync_flags} --timeout 20m'
+        sync = sync.strip()
+        code, out, err = run(c, sync, timeout=1500)
         print(out)
         if err.strip():
             print(err, file=sys.stderr)
@@ -140,7 +175,7 @@ def main() -> None:
     if failures:
         print("FAILED:", ", ".join(failures))
         sys.exit(1)
-    print("done — each project used its own scripts/compose-k3s-sync.sh")
+    print("done")
 
 
 if __name__ == "__main__":
