@@ -106,8 +106,7 @@ jobs:
             printf '%s\n' "$CLIENT_ENV" > client/.env
             # Compose собирает образы, production-контейнеры запускает k3s.
             # Helper импортирует образы в локальный containerd и ждёт rollout.
-            sudo install -m 755 "$DEPLOY_PATH/scripts/compose-k3s-sync.sh" /usr/local/sbin/compose-k3s-sync
-            sudo -n /usr/local/sbin/compose-k3s-sync \
+            bash "$DEPLOY_PATH/scripts/compose-k3s-sync.sh" \
               --project-dir "$DEPLOY_PATH" \
               --env-file client/.env \
               --no-cache
