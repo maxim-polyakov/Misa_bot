@@ -24,6 +24,8 @@ Environment:
   COMPOSE_K3S_EXTRA_NAMESERVERS   Public DNS for Maildev/SMTP Deployments (default: 8.8.8.8,1.1.1.1)
   COMPOSE_K3S_SKIP_SMTP_DNS       Set to 1 to skip Maildev dnsConfig on the Deployment
   COMPOSE_K3S_STRICT_ROLLOUT      Set to 1 to fail when kubectl rollout status fails
+  COMPOSE_BAKE                    Default 0 — avoid compose bake metadata-file races on build
+  TMPDIR                          Default /tmp for compose build temp files
 EOF
 }
 
