@@ -20,6 +20,7 @@ REPOS: dict[str, list[tuple[Path, str]]] = {
         (SCRIPTS / "inspect-deploy-workflows.py", "scripts/inspect-deploy-workflows.py"),
         (SCRIPTS / "push-helper-one.py", "scripts/push-helper-one.py"),
         (SCRIPTS / "push-all-k3s-repos.py", "scripts/push-all-k3s-repos.py"),
+        (SCRIPTS / "patch-deploy-compose-build-env.py", "scripts/patch-deploy-compose-build-env.py"),
     ],
 }
 
@@ -44,7 +45,7 @@ for repo in HELPER_ONLY:
     ]
 
 COMMIT_MSG = (
-    "chore: compose-k3s-sync — strip hostAliases, Maildev dnsConfig only"
+    "fix: compose build — COMPOSE_BAKE off, serial builds, metadata-file fallback"
 )
 
 

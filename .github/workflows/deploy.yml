@@ -104,6 +104,9 @@ jobs:
             fi
             printf '%s\n' "$SERVER_ENV" > server/.env
             printf '%s\n' "$CLIENT_ENV" > client/.env
+            export COMPOSE_BAKE=0
+            export BUILDX_NO_DEFAULT_ATTESTATIONS=1
+            export TMPDIR=/tmp
             # Compose собирает образы, production-контейнеры запускает k3s.
             # Helper импортирует образы в локальный containerd и ждёт rollout.
             bash "$DEPLOY_PATH/scripts/compose-k3s-sync.sh" \

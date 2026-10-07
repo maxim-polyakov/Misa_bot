@@ -113,6 +113,12 @@ def main() -> None:
         help="patch-only: schema only; skip-build: rollout if images exist else patch; build: compose build + rollout",
     )
     parser.add_argument("--scripts-only", action="store_true", help="only refresh helper script on disk")
+    parser.add_argument(
+        "--only",
+        nargs="+",
+        metavar="FOLDER",
+        help="limit to project folder names (e.g. Misa_bot Galaxy-map)",
+    )
     args = parser.parse_args()
 
     sync_flags = {
@@ -121,8 +127,11 @@ def main() -> None:
         "build": "",
     }[args.mode]
 
+    only = set(args.only) if args.only else None
     failures: list[str] = []
     for proj in PROJECTS:
+        if only and proj.folder not in only:
+            continue
         deploy = f"{BASE}/{proj.folder}"
         print(f"\n--- {proj.node_label} / {proj.folder} ---", flush=True)
         try:

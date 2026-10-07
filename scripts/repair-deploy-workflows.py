@@ -59,6 +59,9 @@ def put_file(repo: str, path: str, content: str, sha: str, message: str) -> None
 def build_sync_script(env_file: str | None, no_cache: bool) -> str:
     lines = [
         '            cd "$DEPLOY_PATH"',
+        "            export COMPOSE_BAKE=0",
+        "            export BUILDX_NO_DEFAULT_ATTESTATIONS=1",
+        "            export TMPDIR=/tmp",
         '            bash "$DEPLOY_PATH/scripts/compose-k3s-sync.sh" \\',
         '              --project-dir "$DEPLOY_PATH" \\',
     ]
