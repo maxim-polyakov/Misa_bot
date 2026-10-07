@@ -342,8 +342,7 @@ services = json.loads(
         "-o",
         "json",
     )
-)
-)["items"]
+).get("items", [])
 aliases_by_ip: dict[str, list[str]] = {}
 for item in services:
     name = item["metadata"]["name"]
@@ -370,7 +369,7 @@ deployments = json.loads(
         "-o",
         "json",
     )
-)["items"]
+).get("items", [])
 
 for deploy in deployments:
     namespace = deploy["metadata"]["namespace"]
