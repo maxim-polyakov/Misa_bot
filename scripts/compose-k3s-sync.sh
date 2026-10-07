@@ -317,4 +317,85 @@ for row in "${sync_services[@]}"; do
 done
 
 ((matched_services > 0)) || die "no matching Deployments found for $kube_project"
+
+if [[ "$dry_run" != true ]]; then
+  log "refreshing Compose-style hostAliases for $kube_project"
+  python3 - "$kube_project" "${kube[@]}" <<'PY'
+import json
+import subprocess
+import sys
+
+kube_project = sys.argv[1]
+kube = sys.argv[2:]
+
+def kubectl(*args):
+    return subprocess.check_output([*kube, *args], text=True)
+
+
+services = json.loads(
+    kubectl(
+        "get",
+        "svc",
+        "-A",
+        "-l",
+        f"compose.project={kube_project}",
+        "-o",
+        "json",
+    )
+)
+)["items"]
+aliases_by_ip: dict[str, list[str]] = {}
+for item in services:
+    name = item["metadata"]["name"]
+    namespace = item["metadata"]["namespace"]
+    cluster_ip = item["spec"].get("clusterIP")
+    if not cluster_ip or cluster_ip == "None":
+        continue
+    hostnames = [name, f"{name}.{namespace}"]
+    aliases_by_ip.setdefault(cluster_ip, [])
+    for host in hostnames:
+        if host not in aliases_by_ip[cluster_ip]:
+            aliases_by_ip[cluster_ip].append(host)
+
+if not aliases_by_ip:
+    raise SystemExit(0)
+
+deployments = json.loads(
+    kubectl(
+        "get",
+        "deploy",
+        "-A",
+        "-l",
+        f"compose.project={kube_project}",
+        "-o",
+        "json",
+    )
+)["items"]
+
+for deploy in deployments:
+    namespace = deploy["metadata"]["namespace"]
+    name = deploy["metadata"]["name"]
+    own_service = deploy["metadata"]["labels"].get("compose.service", name)
+    host_aliases = []
+    for ip, hostnames in sorted(aliases_by_ip.items()):
+        filtered = [h for h in hostnames if not h.startswith(f"{own_service}.") and h != own_service]
+        if filtered:
+            host_aliases.append({"ip": ip, "hostnames": filtered})
+    patch = {"spec": {"template": {"spec": {"hostAliases": host_aliases}}}}
+    subprocess.check_call(
+        [
+            *kube,
+            "patch",
+            "deployment",
+            name,
+            "-n",
+            namespace,
+            "--type=merge",
+            "-p",
+            json.dumps(patch),
+        ]
+    )
+PY
+fi
+
 log "sync completed for $kube_project"
