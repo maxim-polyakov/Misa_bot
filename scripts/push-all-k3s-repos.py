@@ -45,7 +45,7 @@ for repo in HELPER_ONLY:
     ]
 
 COMMIT_MSG = (
-    "fix: compose build — COMPOSE_BAKE off, serial builds, metadata-file fallback"
+    "fix: sync image-only compose services (smtp/redis/maildev) on deploy"
 )
 
 
