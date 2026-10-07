@@ -44,8 +44,7 @@ for repo in HELPER_ONLY:
     ]
 
 COMMIT_MSG = (
-    "chore: sync compose-k3s-sync helper and k3s deploy tooling "
-    "(local helper, no sudo, /tmp lock)"
+    "chore: compose-k3s-sync hostAliases + fallback pod DNS for all services"
 )
 
 
