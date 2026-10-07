@@ -44,7 +44,7 @@ for repo in HELPER_ONLY:
     ]
 
 COMMIT_MSG = (
-    "chore: compose-k3s-sync hostAliases + fallback pod DNS for all services"
+    "chore: compose-k3s-sync SMTP public DNS only; drop compose hostAliases"
 )
 
 
