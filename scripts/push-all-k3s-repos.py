@@ -44,7 +44,7 @@ for repo in HELPER_ONLY:
     ]
 
 COMMIT_MSG = (
-    "chore: compose-k3s-sync Maildev dnsConfig on Deployment; no hostAliases"
+    "chore: compose-k3s-sync — strip hostAliases, Maildev dnsConfig only"
 )
 
 
