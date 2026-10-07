@@ -21,6 +21,8 @@ REPOS: dict[str, list[tuple[Path, str]]] = {
         (SCRIPTS / "push-helper-one.py", "scripts/push-helper-one.py"),
         (SCRIPTS / "push-all-k3s-repos.py", "scripts/push-all-k3s-repos.py"),
         (SCRIPTS / "patch-deploy-compose-build-env.py", "scripts/patch-deploy-compose-build-env.py"),
+        (SCRIPTS / "patch-deploy-fleet-standard.py", "scripts/patch-deploy-fleet-standard.py"),
+        (SCRIPTS / "export-fleet-helpers-local.py", "scripts/export-fleet-helpers-local.py"),
     ],
 }
 
@@ -44,7 +46,7 @@ for repo in HELPER_ONLY:
         (SCRIPTS / "compose-k3s-sync.sh", "scripts/compose-k3s-sync.sh"),
     ]
 
-COMMIT_MSG = "fix: maildev patch helper (import sys in inline python)"
+COMMIT_MSG = "chore: sync compose-k3s-sync.sh and deploy fleet standard"
 
 
 def gh(*args: str) -> str:
