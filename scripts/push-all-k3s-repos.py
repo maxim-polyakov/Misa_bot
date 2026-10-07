@@ -45,7 +45,7 @@ for repo in HELPER_ONLY:
     ]
 
 COMMIT_MSG = (
-    "fix: sync image-only compose services (smtp/redis/maildev) on deploy"
+    "fix: maildev SMTP CrashLoopBackOff (workdir, drop bin/maildev command)"
 )
 
 
