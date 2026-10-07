@@ -95,6 +95,8 @@ jobs:
           script_stop: true
           command_timeout: 60m
           script: |
+            set -euo pipefail
+            echo "[deploy] $(date -Is) connected on $(hostname)"
             cd "$DEPLOY_PATH"
             if [ -z "$SERVER_ENV" ]; then echo "SERVER_ENV empty" >&2; exit 1; fi
             if [ -z "$CLIENT_ENV" ]; then echo "CLIENT_ENV empty" >&2; exit 1; fi
@@ -107,9 +109,11 @@ jobs:
             export COMPOSE_BAKE=0
             export BUILDX_NO_DEFAULT_ATTESTATIONS=1
             export TMPDIR=/tmp
+            export COMPOSE_K3S_LOCK_WAIT="${COMPOSE_K3S_LOCK_WAIT:-300}"
+            export COMPOSE_K3S_CLEAR_ORPHAN_LOCK=1
+            echo "[deploy] starting compose-k3s-sync (lock wait ${COMPOSE_K3S_LOCK_WAIT}s max)"
             # Compose собирает образы, production-контейнеры запускает k3s.
             # Helper импортирует образы в локальный containerd и ждёт rollout.
-            bash "$DEPLOY_PATH/scripts/compose-k3s-sync.sh" \
+            stdbuf -oL -eL bash "$DEPLOY_PATH/scripts/compose-k3s-sync.sh" \
               --project-dir "$DEPLOY_PATH" \
-              --env-file client/.env \
-              --no-cache
+              --env-file client/.env
