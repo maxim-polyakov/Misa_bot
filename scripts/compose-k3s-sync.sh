@@ -115,7 +115,7 @@ deploy = json.load(sys.stdin)
 wd = os.environ["WD"]
 out = []
 for c in deploy["spec"]["template"]["spec"]["containers"]:
-    entry = {"name": c["name"], "workingDir": wd}
+    entry = {"name": c["name"], "image": c["image"], "workingDir": wd}
     args = c.get("args") or []
     if len(args) >= 2 and args[0] == "-c" and "maildev" in str(args[1]):
         entry["command"] = ["/bin/sh", "-c"]
