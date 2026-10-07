@@ -45,7 +45,7 @@ for repo in HELPER_ONLY:
     ]
 
 COMMIT_MSG = (
-    "fix: maildev SMTP CrashLoopBackOff (workdir, drop bin/maildev command)"
+    "fix: maildev SMTP (workdir, shell -c args, drop bin/maildev command)"
 )
 
 
