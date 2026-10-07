@@ -44,9 +44,7 @@ for repo in HELPER_ONLY:
         (SCRIPTS / "compose-k3s-sync.sh", "scripts/compose-k3s-sync.sh"),
     ]
 
-COMMIT_MSG = (
-    "fix: maildev SMTP (workdir, shell -c args, drop bin/maildev command)"
-)
+COMMIT_MSG = "fix: maildev patch helper (import sys in inline python)"
 
 
 def gh(*args: str) -> str:
