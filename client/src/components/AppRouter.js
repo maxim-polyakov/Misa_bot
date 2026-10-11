@@ -5,6 +5,8 @@ import { authRoutes, publicRoutes } from "../Routes.js";
 import { observer } from "mobx-react-lite";
 import MainLayout from "../pages/MainLayout";
 import { LOGIN_ROUTE } from "../utils/consts.js";
+import Chat from "../pages/Chat";
+import Auth from "../pages/Auth";
 
 const AppRouter = observer(() => {
     const { user } = useContext(Context);
@@ -44,6 +46,16 @@ const AppRouter = observer(() => {
         );
     };
 
+    const HomeRoute = () => (
+        isAuth ? (
+            <MainLayout>
+                <Chat />
+            </MainLayout>
+        ) : (
+            <Auth />
+        )
+    );
+
     // Show loading during authentication check
     if (isLoading) {
         return <div>Loading...</div>;
@@ -51,6 +63,8 @@ const AppRouter = observer(() => {
 
     return (
         <Routes>
+            <Route path="/" element={<HomeRoute />} />
+
             {/* Публичные маршруты первыми — /share должен быть доступен без входа */}
             {publicRoutes.map(({ path, Component }) => (
                 <Route
@@ -69,7 +83,6 @@ const AppRouter = observer(() => {
                         element={<Component />}
                     />
                 ))}
-                <Route path="/" element={<Navigate to="/chat" replace />} />
             </Route>
 
             {/* Fallback routes */}
