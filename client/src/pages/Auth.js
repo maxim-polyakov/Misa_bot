@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect, useRef } from "react";
 import { Button, Card, Container, Form, Alert } from "react-bootstrap";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { LOGIN_ROUTE, REGISTRATION_ROUTE, REGISTRATION_VERIFY_ROUTE, FORGOT_PASSWORD_ROUTE } from "../utils/consts.js";
+import { CHAT_ROUTE, LOGIN_ROUTE, REGISTRATION_ROUTE, REGISTRATION_VERIFY_ROUTE, FORGOT_PASSWORD_ROUTE } from "../utils/consts.js";
 import { login, sendRegistrationCode, exchangeOAuthCode } from "../http/userApi.js";
 import { observer } from "mobx-react-lite";
 import { Context } from "../index.js";
@@ -60,7 +60,7 @@ const Auth = observer(() => {
                 user.setIsAuth(true);
                 chatStore.connect();
                 swapMethod();
-                navigate("/");
+                navigate(CHAT_ROUTE);
             })
             .catch((err) => {
                 oauthHandled.current = false;
@@ -108,7 +108,7 @@ const Auth = observer(() => {
                     chatStore.connect();
                     setEmail("");
                     setPassword("");
-                    navigate("/");
+                    navigate(CHAT_ROUTE);
                 } catch (err) {
                     if (err.message === "email_not_verified") {
                         navigate(REGISTRATION_VERIFY_ROUTE, { state: { email, password } });
@@ -200,7 +200,7 @@ const Auth = observer(() => {
                                 <>
                                     {t("authAlreadyHaveAccount")}{" "}
                                     <Link
-                                        to="/"
+                                        to={LOGIN_ROUTE}
                                         style={{ textDecoration: "none" }}
                                         onClick={() => swapMethod()}
                                     >

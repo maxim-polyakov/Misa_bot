@@ -101,14 +101,14 @@ function setLocaleCookie(code) {
     }
 }
 
-/**
- * Сохраняет язык в cookie без изменения URL.
- * Чистый адрес важен для favicon/быстрых ссылок браузера.
- */
 export function syncLangQueryWithSettings(code) {
-    if (typeof document === "undefined") return;
+    if (typeof window === "undefined" || typeof document === "undefined") return;
     if (!LANGUAGES.some((l) => l.code === code)) return;
     setLocaleCookie(code);
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("lang") === code) return;
+    url.searchParams.set("lang", code);
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
 /** POST на API: Set-Cookie misa_locale на сервере (для og/preview; при UI_LOCALE_COOKIE_DOMAIN=. — общий с вебом). */
