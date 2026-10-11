@@ -60,7 +60,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
         chatStore.logout();
         user?.setUser({});
         user?.setIsAuth(false);
-        navigate("/login", { replace: true });
+        navigate("/", { replace: true });
     };
 
     const handleDeleteAccountClick = () => {
@@ -79,7 +79,7 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
             chatStore.logout();
             user?.setUser({});
             user?.setIsAuth(false);
-            navigate("/login", { replace: true });
+            navigate("/", { replace: true });
         } catch (e) {
             setDeleteError(e?.message || t("error"));
         } finally {

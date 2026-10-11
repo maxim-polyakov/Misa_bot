@@ -191,7 +191,7 @@ const ShareChat = () => {
                 </header>
                 <div className="share-chat-error">
                     <p>{error || t('shareChatNotFound')}</p>
-                    <Link to="/login" className="share-chat-link">{t('shareChatLogin')}</Link>
+                    <Link to="/" className="share-chat-link">{t('shareChatLogin')}</Link>
                 </div>
             </div>
         );
@@ -231,7 +231,7 @@ const ShareChat = () => {
             </div>
 
             <footer className="share-chat-footer">
-                <Link to="/login" className="share-chat-cta">
+                <Link to="/" className="share-chat-cta">
                     {t('shareChatCta')}
                 </Link>
             </footer>

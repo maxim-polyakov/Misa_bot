@@ -1,5 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { jwtDecode } from "jwt-decode";
+import { getLanguage } from "../utils/locale";
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 const API_URL = process.env.REACT_APP_API_URL || '';
 
@@ -171,11 +172,12 @@ class ChatStore {
             (typeof window !== 'undefined' ? window.location.origin : '');
         const chatId = this.shareModeForChatId || this.currentChatId;
         if (!chatId) return base;
-        let url = `${base}/share/${encodeURIComponent(chatId)}`;
+        const url = new URL(`${base}/share/${encodeURIComponent(chatId)}`);
         if (this.selectedMessageIds?.length > 0) {
-            url += `?msg=${encodeURIComponent(this.selectedMessageIds.join(','))}`;
+            url.searchParams.set("msg", this.selectedMessageIds.join(","));
         }
-        return url;
+        url.searchParams.set("lang", getLanguage());
+        return url.toString();
     }
 
     // Получение ID текущего пользователя

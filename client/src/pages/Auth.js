@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect, useRef } from "react";
 import { Button, Card, Container, Form, Alert } from "react-bootstrap";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { CHAT_ROUTE, LOGIN_ROUTE, REGISTRATION_ROUTE, REGISTRATION_VERIFY_ROUTE, FORGOT_PASSWORD_ROUTE } from "../utils/consts.js";
+import { LOGIN_ROUTE, REGISTRATION_ROUTE, REGISTRATION_VERIFY_ROUTE, FORGOT_PASSWORD_ROUTE } from "../utils/consts.js";
 import { login, sendRegistrationCode, exchangeOAuthCode } from "../http/userApi.js";
 import { observer } from "mobx-react-lite";
 import { Context } from "../index.js";
@@ -18,7 +18,7 @@ const Auth = observer(() => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const oauthHandled = useRef(false);
-    const isLogin = location.pathname === LOGIN_ROUTE && true;
+    const isLogin = location.pathname === "/" || location.pathname === LOGIN_ROUTE;
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -60,7 +60,7 @@ const Auth = observer(() => {
                 user.setIsAuth(true);
                 chatStore.connect();
                 swapMethod();
-                navigate(CHAT_ROUTE);
+                navigate("/");
             })
             .catch((err) => {
                 oauthHandled.current = false;
@@ -108,7 +108,7 @@ const Auth = observer(() => {
                     chatStore.connect();
                     setEmail("");
                     setPassword("");
-                    navigate(CHAT_ROUTE);
+                    navigate("/");
                 } catch (err) {
                     if (err.message === "email_not_verified") {
                         navigate(REGISTRATION_VERIFY_ROUTE, { state: { email, password } });
@@ -200,7 +200,7 @@ const Auth = observer(() => {
                                 <>
                                     {t("authAlreadyHaveAccount")}{" "}
                                     <Link
-                                        to={LOGIN_ROUTE}
+                                        to="/"
                                         style={{ textDecoration: "none" }}
                                         onClick={() => swapMethod()}
                                     >

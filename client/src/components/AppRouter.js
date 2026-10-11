@@ -4,7 +4,6 @@ import { Route, Routes, Navigate, Outlet } from "react-router-dom";
 import { authRoutes, publicRoutes } from "../Routes.js";
 import { observer } from "mobx-react-lite";
 import MainLayout from "../pages/MainLayout";
-import { LOGIN_ROUTE } from "../utils/consts.js";
 import Chat from "../pages/Chat";
 import Auth from "../pages/Auth";
 
@@ -42,7 +41,7 @@ const AppRouter = observer(() => {
                 <Outlet />
             </MainLayout>
         ) : (
-            <Navigate to={LOGIN_ROUTE} replace />
+            <Navigate to="/" replace />
         );
     };
 
@@ -64,6 +63,8 @@ const AppRouter = observer(() => {
     return (
         <Routes>
             <Route path="/" element={<HomeRoute />} />
+            <Route path="/login" element={<Navigate to="/" replace />} />
+            <Route path="/chat" element={<Navigate to="/" replace />} />
 
             {/* Публичные маршруты первыми — /share должен быть доступен без входа */}
             {publicRoutes.map(({ path, Component }) => (
@@ -88,11 +89,7 @@ const AppRouter = observer(() => {
             {/* Fallback routes */}
             <Route
                 path="*"
-                element={
-                    isAuth ?
-                        <Navigate to="/chat" replace /> :
-                        <Navigate to={LOGIN_ROUTE} replace />
-                }
+                element={<Navigate to="/" replace />}
             />
         </Routes>
     );

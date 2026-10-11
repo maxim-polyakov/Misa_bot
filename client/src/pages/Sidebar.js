@@ -124,7 +124,7 @@ const Sidebar = observer(() => {
         chatStore.logout();
         user?.setUser({});
         user?.setIsAuth(false);
-        navigate("/login", { replace: true });
+        navigate("/", { replace: true });
     };
 
     if (!user?.isAuth) {

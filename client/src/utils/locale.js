@@ -102,22 +102,13 @@ function setLocaleCookie(code) {
 }
 
 /**
- * Cookie + ?lang= в URL как в настройках.
- * Превью в Discord/Telegram читают запрос бота к og/preview по X-Original-URI — там должен быть lang (cookie боты не шлют).
+ * Сохраняет язык в cookie без изменения URL.
+ * Чистый адрес важен для favicon/быстрых ссылок браузера.
  */
 export function syncLangQueryWithSettings(code) {
     if (typeof document === "undefined") return;
     if (!LANGUAGES.some((l) => l.code === code)) return;
     setLocaleCookie(code);
-    try {
-        const u = new URL(window.location.href);
-        if ((u.searchParams.get("lang") || "").toLowerCase() !== String(code).toLowerCase()) {
-            u.searchParams.set("lang", code);
-            window.history.replaceState({}, "", `${u.pathname}${u.search}${u.hash}`);
-        }
-    } catch {
-        /* ignore */
-    }
 }
 
 /** POST на API: Set-Cookie misa_locale на сервере (для og/preview; при UI_LOCALE_COOKIE_DOMAIN=. — общий с вебом). */
