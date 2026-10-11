@@ -73,7 +73,7 @@ export default function ShareLinkPreviewCard({ chatId, query }) {
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
         >
-            <img src="/favicon-195.png" alt="" className="share-link-preview-card__icon" width={40} height={40} />
+            <img src="/favicon.png" alt="" className="share-link-preview-card__icon" width={40} height={40} />
             <div className="share-link-preview-card__body">
                 <div className="share-link-preview-card__title">{title}</div>
                 {snippet ? <div className="share-link-preview-card__snippet">{snippet}</div> : null}

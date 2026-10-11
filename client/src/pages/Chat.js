@@ -392,7 +392,7 @@ const Chat = observer(() => {
             {!sidebarExpanded && (
                 <div className="chat-floating-buttons">
                     <img
-                        src="/favicon.ico"
+                        src="/favicon.png"
                         alt=""
                         className="chat-floating-logo"
                         onClick={toggleSidebar}
@@ -432,7 +432,7 @@ const Chat = observer(() => {
                     {chatStore.messages.length === 0 ? (
                         <div className="empty-chat">
                             <div className="empty-chat-header">
-                                <img src="/favicon.ico" alt="Misa" className="empty-chat-logo" />
+                                <img src="/favicon.png" alt="Misa" className="empty-chat-logo" />
                                 <h2 className="empty-chat-title">{t("startChat")}</h2>
                             </div>
                             <p className="empty-chat-hint">{t("startHint")}</p>

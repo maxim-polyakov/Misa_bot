@@ -168,7 +168,7 @@ const ShareChat = () => {
             <div className="share-chat-page">
                 <header className="share-chat-topbar">
                     <Link to="/" className="share-chat-logo">
-                        <img src="/favicon.ico" alt="Misa" />
+                        <img src="/favicon.png" alt="Misa" />
                         <span>Misa AI</span>
                     </Link>
                 </header>
@@ -185,7 +185,7 @@ const ShareChat = () => {
             <div className="share-chat-page">
                 <header className="share-chat-topbar">
                     <Link to="/" className="share-chat-logo">
-                        <img src="/favicon.ico" alt="Misa" />
+                        <img src="/favicon.png" alt="Misa" />
                         <span>Misa AI</span>
                     </Link>
                 </header>
@@ -201,7 +201,7 @@ const ShareChat = () => {
         <div className="share-chat-page">
             <header className="share-chat-topbar">
                 <Link to="/" className="share-chat-logo">
-                    <img src="/favicon.ico" alt="Misa" />
+                    <img src="/favicon.png" alt="Misa" />
                     <span>Misa AI</span>
                 </Link>
                 <span className="share-chat-badge">{t('shareChatBadge')}</span>
@@ -212,7 +212,7 @@ const ShareChat = () => {
                     <div className="share-chat-hero">
                         <img
                             className="share-chat-hero-icon"
-                            src="/favicon-195.png"
+                            src="/favicon.png"
                             width={48}
                             height={48}
                             alt=""
