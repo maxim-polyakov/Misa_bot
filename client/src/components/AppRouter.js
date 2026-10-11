@@ -1,6 +1,6 @@
 import { Context } from "../index.js";
 import { useContext, useState, useEffect } from "react";
-import { Route, Routes, Navigate, Outlet } from "react-router-dom";
+import { Route, Routes, Navigate, Outlet, useLocation } from "react-router-dom";
 import { authRoutes, publicRoutes } from "../Routes.js";
 import { observer } from "mobx-react-lite";
 import MainLayout from "../pages/MainLayout";
@@ -55,6 +55,11 @@ const AppRouter = observer(() => {
         )
     );
 
+    const LegacyLoginRoute = () => {
+        const location = useLocation();
+        return <Navigate to={`/${location.search}${location.hash}`} replace />;
+    };
+
     // Show loading during authentication check
     if (isLoading) {
         return <div>Loading...</div>;
@@ -63,7 +68,7 @@ const AppRouter = observer(() => {
     return (
         <Routes>
             <Route path="/" element={<HomeRoute />} />
-            <Route path="/login" element={<Navigate to="/" replace />} />
+            <Route path="/login" element={<LegacyLoginRoute />} />
             <Route path="/chat" element={<Navigate to="/" replace />} />
 
             {/* Публичные маршруты первыми — /share должен быть доступен без входа */}
