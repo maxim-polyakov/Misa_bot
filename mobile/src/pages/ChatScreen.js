@@ -70,34 +70,54 @@ const parseMessageContent = (content) => {
   return parts.length ? parts : [{ type: "text", content }];
 };
 
-// iOS не рисует слишком длинный Text в одном узле (пустой пузырь при большом сообщении)
-const TEXT_CHUNK_SIZE = 1600;
+// iOS не рисует слишком длинный Text в одном узле (пустой пузырь).
+// Режем только на узлы рендера — join(chunks) === исходный текст целиком, ничего не обрезаем.
+const TEXT_CHUNK_SIZE = 900;
 
 const chunkTextForRender = (text) => {
-  if (!text || text.length <= TEXT_CHUNK_SIZE) return [text || ""];
+  if (!text) return [""];
+  if (text.length <= TEXT_CHUNK_SIZE) return [text];
   const chunks = [];
-  let remaining = text;
-  while (remaining.length > TEXT_CHUNK_SIZE) {
-    let splitAt = remaining.lastIndexOf("\n", TEXT_CHUNK_SIZE);
-    if (splitAt < TEXT_CHUNK_SIZE * 0.4) {
-      splitAt = remaining.lastIndexOf(" ", TEXT_CHUNK_SIZE);
+  let start = 0;
+  while (start < text.length) {
+    if (start + TEXT_CHUNK_SIZE >= text.length) {
+      chunks.push(text.slice(start));
+      break;
     }
-    if (splitAt < TEXT_CHUNK_SIZE * 0.4) {
-      splitAt = TEXT_CHUNK_SIZE;
+    const hardEnd = start + TEXT_CHUNK_SIZE;
+    let end = text.lastIndexOf("\n", hardEnd - 1);
+    if (end <= start + TEXT_CHUNK_SIZE * 0.4) {
+      end = text.lastIndexOf(" ", hardEnd - 1);
     }
-    chunks.push(remaining.slice(0, splitAt));
-    remaining = remaining.slice(splitAt).replace(/^\n/, "");
+    if (end <= start + TEXT_CHUNK_SIZE * 0.4) {
+      end = hardEnd;
+    } else {
+      end += 1; // включаем перевод строки / пробел в этот кусок
+    }
+    chunks.push(text.slice(start, end));
+    start = end;
   }
-  if (remaining.length) chunks.push(remaining);
   return chunks;
 };
 
-const renderChunkedText = (text, style, keyPrefix) =>
-  chunkTextForRender(text).map((chunk, idx) => (
-    <Text key={`${keyPrefix}-${idx}`} style={style} selectable>
-      {chunk}
+const renderFullMessageText = (text, style, keyPrefix) => {
+  const chunks = chunkTextForRender(text);
+  if (chunks.length === 1) {
+    return (
+      <Text style={style} selectable>
+        {chunks[0]}
+      </Text>
+    );
+  }
+  // Вложенные Text: полное сообщение одним блоком, iOS рисует каждый фрагмент отдельно
+  return (
+    <Text style={style} selectable>
+      {chunks.map((chunk, idx) => (
+        <Text key={`${keyPrefix}-${idx}`}>{chunk}</Text>
+      ))}
     </Text>
-  ));
+  );
+};
 
 function ChatScreen() {
   const { chatStore } = useStores();
@@ -322,7 +342,7 @@ function ChatScreen() {
         {parsed.map((part, i) =>
           part.type === "text" ? (
             <View key={i} style={styles.msgTextGroup}>
-              {renderChunkedText(part.content, textStyle, `t${i}`)}
+              {renderFullMessageText(part.content, textStyle, `t${i}`)}
             </View>
           ) : (
             <View
@@ -343,7 +363,7 @@ function ChatScreen() {
                 <Text style={styles.codeBlockHeader}>{part.language}</Text>
               </View>
               <View style={styles.msgTextGroup}>
-                {renderChunkedText(part.content, codeTextStyle, `c${i}`)}
+                {renderFullMessageText(part.content, codeTextStyle, `c${i}`)}
               </View>
             </View>
           )
