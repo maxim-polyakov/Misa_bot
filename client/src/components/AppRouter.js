@@ -47,13 +47,11 @@ const AppRouter = observer(() => {
     };
 
     const HomeRoute = () => (
-        isAuth ? (
-            <MainLayout>
-                <Chat />
-            </MainLayout>
-        ) : (
-            <Auth />
-        )
+        <Navigate to={isAuth ? CHAT_ROUTE : LOGIN_ROUTE} replace />
+    );
+
+    const LoginRoute = () => (
+        isAuth ? <Navigate to={CHAT_ROUTE} replace /> : <Auth />
     );
 
     // Show loading during authentication check
@@ -64,7 +62,7 @@ const AppRouter = observer(() => {
     return (
         <Routes>
             <Route path="/" element={<HomeRoute />} />
-            <Route path={LOGIN_ROUTE} element={<Auth />} />
+            <Route path={LOGIN_ROUTE} element={<LoginRoute />} />
             <Route
                 path={CHAT_ROUTE}
                 element={isAuth ? (
