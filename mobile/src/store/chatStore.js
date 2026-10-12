@@ -21,6 +21,8 @@ class ChatStore {
   isAuth = false;
   _pingIntervalId = null;
   _userId = null;
+  _pendingChatCreates = {};
+  _ensuredServerChats = new Set();
 
   constructor(rootStore) {
     this.rootStore = rootStore;
@@ -149,26 +151,52 @@ class ChatStore {
     }
   }
 
+  _mapServerMessages(msgs) {
+    return (msgs || []).map((m) => ({
+      id: String(m.id),
+      content: m.content,
+      user: m.user,
+      timestamp: new Date(m.timestamp),
+      isImage: m.isImage,
+      feedback: m.feedback && (m.feedback === "like" || m.feedback === "dislike") ? m.feedback : null,
+      feedbackCategories: m.feedbackCategories || null,
+      feedbackComment: m.feedbackComment || null,
+    }));
+  }
+
+  // Не затираем оптимистичные локальные сообщения пустым/устаревшим снимком с сервера
+  _applyServerMessages(chat, msgs) {
+    if (!chat) return;
+    const incoming = this._mapServerMessages(msgs);
+    const local = Array.isArray(chat.messages) ? chat.messages : [];
+    if (local.length > incoming.length) {
+      const serverIds = new Set(incoming.map((m) => String(m.id)));
+      const serverKeys = new Set(incoming.map((m) => `${m.user}|${m.content}`));
+      const localOnly = local.filter(
+        (m) => !serverIds.has(String(m.id)) && !serverKeys.has(`${m.user}|${m.content}`)
+      );
+      chat.messages = [...incoming, ...localOnly];
+    } else {
+      chat.messages = incoming;
+    }
+    chat._messagesLoaded = true;
+    chat._pendingHistory = false;
+  }
+
   _loadAllChatMessagesInBackground() {
     if (!API_URL) return;
-    this.chats.forEach((chat) => {
-      if (chat._pendingHistory) return;
-      apiFetch(`/api/chats/${chat.id}/messages/`)
-        .then((msgs) => {
-          const c = this.chats.find((x) => x.id === chat.id);
-          if (!c) return;
-          c.messages = (msgs || []).map((m) => ({
-            id: String(m.id),
-            content: m.content,
-            user: m.user,
-            timestamp: new Date(m.timestamp),
-            isImage: m.isImage,
-          }));
-          c._messagesLoaded = true;
-          this.saveChats();
-        })
-        .catch((e) => console.warn(`Ошибка загрузки сообщений чата ${chat.id}:`, e?.message));
-    });
+    this.chats
+      .filter((c) => !c._pendingHistory && !c._messagesLoaded)
+      .forEach((chat) => {
+        apiFetch(`/api/chats/${chat.id}/messages/`)
+          .then((msgs) => {
+            const c = this.chats.find((x) => x.id === chat.id);
+            if (!c) return;
+            this._applyServerMessages(c, msgs);
+            this.saveChats();
+          })
+          .catch((e) => console.warn(`Ошибка загрузки сообщений чата ${chat.id}:`, e?.message));
+      });
   }
 
   async loadChats() {
@@ -205,16 +233,28 @@ class ChatStore {
               title: c.title || "Новый чат",
               messages: hasCached ? prev.messages : [],
               createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
-              _messagesLoaded: hasCached,
+              _messagesLoaded: hasCached || !!(prev && prev._messagesLoaded),
               _pendingHistory: false,
             };
           });
+          // Не теряем локально созданные чаты, которых ещё нет в ответе API
+          for (const [id, prev] of prevById.entries()) {
+            if (chatIds.has(id) || !prev) continue;
+            if (this._pendingChatCreates[id] || prev.messages?.length > 0 || id === prevCurrentId) {
+              this.chats.unshift({
+                ...prev,
+                messages: [...(prev.messages || [])],
+                _messagesLoaded: true,
+                _pendingHistory: false,
+              });
+            }
+          }
           this.chats.sort((a, b) => {
             const ia = this.pinnedChatIds.indexOf(a.id);
             const ib = this.pinnedChatIds.indexOf(b.id);
             return (ia >= 0 ? ia : 999) - (ib >= 0 ? ib : 999);
           });
-          if (prevCurrentId && chatIds.has(prevCurrentId)) {
+          if (prevCurrentId && this.chats.some((c) => c.id === prevCurrentId)) {
             this.currentChatId = prevCurrentId;
           } else {
             this.currentChatId = this.chats[0].id;
@@ -245,14 +285,7 @@ class ChatStore {
     } else if (API_URL) {
       try {
         const msgs = await apiFetch(`/api/chats/${chatId}/messages/`);
-        chat.messages = (msgs || []).map((m) => ({
-          id: String(m.id),
-          content: m.content,
-          user: m.user,
-          timestamp: new Date(m.timestamp),
-          isImage: m.isImage,
-        }));
-        chat._messagesLoaded = true;
+        this._applyServerMessages(chat, msgs);
       } catch (e) {
         console.warn("Ошибка загрузки сообщений:", e);
       }
@@ -295,20 +328,11 @@ class ChatStore {
     const emptyChat = this.chats.find((c) => !c.messages || c.messages.length === 0);
     if (emptyChat) {
       this.switchChat(emptyChat.id);
-      return;
+      return emptyChat.id;
     }
-    let id = generateId();
-    if (API_URL) {
-      try {
-        const res = await apiFetch("/api/chats/", {
-          method: "POST",
-          body: JSON.stringify({ id, title: "Новый чат" }),
-        });
-        if (res?.id) id = res.id;
-      } catch (e) {
-        console.warn("Ошибка создания чата:", e);
-      }
-    }
+
+    const previousChatId = this.currentChatId;
+    const id = generateId();
     const newChat = {
       id,
       title: "Новый чат",
@@ -319,9 +343,42 @@ class ChatStore {
     this.chats.unshift(newChat);
     this.currentChatId = id;
     this.saveChats();
-    if (this.socket && this.isConnected && this.user) {
-      this.socket.send(this.user + "|message|__NEW_CHAT__");
+
+    if (this.socket && this.isConnected) {
+      this.socket.send(JSON.stringify({ type: "join_chat", chat_id: id }));
+      if (this.user) {
+        this.socket.send(this.user + "|message|__NEW_CHAT__");
+      }
     }
+
+    if (API_URL) {
+      const createPromise = (async () => {
+        try {
+          await apiFetch("/api/chats/", {
+            method: "POST",
+            body: JSON.stringify({ id, title: "Новый чат" }),
+          });
+          this._ensuredServerChats.add(id);
+        } catch (e) {
+          console.warn("Ошибка создания чата:", e);
+          this.error = e?.message || "Ошибка создания чата";
+          const chat = this.chats.find((c) => c.id === id);
+          if (chat && (!chat.messages || chat.messages.length === 0)) {
+            this.chats = this.chats.filter((c) => c.id !== id);
+            if (this.currentChatId === id) {
+              this.currentChatId = previousChatId ?? this.chats[0]?.id ?? null;
+            }
+            this.saveChats();
+          }
+          throw e;
+        } finally {
+          delete this._pendingChatCreates[id];
+        }
+      })();
+      this._pendingChatCreates[id] = createPromise;
+    }
+
+    return id;
   }
 
   connect() {
@@ -400,19 +457,8 @@ class ChatStore {
     } else if (data.type === "history") {
       const chat = this.chats.find((c) => c.id === data.chat_id);
       if (chat) {
-        chat.messages = (data.messages || []).map((m) => ({
-          id: String(m.id),
-          content: m.content,
-          user: m.user,
-          timestamp: new Date(m.timestamp),
-          isImage: m.isImage,
-          feedback: m.feedback,
-          feedbackCategories: m.feedbackCategories,
-          feedbackComment: m.feedbackComment,
-        }));
+        this._applyServerMessages(chat, data.messages);
         if (data.title != null && data.title !== "") chat.title = String(data.title).trim();
-        chat._messagesLoaded = true;
-        chat._pendingHistory = false;
         this.saveChats();
       }
     } else if (data.type === "connection_established") {
@@ -653,22 +699,41 @@ class ChatStore {
       return false;
     }
     if (!content.trim()) return false;
-    const chatId = this.currentChatId;
-    if (!chatId) {
+
+    if (!this.currentChatId) {
       await this.newChat();
-      return this.sendMessage(content);
     }
+
+    const chatId = this.currentChatId;
     const chat = this.currentChat;
-    if (!chat) return false;
+    if (!chatId || !chat) return false;
+
+    if (this._pendingChatCreates[chatId]) {
+      try {
+        await this._pendingChatCreates[chatId];
+      } catch (e) {
+        return false;
+      }
+    }
+
+    if (!this.chats.some((c) => c.id === chatId)) {
+      return false;
+    }
+
     const isFirst = chat.messages.filter((m) => m.user !== "Misa").length === 0;
-    if (isFirst && API_URL) {
+    if (isFirst && API_URL && !this._ensuredServerChats.has(chatId)) {
       try {
         await apiFetch("/api/chats/", {
           method: "POST",
           body: JSON.stringify({ id: chatId, title: "Новый чат" }),
         });
-      } catch (e) {}
+        this._ensuredServerChats.add(chatId);
+      } catch (e) {
+        // Чат мог уже существовать — продолжаем отправку
+        this._ensuredServerChats.add(chatId);
+      }
     }
+
     if (!this.loadingChatIds.includes(chatId)) this.loadingChatIds.push(chatId);
     this.error = null;
     chat.messages.push({

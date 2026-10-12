@@ -141,8 +141,9 @@ function ChatScreen() {
   const handleSend = async () => {
     if (!message.trim()) return;
     const text = message.trim();
+    const sent = await chatStore.sendMessage(text);
+    if (!sent) return;
     setMessage("");
-    await chatStore.sendMessage(text);
   };
 
   const handleCopyMessage = async (msg) => {
