@@ -70,6 +70,35 @@ const parseMessageContent = (content) => {
   return parts.length ? parts : [{ type: "text", content }];
 };
 
+// iOS не рисует слишком длинный Text в одном узле (пустой пузырь при большом сообщении)
+const TEXT_CHUNK_SIZE = 1600;
+
+const chunkTextForRender = (text) => {
+  if (!text || text.length <= TEXT_CHUNK_SIZE) return [text || ""];
+  const chunks = [];
+  let remaining = text;
+  while (remaining.length > TEXT_CHUNK_SIZE) {
+    let splitAt = remaining.lastIndexOf("\n", TEXT_CHUNK_SIZE);
+    if (splitAt < TEXT_CHUNK_SIZE * 0.4) {
+      splitAt = remaining.lastIndexOf(" ", TEXT_CHUNK_SIZE);
+    }
+    if (splitAt < TEXT_CHUNK_SIZE * 0.4) {
+      splitAt = TEXT_CHUNK_SIZE;
+    }
+    chunks.push(remaining.slice(0, splitAt));
+    remaining = remaining.slice(splitAt).replace(/^\n/, "");
+  }
+  if (remaining.length) chunks.push(remaining);
+  return chunks;
+};
+
+const renderChunkedText = (text, style, keyPrefix) =>
+  chunkTextForRender(text).map((chunk, idx) => (
+    <Text key={`${keyPrefix}-${idx}`} style={style} selectable>
+      {chunk}
+    </Text>
+  ));
+
 function ChatScreen() {
   const { chatStore } = useStores();
   const { user, setIsAuth } = useUser();
@@ -286,13 +315,15 @@ function ChatScreen() {
 
   const renderMessageContent = (content, isUser) => {
     const parsed = parseMessageContent(content);
+    const textStyle = [styles.msgText, isUser && styles.msgTextUser];
+    const codeTextStyle = [styles.msgText, styles.codeBlockText, isUser && styles.codeBlockTextUser];
     return (
       <View style={styles.msgContentWrap}>
         {parsed.map((part, i) =>
           part.type === "text" ? (
-            <Text key={i} style={[styles.msgText, isUser && styles.msgTextUser]}>
-              {part.content}
-            </Text>
+            <View key={i} style={styles.msgTextGroup}>
+              {renderChunkedText(part.content, textStyle, `t${i}`)}
+            </View>
           ) : (
             <View
               key={i}
@@ -311,7 +342,9 @@ function ChatScreen() {
               >
                 <Text style={styles.codeBlockHeader}>{part.language}</Text>
               </View>
-              <Text style={[styles.msgText, styles.codeBlockText, isUser && styles.codeBlockTextUser]}>{part.content}</Text>
+              <View style={styles.msgTextGroup}>
+                {renderChunkedText(part.content, codeTextStyle, `c${i}`)}
+              </View>
             </View>
           )
         )}
@@ -416,6 +449,8 @@ function ChatScreen() {
       renderItem={renderMessage}
       style={styles.flatList}
       contentContainerStyle={styles.messagesContent}
+      // На iOS clipped subviews часто дают пустые пузыри у высоких сообщений
+      removeClippedSubviews={Platform.OS === "android"}
       ListFooterComponent={
         chatStore.isLoading ? (
           <View style={styles.typing}>
@@ -992,8 +1027,13 @@ const createStyles = (colors) =>
     borderWidth: 1,
     borderColor: colors.borderColor,
   },
-  msgContentWrap: { gap: 8 },
-  msgText: { fontSize: 16, color: colors.textPrimary },
+  msgContentWrap: { gap: 8, width: "100%" },
+  msgTextGroup: { width: "100%" },
+  msgText: {
+    fontSize: 16,
+    color: colors.textPrimary,
+    flexShrink: 1,
+  },
   msgTextUser: { color: "#fff" },
   codeBlock: {
     backgroundColor: "#0d1117",
@@ -1003,6 +1043,7 @@ const createStyles = (colors) =>
     marginTop: 12,
     marginBottom: 4,
     overflow: "hidden",
+    width: "100%",
   },
   codeBlockUser: {
     backgroundColor: "rgba(0,0,0,0.4)",
