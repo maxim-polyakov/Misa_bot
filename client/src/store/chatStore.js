@@ -378,11 +378,23 @@ class ChatStore {
                                 title: c.title || 'Новый чат',
                                 messages: hasCached ? prev.messages : [],
                                 createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
-                                _messagesLoaded: hasCached,
+                                _messagesLoaded: hasCached || !!(prev && prev._messagesLoaded),
                                 _pendingHistory: false,
                             };
                         });
-                    if (prevCurrentId && chatIds.has(prevCurrentId)) {
+                    // Не теряем локально созданные чаты, которых ещё нет в ответе API
+                    for (const [id, prev] of prevById.entries()) {
+                        if (chatIds.has(id) || !prev) continue;
+                        if (this._pendingChatCreates[id] || prev.messages?.length > 0 || id === prevCurrentId) {
+                            this.chats.unshift({
+                                ...prev,
+                                messages: [...(prev.messages || [])],
+                                _messagesLoaded: true,
+                                _pendingHistory: false,
+                            });
+                        }
+                    }
+                    if (prevCurrentId && this.chats.some(c => c.id === prevCurrentId)) {
                         this.currentChatId = prevCurrentId;
                     } else {
                         this.currentChatId = this.chats[0].id;
@@ -406,6 +418,38 @@ class ChatStore {
         }
     }
 
+    _mapServerMessages(msgs) {
+        return (msgs || []).map((m) => ({
+            id: String(m.id),
+            content: m.content,
+            user: m.user,
+            timestamp: new Date(m.timestamp),
+            isImage: m.isImage,
+            feedback: m.feedback && (m.feedback === 'like' || m.feedback === 'dislike') ? m.feedback : null,
+            feedbackCategories: m.feedbackCategories || null,
+            feedbackComment: m.feedbackComment || null
+        }));
+    }
+
+    // Не затираем оптимистичные локальные сообщения пустым/устаревшим снимком с сервера
+    _applyServerMessages(chat, msgs) {
+        if (!chat) return;
+        const incoming = this._mapServerMessages(msgs);
+        const local = Array.isArray(chat.messages) ? chat.messages : [];
+        if (local.length > incoming.length) {
+            const serverIds = new Set(incoming.map((m) => String(m.id)));
+            const serverKeys = new Set(incoming.map((m) => `${m.user}|${m.content}`));
+            const localOnly = local.filter((m) =>
+                !serverIds.has(String(m.id)) && !serverKeys.has(`${m.user}|${m.content}`)
+            );
+            chat.messages = [...incoming, ...localOnly];
+        } else {
+            chat.messages = incoming;
+        }
+        chat._messagesLoaded = true;
+        chat._pendingHistory = false;
+    }
+
     async _loadChatMessagesIfNeeded(chatId) {
         const chat = this.chats.find(c => c.id === chatId);
         if (!chat || chat._messagesLoaded) return;
@@ -414,17 +458,7 @@ class ChatStore {
         } else if (API_URL) {
             try {
                 const msgs = await apiFetch(`/api/chats/${chatId}/messages/`);
-                chat.messages = (msgs || []).map(m => ({
-                    id: String(m.id),
-                    content: m.content,
-                    user: m.user,
-                    timestamp: new Date(m.timestamp),
-                    isImage: m.isImage,
-                    feedback: m.feedback && (m.feedback === 'like' || m.feedback === 'dislike') ? m.feedback : null,
-                    feedbackCategories: m.feedbackCategories || null,
-                    feedbackComment: m.feedbackComment || null
-                }));
-                chat._messagesLoaded = true;
+                this._applyServerMessages(chat, msgs);
             } catch (e) {
                 console.warn("Ошибка загрузки сообщений:", e);
             }
@@ -441,23 +475,13 @@ class ChatStore {
 
     _loadAllChatMessagesInBackground() {
         if (!API_URL) return;
-        const toLoad = this.chats.filter(c => !c._pendingHistory);
+        const toLoad = this.chats.filter(c => !c._pendingHistory && !c._messagesLoaded);
         toLoad.forEach((chat) => {
             apiFetch(`/api/chats/${chat.id}/messages/`)
                 .then((msgs) => {
                     const c = this.chats.find((x) => x.id === chat.id);
                     if (!c) return;
-                    c.messages = (msgs || []).map((m) => ({
-                        id: String(m.id),
-                        content: m.content,
-                        user: m.user,
-                        timestamp: new Date(m.timestamp),
-                        isImage: m.isImage,
-                        feedback: m.feedback && (m.feedback === 'like' || m.feedback === 'dislike') ? m.feedback : null,
-                        feedbackCategories: m.feedbackCategories ?? null,
-                        feedbackComment: m.feedbackComment ?? null,
-                    }));
-                    c._messagesLoaded = true;
+                    this._applyServerMessages(c, msgs);
                     this.saveChats();
                 })
                 .catch((e) => console.warn(`Ошибка загрузки сообщений чата ${chat.id}:`, e?.message));
@@ -897,21 +921,10 @@ class ChatStore {
         else if (data.type === 'history') {
             const chat = this.chats.find(c => c.id === data.chat_id);
             if (chat) {
-                chat.messages = (data.messages || []).map(m => ({
-                    id: String(m.id),
-                    content: m.content,
-                    user: m.user,
-                    timestamp: new Date(m.timestamp),
-                    isImage: m.isImage,
-                    feedback: m.feedback && (m.feedback === 'like' || m.feedback === 'dislike') ? m.feedback : null,
-                    feedbackCategories: m.feedbackCategories || null,
-                    feedbackComment: m.feedbackComment || null
-                }));
+                this._applyServerMessages(chat, data.messages);
                 if (data.title != null && data.title !== '') {
                     chat.title = String(data.title).trim();
                 }
-                chat._messagesLoaded = true;
-                chat._pendingHistory = false;
                 this.saveChats();
             }
         }

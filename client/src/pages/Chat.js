@@ -71,7 +71,8 @@ const Chat = observer(() => {
 
     const handleSendMessage = async () => {
         if (message.trim()) {
-            await chatStore.sendMessage(message);
+            const sent = await chatStore.sendMessage(message);
+            if (!sent) return;
             setMessage("");
             textareaRef.current?.focus();
             // Сбрасываем высоту textarea после отправки
