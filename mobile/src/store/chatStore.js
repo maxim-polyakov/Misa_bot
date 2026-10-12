@@ -697,6 +697,39 @@ class ChatStore {
     }
   }
 
+  async _ensureChatOnServer(chatId, { timeoutMs = 15000 } = {}) {
+    if (!chatId) return false;
+    if (this._ensuredServerChats.has(chatId)) return true;
+
+    const pending = this._pendingChatCreates[chatId];
+    if (pending) {
+      try {
+        await Promise.race([
+          pending,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Создание чата слишком долго")), timeoutMs)
+          ),
+        ]);
+        this._ensuredServerChats.add(chatId);
+        return true;
+      } catch (e) {
+        console.warn("Ожидание создания чата:", e);
+      }
+    }
+
+    if (!API_URL) return true;
+    try {
+      await apiFetch("/api/chats/", {
+        method: "POST",
+        body: JSON.stringify({ id: chatId, title: "Новый чат" }),
+      });
+    } catch (e) {
+      // Чат мог уже существовать — продолжаем отправку
+    }
+    this._ensuredServerChats.add(chatId);
+    return true;
+  }
+
   async sendMessage(content) {
     if (!this.socket || !this.isConnected) {
       this.error = "Нет соединения";
@@ -712,32 +745,7 @@ class ChatStore {
     const chat = this.currentChat;
     if (!chatId || !chat) return false;
 
-    if (this._pendingChatCreates[chatId]) {
-      try {
-        await this._pendingChatCreates[chatId];
-      } catch (e) {
-        return false;
-      }
-    }
-
-    if (!this.chats.some((c) => c.id === chatId)) {
-      return false;
-    }
-
-    const isFirst = chat.messages.filter((m) => m.user !== "Misa").length === 0;
-    if (isFirst && API_URL && !this._ensuredServerChats.has(chatId)) {
-      try {
-        await apiFetch("/api/chats/", {
-          method: "POST",
-          body: JSON.stringify({ id: chatId, title: "Новый чат" }),
-        });
-        this._ensuredServerChats.add(chatId);
-      } catch (e) {
-        // Чат мог уже существовать — продолжаем отправку
-        this._ensuredServerChats.add(chatId);
-      }
-    }
-
+    // Сразу показываем сообщение в UI, не блокируя пузырь ожиданием API
     if (!this.loadingChatIds.includes(chatId)) this.loadingChatIds.push(chatId);
     this.error = null;
     chat.messages.push({
@@ -747,7 +755,17 @@ class ChatStore {
       timestamp: new Date(),
     });
     this.saveChats();
+
     try {
+      await this._ensureChatOnServer(chatId);
+      if (!this.chats.some((c) => c.id === chatId)) {
+        return false;
+      }
+      if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+        this.error = "Нет соединения";
+        this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
+        return false;
+      }
       const payload = `${this.user}|${chatId}|message|${content}`;
       this.socket.send(payload);
       return true;
