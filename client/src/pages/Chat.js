@@ -70,16 +70,19 @@ const Chat = observer(() => {
     }, [searchParams, chatStore.chats]);
 
     const handleSendMessage = async () => {
-        if (message.trim()) {
-            const sent = await chatStore.sendMessage(message);
-            if (!sent) return;
-            setMessage("");
-            textareaRef.current?.focus();
-            // Сбрасываем высоту textarea после отправки
-            if (textareaRef.current) {
-                textareaRef.current.style.height = 'auto';
-            }
+        const text = message.trim();
+        if (!text) return;
+        // Сразу очищаем поле — сообщение уже появится оптимистично в ленте
+        setMessage("");
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
         }
+        const sent = await chatStore.sendMessage(text);
+        if (!sent) {
+            setMessage(text);
+            return;
+        }
+        textareaRef.current?.focus();
     };
 
 

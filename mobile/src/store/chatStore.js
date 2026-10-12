@@ -335,7 +335,6 @@ class ChatStore {
       return emptyChat.id;
     }
 
-    const previousChatId = this.currentChatId;
     const id = generateId();
     const newChat = {
       id,
@@ -356,6 +355,8 @@ class ChatStore {
     }
 
     if (API_URL) {
+      // Создаём на сервере в фоне; локальный чат не откатываем —
+      // sendMessage при необходимости повторит ensure.
       const createPromise = (async () => {
         try {
           await apiFetch("/api/chats/", {
@@ -365,16 +366,6 @@ class ChatStore {
           this._ensuredServerChats.add(id);
         } catch (e) {
           console.warn("Ошибка создания чата:", e);
-          this.error = e?.message || "Ошибка создания чата";
-          const chat = this.chats.find((c) => c.id === id);
-          if (chat && (!chat.messages || chat.messages.length === 0)) {
-            this.chats = this.chats.filter((c) => c.id !== id);
-            if (this.currentChatId === id) {
-              this.currentChatId = previousChatId ?? this.chats[0]?.id ?? null;
-            }
-            this.saveChats();
-          }
-          throw e;
         } finally {
           delete this._pendingChatCreates[id];
         }
@@ -710,24 +701,58 @@ class ChatStore {
             setTimeout(() => reject(new Error("Создание чата слишком долго")), timeoutMs)
           ),
         ]);
-        this._ensuredServerChats.add(chatId);
-        return true;
+        if (this._ensuredServerChats.has(chatId)) return true;
       } catch (e) {
         console.warn("Ожидание создания чата:", e);
       }
     }
 
-    if (!API_URL) return true;
+    if (!API_URL) {
+      this._ensuredServerChats.add(chatId);
+      return true;
+    }
     try {
       await apiFetch("/api/chats/", {
         method: "POST",
         body: JSON.stringify({ id: chatId, title: "Новый чат" }),
       });
     } catch (e) {
-      // Чат мог уже существовать — продолжаем отправку
+      // Частый кейс: чат уже создан — продолжаем отправку
     }
     this._ensuredServerChats.add(chatId);
     return true;
+  }
+
+  _markLocalMessage(chatId, localMsgId, deliveryStatus) {
+    const chat = this.chats.find((c) => c.id === chatId);
+    const msg = chat?.messages?.find((m) => m.id === localMsgId);
+    if (msg) {
+      msg.deliveryStatus = deliveryStatus;
+      this.saveChats();
+    }
+  }
+
+  async _deliverMessage(chatId, content, localMsgId) {
+    try {
+      await this._ensureChatOnServer(chatId);
+      if (!this.chats.some((c) => c.id === chatId)) {
+        this._markLocalMessage(chatId, localMsgId, "failed");
+        this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
+        return;
+      }
+      if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+        this.error = "Нет соединения";
+        this._markLocalMessage(chatId, localMsgId, "failed");
+        this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
+        return;
+      }
+      this.socket.send(`${this.user}|${chatId}|message|${content}`);
+      this._markLocalMessage(chatId, localMsgId, "sent");
+    } catch (e) {
+      this.error = "Ошибка отправки";
+      this._markLocalMessage(chatId, localMsgId, "failed");
+      this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
+    }
   }
 
   async sendMessage(content) {
@@ -745,35 +770,21 @@ class ChatStore {
     const chat = this.currentChat;
     if (!chatId || !chat) return false;
 
-    // Сразу показываем сообщение в UI, не блокируя пузырь ожиданием API
+    // 1) сразу рисуем сообщение  2) очищаем инпут у UI  3) доставляем в фоне
     if (!this.loadingChatIds.includes(chatId)) this.loadingChatIds.push(chatId);
     this.error = null;
+    const localMsgId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     chat.messages.push({
-      id: Date.now().toString(),
+      id: localMsgId,
       content,
       user: this.user,
       timestamp: new Date(),
+      deliveryStatus: "sending",
     });
     this.saveChats();
 
-    try {
-      await this._ensureChatOnServer(chatId);
-      if (!this.chats.some((c) => c.id === chatId)) {
-        return false;
-      }
-      if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-        this.error = "Нет соединения";
-        this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
-        return false;
-      }
-      const payload = `${this.user}|${chatId}|message|${content}`;
-      this.socket.send(payload);
-      return true;
-    } catch (e) {
-      this.error = "Ошибка отправки";
-      this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
-      return false;
-    }
+    void this._deliverMessage(chatId, content, localMsgId);
+    return true;
   }
 
   disconnect() {
