@@ -469,8 +469,8 @@ function ChatScreen() {
       renderItem={renderMessage}
       style={styles.flatList}
       contentContainerStyle={styles.messagesContent}
-      // На iOS clipped subviews часто дают пустые пузыри у высоких сообщений
-      removeClippedSubviews={Platform.OS === "android"}
+      // Clipped subviews дают пустые пузыри у высоких сообщений на iOS и Android
+      removeClippedSubviews={false}
       ListFooterComponent={
         chatStore.isLoading ? (
           <View style={styles.typing}>
