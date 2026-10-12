@@ -3,6 +3,7 @@ import { Button, Card, Container, Form, Alert } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { sendForgotPasswordCode } from "../http/userApi.js";
 import { FORGOT_PASSWORD_VERIFY_ROUTE, LOGIN_ROUTE } from "../utils/consts.js";
+import { withLangQuery } from "../utils/locale.js";
 
 const ForgotPasswordRequest = () => {
     const navigate = useNavigate();
@@ -57,7 +58,7 @@ const ForgotPasswordRequest = () => {
                         required
                     />
                     <div className="d-flex justify-content-between mt-4 align-items-center">
-                        <Link to={LOGIN_ROUTE}>Назад к входу</Link>
+                        <Link to={withLangQuery(LOGIN_ROUTE)}>Назад к входу</Link>
                         <Button
                             variant="outline-success"
                             type="submit"

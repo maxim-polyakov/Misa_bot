@@ -79,9 +79,22 @@ export const LANGUAGES = [
     { code: "ig", label: "Igbo" },
 ];
 
+const isSupportedLanguage = (code) => LANGUAGES.some((l) => l.code === code);
+
+const getUrlLanguage = () => {
+    if (typeof window === "undefined") return null;
+    const code = new URLSearchParams(window.location.search).get("lang");
+    return isSupportedLanguage(code) ? code : null;
+};
+
 export const getLanguage = () => {
+    const fromUrl = getUrlLanguage();
+    if (fromUrl) {
+        localStorage.setItem(STORAGE_KEY, fromUrl);
+        return fromUrl;
+    }
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved && LANGUAGES.some((l) => l.code === saved)) return saved;
+    if (saved && isSupportedLanguage(saved)) return saved;
     const full = navigator.language || "";
     const short = full.slice(0, 2);
     const exact = LANGUAGES.find((l) => l.code === full);
@@ -103,7 +116,7 @@ function setLocaleCookie(code) {
 
 export function syncLangQueryWithSettings(code) {
     if (typeof window === "undefined" || typeof document === "undefined") return;
-    if (!LANGUAGES.some((l) => l.code === code)) return;
+    if (!isSupportedLanguage(code)) return;
     setLocaleCookie(code);
     const url = new URL(window.location.href);
     if (url.searchParams.get("lang") === code) return;
@@ -117,7 +130,7 @@ export function postUiLocaleToServer(code) {
         ? process.env.REACT_APP_API_URL
         : ""
     ).replace(/\/$/, "");
-    if (!base || !LANGUAGES.some((l) => l.code === code)) return;
+    if (!base || !isSupportedLanguage(code)) return;
     fetch(`${base}/api/ui-locale/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -129,7 +142,7 @@ export function postUiLocaleToServer(code) {
 }
 
 export const setLanguage = (code) => {
-    if (LANGUAGES.some((l) => l.code === code)) {
+    if (isSupportedLanguage(code)) {
         localStorage.setItem(STORAGE_KEY, code);
         setLocaleCookie(code);
         postUiLocaleToServer(code);
@@ -142,6 +155,14 @@ export const RTL_CODES = new Set(["ar", "he", "fa", "ur", "yi"]);
 export const getIntlLocale = (code) => {
     const map = { zh: "zh-CN", "zh-TW": "zh-TW", pt: "pt-BR", nb: "nb-NO", pa: "pa-IN" };
     return map[code] || code;
+};
+
+export const withLangQuery = (path, code = getLanguage()) => {
+    const [pathAndSearch, hash = ""] = path.split("#");
+    const [pathname, search = ""] = pathAndSearch.split("?");
+    const params = new URLSearchParams(search);
+    params.set("lang", code);
+    return `${pathname}?${params.toString()}${hash ? `#${hash}` : ""}`;
 };
 
 export const applyDocumentLocale = (code) => {

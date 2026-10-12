@@ -8,6 +8,7 @@ import { Context } from "../index.js";
 import { useStores } from "../store/rootStoreContext";
 import { useLocale } from "../contexts/LocaleContext";
 import { getApiBaseUrl } from "../utils/apiBase";
+import { withLangQuery } from "../utils/locale";
 
 const Auth = observer(() => {
     const apiUrl = getApiBaseUrl();
@@ -19,6 +20,9 @@ const Auth = observer(() => {
     const [searchParams, setSearchParams] = useSearchParams();
     const oauthHandled = useRef(false);
     const isLogin = location.pathname === "/" || location.pathname === LOGIN_ROUTE;
+    const currentLang = searchParams.get("lang") || undefined;
+    const loginRoute = withLangQuery(LOGIN_ROUTE, currentLang);
+    const chatRoute = withLangQuery(CHAT_ROUTE, currentLang);
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -60,14 +64,14 @@ const Auth = observer(() => {
                 user.setIsAuth(true);
                 chatStore.connect();
                 swapMethod();
-                navigate(CHAT_ROUTE);
+                navigate(chatRoute);
             })
             .catch((err) => {
                 oauthHandled.current = false;
                 setError(err.message || "Ошибка входа через Google");
                 setSearchParams({}, { replace: true });
             });
-    }, [searchParams, navigate, setSearchParams, user, chatStore]);
+    }, [searchParams, navigate, setSearchParams, user, chatStore, chatRoute]);
 
     const swapMethod = () => {
         setEmail("");
@@ -108,7 +112,7 @@ const Auth = observer(() => {
                     chatStore.connect();
                     setEmail("");
                     setPassword("");
-                    navigate(CHAT_ROUTE);
+                    navigate(chatRoute);
                 } catch (err) {
                     if (err.message === "email_not_verified") {
                         navigate(REGISTRATION_VERIFY_ROUTE, { state: { email, password } });
@@ -200,7 +204,7 @@ const Auth = observer(() => {
                                 <>
                                     {t("authAlreadyHaveAccount")}{" "}
                                     <Link
-                                        to={LOGIN_ROUTE}
+                                        to={loginRoute}
                                         style={{ textDecoration: "none" }}
                                         onClick={() => swapMethod()}
                                     >

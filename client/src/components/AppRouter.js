@@ -1,15 +1,17 @@
 import { Context } from "../index.js";
 import { useContext, useState, useEffect } from "react";
-import { Route, Routes, Navigate, Outlet } from "react-router-dom";
+import { Route, Routes, Navigate, Outlet, useLocation } from "react-router-dom";
 import { authRoutes, publicRoutes } from "../Routes.js";
 import { observer } from "mobx-react-lite";
 import MainLayout from "../pages/MainLayout";
 import Chat from "../pages/Chat";
 import Auth from "../pages/Auth";
 import { CHAT_ROUTE, LOGIN_ROUTE } from "../utils/consts";
+import { withLangQuery } from "../utils/locale";
 
 const AppRouter = observer(() => {
     const { user } = useContext(Context);
+    const location = useLocation();
     const [isAuth, setIsAuth] = useState(false);
     const [isLoading, setIsLoading] = useState(true); // Add loading state
 
@@ -31,6 +33,10 @@ const AppRouter = observer(() => {
         }
     }, [user?.isAuth]);
 
+    const routeWithLang = (path) => (
+        withLangQuery(path, new URLSearchParams(location.search).get("lang") || undefined)
+    );
+
     // Protected layout with loading check
     const ProtectedLayout = () => {
         if (isLoading) {
@@ -42,16 +48,16 @@ const AppRouter = observer(() => {
                 <Outlet />
             </MainLayout>
         ) : (
-            <Navigate to={LOGIN_ROUTE} replace />
+            <Navigate to={routeWithLang(LOGIN_ROUTE)} replace />
         );
     };
 
     const HomeRoute = () => (
-        <Navigate to={isAuth ? CHAT_ROUTE : LOGIN_ROUTE} replace />
+        <Navigate to={routeWithLang(isAuth ? CHAT_ROUTE : LOGIN_ROUTE)} replace />
     );
 
     const LoginRoute = () => (
-        isAuth ? <Navigate to={CHAT_ROUTE} replace /> : <Auth />
+        isAuth ? <Navigate to={routeWithLang(CHAT_ROUTE)} replace /> : <Auth />
     );
 
     // Show loading during authentication check
@@ -70,7 +76,7 @@ const AppRouter = observer(() => {
                         <Chat />
                     </MainLayout>
                 ) : (
-                    <Navigate to={LOGIN_ROUTE} replace />
+                    <Navigate to={routeWithLang(LOGIN_ROUTE)} replace />
                 )}
             />
 
@@ -97,7 +103,7 @@ const AppRouter = observer(() => {
             {/* Fallback routes */}
             <Route
                 path="*"
-                element={<Navigate to={LOGIN_ROUTE} replace />}
+                element={<Navigate to={routeWithLang(LOGIN_ROUTE)} replace />}
             />
         </Routes>
     );

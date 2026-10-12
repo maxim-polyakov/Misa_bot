@@ -6,6 +6,7 @@ import { observer } from "mobx-react-lite";
 import { Context } from "../index.js";
 import { useStores } from "../store/rootStoreContext";
 import { CHAT_ROUTE, REGISTRATION_ROUTE } from "../utils/consts.js";
+import { withLangQuery } from "../utils/locale.js";
 
 const VerifyCode = observer(() => {
     const { user } = useContext(Context);
@@ -35,7 +36,7 @@ const VerifyCode = observer(() => {
             user.setUser(data);
             user.setIsAuth(true);
             chatStore.connect();
-            navigate(CHAT_ROUTE);
+            navigate(withLangQuery(CHAT_ROUTE));
         } catch (err) {
             setError(err.message || "Неверный или истёкший код");
         }
