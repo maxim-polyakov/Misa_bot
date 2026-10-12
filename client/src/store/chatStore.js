@@ -662,8 +662,11 @@ class ChatStore {
 
     // Новый чат: сразу активируем локально, создание на сервере идёт в фоне
     async newChat() {
-        // Если есть пустой чат — переключаемся на него, не создаём новый (чтобы не флудить)
-        const emptyChat = this.chats.find(c => !c.messages || c.messages.length === 0);
+        // Переиспользуем только чат с уже загруженной пустой историей.
+        // Иначе messages=[] значит «ещё не подтянули», и открывается старый чат.
+        const emptyChat = this.chats.find(
+            (c) => c._messagesLoaded && (!c.messages || c.messages.length === 0)
+        );
         if (emptyChat) {
             this.switchChat(emptyChat.id);
             return emptyChat.id;

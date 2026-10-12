@@ -325,7 +325,11 @@ class ChatStore {
   }
 
   async newChat() {
-    const emptyChat = this.chats.find((c) => !c.messages || c.messages.length === 0);
+    // Только чаты с уже загруженной историей. Иначе «пустой» массив
+    // означает «ещё не подтянули», и пользователь попадает в старый чат.
+    const emptyChat = this.chats.find(
+      (c) => c._messagesLoaded && (!c.messages || c.messages.length === 0)
+    );
     if (emptyChat) {
       this.switchChat(emptyChat.id);
       return emptyChat.id;
