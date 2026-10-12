@@ -70,54 +70,48 @@ const parseMessageContent = (content) => {
   return parts.length ? parts : [{ type: "text", content }];
 };
 
-// iOS не рисует слишком длинный Text в одном узле (пустой пузырь).
-// Режем только на узлы рендера — join(chunks) === исходный текст целиком, ничего не обрезаем.
-const TEXT_CHUNK_SIZE = 900;
+// React Native/iOS может не отрисовать один очень высокий Text. Разбиваем
+// сообщение на самостоятельные нативные узлы по абзацам, но сохраняем каждый
+// символ: blocks.join("") всегда равен исходному тексту.
+const MAX_NATIVE_TEXT_LENGTH = 900;
 
-const chunkTextForRender = (text) => {
-  if (!text) return [""];
-  if (text.length <= TEXT_CHUNK_SIZE) return [text];
+const splitLongBlock = (block) => {
+  if (block.length <= MAX_NATIVE_TEXT_LENGTH) return [block];
   const chunks = [];
   let start = 0;
-  while (start < text.length) {
-    if (start + TEXT_CHUNK_SIZE >= text.length) {
-      chunks.push(text.slice(start));
+  while (start < block.length) {
+    if (start + MAX_NATIVE_TEXT_LENGTH >= block.length) {
+      chunks.push(block.slice(start));
       break;
     }
-    const hardEnd = start + TEXT_CHUNK_SIZE;
-    let end = text.lastIndexOf("\n", hardEnd - 1);
-    if (end <= start + TEXT_CHUNK_SIZE * 0.4) {
-      end = text.lastIndexOf(" ", hardEnd - 1);
-    }
-    if (end <= start + TEXT_CHUNK_SIZE * 0.4) {
+    const hardEnd = start + MAX_NATIVE_TEXT_LENGTH;
+    let end = block.lastIndexOf("\n", hardEnd - 1);
+    if (end <= start) end = block.lastIndexOf(" ", hardEnd - 1);
+    if (end <= start) {
       end = hardEnd;
     } else {
-      end += 1; // включаем перевод строки / пробел в этот кусок
+      end += 1; // разделитель остаётся в тексте, символы не теряются
     }
-    chunks.push(text.slice(start, end));
+    chunks.push(block.slice(start, end));
     start = end;
   }
   return chunks;
 };
 
-const renderFullMessageText = (text, style, keyPrefix) => {
-  const chunks = chunkTextForRender(text);
-  if (chunks.length === 1) {
-    return (
-      <Text style={style} selectable>
-        {chunks[0]}
-      </Text>
-    );
-  }
-  // Вложенные Text: полное сообщение одним блоком, iOS рисует каждый фрагмент отдельно
-  return (
-    <Text style={style} selectable>
-      {chunks.map((chunk, idx) => (
-        <Text key={`${keyPrefix}-${idx}`}>{chunk}</Text>
-      ))}
-    </Text>
-  );
+const splitTextIntoRenderBlocks = (text) => {
+  if (!text) return [""];
+  // Пустые строки остаются в предыдущем абзаце, поэтому внешний вид и переносы
+  // полностью совпадают с исходным сообщением.
+  const paragraphs = text.match(/[\s\S]*?(?:\n{2,}|$)/g)?.filter(Boolean) || [text];
+  return paragraphs.flatMap(splitLongBlock);
 };
+
+const renderFullMessageText = (text, style, keyPrefix) =>
+  splitTextIntoRenderBlocks(text).map((block, idx) => (
+    <Text key={`${keyPrefix}-${idx}`} style={style} selectable>
+      {block}
+    </Text>
+  ));
 
 function ChatScreen() {
   const { chatStore } = useStores();
@@ -1052,8 +1046,11 @@ const createStyles = (colors) =>
   msgTextGroup: { width: "100%" },
   msgText: {
     fontSize: 16,
+    lineHeight: 22,
     color: colors.textPrimary,
     flexShrink: 1,
+    margin: 0,
+    padding: 0,
   },
   msgTextUser: { color: "#fff" },
   codeBlock: {
