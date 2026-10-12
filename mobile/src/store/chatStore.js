@@ -224,26 +224,31 @@ class ChatStore {
           const chatIds = new Set(chatsData.map((c) => c.id));
           this.pinnedChatIds = this.pinnedChatIds.filter((id) => chatIds.has(id));
           this._savePinnedChatIds();
+          // Берём актуальное in-memory состояние ПОСЛЕ await — иначе затрём
+          // оптимистично отправленные сообщения снимком с начала loadChats.
+          const latestById = new Map(this.chats.map((c) => [c.id, c]));
           this.chats = chatsData.map((c) => {
-            const prev = prevById.get(c.id);
+            const latest = latestById.get(c.id) || prevById.get(c.id);
             const hasCached =
-              prev && Array.isArray(prev.messages) && prev.messages.length > 0;
+              latest && Array.isArray(latest.messages) && latest.messages.length > 0;
             return {
               id: c.id,
-              title: c.title || "Новый чат",
-              messages: hasCached ? prev.messages : [],
-              createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
-              _messagesLoaded: hasCached || !!(prev && prev._messagesLoaded),
+              title: (latest?.title && latest.title !== "Новый чат")
+                ? latest.title
+                : (c.title || "Новый чат"),
+              messages: hasCached ? latest.messages : [],
+              createdAt: c.createdAt ? new Date(c.createdAt) : (latest?.createdAt || new Date()),
+              _messagesLoaded: hasCached || !!(latest && latest._messagesLoaded),
               _pendingHistory: false,
             };
           });
           // Не теряем локально созданные чаты, которых ещё нет в ответе API
-          for (const [id, prev] of prevById.entries()) {
-            if (chatIds.has(id) || !prev) continue;
-            if (this._pendingChatCreates[id] || prev.messages?.length > 0 || id === prevCurrentId) {
+          for (const [id, latest] of latestById.entries()) {
+            if (chatIds.has(id) || !latest) continue;
+            if (this._pendingChatCreates[id] || latest.messages?.length > 0 || id === prevCurrentId) {
               this.chats.unshift({
-                ...prev,
-                messages: [...(prev.messages || [])],
+                ...latest,
+                messages: [...(latest.messages || [])],
                 _messagesLoaded: true,
                 _pendingHistory: false,
               });
