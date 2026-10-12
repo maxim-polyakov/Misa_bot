@@ -30,6 +30,8 @@ class ChatStore {
     reconnectDelay = 1000;
     user = null;
     isAuth = false;
+    _pendingChatCreates = {};
+    _ensuredServerChats = new Set();
 
     constructor(rootStore) {
         this.rootStore = rootStore;
@@ -634,26 +636,17 @@ class ChatStore {
         }
     };
 
-    // Новый чат (создаёт в БД через API)
+    // Новый чат: сразу активируем локально, создание на сервере идёт в фоне
     async newChat() {
         // Если есть пустой чат — переключаемся на него, не создаём новый (чтобы не флудить)
         const emptyChat = this.chats.find(c => !c.messages || c.messages.length === 0);
         if (emptyChat) {
             this.switchChat(emptyChat.id);
-            return;
+            return emptyChat.id;
         }
-        let id = generateId();
-        if (API_URL) {
-            try {
-                const res = await apiFetch('/api/chats/', {
-                    method: 'POST',
-                    body: JSON.stringify({ id, title: 'Новый чат' })
-                });
-                if (res?.id) id = res.id;
-            } catch (e) {
-                console.warn("Ошибка создания чата на сервере:", e);
-            }
-        }
+
+        const previousChatId = this.currentChatId;
+        const id = generateId();
         const newChat = {
             id,
             title: "Новый чат",
@@ -664,9 +657,42 @@ class ChatStore {
         this.chats.unshift(newChat);
         this.currentChatId = id;
         this.saveChats();
-        if (this.socket && this.isConnected && this.user) {
-            this.socket.send(this.user + '|message|__NEW_CHAT__');
+
+        if (this.socket && this.isConnected) {
+            this.socket.send(JSON.stringify({ type: 'join_chat', chat_id: id }));
+            if (this.user) {
+                this.socket.send(this.user + '|message|__NEW_CHAT__');
+            }
         }
+
+        if (API_URL) {
+            const createPromise = (async () => {
+                try {
+                    await apiFetch('/api/chats/', {
+                        method: 'POST',
+                        body: JSON.stringify({ id, title: 'Новый чат' })
+                    });
+                    this._ensuredServerChats.add(id);
+                } catch (e) {
+                    console.warn("Ошибка создания чата на сервере:", e);
+                    this.error = e?.message || "Ошибка создания чата";
+                    const chat = this.chats.find(c => c.id === id);
+                    if (chat && (!chat.messages || chat.messages.length === 0)) {
+                        this.chats = this.chats.filter(c => c.id !== id);
+                        if (this.currentChatId === id) {
+                            this.currentChatId = previousChatId ?? this.chats[0]?.id ?? null;
+                        }
+                        this.saveChats();
+                    }
+                    throw e;
+                } finally {
+                    delete this._pendingChatCreates[id];
+                }
+            })();
+            this._pendingChatCreates[id] = createPromise;
+        }
+
+        return id;
     };
 
     // Очистка истории текущего чата (удаляет сообщения на бэкенде)
@@ -977,24 +1003,38 @@ class ChatStore {
         }
         if (!content.trim()) return false;
 
-        const chatId = this.currentChatId;
-        if (!chatId) {
-            this.newChat();
-            return this.sendMessage(content);
+        if (!this.currentChatId) {
+            await this.newChat();
         }
 
+        const chatId = this.currentChatId;
         const chat = this.currentChat;
-        if (!chat) return false;
+        if (!chatId || !chat) return false;
+
+        if (this._pendingChatCreates[chatId]) {
+            try {
+                await this._pendingChatCreates[chatId];
+            } catch (e) {
+                return false;
+            }
+        }
+
+        if (!this.chats.some(c => c.id === chatId)) {
+            return false;
+        }
 
         const isFirstUserMsg = chat.messages.filter(m => m.user !== 'Misa').length === 0;
-        if (isFirstUserMsg && API_URL) {
+        if (isFirstUserMsg && API_URL && !this._ensuredServerChats.has(chatId)) {
             try {
                 await apiFetch('/api/chats/', {
                     method: 'POST',
                     body: JSON.stringify({ id: chatId, title: 'Новый чат' })
                 });
+                this._ensuredServerChats.add(chatId);
             } catch (e) {
                 console.warn("Ошибка создания чата на сервере:", e);
+                // Чат мог уже существовать — продолжаем отправку
+                this._ensuredServerChats.add(chatId);
             }
         }
 
@@ -1011,9 +1051,7 @@ class ChatStore {
         this.saveChats();
 
         try {
-            const payload = this.currentChatId
-                ? `${this.user}|${this.currentChatId}|message|${content}`
-                : `${this.user}|message|${content}`;
+            const payload = `${this.user}|${chatId}|message|${content}`;
             this.socket.send(payload);
             return true;
         } catch (error) {
