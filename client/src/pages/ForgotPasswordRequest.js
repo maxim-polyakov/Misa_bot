@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Button, Card, Container, Form, Alert } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { sendForgotPasswordCode } from "../http/userApi.js";
 import { FORGOT_PASSWORD_VERIFY_ROUTE, LOGIN_ROUTE } from "../utils/consts.js";
 import { withLangQuery } from "../utils/locale.js";
 
 const ForgotPasswordRequest = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const currentLang = searchParams.get("lang") || undefined;
+    const loginRoute = withLangQuery(LOGIN_ROUTE, currentLang);
     const [email, setEmail] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -58,7 +61,7 @@ const ForgotPasswordRequest = () => {
                         required
                     />
                     <div className="d-flex justify-content-between mt-4 align-items-center">
-                        <Link to={withLangQuery(LOGIN_ROUTE)}>Назад к входу</Link>
+                        <Link to={loginRoute}>Назад к входу</Link>
                         <Button
                             variant="outline-success"
                             type="submit"

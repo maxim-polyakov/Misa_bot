@@ -4,7 +4,7 @@ from typing import Any
 
 from django.conf import settings
 from django.http import HttpResponse
-from dmr import Body, Controller, ResponseSpec, validate
+from dmr import Body, Controller, CookieSpec, ResponseSpec, validate
 from dmr.plugins.msgspec import MsgspecSerializer
 
 from Core_layer.Controller_package.Classes import Controller as CoreController
@@ -42,6 +42,14 @@ _ERROR_ENVELOPE_RESPONSES = (
     ResponseSpec(ApiEnvelope, status_code=HTTPStatus.NOT_FOUND),
     ResponseSpec(ApiEnvelope, status_code=HTTPStatus.CONFLICT),
     ResponseSpec(ApiEnvelope, status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
+)
+_UI_LOCALE_COOKIE_DOMAIN = getattr(settings, "UI_LOCALE_COOKIE_DOMAIN", None) or None
+_UI_LOCALE_COOKIE_SECURE = getattr(settings, "UI_LOCALE_COOKIE_SECURE", True)
+_UI_LOCALE_COOKIE_SPEC = CookieSpec(
+    max_age=31536000,
+    domain=_UI_LOCALE_COOKIE_DOMAIN,
+    secure=_UI_LOCALE_COOKIE_SECURE,
+    samesite="lax",
 )
 
 
@@ -193,7 +201,11 @@ class ChatDeleteController(_BaseController):
 
 class UiLocaleController(Controller[MsgspecSerializer]):
     @validate(
-        ResponseSpec(dict[str, Any], status_code=HTTPStatus.OK),
+        ResponseSpec(
+            dict[str, Any],
+            status_code=HTTPStatus.OK,
+            cookies={"misa_locale": _UI_LOCALE_COOKIE_SPEC},
+        ),
         ResponseSpec(dict[str, Any], status_code=HTTPStatus.BAD_REQUEST),
     )
     def post(self, parsed_body: Body[UiLocaleBody]) -> HttpResponse:
@@ -206,17 +218,14 @@ class UiLocaleController(Controller[MsgspecSerializer]):
             )
 
         response = self.to_response({"ok": True, "locale": code}, status_code=HTTPStatus.OK)
-        domain = getattr(settings, "UI_LOCALE_COOKIE_DOMAIN", None) or None
-        if isinstance(domain, str):
-            domain = domain.strip() or None
         response.set_cookie(
             "misa_locale",
             code,
-            max_age=31536000,
-            path="/",
-            samesite="Lax",
-            domain=domain,
-            secure=self.request.is_secure(),
+            max_age=_UI_LOCALE_COOKIE_SPEC.max_age,
+            path=_UI_LOCALE_COOKIE_SPEC.path,
+            samesite=_UI_LOCALE_COOKIE_SPEC.samesite,
+            domain=_UI_LOCALE_COOKIE_SPEC.domain,
+            secure=_UI_LOCALE_COOKIE_SPEC.secure,
         )
         return response
 

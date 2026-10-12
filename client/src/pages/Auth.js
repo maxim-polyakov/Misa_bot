@@ -22,6 +22,8 @@ const Auth = observer(() => {
     const isLogin = location.pathname === "/" || location.pathname === LOGIN_ROUTE;
     const currentLang = searchParams.get("lang") || undefined;
     const loginRoute = withLangQuery(LOGIN_ROUTE, currentLang);
+    const registrationRoute = withLangQuery(REGISTRATION_ROUTE, currentLang);
+    const forgotPasswordRoute = withLangQuery(FORGOT_PASSWORD_ROUTE, currentLang);
     const chatRoute = withLangQuery(CHAT_ROUTE, currentLang);
 
     const [email, setEmail] = useState("");
@@ -182,7 +184,7 @@ const Auth = observer(() => {
                     </div>
                     {isLogin && (
                         <div className="mt-2 text-end">
-                            <Link to={FORGOT_PASSWORD_ROUTE} style={{ textDecoration: "none", fontSize: "0.9rem" }}>
+                            <Link to={forgotPasswordRoute} style={{ textDecoration: "none", fontSize: "0.9rem" }}>
                                 {t("authForgotPasswordLink")}
                             </Link>
                         </div>
@@ -193,7 +195,7 @@ const Auth = observer(() => {
                                 <>
                                     {t("authNoAccount")}{" "}
                                     <Link
-                                        to={REGISTRATION_ROUTE}
+                                        to={registrationRoute}
                                         style={{ textDecoration: "none" }}
                                         onClick={() => swapMethod()}
                                     >

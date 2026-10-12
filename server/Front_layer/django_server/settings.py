@@ -47,6 +47,10 @@ SPA_INDEX_HTML_PATH = (os.getenv('SPA_INDEX_HTML_PATH') or '').strip()
 
 # Cookie misa_locale с API: общий домен для веб и API (например .baxic.ru), иначе cookie только на хосте API.
 UI_LOCALE_COOKIE_DOMAIN = (os.getenv('UI_LOCALE_COOKIE_DOMAIN') or '').strip()
+UI_LOCALE_COOKIE_SECURE = os.getenv(
+    'UI_LOCALE_COOKIE_SECURE',
+    'true',
+).lower() in ('true', '1', 'yes')
 
 # SECRET_KEY обязателен для Django (сессии, CSRF, шаблоны)
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-in-production')
