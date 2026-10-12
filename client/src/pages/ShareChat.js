@@ -5,6 +5,7 @@ import { useLocale } from "../contexts/LocaleContext";
 import { getIntlLocale } from "../utils/locale.js";
 import { snippetFromShareMessages } from "../utils/shareLink";
 import { getApiBaseUrl } from "../utils/apiBase";
+import { LOGIN_ROUTE } from "../utils/consts";
 import "./Styles.css";
 
 /**
@@ -167,7 +168,7 @@ const ShareChat = () => {
         return (
             <div className="share-chat-page">
                 <header className="share-chat-topbar">
-                    <Link to="/" className="share-chat-logo">
+                    <Link to={LOGIN_ROUTE} className="share-chat-logo">
                         <img src="/favicon.png" alt="Misa" />
                         <span>Misa AI</span>
                     </Link>
@@ -184,14 +185,14 @@ const ShareChat = () => {
         return (
             <div className="share-chat-page">
                 <header className="share-chat-topbar">
-                    <Link to="/" className="share-chat-logo">
+                    <Link to={LOGIN_ROUTE} className="share-chat-logo">
                         <img src="/favicon.png" alt="Misa" />
                         <span>Misa AI</span>
                     </Link>
                 </header>
                 <div className="share-chat-error">
                     <p>{error || t('shareChatNotFound')}</p>
-                    <Link to="/" className="share-chat-link">{t('shareChatLogin')}</Link>
+                    <Link to={LOGIN_ROUTE} className="share-chat-link">{t('shareChatLogin')}</Link>
                 </div>
             </div>
         );
@@ -200,7 +201,7 @@ const ShareChat = () => {
     return (
         <div className="share-chat-page">
             <header className="share-chat-topbar">
-                <Link to="/" className="share-chat-logo">
+                <Link to={LOGIN_ROUTE} className="share-chat-logo">
                     <img src="/favicon.png" alt="Misa" />
                     <span>Misa AI</span>
                 </Link>
@@ -231,7 +232,7 @@ const ShareChat = () => {
             </div>
 
             <footer className="share-chat-footer">
-                <Link to="/" className="share-chat-cta">
+                <Link to={LOGIN_ROUTE} className="share-chat-cta">
                     {t('shareChatCta')}
                 </Link>
             </footer>

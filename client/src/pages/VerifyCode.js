@@ -5,7 +5,7 @@ import { verifyRegistrationCode, sendRegistrationCode } from "../http/userApi.js
 import { observer } from "mobx-react-lite";
 import { Context } from "../index.js";
 import { useStores } from "../store/rootStoreContext";
-import { REGISTRATION_ROUTE } from "../utils/consts.js";
+import { CHAT_ROUTE, REGISTRATION_ROUTE } from "../utils/consts.js";
 
 const VerifyCode = observer(() => {
     const { user } = useContext(Context);
@@ -35,7 +35,7 @@ const VerifyCode = observer(() => {
             user.setUser(data);
             user.setIsAuth(true);
             chatStore.connect();
-            navigate("/");
+            navigate(CHAT_ROUTE);
         } catch (err) {
             setError(err.message || "Неверный или истёкший код");
         }

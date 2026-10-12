@@ -42,7 +42,7 @@ const AppRouter = observer(() => {
                 <Outlet />
             </MainLayout>
         ) : (
-            <Navigate to="/" replace />
+            <Navigate to={LOGIN_ROUTE} replace />
         );
     };
 
@@ -99,7 +99,7 @@ const AppRouter = observer(() => {
             {/* Fallback routes */}
             <Route
                 path="*"
-                element={<Navigate to="/" replace />}
+                element={<Navigate to={LOGIN_ROUTE} replace />}
             />
         </Routes>
     );

@@ -5,7 +5,7 @@ import { verifyForgotPasswordCode, sendForgotPasswordCode } from "../http/userAp
 import { useStores } from "../store/rootStoreContext";
 import { Context } from "../index.js";
 import { observer } from "mobx-react-lite";
-import { FORGOT_PASSWORD_ROUTE } from "../utils/consts.js";
+import { CHAT_ROUTE, FORGOT_PASSWORD_ROUTE } from "../utils/consts.js";
 
 const ForgotPasswordVerify = observer(() => {
     const { user } = useContext(Context);
@@ -46,7 +46,7 @@ const ForgotPasswordVerify = observer(() => {
             user.setUser(data);
             user.setIsAuth(true);
             chatStore.connect();
-            navigate("/");
+            navigate(CHAT_ROUTE);
         } catch (err) {
             setError(err.message || "Неверный или истёкший код");
         } finally {
