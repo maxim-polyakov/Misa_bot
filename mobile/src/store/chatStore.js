@@ -46,6 +46,50 @@ class ChatStore {
     return this.loadingChatIds.includes(chatId);
   }
 
+  _typingStorageKey() {
+    return `misa_typing_chat_ids_${this._userId || "anon"}`;
+  }
+
+  async _persistTypingState() {
+    try {
+      await storage.setItem(
+        this._typingStorageKey(),
+        JSON.stringify({ ids: this.loadingChatIds, savedAt: Date.now() })
+      );
+    } catch (e) {
+      console.warn("persist typing state:", e);
+    }
+  }
+
+  async _restoreTypingState() {
+    try {
+      const raw = await storage.getItem(this._typingStorageKey());
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      const ids = Array.isArray(saved) ? saved : saved?.ids;
+      const savedAt = Array.isArray(saved) ? Date.now() : Number(saved?.savedAt || 0);
+      if (Array.isArray(ids) && Date.now() - savedAt < 10 * 60 * 1000) {
+        this.loadingChatIds = [...new Set(ids.filter(Boolean))];
+      } else {
+        await storage.removeItem(this._typingStorageKey());
+      }
+    } catch (e) {
+      console.warn("restore typing state:", e);
+    }
+  }
+
+  _setChatTyping(chatId, isTyping) {
+    if (!chatId) return;
+    if (isTyping) {
+      if (!this.loadingChatIds.includes(chatId)) {
+        this.loadingChatIds = [...this.loadingChatIds, chatId];
+      }
+    } else {
+      this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
+    }
+    void this._persistTypingState();
+  }
+
   getChatTitle(chat) {
     if (chat?.title && chat.title !== "Новый чат") return chat.title;
     const firstUser = chat?.messages?.find((m) => m.user !== "Misa");
@@ -63,6 +107,7 @@ class ChatStore {
     this.isAuth = true;
     storage.setItem("currentUser", email);
     if (id) storage.setItem("currentUserId", String(id));
+    void this._restoreTypingState();
     this.loadChats();
   }
 
@@ -76,6 +121,7 @@ class ChatStore {
 
   logout() {
     this.disconnect();
+    void storage.removeItem(this._typingStorageKey());
     this.user = null;
     this._userId = null;
     this.isAuth = false;
@@ -490,9 +536,9 @@ class ChatStore {
       if (chat) {
         chat.messages.push(msg);
         if (data.user === "Misa") {
-          this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
+          this._setChatTyping(chatId, false);
         } else {
-          if (!this.loadingChatIds.includes(chatId)) this.loadingChatIds.push(chatId);
+          this._setChatTyping(chatId, true);
         }
         this.saveChats();
       }
@@ -501,6 +547,11 @@ class ChatStore {
       if (chat) {
         this._applyServerMessages(chat, data.messages);
         if (data.title != null && data.title !== "") chat.title = String(data.title).trim();
+        if (data.isTyping === true) {
+          this._setChatTyping(data.chat_id, true);
+        } else if (data.isTyping === false) {
+          this._setChatTyping(data.chat_id, false);
+        }
         this.saveChats();
       }
     } else if (data.type === "connection_established") {
@@ -509,6 +560,8 @@ class ChatStore {
       }
     } else if (data.type === "ping") {
       this.socket?.readyState === WebSocket.OPEN && this.socket.send(JSON.stringify({ type: "pong" }));
+    } else if (data.type === "typing") {
+      this._setChatTyping(data.chat_id, data.isTyping === true);
     } else if (data.type === "chat_title") {
       const chat = this.chats.find((c) => c.id === data.chat_id);
       if (chat && data.title) {
@@ -521,7 +574,7 @@ class ChatStore {
       if (msg) {
         msg.content = data.message || msg.content;
         msg.isImage = data.isImage ?? msg.isImage;
-        this.loadingChatIds = this.loadingChatIds.filter((id) => id !== data.chat_id);
+        this._setChatTyping(data.chat_id, false);
         this.saveChats();
       }
     }
@@ -714,9 +767,7 @@ class ChatStore {
     if (!this.isConnected || !this.socket || !this.currentChatId) return false;
     const msg = this.currentChat?.messages?.find((m) => m.id === msgId);
     if (!msg || msg.user !== "Misa") return false;
-    if (!this.loadingChatIds.includes(this.currentChatId)) {
-      this.loadingChatIds = [...this.loadingChatIds, this.currentChatId];
-    }
+    this._setChatTyping(this.currentChatId, true);
     try {
       this.socket.send(
         JSON.stringify({
@@ -728,7 +779,7 @@ class ChatStore {
       );
       return true;
     } catch (e) {
-      this.loadingChatIds = this.loadingChatIds.filter((id) => id !== this.currentChatId);
+      this._setChatTyping(this.currentChatId, false);
       return false;
     }
   }
@@ -782,13 +833,13 @@ class ChatStore {
       await this._ensureChatOnServer(chatId);
       if (!this.chats.some((c) => c.id === chatId)) {
         this._markLocalMessage(chatId, localMsgId, "failed");
-        this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
+        this._setChatTyping(chatId, false);
         return;
       }
       if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
         this.error = "Нет соединения";
         this._markLocalMessage(chatId, localMsgId, "failed");
-        this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
+        this._setChatTyping(chatId, false);
         return;
       }
       this.socket.send(`${this.user}|${chatId}|message|${content}`);
@@ -796,7 +847,7 @@ class ChatStore {
     } catch (e) {
       this.error = "Ошибка отправки";
       this._markLocalMessage(chatId, localMsgId, "failed");
-      this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
+      this._setChatTyping(chatId, false);
     }
   }
 
@@ -816,7 +867,7 @@ class ChatStore {
     if (!chatId || !chat) return false;
 
     // 1) сразу рисуем сообщение  2) очищаем инпут у UI  3) доставляем в фоне
-    if (!this.loadingChatIds.includes(chatId)) this.loadingChatIds.push(chatId);
+    this._setChatTyping(chatId, true);
     this.error = null;
     const localMsgId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     chat.messages.push({
