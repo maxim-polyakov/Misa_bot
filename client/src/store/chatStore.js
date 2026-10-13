@@ -39,6 +39,8 @@ class ChatStore {
         this.loadUserFromStorage();
         // Только быстрый preview из localStorage; список с сервера — после checkAuth (setUser / MainLayout)
         this._hydrateChatsFromCacheIfEmpty();
+        // Плашка «печатает» сразу после F5, не дожидаясь WebSocket/history
+        this._restoreTypingSession();
         if (typeof document !== 'undefined') {
             this._setupVisibilityReconnect();
         }
@@ -88,6 +90,33 @@ class ChatStore {
         return this.loadingChatIds.includes(chatId);
     }
 
+    _typingSessionKey() {
+        const uid = this.getCurrentUserId() || 'anon';
+        return `misa_typing_chat_ids_${uid}`;
+    }
+
+    _persistTypingSession() {
+        if (typeof sessionStorage === 'undefined') return;
+        try {
+            sessionStorage.setItem(this._typingSessionKey(), JSON.stringify(this.loadingChatIds));
+        } catch (_) { /* ignore */ }
+    }
+
+    _restoreTypingSession() {
+        if (typeof sessionStorage === 'undefined') return;
+        try {
+            const raw = sessionStorage.getItem(this._typingSessionKey());
+            const ids = raw ? JSON.parse(raw) : [];
+            if (Array.isArray(ids) && ids.length > 0) {
+                this.loadingChatIds = [...new Set(ids.filter(Boolean))];
+            }
+        } catch (_) { /* ignore */ }
+        // Параллельно по кэшу сообщений (если session пустой, но последнее — от пользователя)
+        if (this.currentChatId) {
+            this._restoreTypingAfterHistory(this.currentChatId, undefined);
+        }
+    }
+
     _setChatTyping(chatId, isTyping) {
         if (!chatId) return;
         if (isTyping) {
@@ -97,6 +126,7 @@ class ChatStore {
         } else {
             this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
         }
+        this._persistTypingSession();
     }
 
     /** Восстановить плашку «Миса печатает» после reload/history */
@@ -109,15 +139,24 @@ class ChatStore {
         const chat = this.chats.find((c) => c.id === chatId);
         const msgs = chat?.messages || [];
         if (msgs.length === 0) {
-            this._setChatTyping(chatId, false);
+            // Не сбрасываем session-restore, пока нет сообщений (ещё грузится)
+            if (serverIsTyping === false) this._setChatTyping(chatId, false);
             return;
         }
         const last = msgs[msgs.length - 1];
+        if (last && last.user === 'Misa') {
+            this._setChatTyping(chatId, false);
+            return;
+        }
         const lastIsUser = last && last.user !== 'Misa';
         const lastTs = this._getMessageTimestamp(last);
-        // Fallback: последнее от пользователя и свежее — вероятно генерация ещё идёт (или только что упала)
+        // Fallback: последнее от пользователя и свежее — вероятно генерация ещё идёт
         const recent = lastTs > 0 && (Date.now() - lastTs) < 10 * 60 * 1000;
-        this._setChatTyping(chatId, !!(lastIsUser && recent));
+        if (lastIsUser && recent) {
+            this._setChatTyping(chatId, true);
+        } else if (serverIsTyping === false) {
+            this._setChatTyping(chatId, false);
+        }
     }
 
     // Режим шаринга — выделение сообщений
@@ -301,6 +340,7 @@ class ChatStore {
         this.shareModeForChatId = null;
         this.selectedMessageIds = [];
         this.loadingChatIds = [];
+        this._persistTypingSession();
         this.error = null;
         this._loadChatsInProgress = false;
     }
@@ -987,6 +1027,25 @@ class ChatStore {
         }
     };
 
+    _findDuplicateMessageIndex(msgs, msg) {
+        if (!msgs?.length || !msg) return -1;
+        const byId = msgs.findIndex((m) => String(m.id) === String(msg.id));
+        if (byId >= 0) return byId;
+        // history уже содержит то же сообщение, а WS пришёл без/с другим id (типично после F5)
+        for (let i = msgs.length - 1; i >= Math.max(0, msgs.length - 12); i -= 1) {
+            const m = msgs[i];
+            if (m.user === msg.user && m.content === msg.content) return i;
+            if (
+                m.user === msg.user &&
+                m.content === msg.content &&
+                (m.deliveryStatus === 'sending' || m.deliveryStatus === 'sent')
+            ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     handleIncomingMessage(data) {
         if (data.type === 'chat_message') {
             const msg = {
@@ -1001,30 +1060,26 @@ class ChatStore {
             const chat = this.chats.find(c => c.id === chatId);
             if (chat) {
                 const msgs = chat.messages || [];
-                const already = msgs.some((m) =>
-                    String(m.id) === String(msg.id) ||
-                    (m.user === msg.user && m.content === msg.content &&
-                        (m.deliveryStatus === 'sending' || m.deliveryStatus === 'sent'))
-                );
-                if (!already) {
+                const dupIdx = this._findDuplicateMessageIndex(msgs, msg);
+                if (dupIdx < 0) {
                     chat.messages = [...msgs, msg];
                 } else {
-                    chat.messages = msgs.map((m) => {
-                        if (
-                            String(m.id) === String(msg.id) ||
-                            (m.user === msg.user && m.content === msg.content &&
-                                (m.deliveryStatus === 'sending' || m.deliveryStatus === 'sent'))
-                        ) {
-                            return { ...m, ...msg, deliveryStatus: 'sent' };
-                        }
-                        return m;
-                    });
+                    const prev = msgs[dupIdx];
+                    const next = [...msgs];
+                    next[dupIdx] = {
+                        ...prev,
+                        ...msg,
+                        id: data.message_id ? String(data.message_id) : prev.id,
+                        timestamp: prev.timestamp || msg.timestamp,
+                        deliveryStatus: 'sent',
+                    };
+                    chat.messages = next;
                 }
                 this._bumpChatInList(chatId);
                 if (data.user === "Misa") {
-                    this.loadingChatIds = this.loadingChatIds.filter(id => id !== chatId);
+                    this._setChatTyping(chatId, false);
                 } else {
-                    if (!this.loadingChatIds.includes(chatId)) this.loadingChatIds.push(chatId);
+                    this._setChatTyping(chatId, true);
                 }
                 this.saveChats();
             }

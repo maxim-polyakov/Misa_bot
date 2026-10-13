@@ -81,16 +81,18 @@ class ChatService:
 
     @classmethod
     def save_message(cls, chat_id, user, content, is_image=False):
-        """Сохранить сообщение в БД."""
+        """Сохранить сообщение в БД. Возвращает id или None."""
         try:
             if user != 'Misa' and not cls._ensure_chat_exists(chat_id, user):
-                return
+                return None
             DB_Communication.DB_Communication().execute_update(
                 'INSERT INTO chat.chat_messages (chat_id, "user", content, is_image) VALUES (%s, %s, %s, %s)',
                 (chat_id, user, content, is_image)
             )
+            return cls.get_last_message_id(chat_id)
         except Exception as e:
             logging.error(f"ChatService.save_message error: {str(e)}")
+            return None
 
     @classmethod
     def get_last_message_id(cls, chat_id):

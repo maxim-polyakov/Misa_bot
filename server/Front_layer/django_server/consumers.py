@@ -188,15 +188,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """Обрабатывает сообщение и отправляет ответ — позволяет параллельную обработку разных чатов."""
         try:
             response = await self.process_message(text_data)
+            if response is None:
+                return
             outarr = self._clean_command_response(response)
-            for el in outarr:
-                if self.is_file_path(el):
-                    el = self.convert_file_path_to_url(el)
-                is_img = el.startswith('http') or el.startswith('/images/')
-                msg_data = {'type': 'chat_message', 'message': el, 'user': 'Misa', 'isImage': is_img}
-                if chat_id:
-                    msg_data['chat_id'] = chat_id
-                await self._safe_send_json(msg_data)
+            if not outarr:
+                return
+            # Одно сообщение (как в БД), не по частям — иначе после F5 дубли с history
+            joined = '\n\n'.join(outarr) if len(outarr) > 1 else outarr[0]
+            if self.is_file_path(joined):
+                joined = self.convert_file_path_to_url(joined)
+            is_img = joined.startswith('http') or joined.startswith('/images/')
+            msg_data = {
+                'type': 'chat_message',
+                'message': joined,
+                'user': 'Misa',
+                'isImage': is_img,
+            }
+            if chat_id:
+                msg_data['chat_id'] = chat_id
+                msg_id = await database_sync_to_async(ChatService.get_last_message_id)(chat_id)
+                if msg_id is not None:
+                    msg_data['message_id'] = str(msg_id)
+            await self._safe_send_json(msg_data)
         except Exception as e:
             import traceback
             logger.error(f"Error processing message: {str(e)}\n{traceback.format_exc()}")
@@ -336,10 +349,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         is_image = content.startswith('/images/') or content.startswith('http')
         if chat_id:
-            await database_sync_to_async(ChatService.save_message)(
+            user_msg_id = await database_sync_to_async(ChatService.save_message)(
                 chat_id, user, content, is_image=is_image
             )
-            await self._broadcast_message(chat_id, user, content, is_image, exclude_self=True)
+            await self._broadcast_message(
+                chat_id, user, content, is_image, exclude_self=True, message_id=user_msg_id
+            )
             await database_sync_to_async(_set_chat_generating)(chat_id, True)
             await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
             # Генерация заголовка в фоне — не блокирует ответ Мисы
@@ -365,11 +380,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             cleaned = self._clean_command_response(response)
             msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else response)
             is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned)
-            await database_sync_to_async(ChatService.save_message)(
+            misa_msg_id = await database_sync_to_async(ChatService.save_message)(
                 chat_id, 'Misa', msg_to_save, is_image=is_img
             )
-            for el in cleaned:
-                await self._broadcast_message(chat_id, 'Misa', el, is_img, exclude_self=True)
+            # Один broadcast с id — клиент после F5 не получит дубль к history
+            await self._broadcast_message(
+                chat_id, 'Misa', msg_to_save, is_img, exclude_self=True, message_id=misa_msg_id
+            )
 
             # Генерация контекстного заголовка (как у DeepSeek)
             def _generate_and_save_title():
@@ -421,17 +438,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
             payload['exclude_channel'] = self.channel_name
         await self.channel_layer.group_send(f"chat_{chat_id}", payload)
 
-    async def _broadcast_message(self, chat_id, user, content, is_image=False, exclude_self=False):
+    async def _broadcast_message(self, chat_id, user, content, is_image=False, exclude_self=False, message_id=None):
         """Отправить сообщение всем подключённым к чату (все устройства)."""
+        data = {
+            'type': 'chat_message',
+            'chat_id': chat_id,
+            'message': content,
+            'user': user,
+            'isImage': is_image,
+        }
+        if message_id is not None:
+            data['message_id'] = str(message_id)
         payload = {
             'type': 'chat_broadcast',
-            'data': {
-                'type': 'chat_message',
-                'chat_id': chat_id,
-                'message': content,
-                'user': user,
-                'isImage': is_image,
-            }
+            'data': data,
         }
         if exclude_self:
             payload['exclude_channel'] = self.channel_name
