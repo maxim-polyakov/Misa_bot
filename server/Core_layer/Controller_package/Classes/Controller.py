@@ -1003,7 +1003,19 @@ class Controller(IController.IController):
                 return cls.error_response("Authentication required", 401)
             user_id = user.id
             df = cls.__dbc.execute_query(
-                "SELECT id, title, created_at FROM chat.chats WHERE user_id = %s ORDER BY created_at DESC",
+                """
+                SELECT
+                    c.id,
+                    c.title,
+                    c.created_at,
+                    COALESCE(MAX(m.timestamp), c.created_at) AS updated_at,
+                    COUNT(m.id) AS message_count
+                FROM chat.chats c
+                LEFT JOIN chat.chat_messages m ON m.chat_id = c.id
+                WHERE c.user_id = %s
+                GROUP BY c.id, c.title, c.created_at
+                ORDER BY updated_at DESC
+                """,
                 (user_id,)
             )
             if df is None:
@@ -1017,6 +1029,8 @@ class Controller(IController.IController):
                     'id': str(row['id']),
                     'title': str(row['title']) if pd.notna(row['title']) else 'Новый чат',
                     'createdAt': row['created_at'].isoformat() if hasattr(row['created_at'], 'isoformat') else str(row['created_at']),
+                    'updatedAt': row['updated_at'].isoformat() if hasattr(row['updated_at'], 'isoformat') else str(row['updated_at']),
+                    'messageCount': int(row['message_count']),
                 })
             return cls.success_response(chats)
         except Exception as e:

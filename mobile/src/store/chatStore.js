@@ -143,7 +143,9 @@ class ChatStore {
           timestamp: new Date(m.timestamp),
         })),
         createdAt: chat.createdAt ? new Date(chat.createdAt) : new Date(),
-        _messagesLoaded: !!(chat.messages && chat.messages.length),
+        updatedAt: chat.updatedAt ? new Date(chat.updatedAt) : null,
+        // Кэш показываем сразу, но актуальность подтвердит список с сервера.
+        _messagesLoaded: false,
       }));
       if (this.chats.length > 0 && !this.currentChatId) this.currentChatId = this.chats[0].id;
     } catch (e) {
@@ -164,21 +166,45 @@ class ChatStore {
     }));
   }
 
+  _timestamp(value) {
+    if (!value) return 0;
+    const date = value instanceof Date ? value : new Date(value);
+    return isNaN(date.getTime()) ? 0 : date.getTime();
+  }
+
+  _lastMessageTimestamp(chat) {
+    return (chat?.messages || []).reduce(
+      (max, message) => Math.max(max, this._timestamp(message?.timestamp)),
+      0
+    );
+  }
+
+  _chatLastActivityTimestamp(chat) {
+    return Math.max(
+      this._lastMessageTimestamp(chat),
+      this._timestamp(chat?.updatedAt),
+      this._timestamp(chat?.createdAt)
+    );
+  }
+
   // Не затираем оптимистичные локальные сообщения пустым/устаревшим снимком с сервера
   _applyServerMessages(chat, msgs) {
     if (!chat) return;
     const incoming = this._mapServerMessages(msgs);
     const local = Array.isArray(chat.messages) ? chat.messages : [];
-    if (local.length > incoming.length) {
-      const serverIds = new Set(incoming.map((m) => String(m.id)));
-      const serverKeys = new Set(incoming.map((m) => `${m.user}|${m.content}`));
-      const localOnly = local.filter(
-        (m) => !serverIds.has(String(m.id)) && !serverKeys.has(`${m.user}|${m.content}`)
-      );
-      chat.messages = [...incoming, ...localOnly];
-    } else {
-      chat.messages = incoming;
-    }
+    const serverIds = new Set(incoming.map((m) => String(m.id)));
+    const serverKeys = new Set(incoming.map((m) => `${m.user}|${m.content}`));
+    const localOnly = local.filter(
+      (m) =>
+        !serverIds.has(String(m.id)) &&
+        !serverKeys.has(`${m.user}|${m.content}`) &&
+        (m.deliveryStatus === "sending" ||
+          m.deliveryStatus === "sent" ||
+          m.deliveryStatus === "failed")
+    );
+    chat.messages = [...incoming, ...localOnly];
+    const serverLastTs = this._lastMessageTimestamp({ messages: incoming });
+    if (serverLastTs) chat.updatedAt = new Date(serverLastTs);
     chat._messagesLoaded = true;
     chat._pendingHistory = false;
   }
@@ -231,6 +257,10 @@ class ChatStore {
             const latest = latestById.get(c.id) || prevById.get(c.id);
             const hasCached =
               latest && Array.isArray(latest.messages) && latest.messages.length > 0;
+            const serverUpdatedAt = this._timestamp(c.updatedAt);
+            const cachedUpdatedAt = this._lastMessageTimestamp(latest);
+            const cacheIsCurrent =
+              hasCached && serverUpdatedAt > 0 && cachedUpdatedAt >= serverUpdatedAt;
             return {
               id: c.id,
               title: (latest?.title && latest.title !== "Новый чат")
@@ -238,7 +268,11 @@ class ChatStore {
                 : (c.title || "Новый чат"),
               messages: hasCached ? latest.messages : [],
               createdAt: c.createdAt ? new Date(c.createdAt) : (latest?.createdAt || new Date()),
-              _messagesLoaded: hasCached || !!(latest && latest._messagesLoaded),
+              updatedAt: c.updatedAt ? new Date(c.updatedAt) : (latest?.updatedAt || null),
+              messageCount: Number.isFinite(Number(c.messageCount))
+                ? Number(c.messageCount)
+                : latest?.messageCount,
+              _messagesLoaded: cacheIsCurrent,
               _pendingHistory: false,
             };
           });
@@ -257,14 +291,15 @@ class ChatStore {
           this.chats.sort((a, b) => {
             const ia = this.pinnedChatIds.indexOf(a.id);
             const ib = this.pinnedChatIds.indexOf(b.id);
-            return (ia >= 0 ? ia : 999) - (ib >= 0 ? ib : 999);
+            if (ia >= 0 || ib >= 0) return (ia >= 0 ? ia : 999) - (ib >= 0 ? ib : 999);
+            return this._chatLastActivityTimestamp(b) - this._chatLastActivityTimestamp(a);
           });
           if (prevCurrentId && this.chats.some((c) => c.id === prevCurrentId)) {
             this.currentChatId = prevCurrentId;
           } else {
             this.currentChatId = this.chats[0].id;
           }
-          this._loadChatMessagesIfNeeded(this.currentChatId);
+          this._refreshChatMessages(this.currentChatId);
           this._loadAllChatMessagesInBackground();
         } else {
           this.chats = [];
@@ -284,6 +319,12 @@ class ChatStore {
   async _loadChatMessagesIfNeeded(chatId) {
     const chat = this.chats.find((c) => c.id === chatId);
     if (!chat || chat._messagesLoaded) return;
+    await this._refreshChatMessages(chatId);
+  }
+
+  async _refreshChatMessages(chatId) {
+    const chat = this.chats.find((c) => c.id === chatId);
+    if (!chat) return;
     if (this.socket && this.isConnected) {
       this.socket.send(JSON.stringify({ type: "load_history", chat_id: chatId }));
       chat._pendingHistory = true;
@@ -291,6 +332,7 @@ class ChatStore {
       try {
         const msgs = await apiFetch(`/api/chats/${chatId}/messages/`);
         this._applyServerMessages(chat, msgs);
+        await this.saveChats();
       } catch (e) {
         console.warn("Ошибка загрузки сообщений:", e);
       }
@@ -319,7 +361,7 @@ class ChatStore {
       if (this.socket && this.isConnected) {
         this.socket.send(JSON.stringify({ type: "join_chat", chat_id: chatId }));
       }
-      this._loadChatMessagesIfNeeded(chatId);
+      this._refreshChatMessages(chatId);
     }
   }
 
@@ -550,23 +592,18 @@ class ChatStore {
 
     for (const chat of this.chats) {
       const title = chat?.title?.trim() || "";
-      const hasContent = (chat.messages?.length ?? 0) > 0 || (title && title !== "Новый чат");
+      const hasContent =
+        (chat.messages?.length ?? 0) > 0 ||
+        (chat.messageCount ?? 0) > 0 ||
+        (title && title !== "Новый чат");
       if (!hasContent) continue;
       if (pinnedSet.has(chat.id)) {
         groups.pinned.push(chat);
         continue;
       }
-      // Используем время последней активности (макс. timestamp сообщений) для группировки
-      const msgs = chat.messages || [];
-      const getTs = (m) => {
-        const t = m?.timestamp;
-        if (!t) return 0;
-        if (t instanceof Date && !isNaN(t.getTime())) return t.getTime();
-        const d = new Date(t);
-        return isNaN(d.getTime()) ? 0 : d.getTime();
-      };
-      const maxTs = msgs.reduce((acc, m) => Math.max(acc, getTs(m)), 0);
-      let date = maxTs ? new Date(maxTs) : (msgs.length > 0 ? new Date() : (chat.createdAt ? new Date(chat.createdAt) : new Date()));
+      // updatedAt приходит со списка чатов и сразу исправляет порядок даже до загрузки истории.
+      const activityTs = this._chatLastActivityTimestamp(chat);
+      let date = activityTs ? new Date(activityTs) : new Date();
       if (isNaN(date.getTime())) date = new Date();
       const dateNum = toDateNum(date);
       if (dateNum >= todayNum) {
@@ -583,12 +620,15 @@ class ChatStore {
       }
     }
 
+    const sortByActivity = (chats) =>
+      chats.sort(
+        (a, b) => this._chatLastActivityTimestamp(b) - this._chatLastActivityTimestamp(a)
+      );
+    sortByActivity(groups.today);
+    sortByActivity(groups.yesterday);
+    sortByActivity(groups.last7Days);
     for (const key of Object.keys(groups.olderByMonth)) {
-      groups.olderByMonth[key].chats.sort((a, b) => {
-        const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return db - da;
-      });
+      sortByActivity(groups.olderByMonth[key].chats);
     }
 
     groups.pinned.sort((a, b) => {
