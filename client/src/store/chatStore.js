@@ -37,8 +37,8 @@ class ChatStore {
         this.rootStore = rootStore;
         makeAutoObservable(this);
         this.loadUserFromStorage();
+        // Только быстрый preview из localStorage; список с сервера — после checkAuth (setUser / MainLayout)
         this._hydrateChatsFromCacheIfEmpty();
-        this.loadChats();
         if (typeof document !== 'undefined') {
             this._setupVisibilityReconnect();
         }
@@ -207,11 +207,15 @@ class ChatStore {
     loadUserFromStorage() {
         try {
             const savedUser = localStorage.getItem('currentUser');
+            const token = localStorage.getItem('token');
             if (savedUser) {
                 const userData = savedUser;
                 this.user = userData;
                 this.isAuth = true;
                 console.log("Пользователь загружен из localStorage", this.user);
+            } else if (token) {
+                // Есть сессия по JWT — дождёмся checkAuth, но loadChats может идти по token
+                this.isAuth = false;
             }
         } catch (error) {
             console.error("Ошибка загрузки пользователя:", error);
@@ -306,6 +310,10 @@ class ChatStore {
         }
     }
 
+    _hasAuthToken() {
+        return !!localStorage.getItem('token');
+    }
+
     // Загрузка чатов из API (БД на бэкенде)
     async loadChats() {
         if (this._loadChatsInProgress) return;
@@ -321,6 +329,9 @@ class ChatStore {
                 this._loadChatsFromLocalStorage();
                 return;
             }
+            if (!this._hasAuthToken()) {
+                return;
+            }
             this._hydrateChatsFromCacheIfEmpty();
             this._loadChatsInProgress = true;
             try {
@@ -328,7 +339,10 @@ class ChatStore {
                 const prevById = new Map(this.chats.map(c => [c.id, c]));
                 const prevCurrentId = this.currentChatId;
                 for (let attempt = 0; attempt < 10; attempt++) {
-                    if (!this.isAuth) return;
+                    if (!this.isAuth && !this._hasAuthToken()) return;
+                    if (!this.isAuth && this._hasAuthToken()) {
+                        await new Promise((r) => setTimeout(r, attempt === 0 ? 150 : 400));
+                    }
                     try {
                         const res = await fetch(`${API_URL}/api/chats/`, {
                             headers: {
@@ -378,9 +392,7 @@ class ChatStore {
                                 latest.messages.length > 0;
                             return {
                                 id: c.id,
-                                title: (latest?.title && latest.title !== 'Новый чат')
-                                    ? latest.title
-                                    : (c.title || 'Новый чат'),
+                                title: c.title || latest?.title || 'Новый чат',
                                 messages: hasCached ? latest.messages : [],
                                 createdAt: c.createdAt ? new Date(c.createdAt) : (latest?.createdAt || new Date()),
                                 _messagesLoaded: hasCached || !!(latest && latest._messagesLoaded),
@@ -406,13 +418,16 @@ class ChatStore {
                     }
                     this._loadChatMessagesIfNeeded(this.currentChatId);
                     this._loadAllChatMessagesInBackground();
+                    this.saveChats();
                 } else {
                     this.chats = [];
                     await this.newChat();
                 }
             } catch (e) {
                 console.warn("Ошибка загрузки чатов с API, fallback на localStorage:", e);
-                this._loadChatsFromLocalStorage();
+                if (this.chats.length === 0) {
+                    this._loadChatsFromLocalStorage();
+                }
             }
         } catch (error) {
             console.error("Ошибка загрузки чатов:", error);
@@ -537,6 +552,43 @@ class ChatStore {
         return (chat.title && chat.title.trim()) ? chat.title.trim() : '';
     }
 
+    _getMessageTimestamp(m) {
+        const t = m?.timestamp;
+        if (!t) return 0;
+        if (t instanceof Date && !isNaN(t.getTime())) return t.getTime();
+        const d = new Date(t);
+        return isNaN(d.getTime()) ? 0 : d.getTime();
+    }
+
+    getChatLastActivityTs(chat) {
+        if (!chat) return 0;
+        const msgs = chat.messages || [];
+        const maxTs = msgs.reduce((acc, m) => Math.max(acc, this._getMessageTimestamp(m)), 0);
+        if (maxTs) return maxTs;
+        if (chat.createdAt) {
+            const d = new Date(chat.createdAt);
+            return isNaN(d.getTime()) ? 0 : d.getTime();
+        }
+        return 0;
+    }
+
+    _sortChatsByLastActivity(chats) {
+        return [...chats].sort((a, b) => this.getChatLastActivityTs(b) - this.getChatLastActivityTs(a));
+    }
+
+    /** Поднять чат в списке (после закреплённых) после нового сообщения */
+    _bumpChatInList(chatId) {
+        if (this.pinnedChatIds.includes(chatId)) return;
+        const idx = this.chats.findIndex((c) => c.id === chatId);
+        if (idx < 0) return;
+        const [chat] = this.chats.splice(idx, 1);
+        let insertAt = 0;
+        while (insertAt < this.chats.length && this.pinnedChatIds.includes(this.chats[insertAt].id)) {
+            insertAt += 1;
+        }
+        this.chats.splice(insertAt, 0, chat);
+    }
+
     // Группировка чатов по периодам (Закреплённые, Сегодня, Вчера, 7 дней, 30 дней)
     // Сравнение по календарным датам в локальной timezone — избегаем ошибок с UTC
     getChatsGroupedByPeriod() {
@@ -549,31 +601,20 @@ class ChatStore {
         const groups = { pinned: [], today: [], yesterday: [], last7Days: [], olderByMonth: {} };
         const pinnedSet = new Set(this.pinnedChatIds);
 
-        const chatsWithMessages = this.chats.filter(
-            (c) => c.messages && Array.isArray(c.messages) && c.messages.length > 0
-        );
+        for (const chat of this.chats) {
+            const title = chat?.title?.trim() || '';
+            const hasContent =
+                (chat.messages?.length ?? 0) > 0 || (title && title !== 'Новый чат');
+            if (!hasContent) continue;
 
-        for (const chat of chatsWithMessages) {
             if (pinnedSet.has(chat.id)) {
                 groups.pinned.push(chat);
                 continue;
             }
-            // Используем время последней активности (макс. timestamp сообщений) для группировки
-            const msgs = chat.messages || [];
-            const getTs = (m) => {
-                const t = m?.timestamp;
-                if (!t) return 0;
-                if (t instanceof Date && !isNaN(t.getTime())) return t.getTime();
-                const d = new Date(t);
-                return isNaN(d.getTime()) ? 0 : d.getTime();
-            };
-            const maxTs = msgs.reduce((acc, m) => Math.max(acc, getTs(m)), 0);
-            let date = maxTs ? new Date(maxTs) : (msgs.length > 0 ? new Date() : (chat.createdAt ? new Date(chat.createdAt) : new Date()));
+            const maxTs = this.getChatLastActivityTs(chat);
+            let date = maxTs ? new Date(maxTs) : (chat.createdAt ? new Date(chat.createdAt) : new Date());
             if (isNaN(date.getTime())) date = new Date();
             const dateNum = toDateNum(date);
-            if (chat.id === this.currentChatId) {
-                console.log('Debug chat:', { maxTs, date: date?.toISOString(), dateNum, todayNum, yesterdayNum, sevenDaysAgoNum });
-            }
             if (dateNum >= todayNum) {
                 groups.today.push(chat);
             } else if (dateNum >= yesterdayNum) {
@@ -587,13 +628,12 @@ class ChatStore {
             }
         }
 
-        // Сортировка чатов внутри каждой месячной группы (новые сверху)
+        groups.today = this._sortChatsByLastActivity(groups.today);
+        groups.yesterday = this._sortChatsByLastActivity(groups.yesterday);
+        groups.last7Days = this._sortChatsByLastActivity(groups.last7Days);
+
         for (const key of Object.keys(groups.olderByMonth)) {
-            groups.olderByMonth[key].chats.sort((a, b) => {
-                const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-                const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                return db - da;
-            });
+            groups.olderByMonth[key].chats = this._sortChatsByLastActivity(groups.olderByMonth[key].chats);
         }
 
         // Порядок закреплённых — по порядку закрепления (первый закреплённый сверху)
@@ -908,7 +948,8 @@ class ChatStore {
             const chatId = data.chat_id || this.currentChatId;
             const chat = this.chats.find(c => c.id === chatId);
             if (chat) {
-                chat.messages.push(msg);
+                chat.messages = [...(chat.messages || []), msg];
+                this._bumpChatInList(chatId);
                 if (data.user === "Misa") {
                     this.loadingChatIds = this.loadingChatIds.filter(id => id !== chatId);
                 } else {
@@ -1096,14 +1137,18 @@ class ChatStore {
         if (!this.loadingChatIds.includes(chatId)) this.loadingChatIds.push(chatId);
         this.error = null;
         const localMsgId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        chat.messages.push({
-            id: localMsgId,
-            content,
-            user: this.user,
-            timestamp: new Date(),
-            userId: this.getCurrentUserId(),
-            deliveryStatus: 'sending',
-        });
+        chat.messages = [
+            ...(chat.messages || []),
+            {
+                id: localMsgId,
+                content,
+                user: this.user,
+                timestamp: new Date(),
+                userId: this.getCurrentUserId(),
+                deliveryStatus: 'sending',
+            },
+        ];
+        this._bumpChatInList(chatId);
         this.saveChats();
 
         void this._deliverMessage(chatId, content, localMsgId);
