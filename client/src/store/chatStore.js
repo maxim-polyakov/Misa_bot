@@ -302,7 +302,8 @@ class ChatStore {
                     timestamp: new Date(m.timestamp)
                 })),
                 createdAt: chat.createdAt ? new Date(chat.createdAt) : new Date(),
-                _messagesLoaded: !!(chat.messages && chat.messages.length),
+                // Показываем кэш сразу, но не считаем историю финальной
+                _messagesLoaded: false,
             }));
             if (this.chats.length > 0 && !this.currentChatId) this.currentChatId = this.chats[0].id;
         } catch (e) {
@@ -395,7 +396,8 @@ class ChatStore {
                                 title: c.title || latest?.title || 'Новый чат',
                                 messages: hasCached ? latest.messages : [],
                                 createdAt: c.createdAt ? new Date(c.createdAt) : (latest?.createdAt || new Date()),
-                                _messagesLoaded: hasCached || !!(latest && latest._messagesLoaded),
+                                // Кэш только для мгновенного UI — историю всегда перепроверяем с сервера
+                                _messagesLoaded: false,
                                 _pendingHistory: false,
                             };
                         });
@@ -406,17 +408,28 @@ class ChatStore {
                             this.chats.unshift({
                                 ...latest,
                                 messages: [...(latest.messages || [])],
-                                _messagesLoaded: true,
+                                _messagesLoaded: !!(latest.messages?.length),
                                 _pendingHistory: false,
                             });
                         }
                     }
+                    // Закреплённые сверху, остальные — по последней активности
+                    this.chats = [...this.chats].sort((a, b) => {
+                        const pa = this.pinnedChatIds.includes(a.id);
+                        const pb = this.pinnedChatIds.includes(b.id);
+                        if (pa && pb) {
+                            return this.pinnedChatIds.indexOf(a.id) - this.pinnedChatIds.indexOf(b.id);
+                        }
+                        if (pa) return -1;
+                        if (pb) return 1;
+                        return this.getChatLastActivityTs(b) - this.getChatLastActivityTs(a);
+                    });
                     if (prevCurrentId && this.chats.some(c => c.id === prevCurrentId)) {
                         this.currentChatId = prevCurrentId;
-                    } else {
+                    } else if (this.chats.length > 0) {
                         this.currentChatId = this.chats[0].id;
                     }
-                    this._loadChatMessagesIfNeeded(this.currentChatId);
+                    void this._refreshChatMessages(this.currentChatId);
                     this._loadAllChatMessagesInBackground();
                     this.saveChats();
                 } else {
@@ -456,16 +469,13 @@ class ChatStore {
         if (!chat) return;
         const incoming = this._mapServerMessages(msgs);
         const local = Array.isArray(chat.messages) ? chat.messages : [];
-        if (local.length > incoming.length) {
-            const serverIds = new Set(incoming.map((m) => String(m.id)));
-            const serverKeys = new Set(incoming.map((m) => `${m.user}|${m.content}`));
-            const localOnly = local.filter((m) =>
-                !serverIds.has(String(m.id)) && !serverKeys.has(`${m.user}|${m.content}`)
-            );
-            chat.messages = [...incoming, ...localOnly];
-        } else {
-            chat.messages = incoming;
-        }
+        const serverIds = new Set(incoming.map((m) => String(m.id)));
+        const serverKeys = new Set(incoming.map((m) => `${m.user}|${m.content}`));
+        // Всегда оставляем локальные optimistic/sending, которых ещё нет на сервере
+        const localOnly = local.filter((m) =>
+            !serverIds.has(String(m.id)) && !serverKeys.has(`${m.user}|${m.content}`)
+        );
+        chat.messages = [...incoming, ...localOnly];
         chat._messagesLoaded = true;
         chat._pendingHistory = false;
     }
@@ -473,15 +483,24 @@ class ChatStore {
     async _loadChatMessagesIfNeeded(chatId) {
         const chat = this.chats.find(c => c.id === chatId);
         if (!chat || chat._messagesLoaded) return;
+        await this._refreshChatMessages(chatId);
+    }
+
+    /** Всегда подтянуть историю с сервера (кэш может быть устаревшим) */
+    async _refreshChatMessages(chatId) {
+        const chat = this.chats.find(c => c.id === chatId);
+        if (!chat) return;
         if (this.socket && this.isConnected) {
             this._loadChatMessagesViaWebSocket(chatId);
-        } else if (API_URL) {
-            try {
-                const msgs = await apiFetch(`/api/chats/${chatId}/messages/`);
-                this._applyServerMessages(chat, msgs);
-            } catch (e) {
-                console.warn("Ошибка загрузки сообщений:", e);
-            }
+            return;
+        }
+        if (!API_URL) return;
+        try {
+            const msgs = await apiFetch(`/api/chats/${chatId}/messages/`);
+            this._applyServerMessages(chat, msgs);
+            this.saveChats();
+        } catch (e) {
+            console.warn("Ошибка загрузки сообщений:", e);
         }
     }
 
@@ -526,7 +545,8 @@ class ChatStore {
                     ...m,
                     timestamp: new Date(m.timestamp)
                 })),
-                createdAt: chat.createdAt ? new Date(chat.createdAt) : new Date()
+                createdAt: chat.createdAt ? new Date(chat.createdAt) : new Date(),
+                _messagesLoaded: false,
             }));
             if (this.chats.length > 0 && !this.currentChatId) this.currentChatId = this.chats[0].id;
         } else {
@@ -691,7 +711,7 @@ class ChatStore {
         }
     }
 
-    // Переключение на чат (подгружает сообщения с сервера при необходимости)
+    // Переключение на чат — всегда обновляем историю с сервера (иначе кэш прячет новые сообщения)
     switchChat(chatId) {
         if (this.chats.some(c => c.id === chatId)) {
             this.currentChatId = chatId;
@@ -701,7 +721,7 @@ class ChatStore {
             if (this.socket && this.isConnected) {
                 this.socket.send(JSON.stringify({ type: 'join_chat', chat_id: chatId }));
             }
-            this._loadChatMessagesIfNeeded(chatId);
+            void this._refreshChatMessages(chatId);
         }
     };
 
@@ -948,7 +968,26 @@ class ChatStore {
             const chatId = data.chat_id || this.currentChatId;
             const chat = this.chats.find(c => c.id === chatId);
             if (chat) {
-                chat.messages = [...(chat.messages || []), msg];
+                const msgs = chat.messages || [];
+                const already = msgs.some((m) =>
+                    String(m.id) === String(msg.id) ||
+                    (m.user === msg.user && m.content === msg.content &&
+                        (m.deliveryStatus === 'sending' || m.deliveryStatus === 'sent'))
+                );
+                if (!already) {
+                    chat.messages = [...msgs, msg];
+                } else {
+                    chat.messages = msgs.map((m) => {
+                        if (
+                            String(m.id) === String(msg.id) ||
+                            (m.user === msg.user && m.content === msg.content &&
+                                (m.deliveryStatus === 'sending' || m.deliveryStatus === 'sent'))
+                        ) {
+                            return { ...m, ...msg, deliveryStatus: 'sent' };
+                        }
+                        return m;
+                    });
+                }
                 this._bumpChatInList(chatId);
                 if (data.user === "Misa") {
                     this.loadingChatIds = this.loadingChatIds.filter(id => id !== chatId);
