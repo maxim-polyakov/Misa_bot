@@ -132,6 +132,7 @@ function ChatScreen() {
   const [renameInputValue, setRenameInputValue] = useState("");
   const sidebarAnim = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef(null);
+  const stickToBottomRef = useRef(true);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -159,8 +160,28 @@ function ChatScreen() {
     return () => sub?.remove?.();
   }, [chatStore.isAuth]);
 
+  const scrollMessagesToEnd = (animated = true) => {
+    requestAnimationFrame(() => {
+      flatListRef.current?.scrollToEnd({ animated });
+    });
+  };
+
+  // Opening / switching a chat: land on the latest message
   useEffect(() => {
-    flatListRef.current?.scrollToEnd({ animated: true });
+    stickToBottomRef.current = true;
+    if (!chatStore.currentChatId || chatStore.messages.length === 0) return undefined;
+    scrollMessagesToEnd(false);
+    const t1 = setTimeout(() => scrollMessagesToEnd(false), 50);
+    const t2 = setTimeout(() => scrollMessagesToEnd(false), 200);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [chatStore.currentChatId]);
+
+  useEffect(() => {
+    if (chatStore.messages.length === 0 || !stickToBottomRef.current) return;
+    scrollMessagesToEnd(true);
   }, [chatStore.messages]);
 
   useEffect(() => {
@@ -466,6 +487,21 @@ function ChatScreen() {
       contentContainerStyle={styles.messagesContent}
       // Clipped subviews дают пустые пузыри у высоких сообщений на iOS и Android
       removeClippedSubviews={false}
+      onContentSizeChange={() => {
+        if (stickToBottomRef.current) scrollMessagesToEnd(false);
+      }}
+      onLayout={() => {
+        if (chatStore.messages.length > 0 && stickToBottomRef.current) {
+          scrollMessagesToEnd(false);
+        }
+      }}
+      onScroll={(e) => {
+        const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+        const distanceFromBottom =
+          contentSize.height - (contentOffset.y + layoutMeasurement.height);
+        stickToBottomRef.current = distanceFromBottom < 80;
+      }}
+      scrollEventThrottle={16}
       ListFooterComponent={
         chatStore.isLoading ? (
           <View style={styles.typing}>

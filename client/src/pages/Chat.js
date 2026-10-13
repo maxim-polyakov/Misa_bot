@@ -24,16 +24,55 @@ const Chat = observer(() => {
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
     const messagesContainerRef = useRef(null);
+    const chatContainerRef = useRef(null);
+    const lastScrolledChatRef = useRef(null);
 
-    const scrollToBottom = () => {
+    const scrollToBottom = (behavior = 'smooth') => {
+        const apply = () => {
+            const messagesEl = messagesContainerRef.current;
+            const chatEl = chatContainerRef.current;
+            // Desktop: scroll in .messages-container; mobile CSS: overflow on .chat-container
+            for (const el of [messagesEl, chatEl]) {
+                if (!el) continue;
+                el.scrollTop = el.scrollHeight;
+            }
+            messagesEndRef.current?.scrollIntoView({
+                behavior: behavior === 'smooth' ? 'smooth' : 'auto',
+                block: 'end',
+            });
+        };
         requestAnimationFrame(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            apply();
+            requestAnimationFrame(apply);
         });
     };
 
+    // Opening / switching a chat: jump to the latest message (not the first)
     useEffect(() => {
-        scrollToBottom();
-    }, [chatStore.messages, chatStore.isChatLoading(chatStore.currentChatId)]);
+        lastScrolledChatRef.current = null;
+    }, [chatStore.currentChatId]);
+
+    useEffect(() => {
+        const chatId = chatStore.currentChatId;
+        const count = chatStore.messages.length;
+        if (!chatId || count === 0) return;
+
+        const isEnteringChat = lastScrolledChatRef.current !== chatId;
+        const behavior = isEnteringChat ? 'auto' : 'smooth';
+        scrollToBottom(behavior);
+
+        if (!isEnteringChat) return undefined;
+
+        const t1 = setTimeout(() => scrollToBottom('auto'), 50);
+        const t2 = setTimeout(() => {
+            scrollToBottom('auto');
+            lastScrolledChatRef.current = chatId;
+        }, 200);
+        return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+        };
+    }, [chatStore.currentChatId, chatStore.messages, chatStore.isChatLoading(chatStore.currentChatId)]);
 
     // Подключаемся к группе чата при открытии — чтобы получать broadcast на других устройствах
     useEffect(() => {
@@ -391,7 +430,7 @@ const Chat = observer(() => {
     ) : null;
 
     return (
-        <div className="chat-container">
+        <div className="chat-container" ref={chatContainerRef}>
             {/* Плавающие кнопки поверх чата */}
             {!sidebarExpanded && (
                 <div className="chat-floating-buttons">
