@@ -7,11 +7,35 @@ from urllib.parse import quote
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.conf import settings
+from django.core.cache import cache
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorServer
 from Core_layer.Chat_package.Classes.ChatService import ChatService
 from Core_layer.Answer_package.Classes import GptAnswer
 
 logger = logging.getLogger(__name__)
+
+# Статус «Миса печатает» переживает refresh вкладки / reconnect (Redis или locmem)
+_GENERATING_CACHE_TTL = 600  # сек
+
+
+def _generating_cache_key(chat_id):
+    return f"misa:chat_generating:{chat_id}"
+
+
+def _set_chat_generating(chat_id, is_generating):
+    if not chat_id:
+        return
+    key = _generating_cache_key(chat_id)
+    if is_generating:
+        cache.set(key, True, timeout=_GENERATING_CACHE_TTL)
+    else:
+        cache.delete(key)
+
+
+def _is_chat_generating(chat_id):
+    if not chat_id:
+        return False
+    return bool(cache.get(_generating_cache_key(chat_id)))
 
 
 def _get_messages_sync(chat_id):
@@ -108,13 +132,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                 'type': 'history',
                                 'chat_id': chat_id,
                                 'messages': messages,
-                                'title': title or ''
+                                'title': title or '',
+                                'isTyping': await database_sync_to_async(_is_chat_generating)(chat_id),
                             })
+                            await self._send_typing_state_if_generating(chat_id)
                         return
                     if msg_type == 'join_chat':
                         chat_id = data.get('chat_id')
                         if chat_id:
                             await self._join_chat_group(chat_id)
+                            await self._send_typing_state_if_generating(chat_id)
                         return
                     if msg_type == 'pong':
                         return
@@ -186,6 +213,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """Перегенерировать ответ: обновить сообщение Misa, не добавляя новых."""
         try:
             await self._join_chat_group(chat_id)
+            await database_sync_to_async(_set_chat_generating)(chat_id, True)
             await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
 
             def _do_regenerate():
@@ -261,13 +289,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'detail': str(e),
             })
         finally:
-            await self._broadcast_typing(chat_id, is_typing=False, exclude_self=True)
+            await database_sync_to_async(_set_chat_generating)(chat_id, False)
+            await self._broadcast_typing(chat_id, is_typing=False, exclude_self=False)
 
     async def _join_chat_group(self, chat_id):
         group = f"chat_{chat_id}"
         if chat_id not in self.chat_groups:
             await self.channel_layer.group_add(group, self.channel_name)
             self.chat_groups.add(chat_id)
+
+    async def _send_typing_state_if_generating(self, chat_id):
+        """После reconnect/F5 вернуть плашку «Миса печатает», если генерация ещё идёт."""
+        if await database_sync_to_async(_is_chat_generating)(chat_id):
+            await self._safe_send_json({
+                'type': 'typing',
+                'chat_id': chat_id,
+                'isTyping': True,
+            })
 
     async def process_message(self, message):
         parts = message.split('|message|')
@@ -302,6 +340,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 chat_id, user, content, is_image=is_image
             )
             await self._broadcast_message(chat_id, user, content, is_image, exclude_self=True)
+            await database_sync_to_async(_set_chat_generating)(chat_id, True)
             await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
             # Генерация заголовка в фоне — не блокирует ответ Мисы
             if not is_image:
@@ -348,7 +387,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return response
         finally:
             if chat_id:
-                await self._broadcast_typing(chat_id, is_typing=False, exclude_self=True)
+                await database_sync_to_async(_set_chat_generating)(chat_id, False)
+                # Не exclude_self: после F5 новый сокет должен получить typing:false
+                await self._broadcast_typing(chat_id, is_typing=False, exclude_self=False)
 
     async def _broadcast_typing(self, chat_id, is_typing=True, exclude_self=True):
         """Broadcast индикатора печати Мисы на все устройства."""

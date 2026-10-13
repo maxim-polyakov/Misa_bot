@@ -88,6 +88,38 @@ class ChatStore {
         return this.loadingChatIds.includes(chatId);
     }
 
+    _setChatTyping(chatId, isTyping) {
+        if (!chatId) return;
+        if (isTyping) {
+            if (!this.loadingChatIds.includes(chatId)) {
+                this.loadingChatIds = [...this.loadingChatIds, chatId];
+            }
+        } else {
+            this.loadingChatIds = this.loadingChatIds.filter((id) => id !== chatId);
+        }
+    }
+
+    /** Восстановить плашку «Миса печатает» после reload/history */
+    _restoreTypingAfterHistory(chatId, serverIsTyping) {
+        if (!chatId) return;
+        if (serverIsTyping === true) {
+            this._setChatTyping(chatId, true);
+            return;
+        }
+        const chat = this.chats.find((c) => c.id === chatId);
+        const msgs = chat?.messages || [];
+        if (msgs.length === 0) {
+            this._setChatTyping(chatId, false);
+            return;
+        }
+        const last = msgs[msgs.length - 1];
+        const lastIsUser = last && last.user !== 'Misa';
+        const lastTs = this._getMessageTimestamp(last);
+        // Fallback: последнее от пользователя и свежее — вероятно генерация ещё идёт (или только что упала)
+        const recent = lastTs > 0 && (Date.now() - lastTs) < 10 * 60 * 1000;
+        this._setChatTyping(chatId, !!(lastIsUser && recent));
+    }
+
     // Режим шаринга — выделение сообщений
     startShareMode(chatId) {
         this.shareModeForChatId = chatId;
@@ -1005,6 +1037,8 @@ class ChatStore {
                     chat.title = String(data.title).trim();
                 }
                 this.saveChats();
+                // После F5: сервер говорит что генерация ещё идёт, либо последнее — от пользователя
+                this._restoreTypingAfterHistory(data.chat_id, data.isTyping);
             }
         }
         else if (data.type === 'error') {
