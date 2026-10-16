@@ -5,8 +5,8 @@ usage() {
   cat <<'EOF'
 Usage: compose-k3s-sync --project-dir DIR [options]
 
-Build Docker Compose services, import immutable copies of locally built images
-into the k3s containerd on this node, and roll out matching Deployments.
+Build Docker Compose services, publish immutable images to a registry (or import
+them into local k3s containerd), and roll out matching Deployments.
 
 Options:
   --project-dir DIR       Directory containing docker-compose.yml (required)
@@ -17,6 +17,8 @@ Options:
   --no-cache              Pass --no-cache to docker compose build
   --dry-run               Print the planned service/deployment mapping only
   --patch-only            Apply hostAliases/dnsConfig patches only (no image rollout)
+  --registry-prefix PATH  Registry path, for example ghcr.io/owner/repository
+  --registry-tag TAG      Immutable tag to publish (normally the Git commit SHA)
   --timeout DURATION      kubectl rollout timeout (default: 10m)
   -h, --help              Show this help
 
@@ -52,14 +54,66 @@ d = json.load(sys.stdin)
 pod = d["spec"]["template"]["spec"]
 selector = dict(pod.get("nodeSelector") or {})
 selector.pop("kubernetes.io/hostname", None)
-selector["baxic.ru/workload-pool"] = "main"
+selector.pop("baxic.ru/workload-pool", None)
+home_node = {
+    "avicena-project": "worker-192",
+    "fizuli-order": "worker-45",
+}.get(d["metadata"]["namespace"])
+is_smtp = (
+    "smtp" in d["metadata"]["name"].lower()
+    or any("maildev" in c.get("image", "").lower() for c in pod.get("containers") or [])
+)
+if is_smtp:
+    home_node = None
+affinity = dict(pod.get("affinity") or {})
+placement_label = "main"
+if is_smtp:
+    selector["baxic.ru/workload-pool"] = "main"
+    selector["kubernetes.io/hostname"] = os.environ.get(
+        "COMPOSE_K3S_SMTP_NODE", "worker-146"
+    )
+    affinity.pop("nodeAffinity", None)
+    placement_label = "smtp-worker-146"
+elif home_node:
+    affinity["nodeAffinity"] = {
+        "requiredDuringSchedulingIgnoredDuringExecution": {
+            "nodeSelectorTerms": [{
+                "matchExpressions": [{
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": [home_node, "cp-baxic", "worker-146"],
+                }],
+            }],
+        },
+        "preferredDuringSchedulingIgnoredDuringExecution": [{
+            "weight": 100,
+            "preference": {
+                "matchExpressions": [{
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": [home_node],
+                }],
+            },
+        }],
+    }
+    placement_label = "home-fallback"
+else:
+    selector["baxic.ru/workload-pool"] = "main"
 tolerations = [
     item for item in (pod.get("tolerations") or [])
     if item.get("key") not in {
+        "baxic.ru/no-workloads",
         "node.kubernetes.io/not-ready",
         "node.kubernetes.io/unreachable",
     }
 ]
+if home_node:
+    tolerations.append({
+        "key": "baxic.ru/no-workloads",
+        "operator": "Equal",
+        "value": "true",
+        "effect": "NoSchedule",
+    })
 for key in ("node.kubernetes.io/not-ready", "node.kubernetes.io/unreachable"):
     tolerations.append({
         "key": key,
@@ -75,9 +129,10 @@ for container in pod.get("containers") or []:
     containers.append({"name": container["name"], "resources": {"requests": requests}})
 print(json.dumps({
     "spec": {"template": {
-        "metadata": {"labels": {"baxic.ru/workload-pool": "main"}},
+        "metadata": {"labels": {"baxic.ru/workload-pool": placement_label}},
         "spec": {
             "nodeSelector": selector,
+            "affinity": affinity,
             "tolerations": tolerations,
             "containers": containers,
         },
@@ -111,6 +166,56 @@ print(json.dumps(patch, separators=(",", ":")))
   fi
 }
 
+sync_compose_service_environment() {
+  local namespace=$1 deployment=$2 service=$3
+  local env_patch status
+  env_patch=$(mktemp)
+  chmod 600 "$env_patch"
+
+  if ! python3 - "$config_json" "$service" "$env_patch" <<'PY'
+import json
+import sys
+
+config_path, service_name, patch_path = sys.argv[1:]
+with open(config_path, encoding="utf-8") as stream:
+    service = json.load(stream)["services"][service_name]
+
+environment = service.get("environment") or {}
+if isinstance(environment, list):
+    parsed = {}
+    for item in environment:
+        name, separator, value = str(item).partition("=")
+        parsed[name] = value if separator else ""
+    environment = parsed
+
+env = [
+    {"name": str(name), "value": "" if value is None else str(value)}
+    for name, value in sorted(environment.items())
+]
+patch = [{
+    "op": "add",
+    "path": "/spec/template/spec/containers/0/env",
+    "value": env,
+}]
+with open(patch_path, "w", encoding="utf-8") as stream:
+    json.dump(patch, stream)
+PY
+  then
+    rm -f "$env_patch"
+    die "cannot prepare Compose environment for $service"
+  fi
+
+  if "${kube[@]}" patch deployment "$deployment" -n "$namespace" --type=json \
+    --patch-file "$env_patch" >/dev/null; then
+    status=0
+  else
+    status=$?
+  fi
+  rm -f "$env_patch"
+  ((status == 0)) || return "$status"
+  log "Compose environment synchronized for $namespace/$deployment"
+}
+
 apply_schema_patches() {
   local namespace=$1 deployment=$2 service=$3 source_image=$4
 
@@ -122,6 +227,7 @@ apply_schema_patches() {
     is_maildev=true
   fi
   if [[ "$is_maildev" == true && "${COMPOSE_K3S_SKIP_SMTP_DNS:-}" != 1 ]]; then
+    sync_compose_service_environment "$namespace" "$deployment" "$service"
     local maildev_dns_patch
     maildev_dns_patch=$(
       COMPOSE_K3S_EXTRA_NAMESERVERS="${COMPOSE_K3S_EXTRA_NAMESERVERS:-8.8.8.8,1.1.1.1}" \
@@ -159,54 +265,74 @@ print(
     "${kube[@]}" patch deployment "$deployment" -n "$namespace" --type merge \
       -p "$maildev_dns_patch" >/dev/null
     log "Maildev/SMTP Deployment dnsConfig set for $namespace/$deployment"
-    fix_maildev_container_command "$namespace" "$deployment" "$source_image"
+    fix_maildev_container_command "$namespace" "$deployment" "$source_image" "$service"
   fi
+  apply_project_storage "$namespace" "$deployment"
   apply_failover_patches "$namespace" "$deployment"
   log "schema patches applied for $namespace/$deployment"
 }
 
 fix_maildev_container_command() {
-  local namespace=$1 deployment=$2 source_image=$3
+  local namespace=$1 deployment=$2 source_image=$3 service=$4
   local inspect_img=$source_image
+  local workdir=/home/node/app
   if ! docker image inspect "$inspect_img" >/dev/null 2>&1; then
     inspect_img=maildev/maildev
-    docker image inspect "$inspect_img" >/dev/null 2>&1 || return 0
   fi
-  local workdir
-  workdir=$(docker image inspect "$inspect_img" --format '{{.Config.WorkingDir}}')
+  if docker image inspect "$inspect_img" >/dev/null 2>&1; then
+    workdir=$(docker image inspect "$inspect_img" --format '{{.Config.WorkingDir}}')
+  fi
   [[ -n "$workdir" ]] || workdir=/home/node/app
   # Compose→k8s: command ["bin/maildev"] without WORKDIR, or args ["-c","exec node …"] vs entrypoint node.
   "${kube[@]}" patch deployment "$deployment" -n "$namespace" --type=json \
     -p='[{"op":"remove","path":"/spec/template/spec/containers/0/command"}]' \
     >/dev/null 2>&1 || true
   local merge_patch
-  merge_patch=$("${kube[@]}" get deployment "$deployment" -n "$namespace" -o json | WD="$workdir" python3 -c '
+  merge_patch=$("${kube[@]}" get deployment "$deployment" -n "$namespace" -o json |
+    WD="$workdir" python3 -c '
 import json, os, re, shlex, sys
 deploy = json.load(sys.stdin)
 wd = os.environ["WD"]
+with open(sys.argv[1], encoding="utf-8") as stream:
+    service = json.load(stream)["services"][sys.argv[2]]
+env_map = service.get("environment") or {}
+if isinstance(env_map, list):
+    env_map = dict(
+        str(item).partition("=")[::2] if "=" in str(item) else (str(item), "")
+        for item in env_map
+    )
+compose_command = service.get("command") or []
+script = None
+desired_args = None
+if isinstance(compose_command, str):
+    script = compose_command
+elif (
+    isinstance(compose_command, list)
+    and len(compose_command) >= 2
+    and compose_command[0] == "-c"
+    and "maildev" in str(compose_command[1])
+):
+    script = str(compose_command[1])
+elif isinstance(compose_command, list) and compose_command:
+    desired_args = [str(value) for value in compose_command]
+if script:
+    match = re.search(r"maildev\.js\s+(.*)", script, re.S)
+    if match:
+        flags = re.sub(
+            r"\$\$?\{(\w+)\}",
+            lambda found: str(env_map.get(found.group(1), "") or ""),
+            match.group(1),
+        )
+        desired_args = shlex.split(flags)
 out = []
 for c in deploy["spec"]["template"]["spec"]["containers"]:
     entry = {"name": c["name"], "image": c["image"], "workingDir": wd}
-    cmd = c.get("command") or []
-    args = c.get("args") or []
-    script = None
-    if len(args) >= 2 and args[0] == "-c" and "maildev" in str(args[1]):
-        script = args[1]
-    elif cmd == ["/bin/sh", "-c"] and args and "maildev" in str(args[0]):
-        script = args[0]
-    if script:
-        env_map = {e["name"]: e.get("value", "") for e in c.get("env") or []}
-        m = re.search(r"maildev\\.js\\s+(.*)", script, re.S)
-        if m and env_map:
-            flags = re.sub(r"\\$\\{(\\w+)\\}", lambda mo: env_map.get(mo.group(1), ""), m.group(1))
-            entry["args"] = shlex.split(flags)
-        else:
-            entry["command"] = ["/bin/sh", "-c"]
-            entry["args"] = [script]
+    if desired_args is not None:
+        entry["args"] = desired_args
     out.append(entry)
 print(json.dumps({"spec": {"template": {"spec": {"containers": out}}}}))
-')
-  "${kube[@]}" patch deployment "$deployment" -n "$namespace" --type merge \
+' "$config_json" "$service")
+  "${kube[@]}" patch deployment "$deployment" -n "$namespace" --type strategic \
     -p "$merge_patch" >/dev/null 2>&1 || true
   "${kube[@]}" patch deployment "$deployment" -n "$namespace" --type=json \
     -p='[{"op":"remove","path":"/spec/template/spec/containers/0/command"}]' \
@@ -222,6 +348,8 @@ skip_build=false
 no_cache=false
 dry_run=false
 patch_only=false
+registry_prefix=${COMPOSE_K3S_REGISTRY_PREFIX:-}
+registry_tag=${COMPOSE_K3S_REGISTRY_TAG:-}
 rollout_timeout=10m
 
 while (($#)); do
@@ -263,6 +391,16 @@ while (($#)); do
       skip_build=true
       shift
       ;;
+    --registry-prefix)
+      (($# >= 2)) || die "--registry-prefix requires a value"
+      registry_prefix=${2,,}
+      shift 2
+      ;;
+    --registry-tag)
+      (($# >= 2)) || die "--registry-tag requires a value"
+      registry_tag=$2
+      shift 2
+      ;;
     --timeout)
       (($# >= 2)) || die "--timeout requires a value"
       rollout_timeout=$2
@@ -278,8 +416,15 @@ while (($#)); do
   esac
 done
 
+registry_prefix=${registry_prefix,,}
+if [[ -n "$registry_prefix" || -n "$registry_tag" ]]; then
+  [[ -n "$registry_prefix" && -n "$registry_tag" ]] ||
+    die "--registry-prefix and --registry-tag must be used together"
+fi
+
 [[ -n "$project_dir" ]] || die "--project-dir is required"
 project_dir=$(cd "$project_dir" && pwd)
+source "$project_dir/scripts/k3s-storage.sh"
 
 for command in docker k3s python3 flock; do
   command -v "$command" >/dev/null 2>&1 || die "required command not found: $command"
@@ -563,21 +708,22 @@ for row in "${sync_services[@]}"; do
   deployment_image=$immutable_image
   pull_policy=Never
 
-  media_type=$(
-    docker image inspect "$source_image" |
-      python3 -c 'import json, sys; print((json.load(sys.stdin)[0].get("Descriptor") or {}).get("mediaType", ""))'
-  )
-  if [[ "$media_type" == *".image.index."* ||
-        "$media_type" == *".manifest.list."* ]]; then
+  if [[ "$explicit_image" == 1 ]]; then
     registry_digest=$(
       docker image inspect "$source_image" |
         python3 -c 'import json, sys; print(next((item for item in json.load(sys.stdin)[0].get("RepoDigests", []) if not item.startswith("compose-sync/") and "/compose-sync/" not in item), ""))'
     )
-    [[ "$explicit_image" == 1 && -n "$registry_digest" ]] || die \
-      "$source_image is a multi-platform image without a registry digest"
+    [[ -n "$registry_digest" ]] || die "$source_image has no registry digest"
     deployment_image=$registry_digest
     pull_policy=IfNotPresent
-    log "using registry digest $deployment_image for multi-platform image"
+    log "using registry digest $deployment_image"
+  elif [[ -n "$registry_prefix" ]]; then
+    immutable_image="${registry_prefix}/${service}:${registry_tag}"
+    deployment_image=$immutable_image
+    pull_policy=IfNotPresent
+    log "publishing $source_image as $immutable_image"
+    docker image tag "$source_image" "$immutable_image"
+    docker push "$immutable_image" || die "docker push failed for $immutable_image"
   else
     log "importing $source_image as $immutable_image"
     docker image tag "$source_image" "$immutable_image"

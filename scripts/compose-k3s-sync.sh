@@ -59,9 +59,22 @@ home_node = {
     "avicena-project": "worker-192",
     "fizuli-order": "worker-45",
 }.get(d["metadata"]["namespace"])
+is_smtp = (
+    "smtp" in d["metadata"]["name"].lower()
+    or any("maildev" in c.get("image", "").lower() for c in pod.get("containers") or [])
+)
+if is_smtp:
+    home_node = None
 affinity = dict(pod.get("affinity") or {})
 placement_label = "main"
-if home_node:
+if is_smtp:
+    selector["baxic.ru/workload-pool"] = "main"
+    selector["kubernetes.io/hostname"] = os.environ.get(
+        "COMPOSE_K3S_SMTP_NODE", "worker-146"
+    )
+    affinity.pop("nodeAffinity", None)
+    placement_label = "smtp-worker-146"
+elif home_node:
     affinity["nodeAffinity"] = {
         "requiredDuringSchedulingIgnoredDuringExecution": {
             "nodeSelectorTerms": [{
