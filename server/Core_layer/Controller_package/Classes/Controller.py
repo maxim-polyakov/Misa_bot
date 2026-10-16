@@ -17,6 +17,7 @@ import logging
 import os
 import random
 import string
+import time
 from urllib.parse import quote, urlencode, urlparse, parse_qs, urlunparse
 import base64
 import datetime
@@ -581,11 +582,25 @@ class Controller(IController.IController):
             email = data.get('email').strip().lower()
             password = data.get('password')
 
-            # Сначала находим пользователя по email через DB_Communication
-            user_query = f"SELECT * FROM auth.users WHERE email = '{email}'"
-            user_df = cls.__dbc.get_data(user_query)
+            # Кратковременный сбой БД не должен выглядеть как неверный пароль.
+            # Каждый вызов создаёт новое подключение, поэтому повтор может
+            # восстановиться после разрыва старого соединения.
+            user_df = None
+            for attempt in range(3):
+                user_df = cls.__dbc.execute_query(
+                    "SELECT * FROM auth.users WHERE email = %s",
+                    (email,),
+                )
+                if user_df is not None:
+                    break
+                logging.warning("Login database query failed (attempt %s/3)", attempt + 1)
+                if attempt < 2:
+                    time.sleep(0.25 * (attempt + 1))
 
-            if user_df is None or user_df.empty:
+            if user_df is None:
+                return cls.error_response("Authentication service temporarily unavailable", 503)
+
+            if user_df.empty:
                 return cls.error_response("Invalid email or password", 401)
 
             # Получаем данные пользователя
