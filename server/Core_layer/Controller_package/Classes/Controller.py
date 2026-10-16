@@ -1208,42 +1208,47 @@ class Controller(IController.IController):
             user = cls.get_user_from_token(request)
             if user is None:
                 return cls.error_response("Authentication required", 401)
-            user_id = user.id
-            df_chats = cls.__dbc.execute_query(
-                "SELECT id, title, created_at FROM chat.chats WHERE user_id = %s ORDER BY created_at DESC",
-                (user_id,)
+
+            rows = cls.__dbc.execute_query(
+                """
+                SELECT
+                    c.id AS chat_id,
+                    c.title,
+                    c.created_at,
+                    m.id AS message_id,
+                    m."user" AS message_user,
+                    m.content,
+                    m.timestamp
+                FROM chat.chats c
+                LEFT JOIN chat.chat_messages m ON m.chat_id = c.id
+                WHERE c.user_id = %s
+                ORDER BY c.created_at DESC, m.timestamp ASC
+                """,
+                (user.id,)
             )
-            if df_chats is None or df_chats.empty:
-                return cls.success_response({
-                    'conversations': [],
-                    'user': {
-                        'display_name': getattr(user, 'display_name', None) or user.email.split('@')[0],
-                        'email': user.email,
-                        'picture': getattr(user, 'picture', None),
-                    }
-                })
+
             conversations = []
-            for _, row in df_chats.iterrows():
-                chat_id = str(row['id'])
-                df_msgs = cls.__dbc.execute_query(
-                    'SELECT "user", content, is_image, timestamp FROM chat.chat_messages WHERE chat_id = %s ORDER BY timestamp ASC',
-                    (chat_id,)
-                )
-                messages = []
-                if df_msgs is not None and not df_msgs.empty:
-                    for _, m in df_msgs.iterrows():
-                        ts = m['timestamp']
+            if rows is not None and not rows.empty:
+                for chat_id, messages_df in rows.groupby('chat_id', sort=False):
+                    chat = messages_df.iloc[0]
+                    messages = []
+                    for _, message in messages_df.iterrows():
+                        if pd.isna(message['message_id']):
+                            continue
+                        timestamp = message['timestamp']
                         messages.append({
-                            'content': str(m['content']),
-                            'user': str(m['user']),
-                            'timestamp': ts.isoformat() if hasattr(ts, 'isoformat') else str(ts),
+                            'content': str(message['content']),
+                            'user': str(message['message_user']),
+                            'timestamp': timestamp.isoformat() if hasattr(timestamp, 'isoformat') else str(timestamp),
                         })
-                conversations.append({
-                    'id': chat_id,
-                    'title': str(row['title']) if pd.notna(row['title']) else 'Новый чат',
-                    'createdAt': row['created_at'].isoformat() if hasattr(row['created_at'], 'isoformat') else str(row['created_at']),
-                    'messages': messages,
-                })
+                    created_at = chat['created_at']
+                    conversations.append({
+                        'id': str(chat_id),
+                        'title': str(chat['title']) if pd.notna(chat['title']) else 'Новый чат',
+                        'createdAt': created_at.isoformat() if hasattr(created_at, 'isoformat') else str(created_at),
+                        'messages': messages,
+                    })
+
             return cls.success_response({
                 'conversations': conversations,
                 'user': {
