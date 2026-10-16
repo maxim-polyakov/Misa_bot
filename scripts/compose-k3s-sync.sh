@@ -54,14 +54,53 @@ d = json.load(sys.stdin)
 pod = d["spec"]["template"]["spec"]
 selector = dict(pod.get("nodeSelector") or {})
 selector.pop("kubernetes.io/hostname", None)
-selector["baxic.ru/workload-pool"] = "main"
+selector.pop("baxic.ru/workload-pool", None)
+home_node = {
+    "avicena-project": "worker-192",
+    "fizuli-order": "worker-45",
+}.get(d["metadata"]["namespace"])
+affinity = dict(pod.get("affinity") or {})
+placement_label = "main"
+if home_node:
+    affinity["nodeAffinity"] = {
+        "requiredDuringSchedulingIgnoredDuringExecution": {
+            "nodeSelectorTerms": [{
+                "matchExpressions": [{
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": [home_node, "cp-baxic", "worker-146"],
+                }],
+            }],
+        },
+        "preferredDuringSchedulingIgnoredDuringExecution": [{
+            "weight": 100,
+            "preference": {
+                "matchExpressions": [{
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": [home_node],
+                }],
+            },
+        }],
+    }
+    placement_label = "home-fallback"
+else:
+    selector["baxic.ru/workload-pool"] = "main"
 tolerations = [
     item for item in (pod.get("tolerations") or [])
     if item.get("key") not in {
+        "baxic.ru/no-workloads",
         "node.kubernetes.io/not-ready",
         "node.kubernetes.io/unreachable",
     }
 ]
+if home_node:
+    tolerations.append({
+        "key": "baxic.ru/no-workloads",
+        "operator": "Equal",
+        "value": "true",
+        "effect": "NoSchedule",
+    })
 for key in ("node.kubernetes.io/not-ready", "node.kubernetes.io/unreachable"):
     tolerations.append({
         "key": key,
@@ -77,9 +116,10 @@ for container in pod.get("containers") or []:
     containers.append({"name": container["name"], "resources": {"requests": requests}})
 print(json.dumps({
     "spec": {"template": {
-        "metadata": {"labels": {"baxic.ru/workload-pool": "main"}},
+        "metadata": {"labels": {"baxic.ru/workload-pool": placement_label}},
         "spec": {
             "nodeSelector": selector,
+            "affinity": affinity,
             "tolerations": tolerations,
             "containers": containers,
         },
