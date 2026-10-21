@@ -12,6 +12,29 @@ const extractApiError = (error) => {
     return msg + detail;
 };
 
+const LOGIN_RETRY_DELAYS_MS = [250, 750];
+
+const isTransientLoginError = (error) => {
+    const status = error.response?.status;
+    return status === 429
+        || status === 502
+        || status === 503
+        || status === 504
+        || (!error.response && ['ERR_NETWORK', 'ECONNABORTED', 'ETIMEDOUT'].includes(error.code));
+};
+
+const requestLogin = async (email, password) => {
+    for (let attempt = 0; ; attempt += 1) {
+        try {
+            return await $host.post("auth/login/", { email, password });
+        } catch (error) {
+            const delay = LOGIN_RETRY_DELAYS_MS[attempt];
+            if (delay === undefined || !isTransientLoginError(error)) throw error;
+            await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+    }
+};
+
 export const sendRegistrationCode = async (email, password) => {
     try {
         const { data } = await $host.post("auth/register/send-code/", { email, password });
@@ -82,10 +105,7 @@ export const registration = async (email, password) => {
 
 export const login = async (email, password) => {
     try {
-        const { data } = await $host.post("auth/login/", {
-            email,
-            password,
-        });
+        const { data } = await requestLogin(email, password);
         if (typeof data === "string" && data.includes("<!DOCTYPE html>")) {
             throw new Error("API недоступен: проверьте REACT_APP_API_URL (ожидается misaapi.baxic.ru)");
         }

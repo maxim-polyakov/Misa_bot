@@ -29,6 +29,7 @@ const Auth = observer(() => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         const oauthError = searchParams.get("oauth_error");
@@ -81,7 +82,10 @@ const Auth = observer(() => {
         setError(""); // Очищаем ошибки при смене формы
     };
 
-    const signIn = async () => {
+    const signIn = async (event) => {
+        event?.preventDefault();
+        if (submitting) return;
+
         // Проверка на пустые поля
         if (!email.trim() || !password.trim()) {
             setError("Все поля должны быть заполнены");
@@ -102,6 +106,7 @@ const Auth = observer(() => {
         }
 
         try {
+            setSubmitting(true);
             setError(""); // Очищаем ошибки перед запросом
 
             if (isLogin) {
@@ -131,6 +136,8 @@ const Auth = observer(() => {
             console.log("Ошибка авторизации:", error);
             // Просто используем message из ошибки, так как мы уже обработали её в API функциях
             setError(error.message);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -151,7 +158,7 @@ const Auth = observer(() => {
                     </Alert>
                 )}
 
-                <Form className="d-flex flex-column">
+                <Form className="d-flex flex-column" onSubmit={signIn}>
                     <Form.Control
                         className="mt-3"
                         placeholder={t("authPlaceholderEmail")}
@@ -216,9 +223,9 @@ const Auth = observer(() => {
                             )}
                         </div>
                         <Button
+                            type="submit"
                             variant="outline-success"
-                            onClick={signIn}
-                            disabled={!email.trim() || !password.trim()} // Кнопка неактивна при пустых полях
+                            disabled={submitting || !email.trim() || !password.trim()}
                         >
                             {isLogin ? t("authSignInButton") : t("authRegisterButton")}
                         </Button>
