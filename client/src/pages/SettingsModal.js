@@ -53,14 +53,15 @@ const SettingsModal = observer(({ isOpen, onClose }) => {
 
     const handleLogout = async (fromAllDevices = false) => {
         onClose();
-        if (fromAllDevices) {
-            await logoutAll();
-        }
+        // Start server-side invalidation while the token is still available,
+        // but do not keep the user on a protected page while that request runs.
+        const logoutRequest = fromAllDevices ? logoutAll() : null;
         chatStore.clearUserFromStorage();
         chatStore.logout();
         user?.setUser({});
         user?.setIsAuth(false);
-        navigate("/", { replace: true });
+        navigate("/login", { replace: true });
+        await logoutRequest;
     };
 
     const handleDeleteAccountClick = () => {

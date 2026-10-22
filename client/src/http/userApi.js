@@ -196,8 +196,11 @@ export const exchangeOAuthCode = async (code) => {
  * Выход со всех устройств: инвалидирует все токены пользователя на сервере
  */
 export const logoutAll = async () => {
+    const token = localStorage.getItem("token");
     try {
-        await $authhost.post("auth/logout-all/");
+        await $authhost.post("auth/logout-all/", null, token ? {
+            headers: { authorization: `Bearer ${token}` },
+        } : undefined);
     } catch (error) {
         console.warn("logoutAll API error:", error?.response?.data || error?.message);
         // Продолжаем локальный выход даже при ошибке API

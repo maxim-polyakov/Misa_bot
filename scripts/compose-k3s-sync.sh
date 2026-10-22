@@ -667,11 +667,23 @@ schema_patched=0
 for row in "${sync_services[@]}"; do
   IFS=$'\t' read -r service source_image replicas explicit_image <<<"$row"
 
-  mapfile -t matches < <(
-    "${kube[@]}" get deployment -A \
-      -l "compose.project=${kube_project},compose.service=${service}" \
-      -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\n"}{end}'
-  )
+  matches_output=
+  for attempt in 1 2 3; do
+    if matches_output=$(
+      "${kube[@]}" get deployment -A \
+        -l "compose.project=${kube_project},compose.service=${service}" \
+        -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\n"}{end}'
+    ); then
+      break
+    fi
+    ((attempt < 3)) || die "cannot query Deployment for ${kube_project}/${service}"
+    log "Kubernetes API unavailable while locating $service; retrying ($attempt/3)"
+    sleep 5
+  done
+  matches=()
+  if [[ -n "$matches_output" ]]; then
+    mapfile -t matches <<<"$matches_output"
+  fi
   if ((${#matches[@]} == 0)); then
     log "skipping $service: no matching Deployment"
     continue
@@ -694,13 +706,22 @@ for row in "${sync_services[@]}"; do
   fi
 
   if ! image_id=$(docker image inspect "$source_image" --format '{{.Id}}' 2>/dev/null); then
-    if [[ "$skip_build" == true ]]; then
+    # A Compose build can replace/prune an external image tag while earlier
+    # services are being published. Re-pull explicit images immediately before
+    # rollout rather than failing after application images have been deployed.
+    if [[ "$explicit_image" == 1 ]]; then
+      log "explicit image disappeared before rollout; pulling $source_image again"
+      docker pull "$source_image" || die "docker pull failed for $source_image"
+      image_id=$(docker image inspect "$source_image" --format '{{.Id}}' 2>/dev/null) ||
+        die "Docker image not found after pull: $source_image"
+    elif [[ "$skip_build" == true ]]; then
       log "no local image $source_image; applying schema patches only"
       apply_schema_patches "$namespace" "$deployment" "$service" "$source_image"
       ((schema_patched += 1))
       continue
+    else
+      die "Docker image not found after build: $source_image"
     fi
-    die "Docker image not found after build: $source_image"
   fi
   short_id=${image_id#sha256:}
   short_id=${short_id:0:16}
