@@ -19,6 +19,7 @@ import {
   Modal,
   Pressable,
   Share,
+  Linking,
 } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -70,6 +71,36 @@ const parseMessageContent = (content) => {
     parts.push({ type: "text", content: content.slice(lastIndex) });
   }
   return parts.length ? parts : [{ type: "text", content }];
+};
+
+const renderTextWithLinks = (text, style, keyPrefix) => {
+  if (!text) return null;
+  const linkRe = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+  const nodes = [];
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+  while ((match = linkRe.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(text.slice(lastIndex, match.index));
+    }
+    const url = match[2];
+    const label = match[1];
+    nodes.push(
+      <Text
+        key={`${keyPrefix}-link-${key++}`}
+        style={[style, { textDecorationLine: "underline", fontWeight: "600" }]}
+        onPress={() => Linking.openURL(url)}
+      >
+        {label}
+      </Text>
+    );
+    lastIndex = linkRe.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    nodes.push(text.slice(lastIndex));
+  }
+  return nodes.length ? nodes : text;
 };
 
 function ChatScreen() {
@@ -308,7 +339,7 @@ function ChatScreen() {
         {parsed.map((part, i) =>
           part.type === "text" ? (
             <Text key={i} style={[styles.msgText, isUser && styles.msgTextUser]}>
-              {part.content}
+              {renderTextWithLinks(part.content, [styles.msgText, isUser && styles.msgTextUser], `t${i}`)}
             </Text>
           ) : (
             <View

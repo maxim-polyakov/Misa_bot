@@ -187,6 +187,37 @@ const Chat = observer(() => {
         return parts.length ? parts : [{ type: 'text', content }];
     };
 
+    const renderTextWithLinks = (text) => {
+        if (!text) return null;
+        const linkRe = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+        const nodes = [];
+        let lastIndex = 0;
+        let match;
+        let key = 0;
+        while ((match = linkRe.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                nodes.push(text.slice(lastIndex, match.index));
+            }
+            nodes.push(
+                <a
+                    key={`md-link-${key++}`}
+                    href={match[2]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="message-md-link"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {match[1]}
+                </a>
+            );
+            lastIndex = linkRe.lastIndex;
+        }
+        if (lastIndex < text.length) {
+            nodes.push(text.slice(lastIndex));
+        }
+        return nodes.length ? nodes : text;
+    };
+
     const isShareMode = chatStore.shareModeForChatId === chatStore.currentChatId;
 
     const renderMessage = (msg) => {
@@ -221,7 +252,7 @@ const Chat = observer(() => {
                 <div className="message-text">
                     {parsed.map((part, i) =>
                         part.type === 'text' ? (
-                            <span key={i} style={{ whiteSpace: 'pre-line' }}>{part.content}</span>
+                            <span key={i} style={{ whiteSpace: 'pre-line' }}>{renderTextWithLinks(part.content)}</span>
                         ) : (
                             <div key={i} className={`message-code-block message-code-block--${part.blockType}`}>
                                 <div className="message-code-header">{part.language}</div>

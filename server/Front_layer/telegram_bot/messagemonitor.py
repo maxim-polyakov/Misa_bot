@@ -8,6 +8,10 @@ from Core_layer.Bot_package.Classes.response_utils import (
     is_image_url,
     is_local_image_path,
 )
+from Core_layer.Bot_package.Classes.telegram_format import (
+    has_markdown_link,
+    markdown_links_to_telegram_html,
+)
 
 
 @telegram_bot.dp.message_handler(content_types=['text'])
@@ -22,7 +26,15 @@ async def get_user_text(message):
                 message.chat.id, open('txtfiles/message.txt', 'r+', encoding='utf-8')
             )
         else:
-            await telegram_bot.boto.send_message(message.chat.id, output)
+            if has_markdown_link(output):
+                await telegram_bot.boto.send_message(
+                    message.chat.id,
+                    markdown_links_to_telegram_html(output),
+                    parse_mode='HTML',
+                    disable_web_page_preview=False,
+                )
+            else:
+                await telegram_bot.boto.send_message(message.chat.id, output)
 
     async def send_response_parts(output):
         parts = clean_command_response(output)

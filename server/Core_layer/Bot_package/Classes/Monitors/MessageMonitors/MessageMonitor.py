@@ -5,6 +5,7 @@ from Core_layer.Bot_package.Interfaces import IMonitor
 from Core_layer.Answer_package.Classes import GptAnswer
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Deep_layer.RAG_package.Classes.RagService import RagService
+from Deep_layer.API_package.Classes.GradiusService import GradiusService
 
 
 def _text_without_urls_for_misa_trigger(text):
@@ -155,6 +156,17 @@ class MessageMonitor(IMonitor.IMonitor):
             logging.exception('The exception occurred in messagemonitor.check: ' + str(e))
 
     @classmethod
+    def _gradius_ids(cls, message, user, pltype, chat_id=None):
+        user_id = str(user or '').strip() or 'anonymous'
+        if pltype == 'telegram':
+            from_user = getattr(message, 'from_user', None)
+            if from_user is not None and getattr(from_user, 'id', None) is not None:
+                user_id = str(from_user.id)
+        platform = 'web' if pltype == 'server' else pltype
+        gradius_chat_id = str(chat_id).strip() if chat_id else f'{platform}_{user_id}'
+        return gradius_chat_id, user_id, platform
+
+    @classmethod
     def monitor(cls, message, user, command, pltype, chat_id=None):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
@@ -171,13 +183,36 @@ class MessageMonitor(IMonitor.IMonitor):
                 logging.info('messagemonitor.monitor: no bot trigger, skip reply (%s)', pltype)
                 return ''
 
+            gradius_chat_id, gradius_user_id, platform = cls._gradius_ids(
+                message, user, pltype, chat_id=chat_id
+            )
+            try:
+                GradiusService.track_user_message(
+                    chat_id=gradius_chat_id,
+                    user_id=gradius_user_id,
+                    text=str(lowertext or ''),
+                    platform=platform,
+                )
+            except Exception as e:
+                logging.warning('messagemonitor.monitor: gradius user track failed: %s', e)
+
             lowertext = _strip_bot_address(lowertext)
             outlist = cls._neurodesc(
                 [lowertext], user, lowertext, command, pltype=pltype, chat_id=chat_id
             )
             if outlist is None:
                 return ''
-            return ''.join(str(m) for m in outlist)
+            answer = ''.join(str(m) for m in outlist)
+            try:
+                answer = GradiusService.enrich_assistant_answer(
+                    chat_id=gradius_chat_id,
+                    user_id=gradius_user_id,
+                    text=answer,
+                    platform=platform,
+                )
+            except Exception as e:
+                logging.warning('messagemonitor.monitor: gradius assistant enrich failed: %s', e)
+            return answer
         except Exception as e:
             logging.exception('The exception occurred in messagemonitor.monitor: ' + str(e))
             return ''

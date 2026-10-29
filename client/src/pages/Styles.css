@@ -439,8 +439,18 @@ body {
     color: var(--text-primary);
 }
 
+.message-text .message-md-link {
+    color: var(--accent, #2f6fed);
+    text-decoration: underline;
+    font-weight: 500;
+}
+
 .user-message .message-text {
     color: white;
+}
+
+.user-message .message-text .message-md-link {
+    color: #dce9ff;
 }
 
 .message-time {
