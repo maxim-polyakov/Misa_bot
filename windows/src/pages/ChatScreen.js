@@ -73,7 +73,22 @@ const parseMessageContent = (content) => {
   return parts.length ? parts : [{ type: "text", content }];
 };
 
-const renderTextWithLinks = (text, style, keyPrefix) => {
+const splitMessageAds = (content) => {
+  if (!content || typeof content !== "string") return { body: "", ads: [] };
+  const adRe = /<<<misa-ad>>>\s*([\s\S]*?)\s*<<<\/misa-ad>>>/gi;
+  const ads = [];
+  const body = content
+    .replace(adRe, (_, ad) => {
+      const trimmed = (ad || "").trim();
+      if (trimmed) ads.push(trimmed);
+      return "";
+    })
+    .replace(/\n{3,}/g, "\n\n")
+    .trimEnd();
+  return { body, ads };
+};
+
+const renderTextWithLinks = (text, style, linkStyle, keyPrefix) => {
   if (!text) return null;
   const linkRe = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
   const nodes = [];
@@ -89,7 +104,7 @@ const renderTextWithLinks = (text, style, keyPrefix) => {
     nodes.push(
       <Text
         key={`${keyPrefix}-link-${key++}`}
-        style={[style, { textDecorationLine: "underline", fontWeight: "600" }]}
+        style={linkStyle}
         onPress={() => Linking.openURL(url)}
       >
         {label}
@@ -333,13 +348,18 @@ function ChatScreen() {
   };
 
   const renderMessageContent = (content, isUser) => {
-    const parsed = parseMessageContent(content);
+    const { body, ads } = splitMessageAds(content);
+    const parsed = parseMessageContent(body);
+    const textStyle = [styles.msgText, isUser && styles.msgTextUser];
+    const linkStyle = [styles.msgLink, isUser && styles.msgLinkUser];
+    const adTextStyle = [styles.adBody, isUser && styles.adBodyUser];
+    const adLinkStyle = [styles.adLink, isUser && styles.adLinkUser];
     return (
       <View style={styles.msgContentWrap}>
         {parsed.map((part, i) =>
           part.type === "text" ? (
-            <Text key={i} style={[styles.msgText, isUser && styles.msgTextUser]}>
-              {renderTextWithLinks(part.content, [styles.msgText, isUser && styles.msgTextUser], `t${i}`)}
+            <Text key={i} style={textStyle}>
+              {renderTextWithLinks(part.content, textStyle, linkStyle, `t${i}`)}
             </Text>
           ) : (
             <View
@@ -363,6 +383,14 @@ function ChatScreen() {
             </View>
           )
         )}
+        {ads.map((ad, idx) => (
+          <View key={`ad-${idx}`} style={[styles.adBlock, isUser && styles.adBlockUser]}>
+            <Text style={[styles.adLabel, isUser && styles.adLabelUser]}>Реклама</Text>
+            <Text style={adTextStyle} selectable>
+              {renderTextWithLinks(ad, adTextStyle, adLinkStyle, `ad${idx}`)}
+            </Text>
+          </View>
+        ))}
       </View>
     );
   };
@@ -1226,6 +1254,47 @@ const createStyles = (colors) =>
   msgContentWrap: { gap: 8 },
   msgText: { fontSize: 16, color: colors.textPrimary },
   msgTextUser: { color: "#fff" },
+  msgLink: {
+    color: colors.accentColor,
+    textDecorationLine: "underline",
+    fontWeight: "600",
+  },
+  msgLinkUser: { color: "#dce9ff" },
+  adBlock: {
+    marginTop: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.accentColor,
+    backgroundColor: "rgba(47, 111, 237, 0.08)",
+    borderRadius: 8,
+  },
+  adBlockUser: {
+    borderLeftColor: "#dce9ff",
+    backgroundColor: "rgba(255,255,255,0.14)",
+  },
+  adLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
+    color: colors.textSecondary || colors.textPrimary,
+    opacity: 0.7,
+    marginBottom: 2,
+  },
+  adLabelUser: { color: "#fff", opacity: 0.75 },
+  adBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.textPrimary,
+  },
+  adBodyUser: { color: "#fff" },
+  adLink: {
+    color: colors.accentColor,
+    textDecorationLine: "underline",
+    fontWeight: "700",
+  },
+  adLinkUser: { color: "#dce9ff" },
   codeBlock: {
     backgroundColor: "#0d1117",
     borderWidth: 2,

@@ -187,6 +187,18 @@ const Chat = observer(() => {
         return parts.length ? parts : [{ type: 'text', content }];
     };
 
+    const splitMessageAds = (content) => {
+        if (!content || typeof content !== 'string') return { body: '', ads: [] };
+        const adRe = /<<<misa-ad>>>\s*([\s\S]*?)\s*<<<\/misa-ad>>>/gi;
+        const ads = [];
+        const body = content.replace(adRe, (_, ad) => {
+            const trimmed = (ad || '').trim();
+            if (trimmed) ads.push(trimmed);
+            return '';
+        }).replace(/\n{3,}/g, '\n\n').trimEnd();
+        return { body, ads };
+    };
+
     const renderTextWithLinks = (text) => {
         if (!text) return null;
         const linkRe = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
@@ -246,8 +258,9 @@ const Chat = observer(() => {
                     />
                 );
             }
-            const parsed = parseMessageContent(messageContent);
-            const shareLinks = extractShareLinksFromText(messageContent);
+            const { body, ads } = splitMessageAds(messageContent);
+            const parsed = parseMessageContent(body);
+            const shareLinks = extractShareLinksFromText(body);
             return (
                 <div className="message-text">
                     {parsed.map((part, i) =>
@@ -266,6 +279,12 @@ const Chat = observer(() => {
                             chatId={link.chatId}
                             query={link.query}
                         />
+                    ))}
+                    {ads.map((ad, idx) => (
+                        <div key={`ad-${idx}`} className="message-ad">
+                            <div className="message-ad-label">Реклама</div>
+                            <div className="message-ad-body">{renderTextWithLinks(ad)}</div>
+                        </div>
                     ))}
                 </div>
             );

@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from typing import Any, Optional
 
 import requests
@@ -14,6 +15,8 @@ if os.path.exists(_env_path):
 
 _DEFAULT_BASE_URL = 'https://api.adlean.pro'
 _ENDPOINT = '/v1/native/dialogue_model/chat'
+AD_START = '<<<misa-ad>>>'
+AD_END = '<<</misa-ad>>>'
 
 
 class GradiusService:
@@ -92,6 +95,7 @@ class GradiusService:
 
     @classmethod
     def insert_native_ads(cls, answer: str, response: list) -> str:
+        """Всегда добавляет рекламу в конец ответа в маркерах <<<misa-ad>>>…<<</misa-ad>>>."""
         ads = [
             item for item in (response or [])
             if isinstance(item, dict) and item.get('type') == 'native-text-ad'
@@ -99,26 +103,36 @@ class GradiusService:
         if not ads:
             return answer
 
-        # С конца, чтобы индексы не сдвигались.
+        # Порядок по insert_index (как вернул Gradius), но блок целиком — снизу.
         ads_sorted = sorted(
             ads,
             key=lambda item: int(((item.get('content') or {}).get('insert_index') or 0)),
-            reverse=True,
         )
-        result = answer
+        blocks = []
         for item in ads_sorted:
             content = item.get('content') or {}
             ad_text = (content.get('content') or '').strip()
-            if not ad_text:
-                continue
-            try:
-                insert_index = int(content.get('insert_index') or 0)
-            except (TypeError, ValueError):
-                insert_index = len(result)
-            insert_index = max(0, min(insert_index, len(result)))
-            # Как в docs.gradius.pro: вставка по insert_index с пробелами по краям.
-            result = f'{result[:insert_index]} {ad_text} {result[insert_index:]}'
-        return result
+            if ad_text:
+                blocks.append(f'{AD_START}\n{ad_text}\n{AD_END}')
+        if not blocks:
+            return answer
+
+        base = str(answer or '').rstrip()
+        joined = '\n'.join(blocks)
+        return f'{base}\n\n{joined}' if base else joined
+
+    @classmethod
+    def split_ads(cls, text: str) -> tuple[str, list[str]]:
+        """Отделяет тело ответа от блоков <<<misa-ad>>>."""
+        if not text or AD_START not in text:
+            return str(text or ''), []
+        pattern = re.compile(
+            re.escape(AD_START) + r'\s*([\s\S]*?)\s*' + re.escape(AD_END),
+            re.IGNORECASE,
+        )
+        ads = [m.group(1).strip() for m in pattern.finditer(text) if m.group(1).strip()]
+        body = pattern.sub('', text).rstrip()
+        return body, ads
 
     @classmethod
     def _looks_like_media_only(cls, text: str) -> bool:
