@@ -107,18 +107,39 @@ const splitTextIntoRenderBlocks = (text) => {
   return paragraphs.flatMap(splitLongBlock);
 };
 
+const AD_START = "<<<misa-ad>>>";
+const AD_END = "<<</misa-ad>>>";
+
 const splitMessageAds = (content) => {
-  if (!content || typeof content !== "string") return { body: "", ads: [] };
-  const adRe = /<<<misa-ad>>>\s*([\s\S]*?)\s*<<<\/misa-ad>>>/gi;
+  // Hermes иногда плохо матчит regex с <<<>>>, поэтому режем через indexOf.
+  let body = String(content ?? "");
+  if (!body.includes("misa-ad")) return { body, ads: [] };
+
+  body = body
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">");
+
   const ads = [];
-  const body = content
-    .replace(adRe, (_, ad) => {
-      const trimmed = (ad || "").trim();
-      if (trimmed) ads.push(trimmed);
-      return "";
-    })
+  for (;;) {
+    const start = body.indexOf(AD_START);
+    if (start < 0) break;
+    const innerStart = start + AD_START.length;
+    const end = body.indexOf(AD_END, innerStart);
+    if (end < 0) {
+      body = `${body.slice(0, start)}${body.slice(innerStart)}`;
+      break;
+    }
+    const ad = body.slice(innerStart, end).trim();
+    if (ad) ads.push(ad);
+    body = `${body.slice(0, start)}${body.slice(end + AD_END.length)}`;
+  }
+
+  // На случай битых/старых маркеров — не показываем сырые теги.
+  body = body
+    .replace(/<{2,4}\s*\/?\s*misa-ad\s*>{2,4}/gi, "")
     .replace(/\n{3,}/g, "\n\n")
     .trimEnd();
+
   return { body, ads };
 };
 
@@ -1154,28 +1175,30 @@ const createStyles = (colors) =>
   },
   msgLinkUser: { color: "#dce9ff" },
   adBlock: {
-    marginTop: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.accentColor,
-    backgroundColor: "rgba(47, 111, 237, 0.08)",
-    borderRadius: 8,
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: colors.accentColor || "#2f6fed",
+    borderLeftWidth: 4,
+    borderLeftColor: colors.accentColor || "#2f6fed",
+    backgroundColor: "rgba(47, 111, 237, 0.16)",
+    borderRadius: 10,
   },
   adBlockUser: {
+    borderColor: "rgba(220, 233, 255, 0.55)",
     borderLeftColor: "#dce9ff",
-    backgroundColor: "rgba(255,255,255,0.14)",
+    backgroundColor: "rgba(255,255,255,0.18)",
   },
   adLabel: {
     fontSize: 11,
     fontWeight: "700",
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
     textTransform: "uppercase",
-    color: colors.textSecondary || colors.textPrimary,
-    opacity: 0.7,
-    marginBottom: 2,
+    color: colors.accentColor || "#2f6fed",
+    marginBottom: 4,
   },
-  adLabelUser: { color: "#fff", opacity: 0.75 },
+  adLabelUser: { color: "#dce9ff" },
   adBody: {
     fontSize: 14,
     lineHeight: 20,
@@ -1183,7 +1206,7 @@ const createStyles = (colors) =>
   },
   adBodyUser: { color: "#fff" },
   adLink: {
-    color: colors.accentColor,
+    color: colors.accentColor || "#2f6fed",
     textDecorationLine: "underline",
     fontWeight: "700",
   },

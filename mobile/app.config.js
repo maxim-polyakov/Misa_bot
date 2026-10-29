@@ -12,7 +12,7 @@ export default {
       ["expo-file-system", { enableFileSharing: true }],
     ],
     slug: "misa-android",
-    version: "1.0.17",
+    version: "1.0.18",
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
@@ -24,14 +24,14 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "ru.baxic.misa",
-      buildNumber: "20",
+      buildNumber: "21",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
     },
     android: {
       package: "ru.baxic.misa",
-      versionCode: 20,
+      versionCode: 21,
       softwareKeyboardLayoutMode: "resize",
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",

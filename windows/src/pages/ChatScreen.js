@@ -73,18 +73,37 @@ const parseMessageContent = (content) => {
   return parts.length ? parts : [{ type: "text", content }];
 };
 
+const AD_START = "<<<misa-ad>>>";
+const AD_END = "<<</misa-ad>>>";
+
 const splitMessageAds = (content) => {
-  if (!content || typeof content !== "string") return { body: "", ads: [] };
-  const adRe = /<<<misa-ad>>>\s*([\s\S]*?)\s*<<<\/misa-ad>>>/gi;
+  let body = String(content ?? "");
+  if (!body.includes("misa-ad")) return { body, ads: [] };
+
+  body = body
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">");
+
   const ads = [];
-  const body = content
-    .replace(adRe, (_, ad) => {
-      const trimmed = (ad || "").trim();
-      if (trimmed) ads.push(trimmed);
-      return "";
-    })
+  for (;;) {
+    const start = body.indexOf(AD_START);
+    if (start < 0) break;
+    const innerStart = start + AD_START.length;
+    const end = body.indexOf(AD_END, innerStart);
+    if (end < 0) {
+      body = `${body.slice(0, start)}${body.slice(innerStart)}`;
+      break;
+    }
+    const ad = body.slice(innerStart, end).trim();
+    if (ad) ads.push(ad);
+    body = `${body.slice(0, start)}${body.slice(end + AD_END.length)}`;
+  }
+
+  body = body
+    .replace(/<{2,4}\s*\/?\s*misa-ad\s*>{2,4}/gi, "")
     .replace(/\n{3,}/g, "\n\n")
     .trimEnd();
+
   return { body, ads };
 };
 
