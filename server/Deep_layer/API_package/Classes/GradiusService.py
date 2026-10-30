@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import logging
 import os
 import re
@@ -41,6 +43,33 @@ class GradiusService:
     def _model_version(cls) -> Optional[str]:
         value = (os.getenv('GRADIUS_MODEL_VERSION') or 'gpt-4o').strip()
         return value or None
+
+    @classmethod
+    def pseudonymous_user_id(
+        cls,
+        *,
+        user_id: str,
+        chat_id: str,
+        platform: str,
+    ) -> str:
+        """Возвращает стабильный для чата ID, не раскрывающий ID аккаунта."""
+        secret = (
+            os.getenv('GRADIUS_USER_ID_SECRET')
+            or os.getenv('DJANGO_SECRET_KEY')
+            or cls._api_key()
+            or 'misa-gradius-user-id-v1'
+        )
+        payload = '\0'.join((
+            str(platform or 'web').strip() or 'web',
+            str(user_id or 'anonymous').strip() or 'anonymous',
+            str(chat_id or '').strip(),
+        ))
+        digest = hmac.new(
+            str(secret).encode('utf-8'),
+            payload.encode('utf-8'),
+            hashlib.sha256,
+        ).hexdigest()
+        return f'misa_{digest[:32]}'
 
     @classmethod
     def track_user_message(

@@ -157,14 +157,23 @@ class MessageMonitor(IMonitor.IMonitor):
 
     @classmethod
     def _gradius_ids(cls, message, user, pltype, chat_id=None):
-        user_id = str(user or '').strip() or 'anonymous'
+        source_user_id = str(user or '').strip() or 'anonymous'
         if pltype == 'telegram':
             from_user = getattr(message, 'from_user', None)
             if from_user is not None and getattr(from_user, 'id', None) is not None:
-                user_id = str(from_user.id)
+                source_user_id = str(from_user.id)
         platform = 'web' if pltype == 'server' else pltype
-        gradius_chat_id = str(chat_id).strip() if chat_id else f'{platform}_{user_id}'
-        return gradius_chat_id, user_id, platform
+        gradius_chat_id = (
+            str(chat_id).strip()
+            if chat_id
+            else f'{platform}_{source_user_id}'
+        )
+        gradius_user_id = GradiusService.pseudonymous_user_id(
+            user_id=source_user_id,
+            chat_id=gradius_chat_id,
+            platform=platform,
+        )
+        return gradius_chat_id, gradius_user_id, platform
 
     @classmethod
     def monitor(cls, message, user, command, pltype, chat_id=None):
