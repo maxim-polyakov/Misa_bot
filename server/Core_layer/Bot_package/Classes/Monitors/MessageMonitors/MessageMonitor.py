@@ -213,11 +213,16 @@ class MessageMonitor(IMonitor.IMonitor):
                 return ''
             answer = ''.join(str(m) for m in outlist)
             try:
+                existing_ad_count = 0
+                if pltype == 'server' and chat_id:
+                    from Core_layer.Chat_package.Classes.ChatService import ChatService
+                    existing_ad_count = ChatService.count_native_ads(chat_id)
                 answer = GradiusService.enrich_assistant_answer(
                     chat_id=gradius_chat_id,
                     user_id=gradius_user_id,
                     text=answer,
                     platform=platform,
+                    existing_ad_count=existing_ad_count,
                 )
             except Exception as e:
                 logging.warning('messagemonitor.monitor: gradius assistant enrich failed: %s', e)

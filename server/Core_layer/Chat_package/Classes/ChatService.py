@@ -80,6 +80,21 @@ class ChatService:
             return []
 
     @classmethod
+    def count_native_ads(cls, chat_id):
+        """Количество уже показанных рекламных блоков в чате."""
+        try:
+            df = DB_Communication.DB_Communication().execute_query(
+                "SELECT COALESCE(SUM((LENGTH(content) - LENGTH(REPLACE(content, '<<<misa-ad>>>', ''))) / LENGTH('<<<misa-ad>>>')), 0) AS ad_count "
+                "FROM chat.chat_messages WHERE chat_id = %s AND \"user\" = 'Misa'",
+                (chat_id,)
+            )
+            if df is not None and not df.empty:
+                return int(df.iloc[0]['ad_count'])
+        except Exception as e:
+            logging.error(f"ChatService.count_native_ads error: {str(e)}")
+        return 0
+
+    @classmethod
     def save_message(cls, chat_id, user, content, is_image=False):
         """Сохранить сообщение в БД. Возвращает id или None."""
         try:

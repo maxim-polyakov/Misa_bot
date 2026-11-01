@@ -44,6 +44,40 @@ class TestCase_GradiusService(unittest.TestCase):
 
         self.assertNotEqual(first, second)
 
+    def test_insert_native_ads_respects_remaining_chat_limit(self):
+        placements = [
+            {
+                'type': 'native-text-ad',
+                'content': {'content': f'ad-{index}', 'insert_index': index},
+            }
+            for index in range(3)
+        ]
+
+        result = GradiusService.insert_native_ads('answer', placements, max_ads=2)
+
+        self.assertEqual(result.count('<<<misa-ad>>>'), 2)
+        self.assertIn('ad-0', result)
+        self.assertIn('ad-1', result)
+        self.assertNotIn('ad-2', result)
+
+    def test_enrichment_skips_request_after_ten_ads_in_chat(self):
+        with patch.dict(
+            os.environ,
+            {
+                'GRADIUS_API_KEY': 'test-key',
+                'GRADIUS_MAX_ADS_PER_CHAT': '10',
+            },
+        ), patch.object(GradiusService, '_request') as request:
+            result = GradiusService.enrich_assistant_answer(
+                chat_id='chat-1',
+                user_id='user-1',
+                text='answer',
+                existing_ad_count=10,
+            )
+
+        self.assertEqual(result, 'answer')
+        request.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

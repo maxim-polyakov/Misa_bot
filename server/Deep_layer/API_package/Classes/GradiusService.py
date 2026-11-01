@@ -25,6 +25,13 @@ class GradiusService:
     """Нативная реклама Gradius для диалоговых ответов модели."""
 
     @classmethod
+    def max_ads_per_chat(cls) -> int:
+        try:
+            return max(0, int(os.getenv('GRADIUS_MAX_ADS_PER_CHAT', '10')))
+        except (TypeError, ValueError):
+            return 10
+
+    @classmethod
     def is_enabled(cls) -> bool:
         flag = (os.getenv('GRADIUS_ENABLED') or 'true').strip().lower()
         if flag in ('0', 'false', 'no', 'off'):
@@ -102,11 +109,15 @@ class GradiusService:
         lang: str = 'ru',
         platform: str = 'web',
         model_version: Optional[str] = None,
+        existing_ad_count: int = 0,
     ) -> str:
         """Запрашивает вставки и вставляет native-text-ad по insert_index."""
         if not text or not str(text).strip():
             return text
         if cls._looks_like_media_only(text):
+            return text
+        remaining = max(0, cls.max_ads_per_chat() - max(0, existing_ad_count))
+        if remaining == 0:
             return text
 
         placements = cls._request(
@@ -120,10 +131,15 @@ class GradiusService:
         )
         if not placements:
             return text
-        return cls.insert_native_ads(str(text), placements)
+        return cls.insert_native_ads(str(text), placements, max_ads=remaining)
 
     @classmethod
-    def insert_native_ads(cls, answer: str, response: list) -> str:
+    def insert_native_ads(
+        cls,
+        answer: str,
+        response: list,
+        max_ads: Optional[int] = None,
+    ) -> str:
         """Всегда добавляет рекламу в конец ответа в маркерах <<<misa-ad>>>…<<</misa-ad>>>."""
         ads = [
             item for item in (response or [])
@@ -137,6 +153,8 @@ class GradiusService:
             ads,
             key=lambda item: int(((item.get('content') or {}).get('insert_index') or 0)),
         )
+        if max_ads is not None:
+            ads_sorted = ads_sorted[:max(0, max_ads)]
         blocks = []
         for item in ads_sorted:
             content = item.get('content') or {}
