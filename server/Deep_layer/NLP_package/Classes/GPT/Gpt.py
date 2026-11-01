@@ -1,9 +1,20 @@
-from Deep_layer.NLP_package.Interfaces import IGpt
-from openai import OpenAI
 import logging
-import time
+import os
 import threading
+import time
+
+from openai import OpenAI
+
 from Deep_layer.DB_package.Classes import DB_Communication
+from Deep_layer.NLP_package.Interfaces import IGpt
+
+
+def _positive_int_env(name, default):
+    try:
+        value = int(os.getenv(name, str(default)))
+        return value if value > 0 else default
+    except (TypeError, ValueError):
+        return default
 
 
 def _conversation_key(user, chat_id=None):
@@ -54,7 +65,9 @@ class Gpt(IGpt.IGpt):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
 
         try:
-            max_history = 100
+            max_history_messages = _positive_int_env(
+                'OPENAI_MAX_HISTORY_MESSAGES', 20
+            )
 
             key = _conversation_key(user, chat_id)
             with cls._cleanup_lock:
@@ -81,8 +94,8 @@ class Gpt(IGpt.IGpt):
                 })
 
                 # Limit history length to prevent token overflow
-                if len(conversation_history) > max_history * 2:
-                    conversation_history = conversation_history[-(max_history * 2):]
+                if len(conversation_history) > max_history_messages:
+                    conversation_history = conversation_history[-max_history_messages:]
                     user_data['history'] = conversation_history
 
             # retrieving api tokens from the database
@@ -140,9 +153,16 @@ class Gpt(IGpt.IGpt):
             messages = api_messages if is_command_check else [{"role": "system", "content": system_prompt}] + api_messages
 
             temperature = 0.2 if rag_context and not is_command_check else (0 if is_command_check else 1)
+            model = (os.getenv('OPENAI_CHAT_MODEL') or 'gpt-4o-mini').strip()
+            max_output_tokens = _positive_int_env(
+                'OPENAI_COMMAND_MAX_OUTPUT_TOKENS' if is_command_check
+                else 'OPENAI_MAX_OUTPUT_TOKENS',
+                32 if is_command_check else 500,
+            )
             response = client.chat.completions.create(
-                model='gpt-4o',
+                model=model,
                 messages=messages,
+                max_tokens=max_output_tokens,
                 temperature=temperature,
                 top_p=1,
                 frequency_penalty=0,

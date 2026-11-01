@@ -2,6 +2,7 @@ import unittest
 from Core_layer.Test_package.Classes.PythonTests import (
     TestCase_Auth_package,
     TestCase_API_views,
+    TestCase_GptConfig,
     TestCase_GradiusService,
     TestCase_ResponseUtils,
 )
@@ -21,6 +22,8 @@ class TestRun:
         suite.addTests(loader.loadTestsFromModule(TestCase_API_views))
         # Pure command response parsing
         suite.addTests(loader.loadTestsFromModule(TestCase_ResponseUtils))
+        # OpenAI token-saving environment settings
+        suite.addTests(loader.loadTestsFromModule(TestCase_GptConfig))
         # Gradius receives a pseudonymous ID scoped to each chat
         suite.addTests(loader.loadTestsFromModule(TestCase_GradiusService))
 
