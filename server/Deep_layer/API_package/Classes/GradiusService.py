@@ -32,6 +32,13 @@ class GradiusService:
             return 10
 
     @classmethod
+    def requests_per_answer(cls) -> int:
+        try:
+            return max(1, int(os.getenv('GRADIUS_REQUESTS_PER_ANSWER', '1')))
+        except (TypeError, ValueError):
+            return 1
+
+    @classmethod
     def is_enabled(cls) -> bool:
         flag = (os.getenv('GRADIUS_ENABLED') or 'true').strip().lower()
         if flag in ('0', 'false', 'no', 'off'):
@@ -120,15 +127,18 @@ class GradiusService:
         if remaining == 0:
             return text
 
-        placements = cls._request(
-            chat_id=chat_id,
-            user_id=user_id,
-            role='assistant',
-            text=text,
-            lang=lang,
-            platform=platform,
-            model_version=model_version or cls._model_version(),
-        )
+        placements = []
+        request_count = min(cls.requests_per_answer(), remaining)
+        for _ in range(request_count):
+            placements.extend(cls._request(
+                chat_id=chat_id,
+                user_id=user_id,
+                role='assistant',
+                text=text,
+                lang=lang,
+                platform=platform,
+                model_version=model_version or cls._model_version(),
+            ))
         if not placements:
             return text
         return cls.insert_native_ads(str(text), placements, max_ads=remaining)

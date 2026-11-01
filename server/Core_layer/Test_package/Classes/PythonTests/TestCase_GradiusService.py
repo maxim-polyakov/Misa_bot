@@ -78,6 +78,31 @@ class TestCase_GradiusService(unittest.TestCase):
         self.assertEqual(result, 'answer')
         request.assert_not_called()
 
+    def test_enrichment_collects_ten_test_api_responses(self):
+        def placement(*args, **kwargs):
+            index = request.call_count
+            return [{
+                'type': 'native-text-ad',
+                'content': {'content': f'ad-{index}', 'insert_index': index},
+            }]
+
+        with patch.dict(
+            os.environ,
+            {
+                'GRADIUS_API_KEY': 'test-key',
+                'GRADIUS_MAX_ADS_PER_CHAT': '10',
+                'GRADIUS_REQUESTS_PER_ANSWER': '10',
+            },
+        ), patch.object(GradiusService, '_request', side_effect=placement) as request:
+            result = GradiusService.enrich_assistant_answer(
+                chat_id='chat-1',
+                user_id='user-1',
+                text='answer',
+            )
+
+        self.assertEqual(request.call_count, 10)
+        self.assertEqual(result.count('<<<misa-ad>>>'), 10)
+
 
 if __name__ == '__main__':
     unittest.main()
