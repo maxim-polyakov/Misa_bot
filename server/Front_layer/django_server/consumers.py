@@ -357,18 +357,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
             await database_sync_to_async(_set_chat_generating)(chat_id, True)
             await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
-            # Генерация заголовка в фоне — не блокирует ответ Мисы
-            if not is_image:
-                async def _gen_and_broadcast_title():
-                    def _gen():
-                        t = GptAnswer.GptAnswer.generate_chat_title_from_message(content)
-                        if t and ChatService.update_title(chat_id, t):
-                            return t
-                        return None
-                    title = await database_sync_to_async(_gen)()
-                    if title:
-                        await self._broadcast_title(chat_id, title)
-                self._spawn_task(_gen_and_broadcast_title(), "generate_title_from_message")
 
         try:
             message_monitor = MessageMonitorServer.MessageMonitorServer(user=user, message=content, chat_id=chat_id)
@@ -397,9 +385,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 if t and ChatService.update_title(chat_id, t):
                     return t
                 return None
-            title = await database_sync_to_async(_generate_and_save_title)()
-            if title:
-                await self._broadcast_title(chat_id, title)
+            async def _generate_contextual_title():
+                title = await database_sync_to_async(_generate_and_save_title)()
+                if title:
+                    await self._broadcast_title(chat_id, title)
+
+            self._spawn_task(_generate_contextual_title(), "generate_contextual_title")
 
             return response
         finally:
