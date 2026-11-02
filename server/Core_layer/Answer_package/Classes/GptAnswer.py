@@ -11,6 +11,15 @@ class GptAnswer(IAnswer.IAnswer):
 
     """
     __gpt = Gpt.Gpt()
+    _ad_block_pattern = re.compile(
+        r'<<<misa-ad>>>\s*[\s\S]*?\s*<<</misa-ad>>>',
+        re.IGNORECASE,
+    )
+
+    @classmethod
+    def _without_ads(cls, content):
+        """Удалить рекламные блоки из текста для служебной обработки."""
+        return cls._ad_block_pattern.sub('', str(content or '')).strip()
 
     @classmethod
     def answer(cls, text, user, is_command_check, chat_id=None, rag_context=None):
@@ -43,10 +52,11 @@ class GptAnswer(IAnswer.IAnswer):
     @classmethod
     def generate_chat_title_from_message(cls, content):
         """Сгенерировать заголовок по первому сообщению пользователя (сразу при отправке)."""
-        if not content or not str(content).strip():
+        content = cls._without_ads(content)
+        if not content:
             return None
         try:
-            text = str(content)[:500].replace('\n', ' ')
+            text = content[:500].replace('\n', ' ')
             prompt = (
                 "По первому сообщению пользователя сгенерируй краткий заголовок чата (до 28 символов). "
                 "Заголовок должен отражать суть или тему. Для приветствий (привет, здравствуй и т.п.) — "
@@ -71,7 +81,7 @@ class GptAnswer(IAnswer.IAnswer):
             context_parts = []
             for m in messages[-6:]:
                 role = "user" if str(m.get('user', '')).strip() != 'Misa' else "assistant"
-                content = str(m.get('content', ''))[:300].replace('\n', ' ')
+                content = cls._without_ads(m.get('content', ''))[:300].replace('\n', ' ')
                 if content.strip():
                     context_parts.append(f"{role}: {content.strip()}")
             if not context_parts:
