@@ -59,6 +59,32 @@ class Gpt(IGpt.IGpt):
     _cleanup_lock = threading.Lock()
     _client = None
     _client_lock = threading.Lock()
+    _response_cache = {}
+    _response_cache_lock = threading.Lock()
+
+    @classmethod
+    def _cached_first_turn_response(cls, text, model):
+        key = (str(model), ' '.join(str(text).lower().split()))
+        ttl = _positive_int_env('OPENAI_FIRST_TURN_CACHE_TTL', 3600)
+        with cls._response_cache_lock:
+            cached = cls._response_cache.get(key)
+            if cached and time.time() - cached[0] < ttl:
+                return cached[1]
+            if cached:
+                cls._response_cache.pop(key, None)
+        return None
+
+    @classmethod
+    def _cache_first_turn_response(cls, text, model, response):
+        key = (str(model), ' '.join(str(text).lower().split()))
+        with cls._response_cache_lock:
+            if len(cls._response_cache) >= 256:
+                oldest = min(
+                    cls._response_cache,
+                    key=lambda item: cls._response_cache[item][0],
+                )
+                cls._response_cache.pop(oldest, None)
+            cls._response_cache[key] = (time.time(), response)
 
     @classmethod
     def _openai_client(cls):
@@ -110,6 +136,7 @@ class Gpt(IGpt.IGpt):
 
                 user_data = cls._user_conversations[key]
                 conversation_history = user_data['history']
+                is_first_turn = not conversation_history
 
             # Start cleanup thread if not already running
             if not hasattr(cls, '_cleanup_thread_started'):
@@ -128,6 +155,29 @@ class Gpt(IGpt.IGpt):
                 if len(conversation_history) > max_history_messages:
                     conversation_history = conversation_history[-max_history_messages:]
                     user_data['history'] = conversation_history
+
+            model = (os.getenv('OPENAI_CHAT_MODEL') or 'gpt-4o-mini').strip()
+            cacheable_first_turn = (
+                is_first_turn
+                and not is_command_check
+                and not rag_context
+            )
+            cached_response = (
+                cls._cached_first_turn_response(text, model)
+                if cacheable_first_turn
+                else None
+            )
+            if cached_response is not None:
+                conversation_history.append({
+                    "role": "assistant",
+                    "content": cached_response,
+                })
+                logging.info(
+                    'gpt.generate first-turn cache hit. User: %s, Chat: %s',
+                    user,
+                    chat_id,
+                )
+                return cached_response
 
             client = cls._openai_client()
 
@@ -168,7 +218,6 @@ class Gpt(IGpt.IGpt):
             messages = api_messages if is_command_check else [{"role": "system", "content": system_prompt}] + api_messages
 
             temperature = 0.2 if rag_context and not is_command_check else (0 if is_command_check else 1)
-            model = (os.getenv('OPENAI_CHAT_MODEL') or 'gpt-4o-mini').strip()
             max_output_tokens = _positive_int_env(
                 'OPENAI_COMMAND_MAX_OUTPUT_TOKENS' if is_command_check
                 else 'OPENAI_MAX_OUTPUT_TOKENS',
@@ -194,6 +243,12 @@ class Gpt(IGpt.IGpt):
                     "role": "assistant",
                     "content": assistant_response,
                 })
+                if cacheable_first_turn:
+                    cls._cache_first_turn_response(
+                        text,
+                        model,
+                        assistant_response,
+                    )
 
             # logging successful completion of the method
             logging.info(
