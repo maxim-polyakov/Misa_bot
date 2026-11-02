@@ -3,7 +3,7 @@ import hmac
 import logging
 import os
 import re
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, TimeoutError, as_completed
 from typing import Any, Optional
 
 import requests
@@ -46,6 +46,13 @@ class GradiusService:
             return value if value > 0 else 8.0
         except (TypeError, ValueError):
             return 8.0
+
+    @classmethod
+    def ads_before_return(cls) -> int:
+        try:
+            return max(1, int(os.getenv('GRADIUS_ADS_BEFORE_RETURN', '5')))
+        except (TypeError, ValueError):
+            return 5
 
     @classmethod
     def is_enabled(cls) -> bool:
@@ -150,9 +157,42 @@ class GradiusService:
             )
 
         placements = []
-        with ThreadPoolExecutor(max_workers=request_count) as executor:
-            for response in executor.map(request_placement, range(request_count)):
-                placements.extend(response)
+        completed = set()
+        target_ads = min(cls.ads_before_return(), remaining)
+        executor = ThreadPoolExecutor(max_workers=request_count)
+        futures = [
+            executor.submit(request_placement, request_index)
+            for request_index in range(request_count)
+        ]
+        try:
+            for future in as_completed(
+                futures,
+                timeout=cls.request_timeout() + 0.5,
+            ):
+                completed.add(future)
+                placements.extend(future.result())
+                ad_count = sum(
+                    1 for item in placements
+                    if isinstance(item, dict)
+                    and item.get('type') == 'native-text-ad'
+                )
+                if ad_count >= target_ads:
+                    # Include responses which completed at the same time, but do
+                    # not hold the user response for slow upstream requests.
+                    for ready in futures:
+                        if ready not in completed and ready.done():
+                            completed.add(ready)
+                            placements.extend(ready.result())
+                    break
+        except TimeoutError:
+            logging.warning(
+                'GradiusService: response collection timed out after %.1fs',
+                cls.request_timeout(),
+            )
+        finally:
+            for future in futures:
+                future.cancel()
+            executor.shutdown(wait=False, cancel_futures=True)
         if not placements:
             return text
         return cls.insert_native_ads(str(text), placements, max_ads=remaining)

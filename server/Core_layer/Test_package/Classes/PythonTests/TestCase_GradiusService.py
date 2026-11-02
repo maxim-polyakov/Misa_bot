@@ -19,6 +19,17 @@ class TestCase_GradiusService(unittest.TestCase):
             ):
                 self.assertEqual(GradiusService.request_timeout(), 8.0)
 
+    def test_ad_return_target_is_configurable_and_bounded(self):
+        with patch.dict(os.environ, {'GRADIUS_ADS_BEFORE_RETURN': '7'}):
+            self.assertEqual(GradiusService.ads_before_return(), 7)
+        for value in ('invalid', '0', '-1'):
+            with self.subTest(value=value), patch.dict(
+                os.environ,
+                {'GRADIUS_ADS_BEFORE_RETURN': value},
+            ):
+                expected = 5 if value == 'invalid' else 1
+                self.assertEqual(GradiusService.ads_before_return(), expected)
+
     def test_user_id_is_stable_inside_chat_and_different_between_chats(self):
         with patch.dict(os.environ, {'GRADIUS_USER_ID_SECRET': 'test-secret'}):
             first = GradiusService.pseudonymous_user_id(
@@ -105,6 +116,7 @@ class TestCase_GradiusService(unittest.TestCase):
                 'GRADIUS_API_KEY': 'test-key',
                 'GRADIUS_MAX_ADS_PER_CHAT': '10',
                 'GRADIUS_REQUESTS_PER_ANSWER': '10',
+                'GRADIUS_ADS_BEFORE_RETURN': '10',
             },
         ), patch.object(GradiusService, '_request', side_effect=placement) as request:
             result = GradiusService.enrich_assistant_answer(
