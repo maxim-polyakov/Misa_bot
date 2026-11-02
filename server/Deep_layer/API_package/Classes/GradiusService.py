@@ -40,6 +40,14 @@ class GradiusService:
             return 1
 
     @classmethod
+    def request_timeout(cls) -> float:
+        try:
+            value = float(os.getenv('GRADIUS_REQUEST_TIMEOUT_SECONDS', '8'))
+            return value if value > 0 else 8.0
+        except (TypeError, ValueError):
+            return 8.0
+
+    @classmethod
     def is_enabled(cls) -> bool:
         flag = (os.getenv('GRADIUS_ENABLED') or 'true').strip().lower()
         if flag in ('0', 'false', 'no', 'off'):
@@ -257,7 +265,7 @@ class GradiusService:
                         'platform': platform or 'web',
                     },
                 },
-                timeout=12,
+                timeout=cls.request_timeout(),
             )
             resp.raise_for_status()
             data = resp.json()

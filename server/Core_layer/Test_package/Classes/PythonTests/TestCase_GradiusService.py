@@ -6,6 +6,19 @@ from Deep_layer.API_package.Classes.GradiusService import GradiusService
 
 
 class TestCase_GradiusService(unittest.TestCase):
+    def test_request_timeout_is_configurable_and_bounded(self):
+        with patch.dict(
+            os.environ,
+            {'GRADIUS_REQUEST_TIMEOUT_SECONDS': '6.5'},
+        ):
+            self.assertEqual(GradiusService.request_timeout(), 6.5)
+        for value in ('invalid', '0', '-1'):
+            with self.subTest(value=value), patch.dict(
+                os.environ,
+                {'GRADIUS_REQUEST_TIMEOUT_SECONDS': value},
+            ):
+                self.assertEqual(GradiusService.request_timeout(), 8.0)
+
     def test_user_id_is_stable_inside_chat_and_different_between_chats(self):
         with patch.dict(os.environ, {'GRADIUS_USER_ID_SECRET': 'test-secret'}):
             first = GradiusService.pseudonymous_user_id(
