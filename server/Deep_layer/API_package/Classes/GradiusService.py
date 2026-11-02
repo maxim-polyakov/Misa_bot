@@ -50,9 +50,9 @@ class GradiusService:
     @classmethod
     def ads_before_return(cls) -> int:
         try:
-            return max(1, int(os.getenv('GRADIUS_ADS_BEFORE_RETURN', '5')))
+            return max(1, int(os.getenv('GRADIUS_ADS_BEFORE_RETURN', '1')))
         except (TypeError, ValueError):
-            return 5
+            return 1
 
     @classmethod
     def is_enabled(cls) -> bool:

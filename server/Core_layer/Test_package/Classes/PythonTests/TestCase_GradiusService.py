@@ -27,8 +27,7 @@ class TestCase_GradiusService(unittest.TestCase):
                 os.environ,
                 {'GRADIUS_ADS_BEFORE_RETURN': value},
             ):
-                expected = 5 if value == 'invalid' else 1
-                self.assertEqual(GradiusService.ads_before_return(), expected)
+                self.assertEqual(GradiusService.ads_before_return(), 1)
 
     def test_user_id_is_stable_inside_chat_and_different_between_chats(self):
         with patch.dict(os.environ, {'GRADIUS_USER_ID_SECRET': 'test-secret'}):
