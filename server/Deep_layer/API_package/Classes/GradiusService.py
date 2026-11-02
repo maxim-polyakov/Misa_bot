@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError, as_completed
 from typing import Any, Optional
 
 import requests
+from requests.adapters import HTTPAdapter
 
 _env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '.env'))
 if os.path.exists(_env_path):
@@ -25,6 +26,15 @@ _completion_executor = ThreadPoolExecutor(
     max_workers=4,
     thread_name_prefix='gradius-completion',
 )
+_http_session = requests.Session()
+_http_adapter = HTTPAdapter(
+    pool_connections=20,
+    pool_maxsize=20,
+    max_retries=0,
+    pool_block=False,
+)
+_http_session.mount('https://', _http_adapter)
+_http_session.mount('http://', _http_adapter)
 
 
 class GradiusService:
@@ -322,7 +332,7 @@ class GradiusService:
 
         url = f'{cls._base_url()}{_ENDPOINT}'
         try:
-            resp = requests.post(
+            resp = _http_session.post(
                 url,
                 params=params,
                 headers={
