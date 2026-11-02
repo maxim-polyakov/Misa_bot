@@ -1,5 +1,6 @@
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor
 from Deep_layer.DB_package.Classes import DB_Communication
 from Core_layer.Bot_package.Interfaces import IMonitor
 from Core_layer.Answer_package.Classes import GptAnswer
@@ -195,20 +196,24 @@ class MessageMonitor(IMonitor.IMonitor):
             gradius_chat_id, gradius_user_id, platform = cls._gradius_ids(
                 message, user, pltype, chat_id=chat_id
             )
-            try:
-                GradiusService.track_user_message(
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                tracking = executor.submit(
+                    GradiusService.track_user_message,
                     chat_id=gradius_chat_id,
                     user_id=gradius_user_id,
                     text=str(lowertext or ''),
                     platform=platform,
                 )
-            except Exception as e:
-                logging.warning('messagemonitor.monitor: gradius user track failed: %s', e)
 
-            lowertext = _strip_bot_address(lowertext)
-            outlist = cls._neurodesc(
-                [lowertext], user, lowertext, command, pltype=pltype, chat_id=chat_id
-            )
+                lowertext = _strip_bot_address(lowertext)
+                outlist = cls._neurodesc(
+                    [lowertext], user, lowertext, command, pltype=pltype, chat_id=chat_id
+                )
+                try:
+                    tracking.result()
+                except Exception as e:
+                    logging.warning('messagemonitor.monitor: gradius user track failed: %s', e)
+
             if outlist is None:
                 return ''
             answer = ''.join(str(m) for m in outlist)
