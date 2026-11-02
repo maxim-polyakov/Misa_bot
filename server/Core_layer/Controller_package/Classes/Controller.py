@@ -8,6 +8,7 @@ class MisaRedirect(HttpResponseRedirect):
 
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password, is_password_usable
 from Deep_layer.DB_package.Classes import DB_Communication
@@ -1122,6 +1123,12 @@ class Controller(IController.IController):
             if int(df_chat.iloc[0]['user_id']) != user.id:
                 return cls.error_response("Forbidden", 403)
             messages = ChatService.get_messages(chat_id)
+            ads_complete = cache.get(f"misa:ads_complete:{chat_id}")
+            if ads_complete is not None:
+                for message in reversed(messages):
+                    if str(message.get('user', '')).strip() == 'Misa':
+                        message['adsComplete'] = bool(ads_complete)
+                        break
             return cls.success_response(messages)
         except Exception as e:
             logging.error(f"chats_messages error: {str(e)}")
