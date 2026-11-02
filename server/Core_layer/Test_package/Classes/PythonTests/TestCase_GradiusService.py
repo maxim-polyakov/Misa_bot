@@ -167,6 +167,39 @@ class TestCase_GradiusService(unittest.TestCase):
         self.assertGreaterEqual(initial.count('<<<misa-ad>>>'), 1)
         self.assertEqual(complete.count('<<<misa-ad>>>'), 10)
 
+    def test_prefetched_requests_are_reused_for_final_answer(self):
+        placement = [{
+            'type': 'native-text-ad',
+            'content': {'content': 'ad', 'insert_index': 0},
+        }]
+        with patch.dict(
+            os.environ,
+            {
+                'GRADIUS_API_KEY': 'test-key',
+                'GRADIUS_MAX_ADS_PER_CHAT': '10',
+                'GRADIUS_REQUESTS_PER_ANSWER': '10',
+                'GRADIUS_ADS_BEFORE_RETURN': '10',
+            },
+        ), patch.object(
+            GradiusService,
+            '_request',
+            return_value=placement,
+        ) as request:
+            prefetch = GradiusService.prefetch_assistant_placements(
+                chat_id='prefetch-chat',
+                user_id='user-1',
+                targeting_text='buy a car',
+            )
+            result = GradiusService.enrich_assistant_answer(
+                chat_id='prefetch-chat',
+                user_id='user-1',
+                text='final answer',
+                prefetch=prefetch,
+            )
+
+        self.assertEqual(request.call_count, 10)
+        self.assertEqual(result.count('<<<misa-ad>>>'), 10)
+
 
 if __name__ == '__main__':
     unittest.main()

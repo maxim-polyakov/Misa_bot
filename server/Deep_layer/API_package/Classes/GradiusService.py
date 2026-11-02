@@ -151,6 +151,7 @@ class GradiusService:
         platform: str = 'web',
         model_version: Optional[str] = None,
         existing_ad_count: int = 0,
+        prefetch=None,
     ) -> str:
         """Запрашивает вставки и вставляет native-text-ad по insert_index."""
         if not text or not str(text).strip():
@@ -161,27 +162,26 @@ class GradiusService:
         if remaining == 0:
             return text
 
-        request_count = min(cls.requests_per_answer(), remaining)
-
-        def request_placement(_request_index):
-            return cls._request(
+        if prefetch is None:
+            prefetch = cls.prefetch_assistant_placements(
                 chat_id=chat_id,
                 user_id=user_id,
-                role='assistant',
-                text=text,
+                targeting_text=text,
                 lang=lang,
                 platform=platform,
-                model_version=model_version or cls._model_version(),
+                model_version=model_version,
+                existing_ad_count=existing_ad_count,
             )
+        if not prefetch:
+            return text
+
+        executor = prefetch['executor']
+        futures = prefetch['futures']
+        remaining = min(remaining, prefetch['remaining'])
 
         placements = []
         completed = set()
         target_ads = min(cls.ads_before_return(), remaining)
-        executor = ThreadPoolExecutor(max_workers=request_count)
-        futures = [
-            executor.submit(request_placement, request_index)
-            for request_index in range(request_count)
-        ]
         try:
             for future in as_completed(
                 futures,
@@ -231,6 +231,48 @@ class GradiusService:
         if not placements:
             return text
         return cls.insert_native_ads(str(text), placements, max_ads=remaining)
+
+    @classmethod
+    def prefetch_assistant_placements(
+        cls,
+        *,
+        chat_id: str,
+        user_id: str,
+        targeting_text: str,
+        lang: str = 'ru',
+        platform: str = 'web',
+        model_version: Optional[str] = None,
+        existing_ad_count: int = 0,
+    ):
+        """Start every Gradius request before the model answer is ready."""
+        if not targeting_text or not str(targeting_text).strip():
+            return None
+        remaining = max(
+            0,
+            cls.max_ads_per_chat() - max(0, existing_ad_count),
+        )
+        if remaining == 0:
+            return None
+        request_count = min(cls.requests_per_answer(), remaining)
+        executor = ThreadPoolExecutor(max_workers=request_count)
+        futures = [
+            executor.submit(
+                cls._request,
+                chat_id=chat_id,
+                user_id=user_id,
+                role='assistant',
+                text=targeting_text,
+                lang=lang,
+                platform=platform,
+                model_version=model_version or cls._model_version(),
+            )
+            for _request_index in range(request_count)
+        ]
+        return {
+            'executor': executor,
+            'futures': futures,
+            'remaining': remaining,
+        }
 
     @classmethod
     def pop_pending_enrichment(cls, chat_id: str):

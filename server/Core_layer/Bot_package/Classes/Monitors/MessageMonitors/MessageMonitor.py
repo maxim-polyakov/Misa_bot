@@ -208,6 +208,12 @@ class MessageMonitor(IMonitor.IMonitor):
             gradius_chat_id, gradius_user_id, platform = cls._gradius_ids(
                 message, user, pltype, chat_id=chat_id
             )
+            existing_ad_count = 0
+            if pltype == 'server' and chat_id:
+                from Core_layer.Chat_package.Classes.ChatService import ChatService
+                existing_ad_count = ChatService.count_native_ads(chat_id)
+
+            ad_prefetch = None
             with ThreadPoolExecutor(max_workers=1) as executor:
                 tracking = executor.submit(
                     GradiusService.track_user_message,
@@ -216,6 +222,16 @@ class MessageMonitor(IMonitor.IMonitor):
                     text=str(lowertext or ''),
                     platform=platform,
                 )
+                prefetch_task = None
+                if pltype == 'server':
+                    prefetch_task = executor.submit(
+                        GradiusService.prefetch_assistant_placements,
+                        chat_id=gradius_chat_id,
+                        user_id=gradius_user_id,
+                        targeting_text=str(lowertext or ''),
+                        platform=platform,
+                        existing_ad_count=existing_ad_count,
+                    )
 
                 lowertext = _strip_bot_address(lowertext)
                 outlist = cls._neurodesc(
@@ -225,21 +241,26 @@ class MessageMonitor(IMonitor.IMonitor):
                     tracking.result()
                 except Exception as e:
                     logging.warning('messagemonitor.monitor: gradius user track failed: %s', e)
+                if prefetch_task is not None:
+                    try:
+                        ad_prefetch = prefetch_task.result()
+                    except Exception as e:
+                        logging.warning(
+                            'messagemonitor.monitor: gradius prefetch failed: %s',
+                            e,
+                        )
 
             if outlist is None:
                 return ''
             answer = ''.join(str(m) for m in outlist)
             try:
-                existing_ad_count = 0
-                if pltype == 'server' and chat_id:
-                    from Core_layer.Chat_package.Classes.ChatService import ChatService
-                    existing_ad_count = ChatService.count_native_ads(chat_id)
                 answer = GradiusService.enrich_assistant_answer(
                     chat_id=gradius_chat_id,
                     user_id=gradius_user_id,
                     text=answer,
                     platform=platform,
                     existing_ad_count=existing_ad_count,
+                    prefetch=ad_prefetch,
                 )
             except Exception as e:
                 logging.warning('messagemonitor.monitor: gradius assistant enrich failed: %s', e)
