@@ -3,6 +3,7 @@ import hmac
 import logging
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Optional
 
 import requests
@@ -127,10 +128,10 @@ class GradiusService:
         if remaining == 0:
             return text
 
-        placements = []
         request_count = min(cls.requests_per_answer(), remaining)
-        for _ in range(request_count):
-            placements.extend(cls._request(
+
+        def request_placement(_request_index):
+            return cls._request(
                 chat_id=chat_id,
                 user_id=user_id,
                 role='assistant',
@@ -138,7 +139,12 @@ class GradiusService:
                 lang=lang,
                 platform=platform,
                 model_version=model_version or cls._model_version(),
-            ))
+            )
+
+        placements = []
+        with ThreadPoolExecutor(max_workers=request_count) as executor:
+            for response in executor.map(request_placement, range(request_count)):
+                placements.extend(response)
         if not placements:
             return text
         return cls.insert_native_ads(str(text), placements, max_ads=remaining)
