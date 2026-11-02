@@ -29,6 +29,17 @@ class RagService:
         r')',
         re.IGNORECASE | re.UNICODE,
     )
+    _SEARCH_INTENT_HEURISTIC = re.compile(
+        r'(?:'
+        r'найди|поищи|поиск|'
+        r'проверь\s+(?:в\s+)?интернет|'
+        r'узнай\s+(?:в\s+)?интернет|'
+        r'в\s+(?:интернете|гугле|google|википедии|wikipedia)|'
+        r'latest|search\s+(?:for|online)|'
+        r'статистик|рейтинг'
+        r')',
+        re.IGNORECASE | re.UNICODE,
+    )
 
     @classmethod
     def enrich_query(cls, text, user, chat_id=None):
@@ -167,27 +178,9 @@ class RagService:
             logging.info('RAG: heuristic search=True for: %s', text[:100])
             return True
 
-        prompt = (
-            "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
-            f"Сообщение: {text}\n\n"
-            "Задача: Нужен ли поиск информации в интернете для ответа на это сообщение?\n"
-            "True — если для ответа нужны актуальные или конкретные факты из интернета: "
-            "новости, погода, цены, курсы, события, статистика, определения, "
-            "или пользователь просит найти / узнать / проверить что-то.\n"
-            "False — если это общий разговор, творческая задача, код, советы, мнения, "
-            "математика, перевод, или ответ можно дать без поиска.\n\n"
-            "Формат ответа: только True или False."
-        )
-        try:
-            result = cls._gpta.answer(prompt, user, True, chat_id=chat_id)
-            if isinstance(result, dict):
-                return False
-            needs = result and 'True' in str(result)
-            logging.info('RAG: search decision=%s for: %s', needs, text[:100])
-            return needs
-        except Exception as e:
-            logging.warning('RAG needs_web_search check failed: %s', e)
-            return True
+        needs = bool(cls._SEARCH_INTENT_HEURISTIC.search(text))
+        logging.info('RAG: local search decision=%s for: %s', needs, text[:100])
+        return needs
 
     @classmethod
     def _extract_search_query(cls, text, user, chat_id=None):

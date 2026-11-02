@@ -1,5 +1,6 @@
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
 from bs4 import BeautifulSoup
@@ -43,17 +44,30 @@ class WebSearchRetriever:
         seen_urls = set()
         topic_text = (topic or ' '.join(queries or [])).strip()
 
-        for query in queries or []:
-            q = str(query).strip()
-            if not q:
-                continue
-            batch = cls._collect_web_results(q, per_query=max_results + 3)
-            for item in batch:
-                url = item.get('url', '')
-                if url in seen_urls:
-                    continue
-                seen_urls.add(url)
-                merged.append(item)
+        clean_queries = [
+            str(query).strip()
+            for query in queries or []
+            if str(query).strip()
+        ]
+        with ThreadPoolExecutor(
+            max_workers=max(1, min(3, len(clean_queries))),
+        ) as executor:
+            batches = executor.map(
+                lambda query: cls._collect_web_results(
+                    query,
+                    per_query=max_results + 3,
+                ),
+                clean_queries,
+            )
+            query_batches = zip(clean_queries, batches)
+
+            for _query, batch in query_batches:
+                for item in batch:
+                    url = item.get('url', '')
+                    if url in seen_urls:
+                        continue
+                    seen_urls.add(url)
+                    merged.append(item)
 
         if not merged:
             logging.warning('WebSearchRetriever: no links for queries=%s', queries)
@@ -144,27 +158,30 @@ class WebSearchRetriever:
         if not results:
             return results
 
-        enriched = []
-        pages_fetched = 0
         ordered = sorted(
             results,
             key=lambda r: 0 if cls._results_lack_facts([r]) else 1,
         )
+        enriched = [dict(result) for result in ordered]
+        fetch_indexes = [
+            index
+            for index, item in enumerate(enriched)
+            if item.get('url') and cls._results_lack_facts([item])
+        ][:max_pages]
+        if not fetch_indexes:
+            return enriched
 
-        for r in ordered:
-            item = dict(r)
-            url = item.get('url', '')
-            if (
-                pages_fetched < max_pages
-                and url
-                and cls._results_lack_facts([item])
-            ):
-                page_text = cls._fetch_page_text(url)
-                pages_fetched += 1
+        with ThreadPoolExecutor(max_workers=len(fetch_indexes)) as executor:
+            page_texts = executor.map(
+                cls._fetch_page_text,
+                [enriched[index]['url'] for index in fetch_indexes],
+            )
+            for index, page_text in zip(fetch_indexes, page_texts):
                 if page_text:
-                    item['snippet'] = cls._merge_snippet(item.get('snippet', ''), page_text)
-            enriched.append(item)
-
+                    enriched[index]['snippet'] = cls._merge_snippet(
+                        enriched[index].get('snippet', ''),
+                        page_text,
+                    )
         return enriched
 
     @classmethod

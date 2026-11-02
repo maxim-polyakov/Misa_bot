@@ -77,6 +77,17 @@ def _has_bot_trigger(text, pltype):
     )
 
 
+_SUPPORTED_COMMAND = re.compile(
+    r'(?:^|[.!?]\s*)'
+    r'(?:абонируй(?:ся)?|нарисуй|нарисовать|изобрази|draw|'
+    r'атакуй|атаковать|фас|пиздани|'
+    r'найди\s+(?:в\s+)?(?:интернете|google|гугле|википедии)|'
+    r'поищи\s+(?:в\s+)?(?:интернете|google|гугле|википедии)|'
+    r'предскажи\s+погоду|скажи\s+погоду)\b',
+    re.IGNORECASE | re.UNICODE,
+)
+
+
 class MessageMonitor(IMonitor.IMonitor):
     """
     It is class for messaging
@@ -148,25 +159,13 @@ class MessageMonitor(IMonitor.IMonitor):
         try:
             text_message = _strip_bot_address(text_message)
             text_message = text_message.replace('\n', ' ')
-            input = (
-                "Новый запрос. Не учитывай предыдущие сообщения.\n\n"
-                "Сообщение: " + text_message + "\n"
-                "Задача: Определи, является ли это командой для бота (приказ выполнить действие), "
-                "или это вопрос / обычный диалог.\n\n"
-                "ВАЖНО: все вопросы — всегда False. Любое сообщение в вопросительной форме "
-                "(знак «?», «какая», «сколько», «что», «где», «когда», «почему», «кто», «как» и т.п.) "
-                "помечай как False, даже если тема — погода, цены, новости или факты.\n\n"
-                "False (не команда) — любой вопрос, совет, мнение, описание, рассуждение, "
-                "просьба объяснить или рассказать.\n"
-                "True (команда) — только явный императив выполнить действие без вопросительной формы: "
-                "нарисуй, сгенерируй, включи, найди, запусти, отправь и т.п.\n\n"
-                "Верни True, если это команда, или False, если нет.\n"
-                "Формат ответа: только True или False, без дополнительного текста."
-            )
-            res = cls._gpta.answer(input, user, True, chat_id=cls.__chat_id)
-            return res and res.count("True") > 0
+            # Only a small fixed set of commands has executable handlers.
+            # Everything else eventually falls back to the normal GPT answer,
+            # so an extra model classification adds latency without changing it.
+            return bool(_SUPPORTED_COMMAND.search(text_message))
         except Exception as e:
             logging.exception('The exception occurred in messagemonitor.check: ' + str(e))
+            return False
 
     @classmethod
     def _gradius_ids(cls, message, user, pltype, chat_id=None):
