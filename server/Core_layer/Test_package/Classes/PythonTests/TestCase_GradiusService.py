@@ -1,5 +1,7 @@
 import os
+import threading
 import unittest
+from itertools import count
 from unittest.mock import patch
 
 from Deep_layer.API_package.Classes.GradiusService import GradiusService
@@ -126,6 +128,44 @@ class TestCase_GradiusService(unittest.TestCase):
 
         self.assertEqual(request.call_count, 10)
         self.assertEqual(result.count('<<<misa-ad>>>'), 10)
+
+    def test_late_ad_responses_are_available_for_background_save(self):
+        release_late = threading.Event()
+        indexes = count()
+
+        def placement(*args, **kwargs):
+            index = next(indexes)
+            if index > 0:
+                release_late.wait(timeout=2)
+            return [{
+                'type': 'native-text-ad',
+                'content': {'content': f'ad-{index}', 'insert_index': index},
+            }]
+
+        with patch.dict(
+            os.environ,
+            {
+                'GRADIUS_API_KEY': 'test-key',
+                'GRADIUS_MAX_ADS_PER_CHAT': '10',
+                'GRADIUS_REQUESTS_PER_ANSWER': '10',
+                'GRADIUS_ADS_BEFORE_RETURN': '1',
+            },
+        ), patch.object(GradiusService, '_request', side_effect=placement) as request:
+            initial = GradiusService.enrich_assistant_answer(
+                chat_id='background-chat',
+                user_id='user-1',
+                text='answer',
+                platform='web',
+            )
+            completion = GradiusService.pop_pending_enrichment(
+                'background-chat'
+            )
+            release_late.set()
+            complete = completion.result(timeout=3)
+
+        self.assertEqual(request.call_count, 10)
+        self.assertGreaterEqual(initial.count('<<<misa-ad>>>'), 1)
+        self.assertEqual(complete.count('<<<misa-ad>>>'), 10)
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@ import hmac
 import logging
 import os
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor, TimeoutError, as_completed
 from typing import Any, Optional
 
@@ -20,10 +21,17 @@ _DEFAULT_BASE_URL = 'https://api.adlean.pro'
 _ENDPOINT = '/v1/native/dialogue_model/chat'
 AD_START = '<<<misa-ad>>>'
 AD_END = '<<</misa-ad>>>'
+_completion_executor = ThreadPoolExecutor(
+    max_workers=4,
+    thread_name_prefix='gradius-completion',
+)
 
 
 class GradiusService:
     """Нативная реклама Gradius для диалоговых ответов модели."""
+
+    _pending_enrichments = {}
+    _pending_lock = threading.Lock()
 
     @classmethod
     def max_ads_per_chat(cls) -> int:
@@ -189,13 +197,36 @@ class GradiusService:
                 'GradiusService: response collection timed out after %.1fs',
                 cls.request_timeout(),
             )
-        finally:
-            for future in futures:
-                future.cancel()
-            executor.shutdown(wait=False, cancel_futures=True)
+
+        def collect_all():
+            all_placements = []
+            try:
+                for future in futures:
+                    all_placements.extend(future.result())
+                return cls.insert_native_ads(
+                    str(text),
+                    all_placements,
+                    max_ads=remaining,
+                )
+            finally:
+                executor.shutdown(wait=True)
+
+        if platform == 'web':
+            completion = _completion_executor.submit(collect_all)
+            with cls._pending_lock:
+                cls._pending_enrichments[str(chat_id)] = completion
+        else:
+            return collect_all()
+
         if not placements:
             return text
         return cls.insert_native_ads(str(text), placements, max_ads=remaining)
+
+    @classmethod
+    def pop_pending_enrichment(cls, chat_id: str):
+        """Return and remove the future containing all late ad responses."""
+        with cls._pending_lock:
+            return cls._pending_enrichments.pop(str(chat_id), None)
 
     @classmethod
     def insert_native_ads(

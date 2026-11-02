@@ -11,6 +11,7 @@ from django.core.cache import cache
 from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorServer
 from Core_layer.Chat_package.Classes.ChatService import ChatService
 from Core_layer.Answer_package.Classes import GptAnswer
+from Deep_layer.API_package.Classes.GradiusService import GradiusService
 
 logger = logging.getLogger(__name__)
 
@@ -379,6 +380,43 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self._broadcast_message(
                 chat_id, 'Misa', msg_to_save, is_img, exclude_self=True, message_id=misa_msg_id
             )
+
+            pending_enrichment = GradiusService.pop_pending_enrichment(chat_id)
+            if pending_enrichment is not None:
+                async def _save_complete_ad_response():
+                    final_response = await asyncio.wrap_future(pending_enrichment)
+                    final_parts = self._clean_command_response(final_response)
+                    final_message = (
+                        '\n\n'.join(final_parts)
+                        if len(final_parts) > 1
+                        else (final_parts[0] if final_parts else final_response)
+                    )
+                    if final_message == msg_to_save:
+                        return
+                    final_is_img = any(
+                        part.startswith('http') or part.startswith('/images/')
+                        for part in final_parts
+                    )
+                    updated = await database_sync_to_async(
+                        ChatService.update_message_content
+                    )(chat_id, misa_msg_id, final_message, final_is_img)
+                    if updated:
+                        await self.channel_layer.group_send(f"chat_{chat_id}", {
+                            'type': 'chat_broadcast',
+                            'data': {
+                                'type': 'message_updated',
+                                'chat_id': chat_id,
+                                'message_id': str(misa_msg_id),
+                                'message': final_message,
+                                'user': 'Misa',
+                                'isImage': final_is_img,
+                            },
+                        })
+
+                self._spawn_task(
+                    _save_complete_ad_response(),
+                    "save_complete_ad_response",
+                )
 
             # Генерация контекстного заголовка (как у DeepSeek)
             def _generate_and_save_title():
