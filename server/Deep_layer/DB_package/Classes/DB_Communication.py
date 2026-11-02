@@ -12,6 +12,12 @@ class DB_Communication(IDB_Communication.IDB_Communication):
     It is class for communication with a database
     """
     warnings.filterwarnings('ignore')
+
+    @classmethod
+    def _raw_connection(cls):
+        """Borrow a DB-API connection from the process-wide SQLAlchemy pool."""
+        return Connections.PostgresConnection().engine_remote.raw_connection()
+
     @classmethod
     @dispatch(object, object, object, object, object, object, object)
     def insert_to(cls, text, tablename, string, agenda, classification, classtype):
@@ -109,9 +115,15 @@ class DB_Communication(IDB_Communication.IDB_Communication):
         try:
             # establish a connection to the postgresql database
             postgr_conn = Connections.PostgresConnection()
+            connection = cls._raw_connection()
             # retrieve the current count of tokens from the specified table
-            dfvalid = pd.read_sql('select count(tokens) from assistant_sets.' + datatable,
-                            postgr_conn.conn_remote)
+            try:
+                dfvalid = pd.read_sql(
+                    'select count(tokens) from assistant_sets.' + datatable,
+                    connection,
+                )
+            finally:
+                connection.close()
             # get the count value
             count = dfvalid['count'][0]
             # prepare the data to be inserted
@@ -157,8 +169,14 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             lowertext = lowertext.replace('миса ', '').replace('misa ', '')
             text = []
             # retrieving the current count of text entries from the database
-            dfmesstor = pd.read_sql('select count(text) from messtorage.storage',
-                            postgr_conn.conn_remote)
+            connection = cls._raw_connection()
+            try:
+                dfmesstor = pd.read_sql(
+                    'select count(text) from messtorage.storage',
+                    connection,
+                )
+            finally:
+                connection.close()
             counts = dfmesstor['count'][0]
             text.append(lowertext)
             # calling the insert function to insert data into the database
@@ -174,9 +192,12 @@ class DB_Communication(IDB_Communication.IDB_Communication):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # establish a connection to the postgresql database
-            postgr_conn = Connections.PostgresConnection()
+            connection = cls._raw_connection()
             # execute the sql query and store the result in a dataframe
-            df = pd.read_sql(select, postgr_conn.conn_remote)
+            try:
+                df = pd.read_sql(select, connection)
+            finally:
+                connection.close()
             # log a success message
             logging.info('The db_communication.get_data method has completed successfully')
             return df
@@ -189,12 +210,15 @@ class DB_Communication(IDB_Communication.IDB_Communication):
         # deleting data to a database
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            postgr_conn = Connections.PostgresConnection()
-            cur = postgr_conn.conn_remote.cursor()
-            cur.execute(delete)
-            postgr_conn.conn_remote.commit()
-            logging.info('The db_communication.delete_data method has completed successfully')
-            cur.close()
+            connection = cls._raw_connection()
+            try:
+                cur = connection.cursor()
+                cur.execute(delete)
+                connection.commit()
+                logging.info('The db_communication.delete_data method has completed successfully')
+                cur.close()
+            finally:
+                connection.close()
         except Exception as e:
             logging.exception('The exception occurred in db_communication.delete_data: ' + str(e))
 
@@ -203,14 +227,17 @@ class DB_Communication(IDB_Communication.IDB_Communication):
         """Выполняет SQL (UPDATE/INSERT) с commit. params — кортеж для параметризованного запроса."""
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            postgr_conn = Connections.PostgresConnection()
-            cur = postgr_conn.conn_remote.cursor()
-            if params is not None:
-                cur.execute(sql, params)
-            else:
-                cur.execute(sql)
-            postgr_conn.conn_remote.commit()
-            cur.close()
+            connection = cls._raw_connection()
+            try:
+                cur = connection.cursor()
+                if params is not None:
+                    cur.execute(sql, params)
+                else:
+                    cur.execute(sql)
+                connection.commit()
+                cur.close()
+            finally:
+                connection.close()
         except Exception as e:
             logging.exception('The exception occurred in db_communication.execute_update: ' + str(e))
             raise
@@ -220,11 +247,14 @@ class DB_Communication(IDB_Communication.IDB_Communication):
         """Выполняет SELECT с параметрами, возвращает DataFrame."""
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            postgr_conn = Connections.PostgresConnection()
-            if params is not None:
-                df = pd.read_sql_query(sql, postgr_conn.conn_remote, params=params)
-            else:
-                df = pd.read_sql_query(sql, postgr_conn.conn_remote)
+            connection = cls._raw_connection()
+            try:
+                if params is not None:
+                    df = pd.read_sql_query(sql, connection, params=params)
+                else:
+                    df = pd.read_sql_query(sql, connection)
+            finally:
+                connection.close()
             logging.info('The db_communication.execute_query method has completed successfully')
             return df
         except Exception as e:
@@ -238,9 +268,15 @@ class DB_Communication(IDB_Communication.IDB_Communication):
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
             # establishing a connection to the postgresql database
-            postgr_conn = Connections.PostgresConnection()
+            connection = cls._raw_connection()
             # retrieving the list of commands from the database
-            df = pd.read_sql('SELECT text FROM assistant_sets.commands', postgr_conn.conn_remote)
+            try:
+                df = pd.read_sql(
+                    'SELECT text FROM assistant_sets.commands',
+                    connection,
+                )
+            finally:
+                connection.close()
             # converting the retrieved commands into a dictionary
             Cdict = df['text'].to_dict()
             # splitting the input string into an array of words
@@ -268,9 +304,15 @@ class DB_Communication(IDB_Communication.IDB_Communication):
             # creating an instance of the preprocessing class
             pr = CommonPreprocessing.CommonPreprocessing()
             # establishing a connection to the postgresql database
-            postgr_conn = Connections.PostgresConnection()
+            connection = cls._raw_connection()
             # retrieve text data from the specified table in the database
-            df = pd.read_sql('SELECT text FROM train_sets.' + table, postgr_conn.conn_remote)
+            try:
+                df = pd.read_sql(
+                    'SELECT text FROM train_sets.' + table,
+                    connection,
+                )
+            finally:
+                connection.close()
             Cdict = df['text'].to_dict()
             inpt = []
             inpt.append(pr.preprocess_text(input_string[0]))

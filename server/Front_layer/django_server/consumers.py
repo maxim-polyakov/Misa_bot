@@ -344,7 +344,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self._join_chat_group(chat_id)
 
         # Импорт истории из БД в контекст GPT для данного чата
-        if chat_id and user:
+        if (
+            chat_id
+            and user
+            and not GptAnswer.GptAnswer.has_conversation_history(user, chat_id)
+        ):
             await database_sync_to_async(GptAnswer.GptAnswer.import_history_from_db)(user, chat_id)
 
         is_image = content.startswith('/images/') or content.startswith('http')

@@ -8,6 +8,18 @@ from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Deep_layer.RAG_package.Classes.RagService import RagService
 from Deep_layer.API_package.Classes.GradiusService import GradiusService
 
+_analytics_executor = ThreadPoolExecutor(
+    max_workers=2,
+    thread_name_prefix='misa-analytics',
+)
+
+
+def _log_background_failure(future):
+    try:
+        future.result()
+    except Exception as error:
+        logging.warning('messagemonitor: background analytics failed: %s', error)
+
 
 def _text_without_urls_for_misa_trigger(text):
     """
@@ -187,7 +199,8 @@ class MessageMonitor(IMonitor.IMonitor):
             else:
                 lowertext = message
 
-            cls._dbc.insert_to(lowertext)
+            analytics = _analytics_executor.submit(cls._dbc.insert_to, lowertext)
+            analytics.add_done_callback(_log_background_failure)
 
             if not _has_bot_trigger(lowertext, pltype):
                 logging.info('messagemonitor.monitor: no bot trigger, skip reply (%s)', pltype)

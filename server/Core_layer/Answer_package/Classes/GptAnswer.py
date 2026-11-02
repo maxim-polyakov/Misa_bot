@@ -37,6 +37,10 @@ class GptAnswer(IAnswer.IAnswer):
         Gpt.Gpt.import_history_from_db(user, chat_id, exclude_last)
 
     @classmethod
+    def has_conversation_history(cls, user, chat_id=None):
+        return Gpt.Gpt.has_conversation_history(user, chat_id)
+
+    @classmethod
     def generate_chat_title_from_message(cls, content):
         """Сгенерировать заголовок по первому сообщению пользователя (сразу при отправке)."""
         if not content or not str(content).strip():

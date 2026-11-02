@@ -57,6 +57,37 @@ class Gpt(IGpt.IGpt):
     # Key: (user_id, chat_id), Value: {'history': list, 'start_time': float}
     _user_conversations = {}
     _cleanup_lock = threading.Lock()
+    _client = None
+    _client_lock = threading.Lock()
+
+    @classmethod
+    def _openai_client(cls):
+        """Build the OpenAI client once and reuse its HTTP connection pool."""
+        if cls._client is not None:
+            return cls._client
+        with cls._client_lock:
+            if cls._client is not None:
+                return cls._client
+            credentials = cls.__dbc.execute_query(
+                """
+                SELECT
+                    (SELECT token FROM assistant_sets.tokens
+                     WHERE botname = 'Misa' AND platformname = 'Gpt' LIMIT 1) AS api_key,
+                    (SELECT token FROM assistant_sets.projects
+                     WHERE botname = 'Misa' AND platformname = 'Gpt' LIMIT 1) AS project,
+                    (SELECT token FROM assistant_sets.organizations
+                     WHERE botname = 'Misa' AND platformname = 'Gpt' LIMIT 1) AS organization
+                """
+            )
+            if credentials is None or credentials.empty:
+                raise RuntimeError('OpenAI credentials are unavailable')
+            row = credentials.iloc[0]
+            cls._client = OpenAI(
+                api_key=row['api_key'],
+                organization=row['organization'],
+                project=row['project'],
+            )
+            return cls._client
 
     @classmethod
     def generate(cls, text, user, is_command_check=False, chat_id=None, rag_context=None):
@@ -98,23 +129,7 @@ class Gpt(IGpt.IGpt):
                     conversation_history = conversation_history[-max_history_messages:]
                     user_data['history'] = conversation_history
 
-            # retrieving api tokens from the database
-            fdf = cls.__dbc.get_data(
-                'select token from assistant_sets.tokens where botname = \'Misa\' and platformname = \'Gpt\'')
-            sdf = cls.__dbc.get_data(
-                'select token from assistant_sets.projects where botname = \'Misa\' and platformname = \'Gpt\'')
-            tdf = cls.__dbc.get_data(
-                'select token from assistant_sets.organizations where botname = \'Misa\' and platformname = \'Gpt\'')
-            # extracting api keys from the retrieved data
-            OPENAI_API_KEY = fdf['token'][0]
-            OPENAI_API_PROJECT = sdf['token'][0]
-            OPENAI_API_ORG = tdf['token'][0]
-            # initializing openai client with api credentials
-            client = OpenAI(
-                api_key=OPENAI_API_KEY,
-                organization=OPENAI_API_ORG,
-                project=OPENAI_API_PROJECT,
-            )
+            client = cls._openai_client()
 
             # System prompt
             if rag_context and not is_command_check:
@@ -268,6 +283,13 @@ class Gpt(IGpt.IGpt):
         """Get list of active (user, chat_id) with conversation history"""
         with cls._cleanup_lock:
             return list(cls._user_conversations.keys())
+
+    @classmethod
+    def has_conversation_history(cls, user, chat_id=None):
+        """Whether this process already has a warm context for the chat."""
+        key = _conversation_key(user, chat_id)
+        with cls._cleanup_lock:
+            return bool(cls._user_conversations.get(key, {}).get('history'))
 
     @classmethod
     def import_history_from_db(cls, user, chat_id, exclude_last=0):
