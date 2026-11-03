@@ -55,6 +55,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           allowed_bots: "*"
+          show_full_output: true
           prompt: |
             A new push landed on the main branch. Review the commit range
             ${{ github.event.inputs.before_sha }}..${{ github.event.inputs.head_sha }}
