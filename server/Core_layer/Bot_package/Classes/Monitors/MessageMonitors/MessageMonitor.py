@@ -7,6 +7,7 @@ from Core_layer.Answer_package.Classes import GptAnswer
 from Deep_layer.NLP_package.Classes.TextPreprocessers import CommonPreprocessing
 from Deep_layer.RAG_package.Classes.RagService import RagService
 from Deep_layer.API_package.Classes.GradiusService import GradiusService
+from Core_layer.Generation_package.service import GenerationService
 
 _analytics_executor = ThreadPoolExecutor(
     max_workers=2,
@@ -205,65 +206,17 @@ class MessageMonitor(IMonitor.IMonitor):
                 logging.info('messagemonitor.monitor: no bot trigger, skip reply (%s)', pltype)
                 return ''
 
-            gradius_chat_id, gradius_user_id, platform = cls._gradius_ids(
-                message, user, pltype, chat_id=chat_id
+            lowertext = _strip_bot_address(lowertext)
+            result = GenerationService.invoke_sync(
+                text=lowertext,
+                user=user,
+                chat_id=chat_id,
+                pltype=pltype,
+                message=message,
+                commands=command,
+                should_persist=False,
             )
-            existing_ad_count = 0
-            if pltype == 'server' and chat_id:
-                from Core_layer.Chat_package.Classes.ChatService import ChatService
-                existing_ad_count = ChatService.count_native_ads(chat_id)
-
-            ad_prefetch = None
-            with ThreadPoolExecutor(max_workers=1) as executor:
-                tracking = executor.submit(
-                    GradiusService.track_user_message,
-                    chat_id=gradius_chat_id,
-                    user_id=gradius_user_id,
-                    text=str(lowertext or ''),
-                    platform=platform,
-                )
-                prefetch_task = None
-                if pltype == 'server':
-                    prefetch_task = executor.submit(
-                        GradiusService.prefetch_assistant_placements,
-                        chat_id=gradius_chat_id,
-                        user_id=gradius_user_id,
-                        targeting_text=str(lowertext or ''),
-                        platform=platform,
-                        existing_ad_count=existing_ad_count,
-                    )
-
-                lowertext = _strip_bot_address(lowertext)
-                outlist = cls._neurodesc(
-                    [lowertext], user, lowertext, command, pltype=pltype, chat_id=chat_id
-                )
-                try:
-                    tracking.result()
-                except Exception as e:
-                    logging.warning('messagemonitor.monitor: gradius user track failed: %s', e)
-                if prefetch_task is not None:
-                    try:
-                        ad_prefetch = prefetch_task.result()
-                    except Exception as e:
-                        logging.warning(
-                            'messagemonitor.monitor: gradius prefetch failed: %s',
-                            e,
-                        )
-
-            if outlist is None:
-                return ''
-            answer = ''.join(str(m) for m in outlist)
-            try:
-                answer = GradiusService.enrich_assistant_answer(
-                    chat_id=gradius_chat_id,
-                    user_id=gradius_user_id,
-                    text=answer,
-                    platform=platform,
-                    existing_ad_count=existing_ad_count,
-                    prefetch=ad_prefetch,
-                )
-            except Exception as e:
-                logging.warning('messagemonitor.monitor: gradius assistant enrich failed: %s', e)
+            answer = str((result or {}).get('answer') or '')
             return answer
         except Exception as e:
             logging.exception('The exception occurred in messagemonitor.monitor: ' + str(e))

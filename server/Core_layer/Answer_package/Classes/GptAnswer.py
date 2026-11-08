@@ -1,14 +1,13 @@
 import re
 import logging
 from Core_layer.Answer_package.Interfaces import IAnswer
+from Core_layer.Generation_package.service import GenerationService
 from Deep_layer.NLP_package.Classes.GPT import Gpt
 
 
 class GptAnswer(IAnswer.IAnswer):
     """
-
     It is class for question answering
-
     """
     __gpt = Gpt.Gpt()
     _ad_block_pattern = re.compile(
@@ -26,14 +25,22 @@ class GptAnswer(IAnswer.IAnswer):
         # generating answers by gpt
         logging.basicConfig(level=logging.INFO, filename="misa.log", filemode="w")
         try:
-            generated_text = cls.__gpt.generate(
-                text, user, is_command_check, chat_id=chat_id, rag_context=rag_context
-            )
-            # log successful completion of the answer generation
+            if is_command_check or rag_context is not None:
+                generated_text = GenerationService.answer_once(
+                    text,
+                    user,
+                    is_command_check=is_command_check,
+                    chat_id=chat_id,
+                    rag_context=rag_context,
+                )
+            else:
+                # Full dialogue path still available for legacy callers.
+                generated_text = cls.__gpt.generate(
+                    text, user, is_command_check, chat_id=chat_id, rag_context=rag_context
+                )
             logging.info('The gptanswer.answer process has completed successfully')
             return generated_text
         except Exception as e:
-            # log the exception if an error occurs during answer generation
             logging.exception('The exception occurred in questionanswer.answer: ' + str(e))
 
     @classmethod
@@ -63,7 +70,7 @@ class GptAnswer(IAnswer.IAnswer):
                 "'Приветствие и начало общения'. Только заголовок, без кавычек.\n\n"
                 f"Сообщение: {text.strip()}"
             )
-            result = cls.__gpt.generate(prompt, "title_gen", is_command_check=True, chat_id=None)
+            result = GenerationService.answer_once(prompt, "title_gen", is_command_check=True)
             if result and isinstance(result, str):
                 title = result.strip()[:28]
                 if title and len(title) > 2:
@@ -91,7 +98,7 @@ class GptAnswer(IAnswer.IAnswer):
                 "Заголовок должен отражать суть разговора. Только заголовок, без кавычек и пояснений.\n\n"
                 + "\n".join(context_parts)
             )
-            result = cls.__gpt.generate(prompt, "title_gen", is_command_check=True, chat_id=None)
+            result = GenerationService.answer_once(prompt, "title_gen", is_command_check=True)
             if result and isinstance(result, str):
                 title = result.strip()[:28]
                 if title and len(title) > 2:

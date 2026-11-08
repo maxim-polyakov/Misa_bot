@@ -293,7 +293,7 @@ const Chat = observer(() => {
         const messageEl = (
             <div
                 key={msg.id}
-                className={`message ${messageUser === "Misa" ? "misa-message" : "user-message"} ${isSelected ? "message-selected" : ""}`}
+                className={`message ${messageUser === "Misa" ? "misa-message" : "user-message"} ${isSelected ? "message-selected" : ""} ${msg.isStreaming ? "message-streaming" : ""}`}
                 onClick={isShareMode ? () => chatStore.toggleMessageSelection(msg.id) : undefined}
                 role={isShareMode ? "button" : undefined}
                 tabIndex={isShareMode ? 0 : undefined}

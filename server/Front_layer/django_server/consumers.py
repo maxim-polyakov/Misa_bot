@@ -8,9 +8,10 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.conf import settings
 from django.core.cache import cache
-from Core_layer.Bot_package.Classes.Monitors.MessageMonitors import MessageMonitorServer
 from Core_layer.Chat_package.Classes.ChatService import ChatService
 from Core_layer.Answer_package.Classes import GptAnswer
+from Core_layer.Command_package.Classes.Commands import CommandAnalyzer
+from Core_layer.Generation_package.service import GenerationService
 from Deep_layer.API_package.Classes.GradiusService import GradiusService
 
 logger = logging.getLogger(__name__)
@@ -199,32 +200,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'detail': str(e)
             })
 
+    async def _broadcast_stream_event(self, chat_id, data, exclude_self=False):
+        payload = {'type': 'chat_broadcast', 'data': data}
+        if exclude_self:
+            payload['exclude_channel'] = self.channel_name
+        if chat_id:
+            await self.channel_layer.group_send(f"chat_{chat_id}", payload)
+        else:
+            await self._safe_send_json(data)
+
     async def _process_and_send(self, text_data, chat_id):
-        """Обрабатывает сообщение и отправляет ответ — позволяет параллельную обработку разных чатов."""
+        """Обрабатывает сообщение и стримит ответ — параллельно для разных чатов."""
         try:
-            response = await self.process_message(text_data)
-            if response is None:
-                return
-            outarr = self._clean_command_response(response)
-            if not outarr:
-                return
-            # Одно сообщение (как в БД), не по частям — иначе после F5 дубли с history
-            joined = '\n\n'.join(outarr) if len(outarr) > 1 else outarr[0]
-            if self.is_file_path(joined):
-                joined = self.convert_file_path_to_url(joined)
-            is_img = joined.startswith('http') or joined.startswith('/images/')
-            msg_data = {
-                'type': 'chat_message',
-                'message': joined,
-                'user': 'Misa',
-                'isImage': is_img,
-            }
-            if chat_id:
-                msg_data['chat_id'] = chat_id
-                msg_id = await database_sync_to_async(ChatService.get_last_message_id)(chat_id)
-                if msg_id is not None:
-                    msg_data['message_id'] = str(msg_id)
-            await self._safe_send_json(msg_data)
+            await self.process_message(text_data)
         except Exception as e:
             import traceback
             logger.error(f"Error processing message: {str(e)}\n{traceback.format_exc()}")
@@ -238,75 +226,133 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self._safe_send_json(err_payload)
 
     async def _process_regenerate(self, chat_id, message_id, user):
-        """Перегенерировать ответ: обновить сообщение Misa, не добавляя новых."""
+        """Перегенерировать ответ со стримингом; в БД пишем только финальный текст."""
+        stream_id = None
         try:
             await self._join_chat_group(chat_id)
             await database_sync_to_async(_set_chat_generating)(chat_id, True)
             await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
 
-            def _do_regenerate():
-                try:
-                    msg = ChatService.get_message_by_id(chat_id, message_id)
-                    db_message_id = message_id
+            def _prepare():
+                msg = ChatService.get_message_by_id(chat_id, message_id)
+                db_message_id = message_id
+                if not msg:
+                    msgs_db = ChatService.get_messages(chat_id)
+                    if len(msgs_db) >= 2 and str(msgs_db[-1].get('user', '')).strip() == 'Misa':
+                        db_message_id = str(msgs_db[-1]['id'])
+                        msg = ChatService.get_message_by_id(chat_id, db_message_id)
                     if not msg:
-                        msgs_db = ChatService.get_messages(chat_id)
-                        if len(msgs_db) >= 2 and str(msgs_db[-1].get('user', '')).strip() == 'Misa':
-                            db_message_id = str(msgs_db[-1]['id'])
-                            msg = ChatService.get_message_by_id(chat_id, db_message_id)
-                        if not msg:
-                            logger.warning(f"Regenerate: message {message_id} not found in chat {chat_id}")
-                            return None, False, "Сообщение не найдено в БД (обновите чат и попробуйте снова)"
-                    if str(msg.get('user', '')).strip() != 'Misa':
-                        return None, False, "Сообщение не от Misa"
-                    msgs = ChatService.get_messages(chat_id)
-                    idx = next((i for i, m in enumerate(msgs) if str(m['id']) == str(db_message_id)), -1)
-                    if idx < 1:
-                        return None, False, "Нет предыдущего сообщения пользователя"
-                    prev = msgs[idx - 1]
-                    if str(prev.get('user', '')).strip() == 'Misa':
-                        return None, False, "Предыдущее сообщение не от пользователя"
-                    user_content = str(prev.get('content', '')).strip()
-                    if not user_content:
-                        return None, False, "Пустой запрос пользователя"
-                    GptAnswer.GptAnswer.import_history_from_db(user, chat_id, exclude_last=2)
-                    response = MessageMonitorServer.MessageMonitorServer(
-                        user=user, message=user_content, chat_id=chat_id
-                    ).monitor()
-                    if not response:
-                        return None, False, "Пустой ответ от модели"
-                    cleaned = _clean_command_response(response)
-                    msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else response)
-                    is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned)
-                    ChatService.update_message_content(chat_id, db_message_id, msg_to_save, is_img)
-                    return (msg_to_save, is_img), True, None
-                except Exception as e:
-                    logger.exception(f"Regenerate _do_regenerate: {e}")
-                    return None, False, str(e)
+                        return None, None, "Сообщение не найдено в БД (обновите чат и попробуйте снова)"
+                if str(msg.get('user', '')).strip() != 'Misa':
+                    return None, None, "Сообщение не от Misa"
+                msgs = ChatService.get_messages(chat_id)
+                idx = next((i for i, m in enumerate(msgs) if str(m['id']) == str(db_message_id)), -1)
+                if idx < 1:
+                    return None, None, "Нет предыдущего сообщения пользователя"
+                prev = msgs[idx - 1]
+                if str(prev.get('user', '')).strip() == 'Misa':
+                    return None, None, "Предыдущее сообщение не от пользователя"
+                user_content = str(prev.get('content', '')).strip()
+                if not user_content:
+                    return None, None, "Пустой запрос пользователя"
+                return db_message_id, user_content, None
 
-            result, ok, err_msg = await database_sync_to_async(_do_regenerate)()
-            if ok and result:
-                msg_to_send, is_img = result
-                if self.is_file_path(msg_to_send):
-                    msg_to_send = self.convert_file_path_to_url(msg_to_send)
-                is_img_final = is_img or (isinstance(msg_to_send, str) and (msg_to_send.startswith('http') or msg_to_send.startswith('/images/')))
+            db_message_id, user_content, err_msg = await database_sync_to_async(_prepare)()
+            if err_msg:
+                await self._safe_send_json({
+                    'type': 'error',
+                    'chat_id': chat_id,
+                    'message': 'Ошибка перегенерации',
+                    'detail': err_msg,
+                })
+                return
+
+            commands = CommandAnalyzer.CommandAnalyzer('server', user_content, 'server')
+
+            async def on_start(sid):
+                nonlocal stream_id
+                stream_id = sid
+                await self._broadcast_stream_event(chat_id, {
+                    'type': 'stream_start',
+                    'chat_id': chat_id,
+                    'stream_id': sid,
+                    'message_id': str(db_message_id),
+                    'user': 'Misa',
+                    'regenerate': True,
+                })
+
+            async def on_chunk(delta, sequence):
+                await self._broadcast_stream_event(chat_id, {
+                    'type': 'stream_chunk',
+                    'chat_id': chat_id,
+                    'stream_id': stream_id,
+                    'message_id': str(db_message_id),
+                    'delta': delta,
+                    'sequence': sequence,
+                    'regenerate': True,
+                })
+
+            async def on_end(result):
+                answer = str((result or {}).get('answer') or '')
+                cleaned = self._clean_command_response(answer)
+                msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else answer)
+                if self.is_file_path(msg_to_save):
+                    msg_to_save = self.convert_file_path_to_url(msg_to_save)
+                is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned) or (
+                    isinstance(msg_to_save, str) and (
+                        msg_to_save.startswith('http') or msg_to_save.startswith('/images/')
+                    )
+                )
+                await database_sync_to_async(ChatService.update_message_content)(
+                    chat_id, db_message_id, msg_to_save, is_img
+                )
+                await self._broadcast_stream_event(chat_id, {
+                    'type': 'stream_end',
+                    'chat_id': chat_id,
+                    'stream_id': result.get('stream_id') or stream_id,
+                    'message_id': str(db_message_id),
+                    'message': msg_to_save,
+                    'user': 'Misa',
+                    'isImage': is_img,
+                    'regenerate': True,
+                })
                 await self.channel_layer.group_send(f"chat_{chat_id}", {
                     'type': 'chat_broadcast',
                     'data': {
                         'type': 'message_updated',
                         'chat_id': chat_id,
-                        'message_id': message_id,
-                        'message': msg_to_send,
+                        'message_id': str(db_message_id),
+                        'message': msg_to_save,
                         'user': 'Misa',
-                        'isImage': is_img_final,
+                        'isImage': is_img,
+                        'stream_id': result.get('stream_id') or stream_id,
                     }
                 })
-            else:
-                await self._safe_send_json({
-                    'type': 'error',
+
+            async def on_error(exc):
+                await self._broadcast_stream_event(chat_id, {
+                    'type': 'stream_error',
                     'chat_id': chat_id,
+                    'stream_id': stream_id,
+                    'message_id': str(db_message_id),
                     'message': 'Ошибка перегенерации',
-                    'detail': err_msg or 'Неизвестная ошибка',
+                    'detail': str(exc),
+                    'regenerate': True,
                 })
+
+            await GenerationService.astream_tokens(
+                text=user_content,
+                user=user,
+                chat_id=chat_id,
+                pltype='server',
+                commands=commands,
+                should_persist=False,
+                update_message_id=str(db_message_id),
+                on_start=on_start,
+                on_chunk=on_chunk,
+                on_end=on_end,
+                on_error=on_error,
+            )
         except Exception as e:
             import traceback
             logger.error(f"Regenerate error: {str(e)}\n{traceback.format_exc()}")
@@ -316,6 +362,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'message': 'Ошибка перегенерации',
                 'detail': str(e),
             })
+            if stream_id:
+                await self._broadcast_stream_event(chat_id, {
+                    'type': 'stream_error',
+                    'chat_id': chat_id,
+                    'stream_id': stream_id,
+                    'message_id': str(message_id),
+                    'message': 'Ошибка перегенерации',
+                    'detail': str(e),
+                    'regenerate': True,
+                })
         finally:
             await database_sync_to_async(_set_chat_generating)(chat_id, False)
             await self._broadcast_typing(chat_id, is_typing=False, exclude_self=False)
@@ -341,10 +397,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return "Я не понял ваш запрос"
 
         if parts[1].strip() == '__NEW_CHAT__':
-            # Новый чат — не очищаем историю GPT, т.к. создаётся новая запись в БД
             return ''
 
-        # Формат: user|chat_id|message|content или user|message|content (без chat_id)
         first = parts[0].strip()
         content = parts[1].strip()
         first_parts = first.split('|')
@@ -358,14 +412,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if chat_id:
             await self._join_chat_group(chat_id)
 
-        # Импорт истории из БД в контекст GPT для данного чата
-        if (
-            chat_id
-            and user
-            and not GptAnswer.GptAnswer.has_conversation_history(user, chat_id)
-        ):
-            await database_sync_to_async(GptAnswer.GptAnswer.import_history_from_db)(user, chat_id)
-
         is_image = content.startswith('/images/') or content.startswith('http')
         if chat_id:
             user_msg_id = await database_sync_to_async(ChatService.save_message)(
@@ -377,111 +423,172 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await database_sync_to_async(_set_chat_generating)(chat_id, True)
             await self._broadcast_typing(chat_id, is_typing=True, exclude_self=True)
 
+            # Быстрый заголовок по первому сообщению
+            if not is_image:
+                async def _gen_and_broadcast_title():
+                    def _gen():
+                        t = GptAnswer.GptAnswer.generate_chat_title_from_message(content)
+                        if t and ChatService.update_title(chat_id, t):
+                            return t
+                        return None
+                    title = await database_sync_to_async(_gen)()
+                    if title:
+                        await self._broadcast_title(chat_id, title)
+                self._spawn_task(_gen_and_broadcast_title(), "generate_title_from_message")
+
+        stream_id = None
         try:
-            message_monitor = MessageMonitorServer.MessageMonitorServer(user=user, message=content, chat_id=chat_id)
-            response = await database_sync_to_async(message_monitor.monitor)()
+            commands = CommandAnalyzer.CommandAnalyzer('server', content, 'server')
 
-            if not response:
-                return "Я не понял ваш запрос"
+            async def on_start(sid):
+                nonlocal stream_id
+                stream_id = sid
+                await self._broadcast_stream_event(chat_id, {
+                    'type': 'stream_start',
+                    'chat_id': chat_id,
+                    'stream_id': sid,
+                    'user': 'Misa',
+                })
 
-            cleaned = self._clean_command_response(response)
-            msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else response)
-            is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned)
-            pending_enrichment = GradiusService.pop_pending_enrichment(chat_id)
-            if pending_enrichment is not None:
+            async def on_chunk(delta, sequence):
+                await self._broadcast_stream_event(chat_id, {
+                    'type': 'stream_chunk',
+                    'chat_id': chat_id,
+                    'stream_id': stream_id,
+                    'delta': delta,
+                    'sequence': sequence,
+                })
+
+            async def on_end(result):
+                answer = str((result or {}).get('answer') or '')
+                if not answer:
+                    answer = 'Я не понял ваш запрос'
+                cleaned = self._clean_command_response(answer)
+                msg_to_save = '\n\n'.join(cleaned) if len(cleaned) > 1 else (cleaned[0] if cleaned else answer)
+                if self.is_file_path(msg_to_save):
+                    msg_to_save = self.convert_file_path_to_url(msg_to_save)
+                is_img = any(p.startswith('http') or p.startswith('/images/') for p in cleaned)
+
+                pending_enrichment = GradiusService.pop_pending_enrichment(chat_id)
                 await database_sync_to_async(_set_ad_enrichment_complete)(
-                    chat_id,
-                    False,
+                    chat_id, pending_enrichment is None
                 )
-            else:
-                await database_sync_to_async(_set_ad_enrichment_complete)(
-                    chat_id,
-                    True,
-                )
-            misa_msg_id = await database_sync_to_async(ChatService.save_message)(
-                chat_id, 'Misa', msg_to_save, is_image=is_img
-            )
-            # Один broadcast с id — клиент после F5 не получит дубль к history
-            await self._broadcast_message(
-                chat_id, 'Misa', msg_to_save, is_img, exclude_self=True, message_id=misa_msg_id
-            )
 
-            if pending_enrichment is not None:
-                async def _save_complete_ad_response():
-                    try:
-                        final_response = await asyncio.wrap_future(
-                            pending_enrichment
-                        )
-                        final_parts = self._clean_command_response(final_response)
-                        final_message = (
-                            '\n\n'.join(final_parts)
-                            if len(final_parts) > 1
-                            else (
-                                final_parts[0]
-                                if final_parts
-                                else final_response
+                misa_msg_id = result.get('message_id')
+                if not misa_msg_id and chat_id:
+                    misa_msg_id = await database_sync_to_async(ChatService.save_message)(
+                        chat_id, 'Misa', msg_to_save, is_image=is_img
+                    )
+                misa_msg_id = str(misa_msg_id) if misa_msg_id is not None else None
+
+                await self._broadcast_stream_event(chat_id, {
+                    'type': 'stream_end',
+                    'chat_id': chat_id,
+                    'stream_id': result.get('stream_id') or stream_id,
+                    'message_id': misa_msg_id,
+                    'message': msg_to_save,
+                    'user': 'Misa',
+                    'isImage': is_img,
+                })
+                # Совместимость со старыми клиентами + dedup через stream_id
+                await self._broadcast_message(
+                    chat_id,
+                    'Misa',
+                    msg_to_save,
+                    is_img,
+                    exclude_self=False,
+                    message_id=misa_msg_id,
+                    stream_id=result.get('stream_id') or stream_id,
+                )
+
+                if pending_enrichment is not None and misa_msg_id:
+                    async def _save_complete_ad_response():
+                        try:
+                            final_response = await asyncio.wrap_future(pending_enrichment)
+                            final_parts = self._clean_command_response(final_response)
+                            final_message = (
+                                '\n\n'.join(final_parts)
+                                if len(final_parts) > 1
+                                else (final_parts[0] if final_parts else final_response)
                             )
-                        )
-                        if final_message != msg_to_save:
-                            final_is_img = any(
-                                part.startswith('http')
-                                or part.startswith('/images/')
-                                for part in final_parts
-                            )
-                            updated = await database_sync_to_async(
-                                ChatService.update_message_content
-                            )(
-                                chat_id,
-                                misa_msg_id,
-                                final_message,
-                                final_is_img,
-                            )
-                            if updated:
-                                await self.channel_layer.group_send(
-                                    f"chat_{chat_id}",
-                                    {
-                                        'type': 'chat_broadcast',
-                                        'data': {
-                                            'type': 'message_updated',
-                                            'chat_id': chat_id,
-                                            'message_id': str(misa_msg_id),
-                                            'message': final_message,
-                                            'user': 'Misa',
-                                            'isImage': final_is_img,
-                                        },
-                                    },
+                            if final_message != msg_to_save:
+                                final_is_img = any(
+                                    part.startswith('http') or part.startswith('/images/')
+                                    for part in final_parts
                                 )
-                    finally:
-                        await database_sync_to_async(
-                            _set_ad_enrichment_complete
-                        )(chat_id, True)
+                                updated = await database_sync_to_async(
+                                    ChatService.update_message_content
+                                )(chat_id, misa_msg_id, final_message, final_is_img)
+                                if updated:
+                                    await self.channel_layer.group_send(
+                                        f"chat_{chat_id}",
+                                        {
+                                            'type': 'chat_broadcast',
+                                            'data': {
+                                                'type': 'message_updated',
+                                                'chat_id': chat_id,
+                                                'message_id': str(misa_msg_id),
+                                                'message': final_message,
+                                                'user': 'Misa',
+                                                'isImage': final_is_img,
+                                            },
+                                        },
+                                    )
+                        finally:
+                            await database_sync_to_async(_set_ad_enrichment_complete)(
+                                chat_id, True
+                            )
 
-                self._spawn_task(
-                    _save_complete_ad_response(),
-                    "save_complete_ad_response",
-                )
+                    self._spawn_task(
+                        _save_complete_ad_response(),
+                        "save_complete_ad_response",
+                    )
 
-            # Генерация контекстного заголовка (как у DeepSeek)
-            def _generate_and_save_title():
-                msgs = ChatService.get_messages(chat_id)
-                if not msgs:
+                def _generate_and_save_title():
+                    msgs = ChatService.get_messages(chat_id)
+                    if not msgs:
+                        return None
+                    t = GptAnswer.GptAnswer.generate_chat_title(msgs)
+                    if t and ChatService.update_title(chat_id, t):
+                        return t
                     return None
-                t = GptAnswer.GptAnswer.generate_chat_title(msgs)
-                if t and ChatService.update_title(chat_id, t):
-                    return t
-                return None
-            async def _generate_contextual_title():
-                title = await database_sync_to_async(_generate_and_save_title)()
-                if title:
-                    await self._broadcast_title(chat_id, title)
 
-            self._spawn_task(_generate_contextual_title(), "generate_contextual_title")
+                async def _generate_contextual_title():
+                    title = await database_sync_to_async(_generate_and_save_title)()
+                    if title:
+                        await self._broadcast_title(chat_id, title)
 
-            return response
+                if chat_id:
+                    self._spawn_task(
+                        _generate_contextual_title(),
+                        "generate_contextual_title",
+                    )
+
+            async def on_error(exc):
+                await self._broadcast_stream_event(chat_id, {
+                    'type': 'stream_error',
+                    'chat_id': chat_id,
+                    'stream_id': stream_id,
+                    'message': 'Произошла ошибка при обработке сообщения',
+                    'detail': str(exc),
+                })
+
+            await GenerationService.astream_tokens(
+                text=content,
+                user=user,
+                chat_id=chat_id,
+                pltype='server',
+                commands=commands,
+                should_persist=True,
+                on_start=on_start,
+                on_chunk=on_chunk,
+                on_end=on_end,
+                on_error=on_error,
+            )
+            return ''
         finally:
             if chat_id:
                 await database_sync_to_async(_set_chat_generating)(chat_id, False)
-                # Не exclude_self: после F5 новый сокет должен получить typing:false
                 await self._broadcast_typing(chat_id, is_typing=False, exclude_self=False)
 
     async def _broadcast_typing(self, chat_id, is_typing=True, exclude_self=True):
@@ -514,7 +621,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             payload['exclude_channel'] = self.channel_name
         await self.channel_layer.group_send(f"chat_{chat_id}", payload)
 
-    async def _broadcast_message(self, chat_id, user, content, is_image=False, exclude_self=False, message_id=None):
+    async def _broadcast_message(
+        self,
+        chat_id,
+        user,
+        content,
+        is_image=False,
+        exclude_self=False,
+        message_id=None,
+        stream_id=None,
+    ):
         """Отправить сообщение всем подключённым к чату (все устройства)."""
         data = {
             'type': 'chat_message',
@@ -525,13 +641,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }
         if message_id is not None:
             data['message_id'] = str(message_id)
+        if stream_id is not None:
+            data['stream_id'] = str(stream_id)
         payload = {
             'type': 'chat_broadcast',
             'data': data,
         }
         if exclude_self:
             payload['exclude_channel'] = self.channel_name
-        await self.channel_layer.group_send(f"chat_{chat_id}", payload)
+        if chat_id:
+            await self.channel_layer.group_send(f"chat_{chat_id}", payload)
+        else:
+            await self._safe_send_json(data)
 
     def is_file_path(self, response):
         if not isinstance(response, str):

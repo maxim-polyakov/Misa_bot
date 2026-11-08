@@ -393,7 +393,9 @@ class ChatStore {
         JSON.stringify(
           this.chats.map((c) => ({
             ...c,
-            messages: c.messages || [],
+            messages: (c.messages || [])
+              .filter((m) => !m.isStreaming)
+              .map(({ isStreaming, streamId, ...rest }) => rest),
             createdAt: c.createdAt?.toISOString?.() || c.createdAt,
           }))
         )
@@ -522,8 +524,145 @@ class ChatStore {
     }
   }
 
+  _findStreamingMessageIndex(msgs, streamId, messageId) {
+    if (!msgs?.length) return -1;
+    if (streamId) {
+      const byStream = msgs.findIndex((m) => m.streamId && String(m.streamId) === String(streamId));
+      if (byStream >= 0) return byStream;
+    }
+    if (messageId) {
+      const byId = msgs.findIndex((m) => String(m.id) === String(messageId));
+      if (byId >= 0) return byId;
+    }
+    return -1;
+  }
+
+  _upsertStreamingMessage(chatId, patch, { persist = false } = {}) {
+    const chat = this.chats.find((c) => c.id === chatId);
+    if (!chat) return;
+    const msgs = chat.messages || [];
+    const idx = this._findStreamingMessageIndex(msgs, patch.streamId, patch.id);
+    if (idx < 0) {
+      chat.messages = [
+        ...msgs,
+        {
+          id: patch.id || `stream_${patch.streamId || Date.now()}`,
+          content: patch.content || "",
+          user: patch.user || "Misa",
+          timestamp: new Date(),
+          isImage: !!patch.isImage,
+          streamId: patch.streamId,
+          isStreaming: patch.isStreaming !== false,
+        },
+      ];
+    } else {
+      const prev = msgs[idx];
+      const next = [...msgs];
+      next[idx] = {
+        ...prev,
+        ...patch,
+        id: patch.id ? String(patch.id) : prev.id,
+        content: patch.content != null ? patch.content : prev.content,
+        timestamp: prev.timestamp || new Date(),
+      };
+      chat.messages = next;
+    }
+    if (persist) this.saveChats();
+  }
+
   handleIncomingMessage(data) {
+    if (data.type === "stream_start") {
+      const chatId = data.chat_id || this.currentChatId;
+      this._upsertStreamingMessage(chatId, {
+        id: data.message_id || `stream_${data.stream_id}`,
+        streamId: data.stream_id,
+        content: "",
+        user: "Misa",
+        isStreaming: true,
+      });
+      this._setChatTyping(chatId, true);
+      return;
+    }
+    if (data.type === "stream_chunk") {
+      const chatId = data.chat_id || this.currentChatId;
+      const chat = this.chats.find((c) => c.id === chatId);
+      if (!chat) return;
+      const idx = this._findStreamingMessageIndex(chat.messages || [], data.stream_id, data.message_id);
+      if (idx < 0) {
+        this._upsertStreamingMessage(chatId, {
+          id: data.message_id || `stream_${data.stream_id}`,
+          streamId: data.stream_id,
+          content: data.delta || "",
+          user: "Misa",
+          isStreaming: true,
+        });
+      } else {
+        const prev = chat.messages[idx];
+        const next = [...chat.messages];
+        next[idx] = {
+          ...prev,
+          content: `${prev.content || ""}${data.delta || ""}`,
+          streamId: data.stream_id || prev.streamId,
+          isStreaming: true,
+        };
+        chat.messages = next;
+      }
+      return;
+    }
+    if (data.type === "stream_end") {
+      const chatId = data.chat_id || this.currentChatId;
+      this._upsertStreamingMessage(
+        chatId,
+        {
+          id: data.message_id,
+          streamId: data.stream_id,
+          content: data.message || "",
+          user: "Misa",
+          isImage: !!data.isImage,
+          isStreaming: false,
+        },
+        { persist: true }
+      );
+      this._setChatTyping(chatId, false);
+      return;
+    }
+    if (data.type === "stream_error") {
+      const chatId = data.chat_id || this.currentChatId;
+      const chat = this.chats.find((c) => c.id === chatId);
+      if (chat && data.stream_id) {
+        chat.messages = (chat.messages || []).filter(
+          (m) => !(m.isStreaming && String(m.streamId) === String(data.stream_id))
+        );
+      }
+      this.error = data.detail
+        ? `${data.message || "Ошибка генерации"}: ${data.detail}`
+        : data.message || "Ошибка генерации";
+      this._setChatTyping(chatId, false);
+      this.saveChats();
+      return;
+    }
     if (data.type === "chat_message") {
+      const chatId = data.chat_id || this.currentChatId;
+      const chat = this.chats.find((c) => c.id === chatId);
+      if (chat && data.stream_id) {
+        const streamIdx = this._findStreamingMessageIndex(chat.messages || [], data.stream_id, data.message_id);
+        if (streamIdx >= 0) {
+          this._upsertStreamingMessage(
+            chatId,
+            {
+              id: data.message_id,
+              streamId: data.stream_id,
+              content: data.message,
+              user: data.user || "Misa",
+              isImage: !!data.isImage,
+              isStreaming: false,
+            },
+            { persist: true }
+          );
+          if (data.user === "Misa") this._setChatTyping(chatId, false);
+          return;
+        }
+      }
       const msg = {
         id: data.message_id || Date.now().toString() + Math.random().toString(36).slice(2),
         content: data.message,
@@ -531,8 +670,6 @@ class ChatStore {
         timestamp: new Date(),
         isImage: data.isImage,
       };
-      const chatId = data.chat_id || this.currentChatId;
-      const chat = this.chats.find((c) => c.id === chatId);
       if (chat) {
         chat.messages.push(msg);
         if (data.user === "Misa") {
@@ -570,10 +707,23 @@ class ChatStore {
       }
     } else if (data.type === "message_updated") {
       const chat = this.chats.find((c) => c.id === data.chat_id);
-      const msg = chat?.messages?.find((m) => m.id === data.message_id);
-      if (msg) {
-        msg.content = data.message || msg.content;
-        msg.isImage = data.isImage ?? msg.isImage;
+      if (!chat) return;
+      let idx = chat.messages?.findIndex((m) => m.id === data.message_id);
+      if (idx < 0 && data.stream_id) {
+        idx = this._findStreamingMessageIndex(chat.messages || [], data.stream_id, data.message_id);
+      }
+      if (idx >= 0) {
+        const msg = chat.messages[idx];
+        const next = [...chat.messages];
+        next[idx] = {
+          ...msg,
+          id: data.message_id ? String(data.message_id) : msg.id,
+          content: data.message || msg.content,
+          isImage: data.isImage ?? msg.isImage,
+          isStreaming: false,
+          streamId: data.stream_id || msg.streamId,
+        };
+        chat.messages = next;
         this._setChatTyping(data.chat_id, false);
         this.saveChats();
       }
