@@ -1,9 +1,6 @@
 /**
- * Lightweight stream lifecycle checks for chatStore helpers.
- * Run: node --test src/store/__tests__/streamLifecycle.test.js
+ * Stream lifecycle checks for chatStore helpers (Jest / react-scripts test).
  */
-const { describe, it } = require('node:test');
-const assert = require('node:assert/strict');
 
 function findStreamingMessageIndex(msgs, streamId, messageId) {
   if (!msgs?.length) return -1;
@@ -84,10 +81,10 @@ describe('stream lifecycle', () => {
       { type: 'stream_end', stream_id: 's1', message_id: '9', message: 'Hello' },
       { type: 'chat_message', stream_id: 's1', message_id: '9', message: 'Hello' },
     ]);
-    assert.equal(out.length, 1);
-    assert.equal(out[0].content, 'Hello');
-    assert.equal(out[0].id, '9');
-    assert.equal(out[0].isStreaming, false);
+    expect(out).toHaveLength(1);
+    expect(out[0].content).toBe('Hello');
+    expect(out[0].id).toBe('9');
+    expect(out[0].isStreaming).toBe(false);
   });
 
   it('removes placeholder on error', () => {
@@ -96,6 +93,6 @@ describe('stream lifecycle', () => {
       { type: 'stream_chunk', stream_id: 's2', delta: 'partial' },
       { type: 'stream_error', stream_id: 's2' },
     ]);
-    assert.equal(out.length, 0);
+    expect(out).toHaveLength(0);
   });
 });
