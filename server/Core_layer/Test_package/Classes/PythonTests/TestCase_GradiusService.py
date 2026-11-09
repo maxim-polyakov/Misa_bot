@@ -103,7 +103,7 @@ class TestCase_GradiusService(unittest.TestCase):
         self.assertEqual(result, 'answer')
         request.assert_not_called()
 
-    def test_enrichment_collects_ten_test_api_responses(self):
+    def test_enrichment_collects_configured_test_api_responses(self):
         def placement(*args, **kwargs):
             index = request.call_count
             return [{
@@ -116,8 +116,8 @@ class TestCase_GradiusService(unittest.TestCase):
             {
                 'GRADIUS_API_KEY': 'test-key',
                 'GRADIUS_MAX_ADS_PER_CHAT': '10',
-                'GRADIUS_REQUESTS_PER_ANSWER': '10',
-                'GRADIUS_ADS_BEFORE_RETURN': '10',
+                'GRADIUS_REQUESTS_PER_ANSWER': '3',
+                'GRADIUS_ADS_BEFORE_RETURN': '3',
             },
         ), patch.object(GradiusService, '_request', side_effect=placement) as request:
             result = GradiusService.enrich_assistant_answer(
@@ -126,8 +126,8 @@ class TestCase_GradiusService(unittest.TestCase):
                 text='answer',
             )
 
-        self.assertEqual(request.call_count, 10)
-        self.assertEqual(result.count('<<<misa-ad>>>'), 10)
+        self.assertEqual(request.call_count, 3)
+        self.assertEqual(result.count('<<<misa-ad>>>'), 3)
 
     def test_late_ad_responses_are_available_for_background_save(self):
         release_late = threading.Event()
@@ -147,7 +147,7 @@ class TestCase_GradiusService(unittest.TestCase):
             {
                 'GRADIUS_API_KEY': 'test-key',
                 'GRADIUS_MAX_ADS_PER_CHAT': '10',
-                'GRADIUS_REQUESTS_PER_ANSWER': '10',
+                'GRADIUS_REQUESTS_PER_ANSWER': '3',
                 'GRADIUS_ADS_BEFORE_RETURN': '1',
             },
         ), patch.object(GradiusService, '_request', side_effect=placement) as request:
@@ -163,9 +163,9 @@ class TestCase_GradiusService(unittest.TestCase):
             release_late.set()
             complete = completion.result(timeout=3)
 
-        self.assertEqual(request.call_count, 10)
+        self.assertEqual(request.call_count, 3)
         self.assertGreaterEqual(initial.count('<<<misa-ad>>>'), 1)
-        self.assertEqual(complete.count('<<<misa-ad>>>'), 10)
+        self.assertEqual(complete.count('<<<misa-ad>>>'), 3)
 
     def test_prefetched_requests_are_reused_for_final_answer(self):
         placement = [{
@@ -177,8 +177,8 @@ class TestCase_GradiusService(unittest.TestCase):
             {
                 'GRADIUS_API_KEY': 'test-key',
                 'GRADIUS_MAX_ADS_PER_CHAT': '10',
-                'GRADIUS_REQUESTS_PER_ANSWER': '10',
-                'GRADIUS_ADS_BEFORE_RETURN': '10',
+                'GRADIUS_REQUESTS_PER_ANSWER': '3',
+                'GRADIUS_ADS_BEFORE_RETURN': '3',
             },
         ), patch.object(
             GradiusService,
@@ -197,8 +197,8 @@ class TestCase_GradiusService(unittest.TestCase):
                 prefetch=prefetch,
             )
 
-        self.assertEqual(request.call_count, 10)
-        self.assertEqual(result.count('<<<misa-ad>>>'), 10)
+        self.assertEqual(request.call_count, 3)
+        self.assertEqual(result.count('<<<misa-ad>>>'), 3)
 
 
 if __name__ == '__main__':
